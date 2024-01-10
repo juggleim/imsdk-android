@@ -17,9 +17,13 @@ public class ConnectionManager implements IConnectionManager {
 
     }
 
-    public ConnectionManager(JetIMCore core) {
+    public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {
         this.mCore = core;
+        this.mConversationManager = conversationManager;
+        this.mMessageManager = messageManager;
     }
 
     private JetIMCore mCore;
+    private ConversationManager mConversationManager;
+    private MessageManager mMessageManager;
 }

@@ -58,10 +58,10 @@ public class JetIM {
 
     private JetIM() {
         JetIMCore core = new JetIMCore();
-        this.mCore = core;
-        this.mConnectionManager = new ConnectionManager(core);
-        this.mMessageManager = new MessageManager(core);
-        this.mConversationManager = new ConversationManager(core);
+        mCore = core;
+        mMessageManager = new MessageManager(core);
+        mConversationManager = new ConversationManager(core);
+        mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager);
     }
 
     private ConnectionManager mConnectionManager;
