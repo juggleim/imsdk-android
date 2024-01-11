@@ -1,6 +1,6 @@
 package com.jet.im.internal;
 
-import com.jet.im.core.JetIMCore;
+import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
 
 public class ConversationManager implements IConversationManager {

@@ -2,9 +2,8 @@ package com.jet.im;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 
-import com.jet.im.core.JetIMCore;
+import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;

@@ -1,18 +1,28 @@
-package com.jet.im.core;
+package com.jet.im.internal.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 
+import com.jet.im.internal.ConstInternal;
+import com.jet.im.internal.core.network.JWebSocket;
+
 import org.java_websocket.client.WebSocketClient;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class JetIMCore {
 
     public JetIMCore() {
-
+    }
+    public JWebSocket getWebSocket() {
+        return mWebSocket;
+    }
+    public void setWebSocket(JWebSocket ws) {
+        this.mWebSocket = ws;
     }
     public String getNaviUrl() {
         return mNaviUrl;
@@ -22,11 +32,14 @@ public class JetIMCore {
         this.mNaviUrl = naviUrl;
     }
 
-    public List<String> getServers() {
+    public String[] getServers() {
+        if (mServers == null) {
+            mServers = new String[]{ConstInternal.WEB_SOCKET_URL};
+        }
         return mServers;
     }
 
-    public void setServers(@NonNull List<String> servers) {
+    public void setServers(@NonNull String[] servers) {
         this.mServers = servers;
     }
 
@@ -93,8 +106,9 @@ public class JetIMCore {
     private SharedPreferences getSP(@NonNull Context context) {
         return context.getSharedPreferences(SP_NAME, 0);
     }
+    private JWebSocket mWebSocket;
     private String mNaviUrl;
-    private List<String> mServers;
+    private String[] mServers;
     private String mAppKey;
     private String mToken;
     private String mUserId;
