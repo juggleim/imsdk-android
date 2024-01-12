@@ -1,0 +1,189 @@
+syntax = "proto3";
+
+package app_messages;
+
+message UpMsg {
+    string msgType = 1;
+    bytes msgContent= 2;
+    int32 flags = 3;
+    string clientUid = 4;
+    PushData pushData = 5;
+    MentionInfo mentionInfo = 6;
+}
+
+message MentionInfo {
+    MentionType mentionType = 1;
+    repeated string targetIds = 2;
+}
+
+enum MentionType{
+    MentionDefault = 0;
+    MentionAll = 1;
+    MentionSomeone = 2;
+    MentionAllAndSomeone = 3;
+}
+
+message PushData{
+    string title = 1;
+    string pushId = 2;
+    string pushText = 3;
+    string pushExtraData = 4;
+}
+message DownMsg{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    string msgType = 3;
+    string senderId = 4;
+    string msgId = 5;
+    int64 msgIndex = 6;
+    bytes msgContent = 7;
+    int64 msgTime = 8;
+    int32 flags = 9;
+    bool isSend = 10;
+    string platform = 11;
+    string clientUid = 12;
+    PushData pushData = 13;
+    MentionInfo mentionInfo = 14;
+    bool isReaded = 15;
+}
+enum ChannelType {
+    Unknown = 0;
+    Private = 1;
+    Group = 2;
+    Chatroom = 3;
+    System = 4;
+}
+message Notify{
+    NotifyType type = 1;
+    int64 syncTime = 2;
+}
+enum NotifyType {
+    Default = 0;
+    Msg = 1;
+}
+message SyncMsgReq{
+    int64 syncTime = 1;//收件箱同步时间
+    bool containsSendBox = 2;//是否包含发件箱消息
+    int64 sendBoxSyncTime = 3;//发件箱同步时间
+}
+message DownMsgSet{
+    repeated DownMsg msgs = 1;
+    int64 syncTime = 2;
+    bool isFinished = 3;
+}
+
+message AddHisMsgReq{
+    string senderId = 1;
+    string targetId = 2;
+    ChannelType channelType = 3;
+    int64 sendTime = 4;
+    DownMsg msg = 5;
+}
+
+message QryMsgLatestIndexReq{
+    string converId = 1;
+    ChannelType channelType = 2;
+}
+message QryMsgLatestIndexResp{
+    string converId = 1;
+    ChannelType ChannelType = 2;
+    int64 msgIndex = 3;
+}
+
+message QryHisMsgsReq{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    int64 startTime = 3;
+    int32 count = 4;
+    int32 order = 5;
+}
+
+message QryConversationsReq{
+    int64 startTime = 1;
+    int32 count = 2;
+    int32 order = 3;
+}
+message QryConversationsResp{
+    repeated Conversation conversations = 1;
+    bool isFinished = 2;
+}
+message Conversation{
+    //string converId = 1;
+    string targetId = 2;
+    ChannelType channelType = 3;
+    int64 updateTime = 4;
+    int64 unreadCount = 5;
+    DownMsg msg = 6;
+    int64 latestReadedMsgIndex = 7;
+    MentionMsg LatestMentionMsg = 8;
+}
+
+message MentionMsg{
+    MentionType mentionType = 1;
+    string senderId = 2;
+    string msgId = 3;
+    int64 msgIndex = 4;
+    int64 msgTime = 5;
+}
+
+message QryMentionMsgsReq{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    int64 startIndex = 3;
+    int32 count = 4;
+    int32 order = 5;
+}
+
+message QryMentionMsgsResp{
+    repeated MentionMsg mentionMsgs = 1;
+    bool isFinished = 2;
+}
+
+message SyncConversationsReq{
+    int64 startTime = 1;
+    int32 count = 2;
+}
+
+message DelConversationReq{
+    repeated Conversation conversations = 1;
+}
+
+message ClearUnreadReq{
+    repeated Conversation conversations = 1;
+}
+
+message RecallMsgReq{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    string msgId = 3;
+    int64 msgTime = 4;
+    string msgType = 5;
+    bytes msgContent = 6;
+}
+
+message MarkReadReq{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    repeated SimpleMsg msgs = 3;
+    repeated IndexScope indexScopes = 4;
+}
+
+message SimpleMsg{
+    string msgId = 1;
+    int64 msgTime = 2;
+    int64 msgIndex = 3;
+}
+
+message IndexScope{
+    int64 startIndex = 1;
+    int64 endIndex = 2;
+}
+
+message ModifyMsgReq{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    string msgId = 3;
+    int64 msgTime = 4;
+    int64 msgIndex = 5;
+    bytes msgContent = 6;
+}

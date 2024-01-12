@@ -6,7 +6,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
-import java.util.List;
+import java.nio.ByteBuffer;
 
 public class JWebSocket extends WebSocketClient {
 
@@ -15,6 +15,7 @@ public class JWebSocket extends WebSocketClient {
         super(serverUri);
         mAppKey = appKey;
         mToken = token;
+        mPbData = new PBData();
     }
 
     public static URI createWebSocketUri(String server) {
@@ -25,11 +26,27 @@ public class JWebSocket extends WebSocketClient {
     @Override
     public void onOpen(ServerHandshake handshakedata) {
         LoggerUtils.i("lifei, onOpen");
+        sendConnectMsg();
     }
 
     @Override
     public void onMessage(String message) {
         LoggerUtils.i("lifei, onMessage");
+    }
+
+    @Override
+    public void onMessage(ByteBuffer bytes) {
+        LoggerUtils.i("lifei, onMessage bytes");
+        PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
+        switch (obj.getRcvType()) {
+//            case PBRcvObj.PBRcvType.parseError:
+//                break;
+
+            case PBRcvObj.PBRcvType.connectAck:
+                handleConnectAckMsg(obj.connectAck);
+                break;
+
+        }
     }
 
     @Override
@@ -45,8 +62,29 @@ public class JWebSocket extends WebSocketClient {
     public void setToken(String token) {
         mToken = token;
     }
+
+    private void sendConnectMsg() {
+        byte[] bytes = mPbData.connectData(mAppKey,
+                mToken,
+                "deviceId",
+                "Android",
+                "deviceCompany",
+                "deviceModel",
+                "osVersion",
+                "pushToken",
+                "networkId",
+                "ispNum",
+                "clientIp");
+        send(bytes);
+    }
+
+    private void handleConnectAckMsg(PBRcvObj.ConnectAck ack) {
+        LoggerUtils.i("connect userId is " + ack.userId);
+    }
+
     private String mAppKey;
     private String mToken;
+    private PBData mPbData;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
 

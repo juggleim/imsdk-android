@@ -9,6 +9,6 @@ public class JetIMApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        JetIM.getInstance().init(this, "appKey");
+        JetIM.getInstance().init(this, "appkey");
     }
 }

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package message;
+
+enum ConversationType{
+	None = 0;
+    Private = 1;
+    Secret = 2;
+    Group = 3;
+    System = 4;
+}
+
+message UpstreamMsg{
+    string targetId = 1; // 消息接收方Id, 如userId，groupId
+    ConversationType conversationType = 2;
+    string msgType = 3; // 消息类型标识，区分文本消息，图片消息，文件消息等；
+    string msgContent = 4; //消息体，使用json格式
+    int32 msgFlag = 5; //消息的一些配置，每个bit位代表一项配置，如是否关闭推送等
+    string msgExtra = 6; // 消息的一些自定义扩展内容
+    string pushContent = 7; // json格式，推送相关的参数
+}
+
+message DownstreamMsg {
+    string fromId = 1;//消息来源用户Id
+    ConversationType conversationType = 2;
+    string msgType = 3;
+    string msgContent = 4;
+    int32 msgFlag = 5;
+    string msgExtra = 6;
+    string pushContent = 7; // json格式，推送相关参数
+    int32 msgStatus = 8; //消息的一些状态标识，如是否多端，是否已经被其他端接收过等
+}

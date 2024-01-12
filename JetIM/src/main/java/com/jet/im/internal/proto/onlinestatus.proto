@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package online_status;
+
+enum OnlineType{
+    Offline = 0;
+    Online = 1;
+}
+message OnlineStatus{
+    OnlineType type = 1;
+
+    bytes extraData = 11;
+}
