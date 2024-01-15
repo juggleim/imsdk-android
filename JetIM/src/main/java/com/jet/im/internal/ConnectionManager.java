@@ -24,7 +24,7 @@ public class ConnectionManager implements IConnectionManager {
 
     @Override
     public void disconnect(boolean receivePush) {
-
+        mCore.getWebSocket().disconnect(receivePush);
     }
 
     public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {

@@ -41,6 +41,21 @@ class PBData {
         return msg.toByteArray();
     }
 
+    byte[] disconnectData(boolean receivePush) {
+        int code = receivePush ? 0 : 1;
+        ImWebSocket.DisconnectMsgBody body = ImWebSocket.DisconnectMsgBody.newBuilder()
+                .setCode(code)
+                .setTimestamp(System.currentTimeMillis())
+                .build();
+        ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.newBuilder()
+                .setVersion(PROTOCOL_VERSION)
+                .setCmd(CmdType.disconnect)
+                .setQos(Qos.no)
+                .setDisconnectMsgBody(body)
+                .build();
+        return msg.toByteArray();
+    }
+
     PBRcvObj rcvObjWithBytes(ByteBuffer byteBuffer) {
         PBRcvObj obj = new PBRcvObj();
         try {

@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        JetIM.getInstance().getConnectionManager().connect(TOKEN2);
+        JetIM.getInstance().getConnectionManager().connect(TOKEN3);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

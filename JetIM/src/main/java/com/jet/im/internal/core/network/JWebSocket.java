@@ -15,6 +15,10 @@ import java.nio.ByteBuffer;
 
 public class JWebSocket extends WebSocketClient {
 
+    public static URI createWebSocketUri(String server) {
+        String webSocketUrl = WEB_SOCKET_PREFIX + server + WEB_SOCKET_SUFFIX;
+        return URI.create(webSocketUrl);
+    }
 
     public JWebSocket(String appKey, String token, URI serverUri, Context context) {
         super(serverUri);
@@ -24,25 +28,25 @@ public class JWebSocket extends WebSocketClient {
         mPbData = new PBData();
     }
 
-    public static URI createWebSocketUri(String server) {
-        String webSocketUrl = WEB_SOCKET_PREFIX + server + WEB_SOCKET_SUFFIX;
-        return URI.create(webSocketUrl);
+    public void disconnect(Boolean receivePush) {
+        sendDisconnectMsg(receivePush);
     }
+
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        LoggerUtils.i("lifei, onOpen");
+        LoggerUtils.i("JWebSocket, onOpen");
         sendConnectMsg();
     }
 
     @Override
     public void onMessage(String message) {
-        LoggerUtils.i("lifei, onMessage");
+        LoggerUtils.i("JWebSocket, onMessage");
     }
 
     @Override
     public void onMessage(ByteBuffer bytes) {
-        LoggerUtils.i("lifei, onMessage bytes");
+        LoggerUtils.i("JWebSocket, onMessage bytes");
         PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
         switch (obj.getRcvType()) {
 //            case PBRcvObj.PBRcvType.parseError:
@@ -57,12 +61,12 @@ public class JWebSocket extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        LoggerUtils.i("lifei, onClose");
+        LoggerUtils.i("JWebSocket, onClose");
     }
 
     @Override
     public void onError(Exception ex) {
-        LoggerUtils.i("lifei, onError");
+        LoggerUtils.i("JWebSocket, onError");
     }
 
     public void setToken(String token) {
@@ -81,6 +85,11 @@ public class JWebSocket extends WebSocketClient {
                 JUtility.getNetworkType(mContext),
                 JUtility.getCarrier(mContext),
                 "");
+        send(bytes);
+    }
+
+    private void sendDisconnectMsg(boolean receivePush) {
+        byte[] bytes = mPbData.disconnectData(receivePush);
         send(bytes);
     }
 
