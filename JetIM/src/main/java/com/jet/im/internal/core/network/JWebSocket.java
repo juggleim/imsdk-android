@@ -1,5 +1,10 @@
 package com.jet.im.internal.core.network;
 
+import android.content.Context;
+import android.os.Build;
+
+import com.jet.im.internal.ConstInternal;
+import com.jet.im.internal.util.JUtility;
 import com.jet.im.utils.LoggerUtils;
 
 import org.java_websocket.client.WebSocketClient;
@@ -11,10 +16,11 @@ import java.nio.ByteBuffer;
 public class JWebSocket extends WebSocketClient {
 
 
-    public JWebSocket(String appKey, String token, URI serverUri) {
+    public JWebSocket(String appKey, String token, URI serverUri, Context context) {
         super(serverUri);
         mAppKey = appKey;
         mToken = token;
+        mContext = context;
         mPbData = new PBData();
     }
 
@@ -66,15 +72,15 @@ public class JWebSocket extends WebSocketClient {
     private void sendConnectMsg() {
         byte[] bytes = mPbData.connectData(mAppKey,
                 mToken,
-                "deviceId",
-                "Android",
-                "deviceCompany",
-                "deviceModel",
-                "osVersion",
+                JUtility.getDeviceId(mContext),
+                ConstInternal.PLATFORM,
+                Build.BRAND,
+                Build.MODEL,
+                Build.VERSION.RELEASE,
                 "pushToken",
-                "networkId",
-                "ispNum",
-                "clientIp");
+                JUtility.getNetworkType(mContext),
+                JUtility.getCarrier(mContext),
+                "");
         send(bytes);
     }
 
@@ -85,6 +91,10 @@ public class JWebSocket extends WebSocketClient {
     private String mAppKey;
     private String mToken;
     private PBData mPbData;
+
+
+
+    private Context mContext;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
 
