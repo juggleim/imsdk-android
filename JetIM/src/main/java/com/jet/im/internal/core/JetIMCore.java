@@ -98,6 +98,36 @@ public class JetIMCore {
         mToken = sp.getString(TOKEN, "");
     }
 
+    public int getConnectionStatus() {
+        return mConnectionStatus;
+    }
+
+    public void setConnectionStatus(int connectionStatus) {
+        mConnectionStatus = connectionStatus;
+    }
+
+    public int getDbStatus() {
+        return mDbStatus;
+    }
+
+    public void setDbStatus(int dbStatus) {
+        mDbStatus = dbStatus;
+    }
+
+    public static class ConnectionStatusInternal {
+        public static final int IDLE = 0;
+        public static final int CONNECTED = 1;
+        public static final int DISCONNECTED = 2;
+        public static final int CONNECTING = 3;
+        public static final int FAILURE = 4;
+        public static final int WAITING_FOR_CONNECTING = 5;
+    }
+
+    public static class DbStatus {
+        static final int CLOSED = 0;
+        static final int OPEN = 1;
+    }
+
     private JWebSocket mWebSocket;
     private String mNaviUrl;
     private String[] mServers;
@@ -105,6 +135,8 @@ public class JetIMCore {
     private String mToken;
     private String mUserId;
     private Context mContext;
+    private int mConnectionStatus;
+    private int mDbStatus;
 
     private final String APP_KEY = "AppKey";
     private final String TOKEN = "Token";

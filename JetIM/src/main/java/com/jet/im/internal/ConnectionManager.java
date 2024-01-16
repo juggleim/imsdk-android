@@ -1,11 +1,15 @@
 package com.jet.im.internal;
 
+import android.text.TextUtils;
+
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.utils.LoggerUtils;
 
 import java.net.URI;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager implements IConnectionManager {
     @Override
@@ -19,6 +23,34 @@ public class ConnectionManager implements IConnectionManager {
         } else {
             mCore.getWebSocket().setToken(token);
         }
+        mCore.getWebSocket().setConnectionListener(new JWebSocket.IWebSocketConnectListener() {
+            @Override
+            public void onConnectComplete(int errorCode, String userId) {
+                if (errorCode == ConstInternal.ErrorCode.NONE) {
+                    mCore.setUserId(userId);
+                    //todo db
+                    changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE);
+                    //todo sync conversation
+                } else {
+                    if (checkConnectionFailure(errorCode)) {
+                        changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);
+                    } else {
+                        changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
+                    }
+
+                }
+            }
+
+            @Override
+            public void onWebSocketFail() {
+
+            }
+
+            @Override
+            public void onWebSocketClose() {
+
+            }
+        });
         mCore.getWebSocket().connect();
     }
 
@@ -27,13 +59,101 @@ public class ConnectionManager implements IConnectionManager {
         mCore.getWebSocket().disconnect(receivePush);
     }
 
+    @Override
+    public void addConnectionStatusListener(String key, IConnectionStatusListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mConnectionStatusListenerMap == null) {
+            mConnectionStatusListenerMap = new ConcurrentHashMap<>();
+        }
+        mConnectionStatusListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeConnectionStatusListener(String key) {
+        if (!TextUtils.isEmpty(key) && mConnectionStatusListenerMap != null) {
+            mConnectionStatusListenerMap.remove(key);
+        }
+    }
+
     public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {
         this.mCore = core;
         this.mConversationManager = conversationManager;
         this.mMessageManager = messageManager;
     }
 
+    private boolean checkConnectionFailure(int errorCode) {
+        return errorCode == ConstInternal.ErrorCode.APP_KEY_EMPTY
+                || errorCode == ConstInternal.ErrorCode.TOKEN_EMPTY
+                || errorCode == ConstInternal.ErrorCode.APP_KEY_INVALID
+                || errorCode == ConstInternal.ErrorCode.TOKEN_ILLEGAL
+                || errorCode == ConstInternal.ErrorCode.TOKEN_UNAUTHORIZED
+                || errorCode == ConstInternal.ErrorCode.TOKEN_EXPIRED
+                || errorCode == ConstInternal.ErrorCode.APP_PROHIBITED
+                || errorCode == ConstInternal.ErrorCode.USER_PROHIBITED
+                || errorCode == ConstInternal.ErrorCode.USER_KICKED_BY_OTHER_CLIENT
+                || errorCode == ConstInternal.ErrorCode.USER_LOG_OUT;
+    }
+
+    private void changeStatus(int status, int errorCode) {
+        //todo thread
+        if (status == JetIMCore.ConnectionStatusInternal.IDLE) {
+            mCore.setConnectionStatus(status);
+            return;
+        }
+        if (status == JetIMCore.ConnectionStatusInternal.CONNECTED
+                && mCore.getConnectionStatus() != JetIMCore.ConnectionStatusInternal.CONNECTED) {
+            //todo
+            //mHeartBeatManager.start();
+        }
+        if (status != JetIMCore.ConnectionStatusInternal.CONNECTED
+                && mCore.getConnectionStatus() != JetIMCore.ConnectionStatusInternal.CONNECTED) {
+            //todo
+            //mHeartBeatManager.stop();
+        }
+        IConnectionStatusListener.ConnectionStatus outStatus = IConnectionStatusListener.ConnectionStatus.IDLE;
+        switch (status) {
+            case JetIMCore.ConnectionStatusInternal.CONNECTED:
+                outStatus = IConnectionStatusListener.ConnectionStatus.CONNECTED;
+                break;
+            case JetIMCore.ConnectionStatusInternal.DISCONNECTED:
+                outStatus = IConnectionStatusListener.ConnectionStatus.DISCONNECTED;
+                break;
+            case JetIMCore.ConnectionStatusInternal.CONNECTING:
+                outStatus = IConnectionStatusListener.ConnectionStatus.CONNECTING;
+                break;
+            case JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING:
+                reconnect();
+                //已经在连接中，不需要再对外抛回调
+                if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING
+                        || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
+                    mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.CONNECTING);
+                    return;
+                }
+                outStatus = IConnectionStatusListener.ConnectionStatus.CONNECTING;
+                break;
+            case JetIMCore.ConnectionStatusInternal.FAILURE:
+                outStatus = IConnectionStatusListener.ConnectionStatus.FAILURE;
+            default:
+                break;
+        }
+        mCore.setConnectionStatus(status);
+        if (mConnectionStatusListenerMap != null) {
+            for (Map.Entry<String, IConnectionStatusListener> entry :
+                 mConnectionStatusListenerMap.entrySet()) {
+                entry.getValue().onStatusChange(outStatus, errorCode);
+            }
+        }
+    }
+
+    private void reconnect() {
+        //todo
+    }
+
+
     private JetIMCore mCore;
     private ConversationManager mConversationManager;
     private MessageManager mMessageManager;
+    private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
 }

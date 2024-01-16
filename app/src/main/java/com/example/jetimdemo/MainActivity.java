@@ -6,6 +6,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.core.view.WindowCompat;
@@ -16,6 +17,8 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.jetimdemo.databinding.ActivityMainBinding;
 import com.jet.im.JetIM;
+import com.jet.im.interfaces.IConnectionManager;
+import com.jet.im.utils.LoggerUtils;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,6 +39,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+        JetIM.getInstance().getConnectionManager().addConnectionStatusListener("mainActivity", new IConnectionManager.IConnectionStatusListener() {
+            @Override
+            public void onStatusChange(ConnectionStatus status, int code) {
+                Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
+            }
+        });
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

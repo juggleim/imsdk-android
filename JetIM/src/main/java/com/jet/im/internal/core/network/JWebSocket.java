@@ -32,6 +32,15 @@ public class JWebSocket extends WebSocketClient {
         sendDisconnectMsg(receivePush);
     }
 
+    public void setConnectionListener(IWebSocketConnectListener listener) {
+        mConnectListener = listener;
+    }
+
+    public interface IWebSocketConnectListener {
+        void onConnectComplete(int errorCode, String userId);
+        void onWebSocketFail();
+        void onWebSocketClose();
+    }
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
@@ -95,15 +104,16 @@ public class JWebSocket extends WebSocketClient {
 
     private void handleConnectAckMsg(PBRcvObj.ConnectAck ack) {
         LoggerUtils.i("connect userId is " + ack.userId);
+        if (mConnectListener != null) {
+            mConnectListener.onConnectComplete(ack.code, ack.userId);
+        }
     }
 
     private String mAppKey;
     private String mToken;
     private PBData mPbData;
-
-
-
     private Context mContext;
+    private IWebSocketConnectListener mConnectListener;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
 
