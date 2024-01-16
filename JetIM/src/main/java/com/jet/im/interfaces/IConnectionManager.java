@@ -18,7 +18,7 @@ public interface IConnectionManager {
             DISCONNECTED(2),
             CONNECTING(3),
             FAILURE(4);
-            private int status;
+            private final int status;
             ConnectionStatus(int status) {
                 this.status = status;
             }

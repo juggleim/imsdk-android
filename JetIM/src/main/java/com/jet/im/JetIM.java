@@ -63,8 +63,8 @@ public class JetIM {
         mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager);
     }
 
-    private ConnectionManager mConnectionManager;
-    private MessageManager mMessageManager;
-    private ConversationManager mConversationManager;
-    private JetIMCore mCore;
+    private final ConnectionManager mConnectionManager;
+    private final MessageManager mMessageManager;
+    private final ConversationManager mConversationManager;
+    private final JetIMCore mCore;
 }

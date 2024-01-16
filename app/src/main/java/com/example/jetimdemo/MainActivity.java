@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStatusChange(ConnectionStatus status, int code) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
+                JetIM.getInstance().getConnectionManager().disconnect(false);
             }
         });
         binding = ActivityMainBinding.inflate(getLayoutInflater());
