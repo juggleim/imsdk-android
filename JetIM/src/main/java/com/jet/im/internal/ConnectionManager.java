@@ -21,6 +21,7 @@ public class ConnectionManager implements IConnectionManager {
             URI uri = JWebSocket.createWebSocketUri(mCore.getServers()[0]);
             mCore.setWebSocket(new JWebSocket(mCore.getAppKey(), token, uri, mCore.getContext()));
         } else {
+            mCore.getWebSocket().setAppKey(mCore.getAppKey());
             mCore.getWebSocket().setToken(token);
         }
         mCore.getWebSocket().setConnectionListener(new JWebSocket.IWebSocketConnectListener() {

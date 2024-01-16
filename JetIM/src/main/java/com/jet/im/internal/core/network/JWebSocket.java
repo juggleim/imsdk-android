@@ -3,6 +3,8 @@ package com.jet.im.internal.core.network;
 import android.content.Context;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+
 import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.utils.LoggerUtils;
@@ -82,6 +84,10 @@ public class JWebSocket extends WebSocketClient {
         mToken = token;
     }
 
+    public void setAppKey(String appKey) {
+        mAppKey = appKey;
+    }
+
     private void sendConnectMsg() {
         byte[] bytes = mPbData.connectData(mAppKey,
                 mToken,
@@ -102,7 +108,7 @@ public class JWebSocket extends WebSocketClient {
         send(bytes);
     }
 
-    private void handleConnectAckMsg(PBRcvObj.ConnectAck ack) {
+    private void handleConnectAckMsg(@NonNull PBRcvObj.ConnectAck ack) {
         LoggerUtils.i("connect userId is " + ack.userId);
         if (mConnectListener != null) {
             mConnectListener.onConnectComplete(ack.code, ack.userId);
@@ -111,8 +117,8 @@ public class JWebSocket extends WebSocketClient {
 
     private String mAppKey;
     private String mToken;
-    private PBData mPbData;
-    private Context mContext;
+    private final PBData mPbData;
+    private final Context mContext;
     private IWebSocketConnectListener mConnectListener;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
