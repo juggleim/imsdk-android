@@ -2,6 +2,7 @@ package com.jet.im.internal;
 
 import android.text.TextUtils;
 
+import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.internal.core.network.JWebSocket;
@@ -113,16 +114,16 @@ public class ConnectionManager implements IConnectionManager {
             //todo
             //mHeartBeatManager.stop();
         }
-        IConnectionStatusListener.ConnectionStatus outStatus = IConnectionStatusListener.ConnectionStatus.IDLE;
+        JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
         switch (status) {
             case JetIMCore.ConnectionStatusInternal.CONNECTED:
-                outStatus = IConnectionStatusListener.ConnectionStatus.CONNECTED;
+                outStatus = JetIMConst.ConnectionStatus.CONNECTED;
                 break;
             case JetIMCore.ConnectionStatusInternal.DISCONNECTED:
-                outStatus = IConnectionStatusListener.ConnectionStatus.DISCONNECTED;
+                outStatus = JetIMConst.ConnectionStatus.DISCONNECTED;
                 break;
             case JetIMCore.ConnectionStatusInternal.CONNECTING:
-                outStatus = IConnectionStatusListener.ConnectionStatus.CONNECTING;
+                outStatus = JetIMConst.ConnectionStatus.CONNECTING;
                 break;
             case JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING:
                 reconnect();
@@ -132,10 +133,10 @@ public class ConnectionManager implements IConnectionManager {
                     mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.CONNECTING);
                     return;
                 }
-                outStatus = IConnectionStatusListener.ConnectionStatus.CONNECTING;
+                outStatus = JetIMConst.ConnectionStatus.CONNECTING;
                 break;
             case JetIMCore.ConnectionStatusInternal.FAILURE:
-                outStatus = IConnectionStatusListener.ConnectionStatus.FAILURE;
+                outStatus = JetIMConst.ConnectionStatus.FAILURE;
             default:
                 break;
         }
