@@ -51,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
                     //disconnect
 //                    JetIM.getInstance().getConnectionManager().disconnect(false);
+
+                    //send message
                     Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
                     TextMessage text = new TextMessage("tttt");
                     TextMessage text2 = new TextMessage("iiiii");
