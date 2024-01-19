@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 
 import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.util.JUtility;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.MessageContent;
 import com.jet.im.utils.LoggerUtils;
 
 import org.java_websocket.client.WebSocketClient;
@@ -14,6 +16,7 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JWebSocket extends WebSocketClient {
 
@@ -28,6 +31,7 @@ public class JWebSocket extends WebSocketClient {
         mToken = token;
         mContext = context;
         mPbData = new PBData();
+        mMsgCallbackMap = new ConcurrentHashMap<>();
     }
 
     public void disconnect(Boolean receivePush) {
@@ -37,6 +41,24 @@ public class JWebSocket extends WebSocketClient {
     public void setConnectionListener(IWebSocketConnectListener listener) {
         mConnectListener = listener;
     }
+
+    public void sendIMMessage(MessageContent content,
+                              Conversation conversation,
+                              long clientMsgNo,
+                              String clientUid,
+                              WebSocketSendMessageCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.sendMessageData(content.getContentType(),
+                content.encode(),
+                content.getFlags(),
+                clientUid,
+                mMsgIndex++,
+                conversation.getConversationType(),
+                conversation.getConversationId());
+        mMsgCallbackMap.put(key, callback);
+        send(bytes);
+    }
+
 
     public interface IWebSocketConnectListener {
         void onConnectComplete(int errorCode, String userId);
@@ -73,11 +95,17 @@ public class JWebSocket extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         LoggerUtils.i("JWebSocket, onClose");
+        if (mConnectListener != null) {
+            mConnectListener.onWebSocketClose();
+        }
     }
 
     @Override
     public void onError(Exception ex) {
         LoggerUtils.i("JWebSocket, onError");
+        if (mConnectListener != null) {
+            mConnectListener.onWebSocketFail();
+        }
     }
 
     public void setToken(String token) {
@@ -120,6 +148,8 @@ public class JWebSocket extends WebSocketClient {
     private final PBData mPbData;
     private final Context mContext;
     private IWebSocketConnectListener mConnectListener;
+    private Integer mMsgIndex = 0;
+    private ConcurrentHashMap<Integer, IWebSocketCallback>mMsgCallbackMap;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
 

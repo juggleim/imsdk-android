@@ -5,7 +5,7 @@ public class Conversation {
         this.mConversationType = type;
         this.mConversationId = conversationId;
     }
-    enum ConversationType {
+    public enum ConversationType {
         UNKNOWN(0),
         /// 单聊
         PRIVATE(1),

@@ -19,6 +19,10 @@ import com.example.jetimdemo.databinding.ActivityMainBinding;
 import com.jet.im.JetIM;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
+import com.jet.im.interfaces.IMessageManager;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.Message;
+import com.jet.im.model.messages.TextMessage;
 import com.jet.im.utils.LoggerUtils;
 
 import android.view.Menu;
@@ -39,14 +43,57 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        JetIM.getInstance().getConnectionManager().connect(TOKEN3);
         JetIM.getInstance().getConnectionManager().addConnectionStatusListener("mainActivity", new IConnectionManager.IConnectionStatusListener() {
             @Override
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
-                JetIM.getInstance().getConnectionManager().disconnect(false);
+                if (status == JetIMConst.ConnectionStatus.CONNECTED) {
+
+                    //disconnect
+//                    JetIM.getInstance().getConnectionManager().disconnect(false);
+                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+                    TextMessage text = new TextMessage("tttt");
+                    TextMessage text2 = new TextMessage("iiiii");
+                    JetIM.getInstance().getMessageManager().sendMessage(text, conversation, new IMessageManager.ISendMessageCallback() {
+                        @Override
+                        public void onSave(Message message) {
+                            Log.i("lifei", "sendMessage onSave");
+                        }
+
+                        @Override
+                        public void onSuccess(Message message) {
+                            Log.i("lifei", "sendMessage onSuccess");
+                        }
+
+                        @Override
+                        public void onError(Message message, int errorCode) {
+                            Log.i("lifei", "sendMessage onError");
+                        }
+                    });
+                    JetIM.getInstance().getMessageManager().sendMessage(text2, conversation, new IMessageManager.ISendMessageCallback() {
+                        @Override
+                        public void onSave(Message message) {
+                            Log.i("lifei", "sendMessage onSave 2");
+                        }
+
+                        @Override
+                        public void onSuccess(Message message) {
+                            Log.i("lifei", "sendMessage onSuccess 2");
+                        }
+
+                        @Override
+                        public void onError(Message message, int errorCode) {
+                            Log.i("lifei", "sendMessage onError 2");
+                        }
+                    });
+
+
+
+                }
             }
         });
+        JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

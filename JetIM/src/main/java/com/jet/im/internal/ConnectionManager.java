@@ -18,6 +18,11 @@ public class ConnectionManager implements IConnectionManager {
         LoggerUtils.i("connect, token is " + token);
         //todo 校验，是否有连接，mCore.getWebSocket 是不是为空
 
+        if (!mCore.getToken().equals(token)) {
+            mCore.setToken(token);
+            mCore.setUserId("");
+        }
+        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE);
         if (mCore.getWebSocket() == null) {
             URI uri = JWebSocket.createWebSocketUri(mCore.getServers()[0]);
             mCore.setWebSocket(new JWebSocket(mCore.getAppKey(), token, uri, mCore.getContext()));
@@ -45,12 +50,16 @@ public class ConnectionManager implements IConnectionManager {
 
             @Override
             public void onWebSocketFail() {
-
+                changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
             }
 
             @Override
             public void onWebSocketClose() {
-
+                if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.DISCONNECTED
+                || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.FAILURE) {
+                    return;
+                }
+                changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
             }
         });
         mCore.getWebSocket().connect();
@@ -58,6 +67,7 @@ public class ConnectionManager implements IConnectionManager {
 
     @Override
     public void disconnect(boolean receivePush) {
+        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
         mCore.getWebSocket().disconnect(receivePush);
     }
 
@@ -81,6 +91,7 @@ public class ConnectionManager implements IConnectionManager {
 
     public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {
         this.mCore = core;
+        this.mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.IDLE);
         this.mConversationManager = conversationManager;
         this.mMessageManager = messageManager;
     }
@@ -150,6 +161,7 @@ public class ConnectionManager implements IConnectionManager {
     }
 
     private void reconnect() {
+        LoggerUtils.i("reconnect");
         //todo
     }
 

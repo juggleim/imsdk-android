@@ -1,9 +1,13 @@
 package com.jet.im.internal.core.network;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.jet.im.model.Conversation;
 
 import java.nio.ByteBuffer;
 
+import app_messages.Appmessages;
+import message.Message;
 import web_socket_msg.ImWebSocket;
 
 class PBData {
@@ -52,6 +56,55 @@ class PBData {
                 .setCmd(CmdType.disconnect)
                 .setQos(Qos.no)
                 .setDisconnectMsgBody(body)
+                .build();
+        return msg.toByteArray();
+    }
+
+    byte[] sendMessageData(String contentType,
+                           byte[] msgData,
+                           int flags,
+                           String clientUid,
+                           int index,
+                           Conversation.ConversationType conversationType,
+                           String conversationId) {
+        ByteString byteString = ByteString.copyFrom(msgData);
+        Appmessages.UpMsg upMsg = Appmessages.UpMsg.newBuilder()
+                .setMsgType(contentType)
+                .setMsgContent(byteString)
+                .setFlags(flags)
+                .setClientUid(clientUid)
+                .build();
+
+        String topic = "";
+        switch (conversationType) {
+            case PRIVATE:
+                topic = "p_msg";
+                break;
+            case GROUP:
+                topic = "g_msg";
+                break;
+            case CHATROOM:
+                topic = "c_msg";
+                break;
+            case SYSTEM:
+                //todo 系统消息还没做
+//                topic =
+                break;
+        }
+
+
+        ImWebSocket.PublishMsgBody publishMsgBody = ImWebSocket.PublishMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(topic)
+                .setTargetId(conversationId)
+                .setData(upMsg.toByteString())
+                .build();
+
+        ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.newBuilder()
+                .setVersion(PROTOCOL_VERSION)
+                .setCmd(CmdType.publish)
+                .setQos(Qos.yes)
+                .setPublishMsgBody(publishMsgBody)
                 .build();
         return msg.toByteArray();
     }

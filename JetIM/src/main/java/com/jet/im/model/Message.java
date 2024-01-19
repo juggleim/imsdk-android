@@ -2,7 +2,7 @@ package com.jet.im.model;
 
 public class Message {
     /// 消息方向，发送/接收
-    enum MessageDirection {
+    public enum MessageDirection {
         SEND(1),
         RECEIVE(2);
         MessageDirection(int value) {
@@ -12,7 +12,7 @@ public class Message {
     }
 
     /// 消息状态
-    enum MessageState {
+    public enum MessageState {
         UNKNOWN(0),
         SENDING(1),
         SENT(2),
@@ -21,6 +21,86 @@ public class Message {
             this.mValue = value;
         }
         private final int mValue;
+    }
+
+    public Conversation getConversation() {
+        return mConversation;
+    }
+
+    public void setConversation(Conversation conversation) {
+        mConversation = conversation;
+    }
+
+    public String getContentType() {
+        return mContentType;
+    }
+
+    public void setContentType(String contentType) {
+        mContentType = contentType;
+    }
+
+    public long getClientMsgNo() {
+        return mClientMsgNo;
+    }
+
+    public void setClientMsgNo(long clientMsgNo) {
+        mClientMsgNo = clientMsgNo;
+    }
+
+    public String getMessageId() {
+        return mMessageId;
+    }
+
+    public void setMessageId(String messageId) {
+        mMessageId = messageId;
+    }
+
+    public MessageDirection getDirection() {
+        return mDirection;
+    }
+
+    public void setDirection(MessageDirection direction) {
+        mDirection = direction;
+    }
+
+    public MessageState getState() {
+        return mState;
+    }
+
+    public void setState(MessageState state) {
+        mState = state;
+    }
+
+    public boolean isHasRead() {
+        return mHasRead;
+    }
+
+    public void setHasRead(boolean hasRead) {
+        mHasRead = hasRead;
+    }
+
+    public long getTimestamp() {
+        return mTimestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        mTimestamp = timestamp;
+    }
+
+    public String getSenderUserId() {
+        return mSenderUserId;
+    }
+
+    public void setSenderUserId(String senderUserId) {
+        mSenderUserId = senderUserId;
+    }
+
+    public MessageContent getContent() {
+        return content;
+    }
+
+    public void setContent(MessageContent content) {
+        this.content = content;
     }
 
     private Conversation mConversation;
