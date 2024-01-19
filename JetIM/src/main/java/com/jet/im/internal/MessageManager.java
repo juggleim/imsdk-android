@@ -33,12 +33,19 @@ public class MessageManager implements IMessageManager {
         WebSocketSendMessageCallback messageCallback = new WebSocketSendMessageCallback(0) {
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long msgIndex) {
-
+                //todo sync time
+                //todo update message
+                if (callback != null) {
+                    callback.onSuccess(message);
+                }
             }
 
             @Override
             public void onError(int errorCode, long clientMsgNo) {
-
+                if (callback != null) {
+                    message.setClientMsgNo(clientMsgNo);
+                    callback.onError(message, errorCode);
+                }
             }
         };
 

@@ -7,6 +7,14 @@ class PBRcvObj {
         String userId;
     }
 
+    static class PublishMsgAck {
+        int index;
+        int code;
+        String msgId;
+        long timestamp;
+        long msgIndex;
+    }
+
     static class PBRcvType {
         static final int parseError = 0;
         static final int cmdMatchError = 1;
@@ -28,7 +36,8 @@ class PBRcvObj {
         mRcvType = rcvType;
     }
 
-    ConnectAck connectAck;
+    ConnectAck mConnectAck;
+    PublishMsgAck mPublishMsgAck;
     private int mRcvType;
 }
 

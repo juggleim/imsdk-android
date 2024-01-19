@@ -82,11 +82,14 @@ public class JWebSocket extends WebSocketClient {
         LoggerUtils.i("JWebSocket, onMessage bytes");
         PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
         switch (obj.getRcvType()) {
-//            case PBRcvObj.PBRcvType.parseError:
-//                break;
+            case PBRcvObj.PBRcvType.parseError:
+                break;
 
             case PBRcvObj.PBRcvType.connectAck:
-                handleConnectAckMsg(obj.connectAck);
+                handleConnectAckMsg(obj.mConnectAck);
+                break;
+            case PBRcvObj.PBRcvType.publishMsgAck:
+                handlePublishAckMsg(obj.mPublishMsgAck);
                 break;
 
         }
@@ -140,6 +143,19 @@ public class JWebSocket extends WebSocketClient {
         LoggerUtils.i("connect userId is " + ack.userId);
         if (mConnectListener != null) {
             mConnectListener.onConnectComplete(ack.code, ack.userId);
+        }
+    }
+
+    private void handlePublishAckMsg(PBRcvObj.PublishMsgAck ack) {
+        LoggerUtils.d("handlePublishAckMsg, msgId is " + ack.msgId + ", code is " + ack.code);
+        IWebSocketCallback callback = mMsgCallbackMap.get(ack.index);
+        if (callback instanceof WebSocketSendMessageCallback) {
+            WebSocketSendMessageCallback sCallback = (WebSocketSendMessageCallback) callback;
+            if (ack.code != 0) {
+                sCallback.onError(ack.code, sCallback.getClientMsgNo());
+            } else {
+                sCallback.onSuccess(sCallback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.msgIndex);
+            }
         }
     }
 

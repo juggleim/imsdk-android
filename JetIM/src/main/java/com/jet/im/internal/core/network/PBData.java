@@ -7,7 +7,6 @@ import com.jet.im.model.Conversation;
 import java.nio.ByteBuffer;
 
 import app_messages.Appmessages;
-import message.Message;
 import web_socket_msg.ImWebSocket;
 
 class PBData {
@@ -123,11 +122,19 @@ class PBData {
                     PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
                     ack.code = msg.getConnectAckMsgBody().getCode();
                     ack.userId = msg.getConnectAckMsgBody().getUserId();
-                    obj.connectAck = ack;
+                    obj.mConnectAck = ack;
                     break;
 
-//                case PUBACKMSGBODY:
-//                    break;
+                case PUBACKMSGBODY:
+                    obj.setRcvType(PBRcvObj.PBRcvType.publishMsgAck);
+                    PBRcvObj.PublishMsgAck a = new PBRcvObj.PublishMsgAck();
+                    a.index = msg.getPubAckMsgBody().getIndex();
+                    a.code = msg.getPubAckMsgBody().getCode();
+                    a.msgId = msg.getPubAckMsgBody().getMsgId();
+                    a.timestamp = msg.getPubAckMsgBody().getTimestamp();
+                    a.msgIndex = msg.getPubAckMsgBody().getMsgIndex();
+                    obj.mPublishMsgAck = a;
+                    break;
 
                     //todo
             }
