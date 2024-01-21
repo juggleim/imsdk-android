@@ -100,9 +100,19 @@ public class JWebSocket extends WebSocketClient {
             case PBRcvObj.PBRcvType.publishMsgAck:
                 handlePublishAckMsg(obj.mPublishMsgAck);
                 break;
+            case PBRcvObj.PBRcvType.qryHisMessagesAck:
+                handleQryHisMsgAck(obj.mQryHisMsgAck);
+                break;
             case PBRcvObj.PBRcvType.syncConversationsAck:
                 handleSyncConversationAck(obj.mSyncConvAck);
                 break;
+            case PBRcvObj.PBRcvType.publishMsg:
+                //todo
+                break;
+            case PBRcvObj.PBRcvType.syncMessagesAck:
+                handleSyncMsgAck(obj.mQryHisMsgAck);
+                break;
+                //todo
         }
     }
 
@@ -170,6 +180,10 @@ public class JWebSocket extends WebSocketClient {
         }
     }
 
+    private void handleQryHisMsgAck(PBRcvObj.QryHisMsgAck ack) {
+        //todo
+    }
+
     private void handleSyncConversationAck(PBRcvObj.SyncConvAck ack) {
         IWebSocketCallback callback = mMsgCallbackMap.remove(ack.index);
         if (callback instanceof SyncConversationsCallback) {
@@ -180,9 +194,11 @@ public class JWebSocket extends WebSocketClient {
                 syncConversationsCallback.onSuccess(ack.convList, ack.isFinished);
             }
         }
-
     }
 
+    private void handleSyncMsgAck(PBRcvObj.QryHisMsgAck ack) {
+
+    }
     private String mAppKey;
     private String mToken;
     private final PBData mPbData;
