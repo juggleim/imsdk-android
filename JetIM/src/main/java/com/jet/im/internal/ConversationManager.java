@@ -4,6 +4,7 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.model.ConcreteConversationInfo;
+import com.jet.im.utils.LoggerUtils;
 
 import java.util.List;
 
@@ -15,15 +16,30 @@ public class ConversationManager implements IConversationManager {
 
     public void syncConversations(ICompleteCallback callback) {
         //todo db
-        mCore.getWebSocket().syncConversations(0, CONVERSATION_SYNC_COUNT, mCore.getUserId(), new SyncConversationsCallback() {
+        mCore.getWebSocket().syncConversations(mCore.getConversationSyncTime(), CONVERSATION_SYNC_COUNT, mCore.getUserId(), new SyncConversationsCallback() {
             @Override
             public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, boolean isFinished) {
-
+                if (conversationInfoList.size() > 0) {
+                    ConcreteConversationInfo last = conversationInfoList.get(conversationInfoList.size() - 1);
+                    if (last.getUpdateTime() > 0) {
+                        mCore.setConversationSyncTime(last.getUpdateTime());
+                    }
+                }
+                if (!isFinished) {
+                    syncConversations(callback);
+                } else {
+                    if (callback != null) {
+                        callback.onComplete();
+                    }
+                }
             }
 
             @Override
             public void onError(int errorCode) {
-
+                LoggerUtils.e("sync conversation fail, code is " + errorCode);
+                if (callback != null) {
+                    callback.onComplete();
+                }
             }
         });
     }

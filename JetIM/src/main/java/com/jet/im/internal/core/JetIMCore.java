@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 
 import com.jet.im.internal.ConstInternal;
+import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.util.JUtility;
 
@@ -114,6 +115,49 @@ public class JetIMCore {
         mDbStatus = dbStatus;
     }
 
+    public DBManager getDbManager() {
+        return mDbManager;
+    }
+
+    public void getSyncTimeFromDB() {
+        mConversationSyncTime = mDbManager.getConversationSyncTime();
+        mMessageSendSyncTime = mDbManager.getMessageSendSyncTime();
+        mMessageReceiveTime = mDbManager.getMessageReceiveSyncTime();
+    }
+
+    public long getConversationSyncTime() {
+        return mConversationSyncTime;
+    }
+
+    public void setConversationSyncTime(long conversationSyncTime) {
+        if (conversationSyncTime > mConversationSyncTime) {
+            mConversationSyncTime = conversationSyncTime;
+            mDbManager.setConversationSyncTime(conversationSyncTime);
+        }
+    }
+
+    public long getMessageSendSyncTime() {
+        return mMessageSendSyncTime;
+    }
+
+    public void setMessageSendSyncTime(long messageSendSyncTime) {
+        if (messageSendSyncTime > mMessageSendSyncTime) {
+            mMessageSendSyncTime = messageSendSyncTime;
+            mDbManager.setMessageSendSyncTime(messageSendSyncTime);
+        }
+    }
+
+    public long getMessageReceiveTime() {
+        return mMessageReceiveTime;
+    }
+
+    public void setMessageReceiveTime(long messageReceiveTime) {
+        if (messageReceiveTime > mMessageReceiveTime) {
+            mMessageReceiveTime = messageReceiveTime;
+            mDbManager.setMessageReceiveSyncTime(messageReceiveTime);
+        }
+    }
+
     public static class ConnectionStatusInternal {
         public static final int IDLE = 0;
         public static final int CONNECTED = 1;
@@ -124,8 +168,8 @@ public class JetIMCore {
     }
 
     public static class DbStatus {
-        static final int CLOSED = 0;
-        static final int OPEN = 1;
+        public static final int CLOSED = 0;
+        public static final int OPEN = 1;
     }
 
     private JWebSocket mWebSocket;
@@ -136,7 +180,11 @@ public class JetIMCore {
     private String mUserId;
     private Context mContext;
     private int mConnectionStatus;
+    private final DBManager mDbManager = new DBManager();
     private int mDbStatus;
+    private long mConversationSyncTime;
+    private long mMessageSendSyncTime;
+    private long mMessageReceiveTime;
 
     private final String APP_KEY = "AppKey";
     private final String TOKEN = "Token";

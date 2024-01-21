@@ -22,6 +22,11 @@ public class ConnectionManager implements IConnectionManager {
             mCore.setToken(token);
             mCore.setUserId("");
         }
+        if (!TextUtils.isEmpty(mCore.getUserId())) {
+            if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
+                dbOpenNotice(JetIMCore.DbStatus.OPEN);
+            }
+        }
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE);
         if (mCore.getWebSocket() == null) {
             URI uri = JWebSocket.createWebSocketUri(mCore.getServers()[0]);
@@ -35,7 +40,13 @@ public class ConnectionManager implements IConnectionManager {
             public void onConnectComplete(int errorCode, String userId) {
                 if (errorCode == ConstInternal.ErrorCode.NONE) {
                     mCore.setUserId(userId);
-                    //todo db
+                    if (mCore.getDbStatus() != JetIMCore.DbStatus.OPEN) {
+                        if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
+                            dbOpenNotice(JetIMCore.DbStatus.OPEN);
+                        } else {
+                            LoggerUtils.e("open db fail");
+                        }
+                    }
                     changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE);
                     mConversationManager.syncConversations(new ConversationManager.ICompleteCallback() {
                         @Override
@@ -169,6 +180,17 @@ public class ConnectionManager implements IConnectionManager {
     private void reconnect() {
         LoggerUtils.i("reconnect");
         //todo
+    }
+
+    private void dbOpenNotice(int status) {
+        mCore.setDbStatus(status);
+        if (status == JetIMCore.DbStatus.OPEN) {
+            mCore.getSyncTimeFromDB();
+            for (Map.Entry<String, IConnectionStatusListener> entry :
+                    mConnectionStatusListenerMap.entrySet()) {
+                entry.getValue().onDbOpen();
+            }
+        }
     }
 
 

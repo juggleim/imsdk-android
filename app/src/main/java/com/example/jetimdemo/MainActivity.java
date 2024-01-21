@@ -93,6 +93,11 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }
+
+            @Override
+            public void onDbOpen() {
+
+            }
         });
         JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 

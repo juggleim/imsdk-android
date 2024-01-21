@@ -13,8 +13,7 @@ public interface IConnectionManager {
 
     interface IConnectionStatusListener {
         void onStatusChange(JetIMConst.ConnectionStatus status, int code);
-
-
+        void onDbOpen();
     }
 }
 
