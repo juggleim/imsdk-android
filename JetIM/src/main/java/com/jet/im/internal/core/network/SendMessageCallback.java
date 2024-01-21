@@ -1,7 +1,7 @@
 package com.jet.im.internal.core.network;
 
-public abstract class WebSocketSendMessageCallback implements IWebSocketCallback {
-    public WebSocketSendMessageCallback(long clientMsgNo) {
+public abstract class SendMessageCallback implements IWebSocketCallback {
+    public SendMessageCallback(long clientMsgNo) {
         this.mClientMsgNo = clientMsgNo;
     }
     public abstract void onSuccess(long clientMsgNo, String msgId, long timestamp, long msgIndex);

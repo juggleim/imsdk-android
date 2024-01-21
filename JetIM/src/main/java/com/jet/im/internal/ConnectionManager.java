@@ -37,6 +37,12 @@ public class ConnectionManager implements IConnectionManager {
                     mCore.setUserId(userId);
                     //todo db
                     changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE);
+                    mConversationManager.syncConversations(new ConversationManager.ICompleteCallback() {
+                        @Override
+                        public void onComplete() {
+
+                        }
+                    });
                     //todo sync conversation
                 } else {
                     if (checkConnectionFailure(errorCode)) {

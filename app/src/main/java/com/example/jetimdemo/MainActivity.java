@@ -54,40 +54,40 @@ public class MainActivity extends AppCompatActivity {
 
                     //send message
                     Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
-                    TextMessage text = new TextMessage("tttt");
-                    TextMessage text2 = new TextMessage("iiiii");
-                    JetIM.getInstance().getMessageManager().sendMessage(text, conversation, new IMessageManager.ISendMessageCallback() {
-                        @Override
-                        public void onSave(Message message) {
-                            Log.i("lifei", "sendMessage onSave");
-                        }
-
-                        @Override
-                        public void onSuccess(Message message) {
-                            Log.i("lifei", "sendMessage onSuccess");
-                        }
-
-                        @Override
-                        public void onError(Message message, int errorCode) {
-                            Log.i("lifei", "sendMessage onError");
-                        }
-                    });
-                    JetIM.getInstance().getMessageManager().sendMessage(text2, conversation, new IMessageManager.ISendMessageCallback() {
-                        @Override
-                        public void onSave(Message message) {
-                            Log.i("lifei", "sendMessage onSave 2");
-                        }
-
-                        @Override
-                        public void onSuccess(Message message) {
-                            Log.i("lifei", "sendMessage onSuccess 2");
-                        }
-
-                        @Override
-                        public void onError(Message message, int errorCode) {
-                            Log.i("lifei", "sendMessage onError 2");
-                        }
-                    });
+//                    TextMessage text = new TextMessage("tttt");
+//                    TextMessage text2 = new TextMessage("iiiii");
+//                    JetIM.getInstance().getMessageManager().sendMessage(text, conversation, new IMessageManager.ISendMessageCallback() {
+//                        @Override
+//                        public void onSave(Message message) {
+//                            Log.i("lifei", "sendMessage onSave");
+//                        }
+//
+//                        @Override
+//                        public void onSuccess(Message message) {
+//                            Log.i("lifei", "sendMessage onSuccess");
+//                        }
+//
+//                        @Override
+//                        public void onError(Message message, int errorCode) {
+//                            Log.i("lifei", "sendMessage onError");
+//                        }
+//                    });
+//                    JetIM.getInstance().getMessageManager().sendMessage(text2, conversation, new IMessageManager.ISendMessageCallback() {
+//                        @Override
+//                        public void onSave(Message message) {
+//                            Log.i("lifei", "sendMessage onSave 2");
+//                        }
+//
+//                        @Override
+//                        public void onSuccess(Message message) {
+//                            Log.i("lifei", "sendMessage onSuccess 2");
+//                        }
+//
+//                        @Override
+//                        public void onError(Message message, int errorCode) {
+//                            Log.i("lifei", "sendMessage onError 2");
+//                        }
+//                    });
 
 
 

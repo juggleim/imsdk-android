@@ -1,5 +1,12 @@
 package com.jet.im.internal.core.network;
 
+import com.jet.im.internal.model.ConcreteConversationInfo;
+import com.jet.im.internal.model.ConcreteMessage;
+
+import java.util.List;
+
+import web_socket_msg.ImWebSocket;
+
 class PBRcvObj {
 
     static class ConnectAck {
@@ -13,6 +20,39 @@ class PBRcvObj {
         String msgId;
         long timestamp;
         long msgIndex;
+    }
+
+    static class QryAck {
+        QryAck(ImWebSocket.QueryAckMsgBody body) {
+            this.index = body.getIndex();
+            this.code = body.getCode();
+            this.timestamp = body.getTimestamp();
+        }
+        int index;
+        int code;
+        long timestamp;
+    }
+
+    static class QryHisMsgAck extends QryAck {
+        boolean isFinished;
+        List<ConcreteMessage> msgList;
+
+        QryHisMsgAck(ImWebSocket.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
+    static class SyncConvAck extends QryAck {
+        boolean isFinished;
+        List<ConcreteConversationInfo> convList;
+
+        SyncConvAck(ImWebSocket.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
+    static class PublishMsgNtf {
+        long syncTime;
     }
 
     static class PBRcvType {
@@ -38,6 +78,10 @@ class PBRcvObj {
 
     ConnectAck mConnectAck;
     PublishMsgAck mPublishMsgAck;
+    QryHisMsgAck mQryHisMsgAck;
+    SyncConvAck mSyncConvAck;
+    ConcreteMessage mRcvMessage;
+    PublishMsgNtf mPublishMsgNtf;
     private int mRcvType;
 }
 

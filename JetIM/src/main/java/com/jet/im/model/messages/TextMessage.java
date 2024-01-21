@@ -13,12 +13,14 @@ import java.nio.charset.StandardCharsets;
 public class TextMessage extends MessageContent {
 
     public TextMessage(String content) {
+        this();
         this.mContent = content;
     }
-    @Override
-    public String getContentType() {
-        return "jg:text";
+
+    public TextMessage() {
+        this.mContentType = "jg:text";
     }
+
 
     @Override
     public byte[] encode() {

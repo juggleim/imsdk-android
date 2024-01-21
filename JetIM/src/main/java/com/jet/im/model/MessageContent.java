@@ -19,7 +19,13 @@ public abstract class MessageContent {
 
         private final int mValue;
     }
-    public abstract String getContentType();
+    public MessageContent() {
+        mContentType = "jg:unknown";
+    }
+
+    public String getContentType() {
+        return mContentType;
+    }
     public abstract byte[] encode();
     public abstract void decode(byte[] data);
     public String conversationDigest() {
@@ -28,5 +34,7 @@ public abstract class MessageContent {
     public int getFlags() {
         return MessageFlag.IS_COUNTABLE.getValue() | MessageFlag.IS_SAVE.getValue();
     }
+
+    protected String mContentType;
 
 }

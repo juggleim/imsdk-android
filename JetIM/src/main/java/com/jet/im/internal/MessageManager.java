@@ -3,11 +3,12 @@ package com.jet.im.internal;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IMessageManager;
-import com.jet.im.internal.core.network.WebSocketSendMessageCallback;
+import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.messages.TextMessage;
 
 import java.util.List;
 
@@ -15,8 +16,9 @@ public class MessageManager implements IMessageManager {
 
     public MessageManager(JetIMCore core) {
         this.mCore = core;
+        ContentTypeCenter.getInstance().registerContentType(TextMessage.class);
     }
-    private JetIMCore mCore;
+    private final JetIMCore mCore;
 
     @Override
     public void sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
@@ -30,7 +32,7 @@ public class MessageManager implements IMessageManager {
         message.setClientUid(createClientUid());
 
         //todo db clientMsgNo
-        WebSocketSendMessageCallback messageCallback = new WebSocketSendMessageCallback(0) {
+        SendMessageCallback messageCallback = new SendMessageCallback(0) {
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long msgIndex) {
                 //todo sync time

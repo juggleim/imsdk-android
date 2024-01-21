@@ -46,7 +46,7 @@ public class JWebSocket extends WebSocketClient {
                               Conversation conversation,
                               long clientMsgNo,
                               String clientUid,
-                              WebSocketSendMessageCallback callback) {
+                              SendMessageCallback callback) {
         Integer key = mMsgIndex;
         byte[] bytes = mPbData.sendMessageData(content.getContentType(),
                 content.encode(),
@@ -55,6 +55,16 @@ public class JWebSocket extends WebSocketClient {
                 mMsgIndex++,
                 conversation.getConversationType(),
                 conversation.getConversationId());
+        mMsgCallbackMap.put(key, callback);
+        send(bytes);
+    }
+
+    public void syncConversations(long startTime,
+                                  int count,
+                                  String userId,
+                                  SyncConversationsCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.syncConversationsData(startTime, count, userId, mMsgIndex++);
         mMsgCallbackMap.put(key, callback);
         send(bytes);
     }
@@ -84,14 +94,15 @@ public class JWebSocket extends WebSocketClient {
         switch (obj.getRcvType()) {
             case PBRcvObj.PBRcvType.parseError:
                 break;
-
             case PBRcvObj.PBRcvType.connectAck:
                 handleConnectAckMsg(obj.mConnectAck);
                 break;
             case PBRcvObj.PBRcvType.publishMsgAck:
                 handlePublishAckMsg(obj.mPublishMsgAck);
                 break;
-
+            case PBRcvObj.PBRcvType.syncConversationsAck:
+                handleSyncConversationAck(obj.mSyncConvAck);
+                break;
         }
     }
 
@@ -148,15 +159,28 @@ public class JWebSocket extends WebSocketClient {
 
     private void handlePublishAckMsg(PBRcvObj.PublishMsgAck ack) {
         LoggerUtils.d("handlePublishAckMsg, msgId is " + ack.msgId + ", code is " + ack.code);
-        IWebSocketCallback callback = mMsgCallbackMap.get(ack.index);
-        if (callback instanceof WebSocketSendMessageCallback) {
-            WebSocketSendMessageCallback sCallback = (WebSocketSendMessageCallback) callback;
+        IWebSocketCallback callback = mMsgCallbackMap.remove(ack.index);
+        if (callback instanceof SendMessageCallback) {
+            SendMessageCallback sCallback = (SendMessageCallback) callback;
             if (ack.code != 0) {
                 sCallback.onError(ack.code, sCallback.getClientMsgNo());
             } else {
                 sCallback.onSuccess(sCallback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.msgIndex);
             }
         }
+    }
+
+    private void handleSyncConversationAck(PBRcvObj.SyncConvAck ack) {
+        IWebSocketCallback callback = mMsgCallbackMap.remove(ack.index);
+        if (callback instanceof SyncConversationsCallback) {
+            SyncConversationsCallback syncConversationsCallback = (SyncConversationsCallback) callback;
+            if (ack.code != 0) {
+                syncConversationsCallback.onError(ack.code);
+            } else {
+                syncConversationsCallback.onSuccess(ack.convList, ack.isFinished);
+            }
+        }
+
     }
 
     private String mAppKey;
