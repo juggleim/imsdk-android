@@ -50,7 +50,6 @@ public class JWebSocket extends WebSocketClient {
 
     public void sendIMMessage(MessageContent content,
                               Conversation conversation,
-                              long clientMsgNo,
                               String clientUid,
                               SendMessageCallback callback) {
         Integer key = mMsgIndex;

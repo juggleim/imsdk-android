@@ -74,8 +74,7 @@ public class MessageManager implements IMessageManager {
             }
         };
 
-        // mCore.
-        mCore.getWebSocket().sendIMMessage(content, conversation, 0, message.getClientUid(), messageCallback);
+        mCore.getWebSocket().sendIMMessage(content, conversation, message.getClientUid(), messageCallback);
     }
 
     @Override
