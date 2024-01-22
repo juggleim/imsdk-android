@@ -56,6 +56,6 @@ public class ConversationManager implements IConversationManager {
         void onComplete();
     }
 
-    private JetIMCore mCore;
+    private final JetIMCore mCore;
     private static final int CONVERSATION_SYNC_COUNT = 100;
 }
