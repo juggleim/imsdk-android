@@ -10,6 +10,9 @@ import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.util.JUtility;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JetIMCore {
 
     public JetIMCore() {
@@ -21,6 +24,9 @@ public class JetIMCore {
         this.mWebSocket = ws;
     }
     public String getNaviUrl() {
+        if (mNaviUrl == null) {
+            mNaviUrl = ConstInternal.NAVI_URL;
+        }
         return mNaviUrl;
     }
 
@@ -28,14 +34,15 @@ public class JetIMCore {
         this.mNaviUrl = naviUrl;
     }
 
-    public String[] getServers() {
+    public List<String> getServers() {
         if (mServers == null) {
-            mServers = new String[]{ConstInternal.WEB_SOCKET_URL};
+            mServers = new ArrayList<>();
+            mServers.add(ConstInternal.WEB_SOCKET_URL);
         }
         return mServers;
     }
 
-    public void setServers(@NonNull String[] servers) {
+    public void setServers(@NonNull List<String> servers) {
         this.mServers = servers;
     }
 
@@ -174,7 +181,7 @@ public class JetIMCore {
 
     private JWebSocket mWebSocket;
     private String mNaviUrl;
-    private String[] mServers;
+    private List<String> mServers;
     private String mAppKey;
     private String mToken;
     private String mUserId;

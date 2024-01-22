@@ -1,5 +1,7 @@
 package com.jet.im.internal;
 
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.text.TextUtils;
 
 import com.jet.im.JetIMConst;
@@ -9,7 +11,10 @@ import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.utils.LoggerUtils;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager implements IConnectionManager {
@@ -22,14 +27,72 @@ public class ConnectionManager implements IConnectionManager {
             mCore.setToken(token);
             mCore.setUserId("");
         }
+        //TODO: DB 已经是打开状态就不开了
         if (!TextUtils.isEmpty(mCore.getUserId())) {
             if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
                 dbOpenNotice(JetIMCore.DbStatus.OPEN);
             }
         }
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE);
+
+        mWorkHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                NaviManager.request(mCore.getNaviUrl(), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
+                    @Override
+                    public void onSuccess(String userId, List<String> servers) {
+                        mCore.setServers(servers);
+                        connectWebSocket(token);
+                    }
+
+                    @Override
+                    public void onError(int errorCode) {
+
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void disconnect(boolean receivePush) {
+        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
+        mCore.getWebSocket().disconnect(receivePush);
+    }
+
+    @Override
+    public void addConnectionStatusListener(String key, IConnectionStatusListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mConnectionStatusListenerMap == null) {
+            mConnectionStatusListenerMap = new ConcurrentHashMap<>();
+        }
+        mConnectionStatusListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeConnectionStatusListener(String key) {
+        if (!TextUtils.isEmpty(key) && mConnectionStatusListenerMap != null) {
+            mConnectionStatusListenerMap.remove(key);
+        }
+    }
+
+    public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {
+        this.mCore = core;
+        this.mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.IDLE);
+        this.mConversationManager = conversationManager;
+        this.mMessageManager = messageManager;
+        this.mHeartBeatManager = new HeartBeatManager(core);
+
+        HandlerThread thread = new HandlerThread("Jet_Connect");
+        thread.start();
+        this.mWorkHandler = new Handler(thread.getLooper());
+    }
+
+    private void connectWebSocket(String token) {
         if (mCore.getWebSocket() == null) {
-            URI uri = JWebSocket.createWebSocketUri(mCore.getServers()[0]);
+            URI uri = JWebSocket.createWebSocketUri(mCore.getServers().get(0));
             mCore.setWebSocket(new JWebSocket(mCore.getAppKey(), token, uri, mCore.getContext()));
         } else {
             mCore.getWebSocket().setAppKey(mCore.getAppKey());
@@ -79,38 +142,6 @@ public class ConnectionManager implements IConnectionManager {
             }
         });
         mCore.getWebSocket().connect();
-    }
-
-    @Override
-    public void disconnect(boolean receivePush) {
-        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
-        mCore.getWebSocket().disconnect(receivePush);
-    }
-
-    @Override
-    public void addConnectionStatusListener(String key, IConnectionStatusListener listener) {
-        if (listener == null || TextUtils.isEmpty(key)) {
-            return;
-        }
-        if (mConnectionStatusListenerMap == null) {
-            mConnectionStatusListenerMap = new ConcurrentHashMap<>();
-        }
-        mConnectionStatusListenerMap.put(key, listener);
-    }
-
-    @Override
-    public void removeConnectionStatusListener(String key) {
-        if (!TextUtils.isEmpty(key) && mConnectionStatusListenerMap != null) {
-            mConnectionStatusListenerMap.remove(key);
-        }
-    }
-
-    public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {
-        this.mCore = core;
-        this.mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.IDLE);
-        this.mConversationManager = conversationManager;
-        this.mMessageManager = messageManager;
-        this.mHeartBeatManager = new HeartBeatManager(core);
     }
 
     private boolean checkConnectionFailure(int errorCode) {
@@ -177,7 +208,23 @@ public class ConnectionManager implements IConnectionManager {
 
     private void reconnect() {
         LoggerUtils.i("reconnect");
-        //todo
+        //todo 线程控制，间隔控制
+        if (mReconnectTimer != null) {
+            return;
+        }
+        mReconnectTimer = new Timer();
+        mReconnectTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (mReconnectTimer != null) {
+                    mReconnectTimer.cancel();
+                    mReconnectTimer = null;
+                }
+                //todo 重连整理
+//                connect(mCore.getToken());
+            }
+        }, RECONNECT_INTERVAL);
+
     }
 
     private void dbOpenNotice(int status) {
@@ -197,4 +244,7 @@ public class ConnectionManager implements IConnectionManager {
     private final MessageManager mMessageManager;
     private final HeartBeatManager mHeartBeatManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
+    private Timer mReconnectTimer;
+    private Handler mWorkHandler;
+    private static final int RECONNECT_INTERVAL = 5*1000;
 }

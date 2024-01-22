@@ -62,7 +62,9 @@ public class JWebSocket extends WebSocketClient {
                 conversation.getConversationType(),
                 conversation.getConversationId());
         mMsgCallbackMap.put(key, callback);
-        send(bytes);
+        if (isOpen()) {
+            send(bytes);
+        }
     }
 
     public void syncConversations(long startTime,
@@ -72,19 +74,25 @@ public class JWebSocket extends WebSocketClient {
         Integer key = mMsgIndex;
         byte[] bytes = mPbData.syncConversationsData(startTime, count, userId, mMsgIndex++);
         mMsgCallbackMap.put(key, callback);
-        send(bytes);
+        if (isOpen()) {
+            send(bytes);
+        }
     }
 
     public void syncMessages(long receiveTime,
                              long sendTime,
                              String userId) {
         byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mMsgIndex++);
-        send(bytes);
+        if (isOpen()) {
+            send(bytes);
+        }
     }
 
     public void ping() {
         byte[] bytes = mPbData.pingData();
-        send(bytes);
+        if (isOpen()) {
+            send(bytes);
+        }
     }
 
     public interface IWebSocketConnectListener {
@@ -179,12 +187,16 @@ public class JWebSocket extends WebSocketClient {
                 JUtility.getNetworkType(mContext),
                 JUtility.getCarrier(mContext),
                 "");
-        send(bytes);
+        if (isOpen()) {
+            send(bytes);
+        }
     }
 
     private void sendDisconnectMsg(boolean receivePush) {
         byte[] bytes = mPbData.disconnectData(receivePush);
-        send(bytes);
+        if (isOpen()) {
+            send(bytes);
+        }
     }
 
     private void handleConnectAckMsg(@NonNull PBRcvObj.ConnectAck ack) {
