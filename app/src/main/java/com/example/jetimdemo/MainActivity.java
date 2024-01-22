@@ -77,6 +77,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+        JetIM.getInstance().getMessageManager().addListener("main", new IMessageManager.IMessageListener() {
+            @Override
+            public void onMessageReceive(Message message) {
+                Log.d("lifei", "onMessageReceive");
+            }
+        });
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -130,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("lifei", "onSuccess");
             }
         };
-        JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
+//        JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
 //        Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
 //        Thread.sleep(500);

@@ -16,6 +16,7 @@ import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VoiceMessage;
+import com.jet.im.utils.LoggerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,6 +153,10 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onSyncNotify(long syncTime) {
+                LoggerUtils.d("onSyncNotify, syncTime is " + syncTime + ", receiveSyncTime is " + mCore.getMessageReceiveTime());
+                if (syncTime > mCore.getMessageReceiveTime()) {
+                    sync();
+                }
 
             }
         });

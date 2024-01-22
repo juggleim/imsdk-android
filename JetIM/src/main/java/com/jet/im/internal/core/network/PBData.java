@@ -228,6 +228,24 @@ class PBData {
                     }
                     break;
 
+                case PUBLISHMSGBODY:
+                    if (msg.getPublishMsgBody().getTopic().equals(NTF)) {
+                        LoggerUtils.d("publish msg notify");
+                        Appmessages.Notify ntf = Appmessages.Notify.parseFrom(msg.getPublishMsgBody().getData());
+                        if (ntf.getType() == Appmessages.NotifyType.Msg) {
+                            obj.setRcvType(PBRcvObj.PBRcvType.publishMsgNtf);
+                            PBRcvObj.PublishMsgNtf n = new PBRcvObj.PublishMsgNtf();
+                            n.syncTime = ntf.getSyncTime();
+                            obj.mPublishMsgNtf = n;
+                        }
+                    } else if (msg.getPublishMsgBody().getTopic().equals(MSG)) {
+                        LoggerUtils.d("publish msg directly");
+                        Appmessages.DownMsg downMsg = Appmessages.DownMsg.parseFrom(msg.getPublishMsgBody().getData());
+                        obj.setRcvType(PBRcvObj.PBRcvType.publishMsg);
+                        obj.mRcvMessage = messageWithDownMsg(downMsg);
+                    }
+                    break;
+
                     //todo
             }
         } catch (InvalidProtocolBufferException e) {
@@ -359,6 +377,8 @@ class PBData {
     private static final String QRY_HIS_MSG = "qry_hismsgs";
     private static final String SYNC_CONV = "sync_convers";
     private static final String SYNC_MSG = "sync_msgs";
+    private static final String NTF = "ntf";
+    private static final String MSG = "msg";
     private static final HashMap<String, Integer> sCmdAckMap = new HashMap<String, Integer>() {
         {
             put(QRY_HIS_MSG, PBRcvObj.PBRcvType.qryHisMessagesAck);

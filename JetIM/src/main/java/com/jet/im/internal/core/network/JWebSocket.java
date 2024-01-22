@@ -17,6 +17,7 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -123,12 +124,18 @@ public class JWebSocket extends WebSocketClient {
                 handleSyncConversationAck(obj.mSyncConvAck);
                 break;
             case PBRcvObj.PBRcvType.publishMsg:
+                handleReceiveMessage(obj.mRcvMessage);
+                break;
+            case PBRcvObj.PBRcvType.publishMsgNtf:
+                handlePublishMsgNtf(obj.mPublishMsgNtf);
                 //todo
                 break;
             case PBRcvObj.PBRcvType.syncMessagesAck:
                 handleSyncMsgAck(obj.mQryHisMsgAck);
                 break;
+            case PBRcvObj.PBRcvType.pong:
                 //todo
+                break;
         }
     }
 
@@ -217,6 +224,21 @@ public class JWebSocket extends WebSocketClient {
             mMessageListener.onMessageReceive(ack.msgList, ack.isFinished);
         }
     }
+
+    private void handleReceiveMessage(ConcreteMessage message) {
+        List<ConcreteMessage> list = new ArrayList<>(1);
+        list.add(message);
+        if (mMessageListener != null) {
+            mMessageListener.onMessageReceive(list, true);
+        }
+    }
+
+    private void handlePublishMsgNtf(PBRcvObj.PublishMsgNtf ntf) {
+        if (mMessageListener != null) {
+            mMessageListener.onSyncNotify(ntf.syncTime);
+        }
+    }
+
     private String mAppKey;
     private String mToken;
     private final PBData mPbData;
