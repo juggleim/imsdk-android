@@ -6,6 +6,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 
 import com.jet.im.internal.ConstInternal;
+import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
@@ -16,6 +17,7 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JWebSocket extends WebSocketClient {
@@ -40,6 +42,10 @@ public class JWebSocket extends WebSocketClient {
 
     public void setConnectionListener(IWebSocketConnectListener listener) {
         mConnectListener = listener;
+    }
+
+    public void setMessageListener(IWebSocketMessageListener listener) {
+        mMessageListener = listener;
     }
 
     public void sendIMMessage(MessageContent content,
@@ -69,11 +75,22 @@ public class JWebSocket extends WebSocketClient {
         send(bytes);
     }
 
+    public void syncMessages(long receiveTime,
+                             long sendTime,
+                             String userId) {
+        byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mMsgIndex++);
+        send(bytes);
+    }
 
     public interface IWebSocketConnectListener {
         void onConnectComplete(int errorCode, String userId);
         void onWebSocketFail();
         void onWebSocketClose();
+    }
+
+    public interface IWebSocketMessageListener {
+        void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished);
+        void onSyncNotify(long syncTime);
     }
 
     @Override
@@ -197,15 +214,18 @@ public class JWebSocket extends WebSocketClient {
     }
 
     private void handleSyncMsgAck(PBRcvObj.QryHisMsgAck ack) {
-
+        if (mMessageListener != null) {
+            mMessageListener.onMessageReceive(ack.msgList, ack.isFinished);
+        }
     }
     private String mAppKey;
     private String mToken;
     private final PBData mPbData;
     private final Context mContext;
     private IWebSocketConnectListener mConnectListener;
+    private IWebSocketMessageListener mMessageListener;
     private Integer mMsgIndex = 0;
-    private ConcurrentHashMap<Integer, IWebSocketCallback>mMsgCallbackMap;
+    private final ConcurrentHashMap<Integer, IWebSocketCallback>mMsgCallbackMap;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
 

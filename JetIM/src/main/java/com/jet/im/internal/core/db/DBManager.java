@@ -1,5 +1,6 @@
 package com.jet.im.internal.core.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -138,9 +139,22 @@ public class DBManager {
         return message;
     }
 
-    public void insertMessage(Message message) {
-        Object[] args = MessageSql.argsWithMessage(message);
-        execSQL(MessageSql.SQL_INSERT_MESSAGE, args);
+    public long insertMessage(Message message) {
+        ContentValues cv = MessageSql.getMessageInsertCV(message);
+        return insert(MessageSql.TABLE, cv);
+    }
+
+    public void insertMessages(List<ConcreteMessage> list) {
+        if (mDb == null) {
+            return;
+        }
+        mDb.beginTransaction();
+        for (ConcreteMessage message : list) {
+            long clientMsgNo = insertMessage(message);
+            message.setClientMsgNo(clientMsgNo);
+        }
+        mDb.setTransactionSuccessful();
+        mDb.endTransaction();
     }
 
     private Cursor rawQuery(String sql, String[] selectionArgs) {
@@ -155,6 +169,13 @@ public class DBManager {
             return;
         }
         mDb.execSQL(sql, bindArgs);
+    }
+
+    private long insert(String table, ContentValues cv) {
+        if (mDb == null) {
+            return -1;
+        }
+        return mDb.insertWithOnConflict(table, "", cv, SQLiteDatabase.CONFLICT_IGNORE);
     }
     private String getOrCreateDbPath(Context context, String appKey, String userId) {
         File file = context.getFilesDir();

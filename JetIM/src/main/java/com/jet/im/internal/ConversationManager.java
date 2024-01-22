@@ -16,8 +16,7 @@ public class ConversationManager implements IConversationManager {
         this.mCore = core;
     }
 
-    public void syncConversations(ICompleteCallback callback) {
-        //todo db
+    void syncConversations(ICompleteCallback callback) {
         mCore.getWebSocket().syncConversations(mCore.getConversationSyncTime(), CONVERSATION_SYNC_COUNT, mCore.getUserId(), new SyncConversationsCallback() {
             @Override
             public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, boolean isFinished) {

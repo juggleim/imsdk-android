@@ -144,6 +144,29 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] syncMessagesData(long receiveTime, long sendTime, String userId, int index) {
+        Appmessages.SyncMsgReq req = Appmessages.SyncMsgReq.newBuilder()
+                .setSyncTime(receiveTime)
+                .setContainsSendBox(true)
+                .setSendBoxSyncTime(sendTime)
+                .build();
+
+        ImWebSocket.QueryMsgBody body = ImWebSocket.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(SYNC_MSG)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        ImWebSocket.ImWebsocketMsg m = ImWebSocket.ImWebsocketMsg.newBuilder()
+                .setVersion(PROTOCOL_VERSION)
+                .setCmd(CmdType.query)
+                .setQos(Qos.yes)
+                .setQryMsgBody(body)
+                .build();
+        return m.toByteArray();
+    }
+
     PBRcvObj rcvObjWithBytes(ByteBuffer byteBuffer) {
         PBRcvObj obj = new PBRcvObj();
         try {

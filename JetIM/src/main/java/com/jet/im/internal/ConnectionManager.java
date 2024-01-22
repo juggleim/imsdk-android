@@ -51,7 +51,7 @@ public class ConnectionManager implements IConnectionManager {
                     mConversationManager.syncConversations(new ConversationManager.ICompleteCallback() {
                         @Override
                         public void onComplete() {
-                            //todo sync messages
+                            mMessageManager.syncMessage();
                         }
                     });
                 } else {

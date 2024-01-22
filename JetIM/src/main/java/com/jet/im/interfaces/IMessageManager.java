@@ -10,7 +10,6 @@ import java.util.List;
 public interface IMessageManager {
     interface ISendMessageCallback {
         void onSave(Message message);
-
         void onSuccess(Message message);
         void onError(Message message, int errorCode);
     }
@@ -26,7 +25,8 @@ public interface IMessageManager {
     void deleteMessageByClientMsgNo(long clientMsgNo);
     void deleteMessageByMessageId(String messageId);
     void registerContentType(Class<? extends MessageContent> messageContentClass);
-    void setListener(IMessageListener listener);
+    void addListener(String key, IMessageListener listener);
+    void removeListener(String key);
 
     interface IMessageListener {
         void onMessageReceive(Message message);

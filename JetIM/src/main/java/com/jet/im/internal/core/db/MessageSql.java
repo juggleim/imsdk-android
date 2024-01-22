@@ -1,5 +1,6 @@
 package com.jet.im.internal.core.db;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 
 import com.jet.im.internal.ContentTypeCenter;
@@ -59,6 +60,33 @@ class MessageSql {
         return args;
     }
 
+    static ContentValues getMessageInsertCV(Message message) {
+        ContentValues cv = new ContentValues();
+        if (message == null) {
+            return cv;
+        }
+        long msgIndex = 0;
+        String clientUid = "";
+        if (message instanceof ConcreteMessage) {
+            ConcreteMessage c = (ConcreteMessage) message;
+            msgIndex = c.getMsgIndex();
+            clientUid = c.getClientUid();
+        }
+        cv.put(COL_CONVERSATION_TYPE, message.getConversation().getConversationType().getValue());
+        cv.put(COL_CONVERSATION_ID, message.getConversation().getConversationId());
+        cv.put(COL_CONTENT_TYPE, message.getContentType());
+        cv.put(COL_MESSAGE_UID, message.getMessageId());
+        cv.put(COL_MESSAGE_CLIENT_UID, clientUid);
+        cv.put(COL_DIRECTION, message.getDirection().getValue());
+        cv.put(COL_STATE, message.getState().getValue());
+        cv.put(COL_HAS_READ, message.isHasRead());
+        cv.put(COL_TIMESTAMP, message.getTimestamp());
+        cv.put(COL_SENDER, message.getSenderUserId());
+        cv.put(COL_CONTENT, new String(message.getContent().encode()));
+        cv.put(COL_MESSAGE_INDEX, msgIndex);
+        return cv;
+    }
+
     static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS message ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             + "conversation_type SMALLINT,"
@@ -77,6 +105,7 @@ class MessageSql {
             + "is_deleted BOOLEAN DEFAULT 0"
             + ")";
 
+    static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = false";
     static String sqlGetMessagesInConversation(int type) {
