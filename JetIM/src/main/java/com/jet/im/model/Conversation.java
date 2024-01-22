@@ -19,6 +19,17 @@ public class Conversation {
         ConversationType(int value) {
             this.mValue = value;
         }
+        public int getValue() {
+            return mValue;
+        }
+        public static ConversationType setValue(int value) {
+            for (ConversationType t : ConversationType.values()) {
+                if (value == t.mValue) {
+                    return t;
+                }
+            }
+            return UNKNOWN;
+        }
         private final int mValue;
     }
 

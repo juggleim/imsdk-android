@@ -1,4 +1,114 @@
 package com.jet.im.internal.core.db;
 
-public class MessageSql {
+import android.database.Cursor;
+
+import com.jet.im.internal.ContentTypeCenter;
+import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.Message;
+
+import java.nio.charset.StandardCharsets;
+
+class MessageSql {
+    static ConcreteMessage messageWithCursor(Cursor cursor) {
+        ConcreteMessage message = new ConcreteMessage();
+        int type = CursorHelper.readInt(cursor, COL_CONVERSATION_TYPE);
+        String conversationId = CursorHelper.readString(cursor, COL_CONVERSATION_ID);
+        Conversation c = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
+        message.setConversation(c);
+        message.setContentType(CursorHelper.readString(cursor, COL_CONTENT_TYPE));
+        message.setClientMsgNo(CursorHelper.readLong(cursor, COL_MESSAGE_ID));
+        message.setMessageId(CursorHelper.readString(cursor, COL_MESSAGE_UID));
+        message.setClientUid(CursorHelper.readString(cursor, COL_MESSAGE_CLIENT_UID));
+        Message.MessageDirection direction = Message.MessageDirection.setValue(CursorHelper.readInt(cursor, COL_DIRECTION));
+        message.setDirection(direction);
+        Message.MessageState state = Message.MessageState.setValue(CursorHelper.readInt(cursor, COL_STATE));
+        message.setState(state);
+        boolean hasRead = CursorHelper.readInt(cursor, COL_HAS_READ) != 0;
+        message.setHasRead(hasRead);
+        message.setTimestamp(CursorHelper.readLong(cursor, COL_TIMESTAMP));
+        message.setSenderUserId(CursorHelper.readString(cursor, COL_SENDER));
+        String content = CursorHelper.readString(cursor, COL_CONTENT);
+        message.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType()));
+        message.setMsgIndex(CursorHelper.readLong(cursor, COL_MESSAGE_INDEX));
+        return message;
+    }
+
+    static Object[] argsWithMessage(Message message) {
+        long msgIndex = 0;
+        String clientUid = "";
+        if (message instanceof ConcreteMessage) {
+            ConcreteMessage c = (ConcreteMessage) message;
+            msgIndex = c.getMsgIndex();
+            clientUid = c.getClientUid();
+        }
+        byte[] data = message.getContent().encode();
+        Object[] args = new Object[12];
+        args[0] = message.getConversation().getConversationType().getValue();
+        args[1] = message.getConversation().getConversationId();
+        args[2] = message.getContentType();
+        args[3] = message.getMessageId();
+        args[4] = clientUid;
+        args[5] = message.getDirection().getValue();
+        args[6] = message.getState().getValue();
+        args[7] = message.isHasRead();
+        args[8] = message.getTimestamp();
+        args[9] = message.getSenderUserId();
+        args[10] = new String(data);
+        args[11] = msgIndex;
+        return args;
+    }
+
+    static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS message ("
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + "conversation_type SMALLINT,"
+            + "conversation_id VARCHAR (64),"
+            + "type VARCHAR (64),"
+            + "message_uid VARCHAR (64),"
+            + "client_uid VARCHAR (64),"
+            + "direction BOOLEAN,"
+            + "state SMALLINT,"
+            + "has_read BOOLEAN,"
+            + "timestamp INTEGER,"
+            + "sender VARCHAR (64),"
+            + "content TEXT,"
+            + "extra TEXT,"
+            + "message_index INTEGER,"
+            + "is_deleted BOOLEAN DEFAULT 0"
+            + ")";
+
+    static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
+    static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = false";
+    static String sqlGetMessagesInConversation(int type) {
+        return String.format("SELECT * FROM message WHERE conversation_type = %s AND conversation_id = ? AND is_deleted = false", type);
+    }
+
+    static final String SQL_AND_GREATER_THAN = " AND timestamp > ?";
+    static final String SQL_AND_LESS_THAN = " AND timestamp < ?";
+    static final String SQL_ORDER_BY_TIMESTAMP = " ORDER BY timestamp";
+    static final String SQL_ASC = " ASC";
+    static final String SQL_DESC = " DESC";
+    static final String SQL_LIMIT = " LIMIT ?";
+    static final String SQL_INSERT_MESSAGE = "INSERT INTO message (conversation_type, conversation_id, type, message_uid, client_uid, direction, state, has_read, timestamp, sender, content, message_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    static final String SQL_UPDATE_MESSAGE_AFTER_SEND = "UPDATE message SET message_uid = ?, state = ?, timestamp = ?, message_index = ? WHERE id = ?";
+    static final String SQL_DELETE_MESSAGE = "UPDATE message SET is_deleted = 1 WHERE";
+    static final String SQL_CLIENT_MSG_NO_IS = " id = ?";
+    static final String SQL_MESSAGE_ID_IS = " message_uid = ?";
+
+    static final String COL_CONVERSATION_TYPE = "conversation_type";
+    static final String COL_CONVERSATION_ID = "conversation_id";
+    static final String COL_MESSAGE_ID = "id";
+    static final String COL_CONTENT_TYPE = "type";
+    static final String COL_MESSAGE_UID = "message_uid";
+    static final String COL_MESSAGE_CLIENT_UID = "client_uid";
+    static final String COL_DIRECTION = "direction";
+    static final String COL_STATE = "state";
+    static final String COL_HAS_READ = "has_read";
+    static final String COL_TIMESTAMP = "timestamp";
+    static final String COL_SENDER = "sender";
+    static final String COL_CONTENT = "content";
+    static final String COL_EXTRA = "extra";
+    static final String COL_MESSAGE_INDEX = "message_index";
+    static final String COL_IS_DELETED = "is_deleted";
+
 }

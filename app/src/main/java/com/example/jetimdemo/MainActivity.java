@@ -89,6 +89,9 @@ public class MainActivity extends AppCompatActivity {
 //                        }
 //                    });
 
+                    //get conversation
+                    JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+
 
 
                 }

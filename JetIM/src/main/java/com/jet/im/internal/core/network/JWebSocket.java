@@ -118,7 +118,7 @@ public class JWebSocket extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        LoggerUtils.i("JWebSocket, onClose");
+        LoggerUtils.i("JWebSocket, onClose, code is " + code + " reason is " + reason);
         if (mConnectListener != null) {
             mConnectListener.onWebSocketClose();
         }
@@ -126,7 +126,7 @@ public class JWebSocket extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
-        LoggerUtils.i("JWebSocket, onError");
+        LoggerUtils.i("JWebSocket, onError, msg is " +ex.getMessage());
         if (mConnectListener != null) {
             mConnectListener.onWebSocketFail();
         }

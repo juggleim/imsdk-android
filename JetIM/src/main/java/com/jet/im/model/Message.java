@@ -8,6 +8,17 @@ public class Message {
         MessageDirection(int value) {
             this.mValue = value;
         }
+        public static MessageDirection setValue(int value) {
+            for (MessageDirection d : MessageDirection.values()) {
+                if (value == d.mValue) {
+                    return d;
+                }
+            }
+            return SEND;
+        }
+        public int getValue() {
+            return mValue;
+        }
         private final int mValue;
     }
 
@@ -19,6 +30,17 @@ public class Message {
         FAIL(3);
         MessageState(int value) {
             this.mValue = value;
+        }
+        public static MessageState setValue(int value) {
+            for (MessageState s : MessageState.values()) {
+                if (value == s.mValue) {
+                    return s;
+                }
+            }
+            return UNKNOWN;
+        }
+        public int getValue() {
+            return mValue;
         }
         private final int mValue;
     }

@@ -5,9 +5,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import com.jet.im.internal.model.ConcreteConversationInfo;
+import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.Message;
 import com.jet.im.utils.LoggerUtils;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
+import java.util.List;
 
 public class DBManager {
     public boolean openIMDB(Context context, String appKey, String userId) {
@@ -81,6 +88,59 @@ public class DBManager {
     public void setMessageReceiveSyncTime(long time) {
         String[] args = new String[]{ProfileSql.RECEIVE_TIME, String.valueOf(time)};
         execSQL(ProfileSql.SQL_SET_VALUE, args);
+    }
+
+    public void insertConversations(List<ConcreteConversationInfo> list) {
+        if (mDb == null) {
+            return;
+        }
+        mDb.beginTransaction();
+        for (ConcreteConversationInfo info : list) {
+            Object[] args = ConversationSql.argsWithConcreteConversationInfo(info);
+            execSQL(ConversationSql.SQL_INSERT_CONVERSATION, args);
+            insertMessage(info.getLastMessage());
+        }
+        mDb.setTransactionSuccessful();
+        mDb.endTransaction();
+    }
+
+    public ConcreteConversationInfo getConversationInfo(Conversation conversation) {
+        String[] args = new String[]{conversation.getConversationId()};
+        Cursor cursor = rawQuery(ConversationSql.sqlGetConversation(conversation.getConversationType().getValue()), args);
+        ConcreteConversationInfo result = null;
+        String lastMessageId = null;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                result = ConversationSql.conversationInfoWithCursor(cursor);
+                lastMessageId = CursorHelper.readString(cursor, ConversationSql.COL_LAST_MESSAGE_ID);
+            }
+            cursor.close();
+        }
+        if (result != null) {
+            result.setLastMessage(getMessageWithMessageId(lastMessageId));
+        }
+        return result;
+    }
+
+    public ConcreteMessage getMessageWithMessageId(String messageId) {
+        ConcreteMessage message = null;
+        if (TextUtils.isEmpty(messageId)) {
+            return null;
+        }
+        String[] args = new String[]{messageId};
+        Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID, args);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                message = MessageSql.messageWithCursor(cursor);
+            }
+            cursor.close();
+        }
+        return message;
+    }
+
+    public void insertMessage(Message message) {
+        Object[] args = MessageSql.argsWithMessage(message);
+        execSQL(MessageSql.SQL_INSERT_MESSAGE, args);
     }
 
     private Cursor rawQuery(String sql, String[] selectionArgs) {

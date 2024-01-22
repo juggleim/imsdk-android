@@ -4,6 +4,8 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.model.ConcreteConversationInfo;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationInfo;
 import com.jet.im.utils.LoggerUtils;
 
 import java.util.List;
@@ -24,6 +26,7 @@ public class ConversationManager implements IConversationManager {
                     if (last.getUpdateTime() > 0) {
                         mCore.setConversationSyncTime(last.getUpdateTime());
                     }
+                    mCore.getDbManager().insertConversations(conversationInfoList);
                 }
                 if (!isFinished) {
                     syncConversations(callback);
@@ -42,6 +45,11 @@ public class ConversationManager implements IConversationManager {
                 }
             }
         });
+    }
+
+    @Override
+    public ConversationInfo getConversationInfo(Conversation conversation) {
+        return mCore.getDbManager().getConversationInfo(conversation);
     }
 
     interface ICompleteCallback {

@@ -51,10 +51,9 @@ public class ConnectionManager implements IConnectionManager {
                     mConversationManager.syncConversations(new ConversationManager.ICompleteCallback() {
                         @Override
                         public void onComplete() {
-
+                            //todo sync messages
                         }
                     });
-                    //todo sync conversation
                 } else {
                     if (checkConnectionFailure(errorCode)) {
                         changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);

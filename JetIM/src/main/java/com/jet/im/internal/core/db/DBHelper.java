@@ -14,6 +14,10 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(ProfileSql.SQL_CREATE_TABLE);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TABLE);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_INDEX);
+        sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_TABLE);
+        sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_INDEX);
     }
 
     @Override
