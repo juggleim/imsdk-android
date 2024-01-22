@@ -121,7 +121,10 @@ class MessageSql {
     static final String SQL_DESC = " DESC";
     static final String SQL_LIMIT = " LIMIT ?";
     static final String SQL_INSERT_MESSAGE = "INSERT INTO message (conversation_type, conversation_id, type, message_uid, client_uid, direction, state, has_read, timestamp, sender, content, message_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    static final String SQL_UPDATE_MESSAGE_AFTER_SEND = "UPDATE message SET message_uid = ?, state = ?, timestamp = ?, message_index = ? WHERE id = ?";
+
+    static String sqlUpdateMessageAfterSend(int state, long clientMsgNo, long timestamp, long messageIndex) {
+        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, message_index = %s WHERE id = %s", state, timestamp, messageIndex, clientMsgNo);
+    }
     static final String SQL_DELETE_MESSAGE = "UPDATE message SET is_deleted = 1 WHERE";
     static final String SQL_CLIENT_MSG_NO_IS = " id = ?";
     static final String SQL_MESSAGE_ID_IS = " message_uid = ?";

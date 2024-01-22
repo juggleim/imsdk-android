@@ -157,6 +157,16 @@ public class DBManager {
         mDb.endTransaction();
     }
 
+    public void updateMessageAfterSend(long clientMsgNo,
+                                       String msgId,
+                                       long timestamp,
+                                       long msgIndex) {
+        Object[] args = new Object[]{msgId};
+        String sql = MessageSql.sqlUpdateMessageAfterSend(Message.MessageState.SENT.getValue(), clientMsgNo, timestamp, msgIndex);
+        execSQL(sql, args);
+    }
+
+
     private Cursor rawQuery(String sql, String[] selectionArgs) {
         if (mDb == null) {
             return null;

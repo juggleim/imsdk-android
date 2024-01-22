@@ -17,6 +17,7 @@ import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VoiceMessage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,12 +44,22 @@ public class MessageManager implements IMessageManager {
         message.setSenderUserId(mCore.getUserId());
         message.setClientUid(createClientUid());
 
-        //todo db clientMsgNo
-        SendMessageCallback messageCallback = new SendMessageCallback(0) {
+        List<ConcreteMessage> list = new ArrayList<>(1);
+        list.add(message);
+        mCore.getDbManager().insertMessages(list);
+        if (callback != null) {
+            callback.onSave(message);
+        }
+        SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long msgIndex) {
-                //todo sync time
-                //todo update message
+                mCore.setMessageSendSyncTime(timestamp);
+                mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, msgIndex);
+                message.setClientMsgNo(clientMsgNo);
+                message.setMessageId(msgId);
+                message.setTimestamp(timestamp);
+                message.setMsgIndex(msgIndex);
+                message.setState(Message.MessageState.SENT);
                 if (callback != null) {
                     callback.onSuccess(message);
                 }
@@ -134,7 +145,7 @@ public class MessageManager implements IMessageManager {
                 if (receiveTime > 0) {
                     mCore.setMessageReceiveTime(receiveTime);
                 }
-                
+
                 if (!isFinished) {
                     sync();
                 }

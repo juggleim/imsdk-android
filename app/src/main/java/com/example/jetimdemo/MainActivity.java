@@ -131,12 +131,12 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
 
     }
 
