@@ -167,6 +167,15 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] pingData() {
+        ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.newBuilder()
+                .setVersion(PROTOCOL_VERSION)
+                .setCmd(CmdType.ping)
+                .setQos(Qos.no)
+                .build();
+        return msg.toByteArray();
+    }
+
     PBRcvObj rcvObjWithBytes(ByteBuffer byteBuffer) {
         PBRcvObj obj = new PBRcvObj();
         try {

@@ -82,6 +82,11 @@ public class JWebSocket extends WebSocketClient {
         send(bytes);
     }
 
+    public void ping() {
+        byte[] bytes = mPbData.pingData();
+        send(bytes);
+    }
+
     public interface IWebSocketConnectListener {
         void onConnectComplete(int errorCode, String userId);
         void onWebSocketFail();
@@ -128,13 +133,12 @@ public class JWebSocket extends WebSocketClient {
                 break;
             case PBRcvObj.PBRcvType.publishMsgNtf:
                 handlePublishMsgNtf(obj.mPublishMsgNtf);
-                //todo
                 break;
             case PBRcvObj.PBRcvType.syncMessagesAck:
                 handleSyncMsgAck(obj.mQryHisMsgAck);
                 break;
             case PBRcvObj.PBRcvType.pong:
-                //todo
+                handlePong();
                 break;
         }
     }
@@ -237,6 +241,10 @@ public class JWebSocket extends WebSocketClient {
         if (mMessageListener != null) {
             mMessageListener.onSyncNotify(ntf.syncTime);
         }
+    }
+
+    private void handlePong() {
+        LoggerUtils.d("pong");
     }
 
     private String mAppKey;
