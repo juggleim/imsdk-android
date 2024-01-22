@@ -12,7 +12,10 @@ import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.messages.FileMessage;
+import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.VoiceMessage;
 
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,9 @@ public class MessageManager implements IMessageManager {
     public MessageManager(JetIMCore core) {
         this.mCore = core;
         ContentTypeCenter.getInstance().registerContentType(TextMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(ImageMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(FileMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(VoiceMessage.class);
     }
     private final JetIMCore mCore;
 
@@ -107,21 +113,14 @@ public class MessageManager implements IMessageManager {
                 //todo 排重
                 //todo cmd message 吞掉
                 mCore.getDbManager().insertMessages(messages);
-                boolean sendDirection = false;
-                boolean receiveDirection = false;
-                for (int i = messages.size() - 1; i >= 0; i--) {
-                    ConcreteMessage message = messages.get(i);
-                    if (!sendDirection) {
-                        if (message.getDirection() == Message.MessageDirection.SEND) {
-                            sendDirection = true;
-                            mCore.setMessageSendSyncTime(message.getTimestamp());
-                        }
-                    }
-                    if (!receiveDirection) {
-                        if (message.getDirection() == Message.MessageDirection.RECEIVE) {
-                            receiveDirection = true;
-                            mCore.setMessageReceiveTime(message.getTimestamp());
-                        }
+
+                long sendTime = 0;
+                long receiveTime = 0;
+                for (ConcreteMessage message : messages) {
+                    if (message.getDirection() == Message.MessageDirection.SEND) {
+                        sendTime = message.getTimestamp();
+                    } else if (message.getDirection() == Message.MessageDirection.RECEIVE) {
+                        receiveTime = message.getTimestamp();
                     }
                     if (mListenerMap != null) {
                         for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
@@ -129,6 +128,13 @@ public class MessageManager implements IMessageManager {
                         }
                     }
                 }
+                if (sendTime > 0) {
+                    mCore.setMessageSendSyncTime(sendTime);
+                }
+                if (receiveTime > 0) {
+                    mCore.setMessageReceiveTime(receiveTime);
+                }
+                
                 if (!isFinished) {
                     sync();
                 }

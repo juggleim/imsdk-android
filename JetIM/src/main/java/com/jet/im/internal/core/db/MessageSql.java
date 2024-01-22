@@ -82,7 +82,9 @@ class MessageSql {
         cv.put(COL_HAS_READ, message.isHasRead());
         cv.put(COL_TIMESTAMP, message.getTimestamp());
         cv.put(COL_SENDER, message.getSenderUserId());
-        cv.put(COL_CONTENT, new String(message.getContent().encode()));
+        if (message.getContent() != null) {
+            cv.put(COL_CONTENT, new String(message.getContent().encode()));
+        }
         cv.put(COL_MESSAGE_INDEX, msgIndex);
         return cv;
     }
