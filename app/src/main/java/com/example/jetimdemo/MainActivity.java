@@ -22,7 +22,10 @@ import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.Message;
+import com.jet.im.model.messages.FileMessage;
+import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.VoiceMessage;
 import com.jet.im.utils.LoggerUtils;
 
 import android.view.Menu;
@@ -53,43 +56,14 @@ public class MainActivity extends AppCompatActivity {
 //                    JetIM.getInstance().getConnectionManager().disconnect(false);
 
                     //send message
-                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
-//                    TextMessage text = new TextMessage("tttt");
-//                    TextMessage text2 = new TextMessage("iiiii");
-//                    JetIM.getInstance().getMessageManager().sendMessage(text, conversation, new IMessageManager.ISendMessageCallback() {
-//                        @Override
-//                        public void onSave(Message message) {
-//                            Log.i("lifei", "sendMessage onSave");
-//                        }
-//
-//                        @Override
-//                        public void onSuccess(Message message) {
-//                            Log.i("lifei", "sendMessage onSuccess");
-//                        }
-//
-//                        @Override
-//                        public void onError(Message message, int errorCode) {
-//                            Log.i("lifei", "sendMessage onError");
-//                        }
-//                    });
-//                    JetIM.getInstance().getMessageManager().sendMessage(text2, conversation, new IMessageManager.ISendMessageCallback() {
-//                        @Override
-//                        public void onSave(Message message) {
-//                            Log.i("lifei", "sendMessage onSave 2");
-//                        }
-//
-//                        @Override
-//                        public void onSuccess(Message message) {
-//                            Log.i("lifei", "sendMessage onSuccess 2");
-//                        }
-//
-//                        @Override
-//                        public void onError(Message message, int errorCode) {
-//                            Log.i("lifei", "sendMessage onError 2");
-//                        }
-//                    });
+                    try {
+                        sendMessages();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
 
                     //get conversation
+                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
                     JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
 
 
@@ -121,6 +95,49 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    private void sendMessages() throws InterruptedException {
+        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+        TextMessage t = new TextMessage("sdfasdf");
+        ImageMessage i = new ImageMessage();
+        i.setHeight(600);
+        i.setWidth(800);
+        i.setUrl("http://url.url");
+        i.setThumbnailUrl("http://thumb.url");
+        FileMessage f = new FileMessage();
+        f.setName("fileName");
+        f.setUrl("http:/url.url");
+        f.setSize(1024);
+        f.setType("text");
+        VoiceMessage v = new VoiceMessage();
+        v.setUrl("http:/url.url");
+        v.setDuration(1024);
+
+        IMessageManager.ISendMessageCallback callback = new IMessageManager.ISendMessageCallback() {
+            @Override
+            public void onSave(Message message) {
+                Log.i("lifei", "onSave");
+            }
+
+            @Override
+            public void onSuccess(Message message) {
+                Log.i("lifei", "onSuccess");
+            }
+
+            @Override
+            public void onError(Message message, int errorCode) {
+                Log.i("lifei", "onSuccess");
+            }
+        };
+        JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+
     }
 
     @Override
