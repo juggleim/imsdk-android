@@ -11,5 +11,5 @@ public abstract class SendMessageCallback implements IWebSocketCallback {
         return mClientMsgNo;
     }
 
-    private long mClientMsgNo;
+    private final long mClientMsgNo;
 }

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.jet.im.utils.LoggerUtils;
-
 public class DBHelper extends SQLiteOpenHelper {
     DBHelper(Context context, String path) {
         super(context, path, null, version);

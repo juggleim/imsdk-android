@@ -35,23 +35,18 @@ public class ConnectionManager implements IConnectionManager {
         }
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE);
 
-        mWorkHandler.post(new Runnable() {
+        mWorkHandler.post(() -> NaviManager.request(mCore.getNaviUrl(), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
             @Override
-            public void run() {
-                NaviManager.request(mCore.getNaviUrl(), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
-                    @Override
-                    public void onSuccess(String userId, List<String> servers) {
-                        mCore.setServers(servers);
-                        connectWebSocket(token);
-                    }
-
-                    @Override
-                    public void onError(int errorCode) {
-
-                    }
-                });
+            public void onSuccess(String userId, List<String> servers) {
+                mCore.setServers(servers);
+                connectWebSocket(token);
             }
-        });
+
+            @Override
+            public void onError(int errorCode) {
+
+            }
+        }));
     }
 
     @Override
@@ -111,12 +106,7 @@ public class ConnectionManager implements IConnectionManager {
                         }
                     }
                     changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE);
-                    mConversationManager.syncConversations(new ConversationManager.ICompleteCallback() {
-                        @Override
-                        public void onComplete() {
-                            mMessageManager.syncMessage();
-                        }
-                    });
+                    mConversationManager.syncConversations(mMessageManager::syncMessage);
                 } else {
                     if (checkConnectionFailure(errorCode)) {
                         changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);
@@ -245,6 +235,6 @@ public class ConnectionManager implements IConnectionManager {
     private final HeartBeatManager mHeartBeatManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
-    private Handler mWorkHandler;
+    private final Handler mWorkHandler;
     private static final int RECONNECT_INTERVAL = 5*1000;
 }

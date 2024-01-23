@@ -3,7 +3,6 @@ package com.jet.im.internal;
 import android.text.TextUtils;
 
 import com.jet.im.JetIMConst;
-import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.internal.core.network.JWebSocket;
@@ -83,7 +82,6 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void deleteMessageByClientMsgNo(long clientMsgNo) {
-
     }
 
     @Override

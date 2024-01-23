@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface IConversationManager {
 
-    public List<ConversationInfo> getConversationInfoList();
+    List<ConversationInfo> getConversationInfoList();
 
-    public ConversationInfo getConversationInfo(Conversation conversation);
+    ConversationInfo getConversationInfo(Conversation conversation);
 }
