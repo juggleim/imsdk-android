@@ -9,12 +9,14 @@ import android.text.TextUtils;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.Message;
 import com.jet.im.utils.LoggerUtils;
 
 import org.w3c.dom.Text;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DBManager {
@@ -103,6 +105,28 @@ public class DBManager {
         }
         mDb.setTransactionSuccessful();
         mDb.endTransaction();
+    }
+
+    public List<ConversationInfo> getConversationInfoList() {
+        List<ConversationInfo> list = new ArrayList<>();
+        List<String> messageIdList = new ArrayList<>();
+        Cursor cursor = rawQuery(ConversationSql.SQL_GET_CONVERSATIONS, null);
+        if (cursor == null) {
+            return list;
+        }
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            ConcreteConversationInfo info = ConversationSql.conversationInfoWithCursor(cursor);
+            String lastMessageId = CursorHelper.readString(cursor, ConversationSql.COL_LAST_MESSAGE_ID);
+            list.add(info);
+            messageIdList.add(lastMessageId);
+        }
+        cursor.close();
+        for (int i = 0; i < list.size(); i++) {
+            ConversationInfo info = list.get(i);
+            String messageId = messageIdList.get(i);
+            info.setLastMessage(getMessageWithMessageId(messageId));
+        }
+        return list;
     }
 
     public ConcreteConversationInfo getConversationInfo(Conversation conversation) {

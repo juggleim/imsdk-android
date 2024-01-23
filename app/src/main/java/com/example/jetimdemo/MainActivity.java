@@ -21,6 +21,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
@@ -30,6 +31,8 @@ import com.jet.im.utils.LoggerUtils;
 
 import android.view.Menu;
 import android.view.MenuItem;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
+                    Log.e("lifei", "conversationList count is " + l.size());
 
                     //get conversation
                     Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");

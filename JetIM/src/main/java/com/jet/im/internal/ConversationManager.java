@@ -16,6 +16,16 @@ public class ConversationManager implements IConversationManager {
         this.mCore = core;
     }
 
+    @Override
+    public List<ConversationInfo> getConversationInfoList() {
+        return mCore.getDbManager().getConversationInfoList();
+    }
+
+    @Override
+    public ConversationInfo getConversationInfo(Conversation conversation) {
+        return mCore.getDbManager().getConversationInfo(conversation);
+    }
+
     void syncConversations(ICompleteCallback callback) {
         mCore.getWebSocket().syncConversations(mCore.getConversationSyncTime(), CONVERSATION_SYNC_COUNT, mCore.getUserId(), new SyncConversationsCallback() {
             @Override
@@ -44,11 +54,6 @@ public class ConversationManager implements IConversationManager {
                 }
             }
         });
-    }
-
-    @Override
-    public ConversationInfo getConversationInfo(Conversation conversation) {
-        return mCore.getDbManager().getConversationInfo(conversation);
     }
 
     interface ICompleteCallback {
