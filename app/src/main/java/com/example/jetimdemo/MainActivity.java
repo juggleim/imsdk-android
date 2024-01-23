@@ -129,15 +129,16 @@ public class MainActivity extends AppCompatActivity {
         IMessageManager.ISendMessageCallback callback = new IMessageManager.ISendMessageCallback() {
             @Override
             public void onSuccess(Message message) {
-                Log.i("lifei", "onSuccess");
+                Log.i("TAG", "send message success");
             }
 
             @Override
             public void onError(Message message, int errorCode) {
-                Log.i("lifei", "onSuccess");
+                Log.i("TAG", "send message error, code is " + errorCode);
             }
         };
         Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
+        Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
         Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
 //        Thread.sleep(500);
