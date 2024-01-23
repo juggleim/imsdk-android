@@ -9,11 +9,10 @@ import java.util.List;
 
 public interface IMessageManager {
     interface ISendMessageCallback {
-        void onSave(Message message);
         void onSuccess(Message message);
         void onError(Message message, int errorCode);
     }
-    void sendMessage(MessageContent content,
+    Message sendMessage(MessageContent content,
                      Conversation conversation,
                      ISendMessageCallback callback);
 

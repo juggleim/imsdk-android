@@ -35,7 +35,7 @@ public class MessageManager implements IMessageManager {
     private final JetIMCore mCore;
 
     @Override
-    public void sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
+    public Message sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
         ConcreteMessage message = new ConcreteMessage();
         message.setContent(content);
         message.setConversation(conversation);
@@ -48,9 +48,6 @@ public class MessageManager implements IMessageManager {
         List<ConcreteMessage> list = new ArrayList<>(1);
         list.add(message);
         mCore.getDbManager().insertMessages(list);
-        if (callback != null) {
-            callback.onSave(message);
-        }
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long msgIndex) {
@@ -76,6 +73,7 @@ public class MessageManager implements IMessageManager {
         };
 
         mCore.getWebSocket().sendIMMessage(content, conversation, message.getClientUid(), messageCallback);
+        return message;
     }
 
     @Override

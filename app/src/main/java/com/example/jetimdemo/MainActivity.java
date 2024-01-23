@@ -128,11 +128,6 @@ public class MainActivity extends AppCompatActivity {
 
         IMessageManager.ISendMessageCallback callback = new IMessageManager.ISendMessageCallback() {
             @Override
-            public void onSave(Message message) {
-                Log.i("lifei", "onSave");
-            }
-
-            @Override
             public void onSuccess(Message message) {
                 Log.i("lifei", "onSuccess");
             }
@@ -142,8 +137,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("lifei", "onSuccess");
             }
         };
-//        JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
-//        Thread.sleep(500);
+        Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
+        Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
 //        Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
