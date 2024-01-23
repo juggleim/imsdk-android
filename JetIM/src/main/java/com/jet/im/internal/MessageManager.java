@@ -80,7 +80,7 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction) {
-        return null;
+        return mCore.getDbManager().getMessages(conversation, count, timestamp, direction);
     }
 
     @Override

@@ -71,7 +71,8 @@ public class MainActivity extends AppCompatActivity {
                     Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
                     JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
 
-
+                    List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER);
+                    Log.e("lifei", "messageList count is " + messageList.size());
 
                 }
             }

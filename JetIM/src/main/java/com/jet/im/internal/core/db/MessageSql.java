@@ -3,6 +3,7 @@ package com.jet.im.internal.core.db;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
@@ -110,16 +111,29 @@ class MessageSql {
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = false";
-    static String sqlGetMessagesInConversation(int type) {
-        return String.format("SELECT * FROM message WHERE conversation_type = %s AND conversation_id = ? AND is_deleted = false", type);
+    static String sqlGetMessagesInConversation(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction) {
+        String sql = String.format("SELECT * FROM message WHERE conversation_type = %s AND conversation_id = ? AND is_deleted = false", conversation.getConversationType().getValue());
+        if (direction == JetIMConst.PullDirection.NEWER) {
+            sql = sql + SQL_AND_GREATER_THAN + timestamp;
+        } else {
+            sql = sql + SQL_AND_LESS_THAN + timestamp;
+        }
+        sql = sql + SQL_ORDER_BY_TIMESTAMP;
+        if (direction == JetIMConst.PullDirection.NEWER) {
+            sql = sql + SQL_ASC;
+        } else {
+            sql = sql + SQL_DESC;
+        }
+        sql = sql + SQL_LIMIT + count;
+        return sql;
     }
 
-    static final String SQL_AND_GREATER_THAN = " AND timestamp > ?";
-    static final String SQL_AND_LESS_THAN = " AND timestamp < ?";
+    static final String SQL_AND_GREATER_THAN = " AND timestamp > ";
+    static final String SQL_AND_LESS_THAN = " AND timestamp < ";
     static final String SQL_ORDER_BY_TIMESTAMP = " ORDER BY timestamp";
     static final String SQL_ASC = " ASC";
     static final String SQL_DESC = " DESC";
-    static final String SQL_LIMIT = " LIMIT ?";
+    static final String SQL_LIMIT = " LIMIT ";
     static final String SQL_INSERT_MESSAGE = "INSERT INTO message (conversation_type, conversation_id, type, message_uid, client_uid, direction, state, has_read, timestamp, sender, content, message_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     static String sqlUpdateMessageAfterSend(int state, long clientMsgNo, long timestamp, long messageIndex) {

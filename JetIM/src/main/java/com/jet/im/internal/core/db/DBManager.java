@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+import com.jet.im.JetIMConst;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
@@ -161,6 +162,25 @@ public class DBManager {
             cursor.close();
         }
         return message;
+    }
+
+    public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction) {
+        if (timestamp == 0) {
+            timestamp = Long.MAX_VALUE;
+        }
+        String sql = MessageSql.sqlGetMessagesInConversation(conversation, count, timestamp, direction);
+        String[] args = new String[]{conversation.getConversationId()};
+        Cursor cursor = rawQuery(sql, args);
+        List<Message> list = new ArrayList<>();
+        if (cursor == null) {
+            return list;
+        }
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            ConcreteMessage message = MessageSql.messageWithCursor(cursor);
+            list.add(message);
+        }
+        cursor.close();
+        return list;
     }
 
     public long insertMessage(Message message) {
