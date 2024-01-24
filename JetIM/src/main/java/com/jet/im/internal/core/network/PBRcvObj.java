@@ -22,6 +22,12 @@ class PBRcvObj {
         long msgIndex;
     }
 
+    static class PublishMsgBody {
+        ConcreteMessage rcvMessage;
+        int index;
+        int qos;
+    }
+
     static class QryAck {
         QryAck(ImWebSocket.QueryAckMsgBody body) {
             this.index = body.getIndex();
@@ -80,7 +86,7 @@ class PBRcvObj {
     PublishMsgAck mPublishMsgAck;
     QryHisMsgAck mQryHisMsgAck;
     SyncConvAck mSyncConvAck;
-    ConcreteMessage mRcvMessage;
+    PublishMsgBody mPublishMsgBody;
     PublishMsgNtf mPublishMsgNtf;
     private int mRcvType;
 }

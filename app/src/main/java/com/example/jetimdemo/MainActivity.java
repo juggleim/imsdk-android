@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendMessages() throws InterruptedException {
-        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
         TextMessage t = new TextMessage("sdfasdf");
         ImageMessage i = new ImageMessage();
         i.setHeight(600);
@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
         Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
         Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
         Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
+        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
 //        Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
 //        Thread.sleep(500);

@@ -176,6 +176,20 @@ class PBData {
         return msg.toByteArray();
     }
 
+    byte[] publishAckData(int index) {
+        ImWebSocket.PublishAckMsgBody body = ImWebSocket.PublishAckMsgBody.newBuilder()
+                .setIndex(index)
+                .build();
+
+        ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.newBuilder()
+                .setVersion(PROTOCOL_VERSION)
+                .setCmd(CmdType.publishAck)
+                .setQos(Qos.no)
+                .setPubAckMsgBody(body)
+                .build();
+        return msg.toByteArray();
+    }
+
     PBRcvObj rcvObjWithBytes(ByteBuffer byteBuffer) {
         PBRcvObj obj = new PBRcvObj();
         try {
@@ -250,8 +264,13 @@ class PBData {
                     } else if (msg.getPublishMsgBody().getTopic().equals(MSG)) {
                         LoggerUtils.d("publish msg directly");
                         Appmessages.DownMsg downMsg = Appmessages.DownMsg.parseFrom(msg.getPublishMsgBody().getData());
+                        PBRcvObj.PublishMsgBody body = new PBRcvObj.PublishMsgBody();
+                        body.rcvMessage = messageWithDownMsg(downMsg);
+                        body.index = msg.getPublishMsgBody().getIndex();
+                        body.qos = msg.getQos();
+
                         obj.setRcvType(PBRcvObj.PBRcvType.publishMsg);
-                        obj.mRcvMessage = messageWithDownMsg(downMsg);
+                        obj.mPublishMsgBody = body;
                     }
                     break;
 

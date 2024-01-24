@@ -137,7 +137,7 @@ public class JWebSocket extends WebSocketClient {
                 handleSyncConversationAck(obj.mSyncConvAck);
                 break;
             case PBRcvObj.PBRcvType.publishMsg:
-                handleReceiveMessage(obj.mRcvMessage);
+                handleReceiveMessage(obj.mPublishMsgBody);
                 break;
             case PBRcvObj.PBRcvType.publishMsgNtf:
                 handlePublishMsgNtf(obj.mPublishMsgNtf);
@@ -199,6 +199,13 @@ public class JWebSocket extends WebSocketClient {
         }
     }
 
+    private void sendPublishAck(int index) {
+        byte[] bytes = mPbData.publishAckData(index);
+        if (isOpen()) {
+            send(bytes);
+        }
+    }
+
     private void handleConnectAckMsg(@NonNull PBRcvObj.ConnectAck ack) {
         LoggerUtils.i("connect userId is " + ack.userId);
         if (mConnectListener != null) {
@@ -241,11 +248,14 @@ public class JWebSocket extends WebSocketClient {
         }
     }
 
-    private void handleReceiveMessage(ConcreteMessage message) {
+    private void handleReceiveMessage(PBRcvObj.PublishMsgBody body) {
         List<ConcreteMessage> list = new ArrayList<>(1);
-        list.add(message);
+        list.add(body.rcvMessage);
         if (mMessageListener != null) {
             mMessageListener.onMessageReceive(list, true);
+        }
+        if (body.qos == 1) {
+            sendPublishAck(body.index);
         }
     }
 
