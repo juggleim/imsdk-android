@@ -140,7 +140,7 @@ class MessageSql {
         return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, message_index = %s WHERE id = %s", state, timestamp, messageIndex, clientMsgNo);
     }
     static final String SQL_DELETE_MESSAGE = "UPDATE message SET is_deleted = 1 WHERE";
-    static final String SQL_CLIENT_MSG_NO_IS = " id = ?";
+    static final String SQL_CLIENT_MSG_NO_IS = " id = ";
     static final String SQL_MESSAGE_ID_IS = " message_uid = ?";
 
     static final String COL_CONVERSATION_TYPE = "conversation_type";

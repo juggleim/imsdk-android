@@ -59,11 +59,12 @@ public class MainActivity extends AppCompatActivity {
 //                    JetIM.getInstance().getConnectionManager().disconnect(false);
 
                     //send message
-                    try {
-                        sendMessages();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+//                    try {
+//                        sendMessages();
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+
                     List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
                     Log.e("lifei", "conversationList count is " + l.size());
 
@@ -71,8 +72,14 @@ public class MainActivity extends AppCompatActivity {
                     Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
                     JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
 
+                    //delete Message
+                    JetIM.getInstance().getMessageManager().deleteMessageByClientMsgNo(57L);
+                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("npgdwvn5gf8grenb");
+
+                    //get messages
                     List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER);
                     Log.e("lifei", "messageList count is " + messageList.size());
+
 
                 }
             }

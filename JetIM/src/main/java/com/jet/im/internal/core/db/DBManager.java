@@ -210,12 +210,30 @@ public class DBManager {
         execSQL(sql, args);
     }
 
+    public void deleteMessageByClientMsgNo(long clientMsgNo) {
+        String sql = MessageSql.SQL_DELETE_MESSAGE + MessageSql.SQL_CLIENT_MSG_NO_IS + clientMsgNo;
+        execSQL(sql);
+    }
+
+    public void deleteMessageByMessageId(String messageId) {
+        Object[] args = new Object[]{messageId};
+        String sql = MessageSql.SQL_DELETE_MESSAGE + MessageSql.SQL_MESSAGE_ID_IS;
+        execSQL(sql, args);
+    }
+
 
     private Cursor rawQuery(String sql, String[] selectionArgs) {
         if (mDb == null) {
             return null;
         }
         return mDb.rawQuery(sql, selectionArgs);
+    }
+
+    private void execSQL(String sql) {
+        if (mDb == null) {
+            return;
+        }
+        mDb.execSQL(sql);
     }
 
     private void execSQL(String sql, Object[] bindArgs) {

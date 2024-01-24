@@ -82,11 +82,12 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void deleteMessageByClientMsgNo(long clientMsgNo) {
+        mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
     }
 
     @Override
     public void deleteMessageByMessageId(String messageId) {
-
+        mCore.getDbManager().deleteMessageByMessageId(messageId);
     }
 
     @Override
