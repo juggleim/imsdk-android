@@ -32,6 +32,7 @@ import com.jet.im.utils.LoggerUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -73,13 +74,24 @@ public class MainActivity extends AppCompatActivity {
                     JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
 
                     //delete Message
-                    JetIM.getInstance().getMessageManager().deleteMessageByClientMsgNo(57L);
-                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("npgdwvn5gf8grenb");
+//                    JetIM.getInstance().getMessageManager().deleteMessageByClientMsgNo(57L);
+//                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("npgdwvn5gf8grenb");
 
                     //get messages
                     List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER);
                     Log.e("lifei", "messageList count is " + messageList.size());
 
+                    List<String> messageIds = new ArrayList<>();
+                    messageIds.add("npgdrs4e2eygrenb");
+//                    messageIds.add("npgdwve92f4grenb");
+//                    messageIds.add("npgdwvg92f6grenb");
+
+                    List<Message> messageList1 = JetIM.getInstance().getMessageManager().getMessagesByMessageIds(messageIds);
+                    Log.e("lifei", "messageList count is " + messageList1.size());
+
+                    long[] clientMsgNos = {54, 55, 40};
+                    List<Message> messageList2 = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(clientMsgNos);
+                    Log.e("lifei", "messageList count is " + messageList2.size());
 
                 }
             }

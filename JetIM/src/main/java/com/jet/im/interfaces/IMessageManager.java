@@ -21,6 +21,10 @@ public interface IMessageManager {
                               long timestamp,
                               JetIMConst.PullDirection direction);
 
+    List<Message> getMessagesByMessageIds(List<String> messageIdList);
+
+    List<Message> getMessagesByClientMsgNos(long[] clientMsgNos);
+
     void deleteMessageByClientMsgNo(long clientMsgNo);
     void deleteMessageByMessageId(String messageId);
     void registerContentType(Class<? extends MessageContent> messageContentClass);

@@ -110,9 +110,9 @@ class MessageSql {
 
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
-    static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = false";
+    static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
     static String sqlGetMessagesInConversation(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction) {
-        String sql = String.format("SELECT * FROM message WHERE conversation_type = %s AND conversation_id = ? AND is_deleted = false", conversation.getConversationType().getValue());
+        String sql = String.format("SELECT * FROM message WHERE conversation_type = %s AND conversation_id = ? AND is_deleted = 0", conversation.getConversationType().getValue());
         if (direction == JetIMConst.PullDirection.NEWER) {
             sql = sql + SQL_AND_GREATER_THAN + timestamp;
         } else {
@@ -126,6 +126,22 @@ class MessageSql {
         }
         sql = sql + SQL_LIMIT + count;
         return sql;
+    }
+
+    static String sqlGetMessagesByMessageIds(int count) {
+        return "SELECT * FROM message WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
+    }
+
+    static String sqlGetMessagesByClientMsgNos(long[] nos) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM message WHERE id in (");
+        for (int i = 0; i<nos.length; i++) {
+            if (i > 0) {
+                sql.append(", ");
+            }
+            sql.append(nos[i]);
+        }
+        sql.append(")");
+        return sql.toString();
     }
 
     static final String SQL_AND_GREATER_THAN = " AND timestamp > ";

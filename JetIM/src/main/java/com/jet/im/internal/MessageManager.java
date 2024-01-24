@@ -81,6 +81,16 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public List<Message> getMessagesByMessageIds(List<String> messageIdList) {
+        return mCore.getDbManager().getMessagesByMessageIds(messageIdList);
+    }
+
+    @Override
+    public List<Message> getMessagesByClientMsgNos(long[] clientMsgNos) {
+        return mCore.getDbManager().getMessagesByClientMsgNos(clientMsgNos);
+    }
+
+    @Override
     public void deleteMessageByClientMsgNo(long clientMsgNo) {
         mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
     }

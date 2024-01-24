@@ -26,6 +26,18 @@ class CursorHelper {
         } catch (IllegalArgumentException e) {
             return 0L;
         }
+    }
 
+    public static String getQuestionMarkPlaceholder(int size) {
+        StringBuilder s = new StringBuilder();
+        s.append("(");
+        for (int i=0; i<size; i++) {
+            if (i > 0) {
+                s.append(", ");
+            }
+            s.append("?");
+        }
+        s.append(")");
+        return s.toString();
     }
 }
