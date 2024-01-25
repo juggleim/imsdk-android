@@ -150,6 +150,11 @@ public class DBManager {
         return result;
     }
 
+    public void deleteConversationInfo(Conversation conversation) {
+        String[] args = new String[]{conversation.getConversationId()};
+        execSQL(ConversationSql.sqlDeleteConversation(conversation.getConversationType().getValue()), args);
+    }
+
     public ConcreteMessage getMessageWithMessageId(String messageId) {
         ConcreteMessage message = null;
         if (TextUtils.isEmpty(messageId)) {

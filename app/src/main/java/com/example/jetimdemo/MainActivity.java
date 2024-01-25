@@ -76,20 +76,28 @@ public class MainActivity extends AppCompatActivity {
                     Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
                     JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
 
+                    //delete conversation
+//                    JetIM.getInstance().getConversationManager().deleteConversationInfo(conversation);
+//
+//                    l = JetIM.getInstance().getConversationManager().getConversationInfoList();
+//                    Log.e("lifei", "conversationList count is " + l.size());
+//
+//                    JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+
                     //delete Message
 //                    JetIM.getInstance().getMessageManager().deleteMessageByClientMsgNo(57L);
 //                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("npgdwvn5gf8grenb");
 
                     //get messages
-                    List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER);
-                    Log.e("lifei", "messageList count is " + messageList.size());
-
-                    List<String> contentTypes = new ArrayList<>();
-                    contentTypes.add("jg:file");
-                    contentTypes.add("jg:video");
-                    contentTypes.add("jg:img");
-                    List<Message> messageList4 = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER, contentTypes);
-                    Log.e("lifei", "messageList4 count is " + messageList.size());
+//                    List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER);
+//                    Log.e("lifei", "messageList count is " + messageList.size());
+//
+//                    List<String> contentTypes = new ArrayList<>();
+//                    contentTypes.add("jg:file");
+//                    contentTypes.add("jg:video");
+//                    contentTypes.add("jg:img");
+//                    List<Message> messageList4 = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER, contentTypes);
+//                    Log.e("lifei", "messageList4 count is " + messageList.size());
 
 
 //                    List<String> messageIds = new ArrayList<>();

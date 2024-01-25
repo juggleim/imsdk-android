@@ -10,4 +10,6 @@ public interface IConversationManager {
     List<ConversationInfo> getConversationInfoList();
 
     ConversationInfo getConversationInfo(Conversation conversation);
+
+    void deleteConversationInfo(Conversation conversation);
 }
