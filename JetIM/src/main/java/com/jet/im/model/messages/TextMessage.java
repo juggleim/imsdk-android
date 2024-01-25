@@ -29,6 +29,9 @@ public class TextMessage extends MessageContent {
             if (!TextUtils.isEmpty(mContent)) {
                 jsonObject.put(CONTENT, mContent);
             }
+            if (!TextUtils.isEmpty(mExtra)) {
+                jsonObject.put(EXTRA, mExtra);
+            }
         } catch (JSONException e) {
             LoggerUtils.e("TextMessage JSONException " + e.getMessage());
         }
@@ -48,6 +51,9 @@ public class TextMessage extends MessageContent {
             if (jsonObject.has(CONTENT)) {
                 mContent = jsonObject.optString(CONTENT);
             }
+            if (jsonObject.has(EXTRA)) {
+                mExtra = jsonObject.optString(EXTRA);
+            }
         } catch (JSONException e) {
             LoggerUtils.e("TextMessage decode JSONException " + e.getMessage());
         }
@@ -65,6 +71,16 @@ public class TextMessage extends MessageContent {
         return mContent;
     }
 
+    public String getExtra() {
+        return mExtra;
+    }
+
+    public void setExtra(String extra) {
+        mExtra = extra;
+    }
+
     private String mContent;
+    private String mExtra;
     private static final String CONTENT = "content";
+    private static final String EXTRA = "extra";
 }

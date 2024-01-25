@@ -27,6 +27,9 @@ public class ImageMessage extends MessageContent {
             }
             jsonObject.put(HEIGHT, mHeight);
             jsonObject.put(WIDTH, mWidth);
+            if (!TextUtils.isEmpty(mExtra)) {
+                jsonObject.put(EXTRA, mExtra);
+            }
         } catch (JSONException e) {
             LoggerUtils.e("TextMessage JSONException " + e.getMessage());
         }
@@ -54,6 +57,9 @@ public class ImageMessage extends MessageContent {
             }
             if (jsonObject.has(WIDTH)) {
                 mWidth = jsonObject.optInt(WIDTH);
+            }
+            if (jsonObject.has(EXTRA)) {
+                mExtra = jsonObject.optString(EXTRA);
             }
         } catch (JSONException e) {
             LoggerUtils.e("ImageMessage decode JSONException " + e.getMessage());
@@ -96,13 +102,23 @@ public class ImageMessage extends MessageContent {
     public void setWidth(int width) {
         mWidth = width;
     }
+
+    public String getExtra() {
+        return mExtra;
+    }
+
+    public void setExtra(String extra) {
+        mExtra = extra;
+    }
     private String mUrl;
     private String mThumbnailUrl;
     private int mHeight;
     private int mWidth;
+    private String mExtra;
     private static final String URL = "url";
     private static final String THUMBNAIL = "thumbnail";
     private static final String HEIGHT = "height";
     private static final String WIDTH = "width";
+    private static final String EXTRA = "extra";
     private static final String DIGEST = "[Image]";
 }

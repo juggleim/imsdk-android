@@ -29,6 +29,9 @@ public class FileMessage extends MessageContent {
             if (!TextUtils.isEmpty(mType)) {
                 jsonObject.put(TYPE, mType);
             }
+            if (!TextUtils.isEmpty(mExtra)) {
+                jsonObject.put(EXTRA, mExtra);
+            }
         } catch (JSONException e) {
             LoggerUtils.e("FileMessage JSONException " + e.getMessage());
         }
@@ -57,7 +60,10 @@ public class FileMessage extends MessageContent {
             if (jsonObject.has(TYPE)) {
                 mType = jsonObject.optString(TYPE);
             }
-        } catch (JSONException e) {
+            if (jsonObject.has(EXTRA)) {
+                mExtra = jsonObject.optString(EXTRA);
+            }
+         } catch (JSONException e) {
             LoggerUtils.e("FileMessage decode JSONException " + e.getMessage());
         }
     }
@@ -99,14 +105,24 @@ public class FileMessage extends MessageContent {
         this.mType = type;
     }
 
+    public String getExtra() {
+        return mExtra;
+    }
+
+    public void setExtra(String extra) {
+        mExtra = extra;
+    }
+
     private String mName;
     private String mUrl;
     private long mSize;
     private String mType;
+    private String mExtra;
 
     private static final String NAME = "name";
     private static final String URL = "url";
     private static final String SIZE = "size";
     private static final String TYPE = "type";
+    private static final String EXTRA = "extra";
     private static final String DIGEST = "[File]";
 }
