@@ -155,6 +155,10 @@ public class DBManager {
         execSQL(ConversationSql.sqlDeleteConversation(conversation.getConversationType().getValue()), args);
     }
 
+    public void setDraft(Conversation conversation, String draft) {
+        execSQL(ConversationSql.sqlSetDraft(conversation, draft));
+    }
+
     public ConcreteMessage getMessageWithMessageId(String messageId) {
         ConcreteMessage message = null;
         if (TextUtils.isEmpty(messageId)) {

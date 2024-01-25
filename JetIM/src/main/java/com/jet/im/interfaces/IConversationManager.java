@@ -12,4 +12,8 @@ public interface IConversationManager {
     ConversationInfo getConversationInfo(Conversation conversation);
 
     void deleteConversationInfo(Conversation conversation);
+
+    void setDraft(Conversation conversation, String draft);
+
+    void clearDraft(Conversation conversation);
 }

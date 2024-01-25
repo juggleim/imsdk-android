@@ -73,8 +73,19 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("lifei", "conversationList count is " + l.size());
 
                     //get conversation
-                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
-                    JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
+                    ConversationInfo info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+
+                    //set draft
+                    JetIM.getInstance().getConversationManager().setDraft(conversation, "draft");
+                    info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+
+                    //clear draft
+                    JetIM.getInstance().getConversationManager().clearDraft(conversation);
+                    info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+                    Log.e("lifei", "conversationList count is " + l.size());
+
+
 
                     //clear messages
 //                    List<Message> messages = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 0, JetIMConst.PullDirection.OLDER);

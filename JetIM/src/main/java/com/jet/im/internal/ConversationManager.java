@@ -31,6 +31,16 @@ public class ConversationManager implements IConversationManager {
         mCore.getDbManager().deleteConversationInfo(conversation);
     }
 
+    @Override
+    public void setDraft(Conversation conversation, String draft) {
+        mCore.getDbManager().setDraft(conversation, draft);
+    }
+
+    @Override
+    public void clearDraft(Conversation conversation) {
+        setDraft(conversation, "");
+    }
+
     void syncConversations(ICompleteCallback callback) {
         mCore.getWebSocket().syncConversations(mCore.getConversationSyncTime(), CONVERSATION_SYNC_COUNT, mCore.getUserId(), new SyncConversationsCallback() {
             @Override

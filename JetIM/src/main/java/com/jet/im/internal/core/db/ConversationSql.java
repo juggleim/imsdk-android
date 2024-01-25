@@ -44,6 +44,10 @@ class ConversationSql {
     static String sqlDeleteConversation(int type) {
         return String.format("DELETE FROM conversation_info WHERE conversation_type = %s AND conversation_id = ?", type);
     }
+
+    static String sqlSetDraft(Conversation conversation, String draft) {
+        return String.format("UPDATE conversation_info SET draft = '%s' WHERE conversation_type = %s AND conversation_id = '%s'", draft, conversation.getConversationType().getValue(), conversation.getConversationId());
+    }
     static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS conversation_info ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             + "conversation_type SMALLINT,"
