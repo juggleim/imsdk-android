@@ -281,6 +281,9 @@ public class DBManager {
         execSQL(sql, args);
     }
 
+    public void clearMessages(Conversation conversation) {
+        execSQL(MessageSql.sqlClearMessages(conversation));
+    }
 
     private Cursor rawQuery(String sql, String[] selectionArgs) {
         if (mDb == null) {

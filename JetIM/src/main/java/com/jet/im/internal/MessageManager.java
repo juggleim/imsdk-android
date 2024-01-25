@@ -108,6 +108,11 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public void clearMessages(Conversation conversation) {
+        mCore.getDbManager().clearMessages(conversation);
+    }
+
+    @Override
     public void registerContentType(Class<? extends MessageContent> messageContentClass) {
         ContentTypeCenter.getInstance().registerContentType(messageContentClass);
     }

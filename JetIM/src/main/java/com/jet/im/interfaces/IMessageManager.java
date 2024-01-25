@@ -32,7 +32,11 @@ public interface IMessageManager {
     List<Message> getMessagesByClientMsgNos(long[] clientMsgNos);
 
     void deleteMessageByClientMsgNo(long clientMsgNo);
+
     void deleteMessageByMessageId(String messageId);
+
+    void clearMessages(Conversation conversation);
+
     void registerContentType(Class<? extends MessageContent> messageContentClass);
     void addListener(String key, IMessageListener listener);
     void removeListener(String key);
