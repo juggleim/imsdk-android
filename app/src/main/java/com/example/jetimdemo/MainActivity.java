@@ -27,6 +27,7 @@ import com.jet.im.model.MessageContent;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
 import com.jet.im.utils.LoggerUtils;
 
@@ -62,11 +63,11 @@ public class MainActivity extends AppCompatActivity {
 //                    JetIM.getInstance().getConnectionManager().disconnect(false);
 
                     //send message
-//                    try {
-//                        sendMessages();
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
+                    try {
+                        sendMessages();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
 
                     List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
                     Log.e("lifei", "conversationList count is " + l.size());
@@ -165,6 +166,12 @@ public class MainActivity extends AppCompatActivity {
         v.setUrl("http:/url.url");
         v.setDuration(1024);
         v.setExtra("extra");
+        VideoMessage video = new VideoMessage();
+        video.setUrl("http://video.com");
+        video.setSnapshotUrl("http://snapshot.com");
+        video.setHeight(400);
+        video.setWidth(600);
+        video.setExtra("extra");
 
         IMessageManager.ISendMessageCallback callback = new IMessageManager.ISendMessageCallback() {
             @Override
@@ -177,14 +184,16 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("TAG", "send message error, code is " + errorCode);
             }
         };
-        Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
-        Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+//        Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
+//        Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+//        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
 
     }
 

@@ -31,7 +31,7 @@ public class ImageMessage extends MessageContent {
                 jsonObject.put(EXTRA, mExtra);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("TextMessage JSONException " + e.getMessage());
+            LoggerUtils.e("ImageMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }

@@ -31,7 +31,9 @@ class MessageSql {
         message.setTimestamp(CursorHelper.readLong(cursor, COL_TIMESTAMP));
         message.setSenderUserId(CursorHelper.readString(cursor, COL_SENDER));
         String content = CursorHelper.readString(cursor, COL_CONTENT);
-        message.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType()));
+        if (content != null) {
+            message.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType()));
+        }
         message.setMsgIndex(CursorHelper.readLong(cursor, COL_MESSAGE_INDEX));
         return message;
     }

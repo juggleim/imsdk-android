@@ -14,6 +14,7 @@ import com.jet.im.model.MessageContent;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
 import com.jet.im.utils.LoggerUtils;
 
@@ -30,6 +31,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(ImageMessage.class);
         ContentTypeCenter.getInstance().registerContentType(FileMessage.class);
         ContentTypeCenter.getInstance().registerContentType(VoiceMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(VideoMessage.class);
     }
     private final JetIMCore mCore;
 
