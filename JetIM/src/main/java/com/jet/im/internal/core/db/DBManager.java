@@ -196,7 +196,16 @@ public class DBManager {
         }
         addMessagesFromCursor(result, cursor);
         cursor.close();
-        return result;
+        List<Message> messages = new ArrayList<>();
+        for (String messageId : messageIds) {
+            for (Message message : result) {
+                if (messageId.equals(message.getMessageId())) {
+                    messages.add(message);
+                    break;
+                }
+            }
+        }
+        return messages;
     }
 
     //被删除的消息也能查出来
@@ -212,7 +221,16 @@ public class DBManager {
         }
         addMessagesFromCursor(result, cursor);
         cursor.close();
-        return result;
+        List<Message> messages = new ArrayList<>();
+        for (long clientMsgNo : clientMsgNos) {
+            for (Message message : result) {
+                if (clientMsgNo == message.getClientMsgNo()) {
+                    messages.add(message);
+                    break;
+                }
+            }
+        }
+        return messages;
     }
 
     public long insertMessage(Message message) {

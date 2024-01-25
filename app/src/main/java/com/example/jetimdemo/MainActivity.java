@@ -23,6 +23,7 @@ import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.Message;
+import com.jet.im.model.MessageContent;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
@@ -32,6 +33,7 @@ import com.jet.im.utils.LoggerUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,8 +85,9 @@ public class MainActivity extends AppCompatActivity {
 
                     List<String> messageIds = new ArrayList<>();
                     messageIds.add("npgdrs4e2eygrenb");
-//                    messageIds.add("npgdwve92f4grenb");
-//                    messageIds.add("npgdwvg92f6grenb");
+                    messageIds.add("npgdwvg92f6grenb");
+                    messageIds.add("npgdwve92f4grenb");
+
 
                     List<Message> messageList1 = JetIM.getInstance().getMessageManager().getMessagesByMessageIds(messageIds);
                     Log.e("lifei", "messageList count is " + messageList1.size());
@@ -105,7 +108,21 @@ public class MainActivity extends AppCompatActivity {
         JetIM.getInstance().getMessageManager().addListener("main", new IMessageManager.IMessageListener() {
             @Override
             public void onMessageReceive(Message message) {
-                Log.d("lifei", "onMessageReceive");
+                Log.d("lifei", "onMessageReceive type is " + message.getContentType() + " message is " + message);
+                MessageContent c = message.getContent();
+                if (c instanceof TextMessage) {
+                    TextMessage t = (TextMessage)c;
+                    Log.i("lifei", "text message, extra is " + t.getExtra());
+                } else if (c instanceof ImageMessage) {
+                    ImageMessage i = (ImageMessage) c;
+                    Log.i("lifei", "image message, extra is " + i.getExtra());
+                } else if (c instanceof FileMessage) {
+                    FileMessage f = (FileMessage) c;
+                    Log.i("lifei", "file message, extra is " + f.getExtra());
+                } else if (c instanceof VoiceMessage) {
+                    VoiceMessage v = (VoiceMessage) c;
+                    Log.i("lifei", "voice message, extra is " + v.getExtra());
+                }
             }
         });
 
@@ -131,19 +148,23 @@ public class MainActivity extends AppCompatActivity {
     private void sendMessages() throws InterruptedException {
         Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
         TextMessage t = new TextMessage("sdfasdf");
+        t.setExtra("extra");
         ImageMessage i = new ImageMessage();
         i.setHeight(600);
         i.setWidth(800);
         i.setUrl("http://url.url");
         i.setThumbnailUrl("http://thumb.url");
+        i.setExtra("extra");
         FileMessage f = new FileMessage();
         f.setName("fileName");
         f.setUrl("http:/url.url");
         f.setSize(1024);
         f.setType("text");
+        f.setExtra("extra");
         VoiceMessage v = new VoiceMessage();
         v.setUrl("http:/url.url");
         v.setDuration(1024);
+        v.setExtra("extra");
 
         IMessageManager.ISendMessageCallback callback = new IMessageManager.ISendMessageCallback() {
             @Override
@@ -160,10 +181,10 @@ public class MainActivity extends AppCompatActivity {
         Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
         Thread.sleep(500);
         JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
 
     }
 
