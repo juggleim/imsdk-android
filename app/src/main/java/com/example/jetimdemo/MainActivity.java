@@ -63,11 +63,11 @@ public class MainActivity extends AppCompatActivity {
 //                    JetIM.getInstance().getConnectionManager().disconnect(false);
 
                     //send message
-                    try {
-                        sendMessages();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+//                    try {
+//                        sendMessages();
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
 
                     List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
                     Log.e("lifei", "conversationList count is " + l.size());
@@ -84,18 +84,26 @@ public class MainActivity extends AppCompatActivity {
                     List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER);
                     Log.e("lifei", "messageList count is " + messageList.size());
 
-                    List<String> messageIds = new ArrayList<>();
-                    messageIds.add("npgdrs4e2eygrenb");
-                    messageIds.add("npgdwvg92f6grenb");
-                    messageIds.add("npgdwve92f4grenb");
+                    List<String> contentTypes = new ArrayList<>();
+                    contentTypes.add("jg:file");
+                    contentTypes.add("jg:video");
+                    contentTypes.add("jg:img");
+                    List<Message> messageList4 = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER, contentTypes);
+                    Log.e("lifei", "messageList4 count is " + messageList.size());
 
 
-                    List<Message> messageList1 = JetIM.getInstance().getMessageManager().getMessagesByMessageIds(messageIds);
-                    Log.e("lifei", "messageList count is " + messageList1.size());
-
-                    long[] clientMsgNos = {54, 55, 40};
-                    List<Message> messageList2 = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(clientMsgNos);
-                    Log.e("lifei", "messageList count is " + messageList2.size());
+//                    List<String> messageIds = new ArrayList<>();
+//                    messageIds.add("npgdrs4e2eygrenb");
+//                    messageIds.add("npgdwvg92f6grenb");
+//                    messageIds.add("npgdwve92f4grenb");
+//
+//
+//                    List<Message> messageList1 = JetIM.getInstance().getMessageManager().getMessagesByMessageIds(messageIds);
+//                    Log.e("lifei", "messageList count is " + messageList1.size());
+//
+//                    long[] clientMsgNos = {54, 55, 40};
+//                    List<Message> messageList2 = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(clientMsgNos);
+//                    Log.e("lifei", "messageList count is " + messageList2.size());
 
                 }
             }

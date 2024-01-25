@@ -10,6 +10,7 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.Message;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 class MessageSql {
     static ConcreteMessage messageWithCursor(Cursor cursor) {
@@ -113,12 +114,16 @@ class MessageSql {
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
-    static String sqlGetMessagesInConversation(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction) {
+    static final String SQL_AND_TYPE_IN = " AND type in ";
+    static String sqlGetMessagesInConversation(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction, int size) {
         String sql = String.format("SELECT * FROM message WHERE conversation_type = %s AND conversation_id = ? AND is_deleted = 0", conversation.getConversationType().getValue());
         if (direction == JetIMConst.PullDirection.NEWER) {
             sql = sql + SQL_AND_GREATER_THAN + timestamp;
         } else {
             sql = sql + SQL_AND_LESS_THAN + timestamp;
+        }
+        if (size > 0) {
+            sql = sql + SQL_AND_TYPE_IN + CursorHelper.getQuestionMarkPlaceholder(size);
         }
         sql = sql + SQL_ORDER_BY_TIMESTAMP;
         if (direction == JetIMConst.PullDirection.NEWER) {

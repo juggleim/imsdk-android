@@ -21,6 +21,12 @@ public interface IMessageManager {
                               long timestamp,
                               JetIMConst.PullDirection direction);
 
+    List<Message> getMessages(Conversation conversation,
+                              int count,
+                              long timestamp,
+                              JetIMConst.PullDirection direction,
+                              List<String> contentTypes);
+
     List<Message> getMessagesByMessageIds(List<String> messageIdList);
 
     List<Message> getMessagesByClientMsgNos(long[] clientMsgNos);

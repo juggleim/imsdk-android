@@ -79,7 +79,12 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction) {
-        return mCore.getDbManager().getMessages(conversation, count, timestamp, direction);
+        return getMessages(conversation, count, timestamp, direction, new ArrayList<>());
+    }
+
+    @Override
+    public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
+        return mCore.getDbManager().getMessages(conversation, count, timestamp, direction, contentTypes);
     }
 
     @Override

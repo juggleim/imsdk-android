@@ -166,12 +166,17 @@ public class DBManager {
         return message;
     }
 
-    public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction) {
+    public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
         if (timestamp == 0) {
             timestamp = Long.MAX_VALUE;
         }
-        String sql = MessageSql.sqlGetMessagesInConversation(conversation, count, timestamp, direction);
-        String[] args = new String[]{conversation.getConversationId()};
+        int contentTypeSize = contentTypes.size();
+        String sql = MessageSql.sqlGetMessagesInConversation(conversation, count, timestamp, direction, contentTypeSize);
+        String[] args = new String[contentTypeSize+1];
+        args[0] = conversation.getConversationId();
+        for (int i = 0; i < contentTypeSize; i ++) {
+            args[i+1] = contentTypes.get(i);
+        }
         Cursor cursor = rawQuery(sql, args);
         List<Message> list = new ArrayList<>();
         if (cursor == null) {
