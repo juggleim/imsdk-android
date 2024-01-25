@@ -52,6 +52,7 @@ public class ConnectionManager implements IConnectionManager {
     @Override
     public void disconnect(boolean receivePush) {
         changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
+        mCore.getDbManager().closeDB();
         mCore.getWebSocket().disconnect(receivePush);
     }
 
