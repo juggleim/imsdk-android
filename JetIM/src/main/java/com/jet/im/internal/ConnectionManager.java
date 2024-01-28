@@ -21,16 +21,17 @@ public class ConnectionManager implements IConnectionManager {
     @Override
     public void connect(String token) {
         LoggerUtils.i("connect, token is " + token);
-        //todo 校验，是否有连接，mCore.getWebSocket 是不是为空
+        //todo 校验，是否有连接
 
         if (!mCore.getToken().equals(token)) {
             mCore.setToken(token);
             mCore.setUserId("");
         }
-        //TODO: DB 已经是打开状态就不开了
-        if (!TextUtils.isEmpty(mCore.getUserId())) {
-            if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
-                dbOpenNotice(JetIMCore.DbStatus.OPEN);
+        if (!mCore.getDbManager().isOpen()) {
+            if (!TextUtils.isEmpty(mCore.getUserId())) {
+                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
+                    dbOpenNotice(JetIMCore.DbStatus.OPEN);
+                }
             }
         }
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE);

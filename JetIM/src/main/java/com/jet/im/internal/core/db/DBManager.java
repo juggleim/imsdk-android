@@ -42,6 +42,10 @@ public class DBManager {
         mDBHelper = null;
     }
 
+    public boolean isOpen() {
+        return mDb != null;
+    }
+
     public long getConversationSyncTime() {
         long result = 0;
         String[] args = new String[]{ProfileSql.CONVERSATION_TIME};
