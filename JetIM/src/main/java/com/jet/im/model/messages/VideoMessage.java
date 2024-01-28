@@ -30,6 +30,8 @@ public class VideoMessage extends MessageContent {
             if (!TextUtils.isEmpty(mExtra)) {
                 jsonObject.put(EXTRA, mExtra);
             }
+            jsonObject.put(DURATION, mDuration);
+            jsonObject.put(SIZE, mSize);
         } catch (JSONException e) {
             LoggerUtils.e("VideoMessage JSONException " + e.getMessage());
         }
@@ -57,6 +59,12 @@ public class VideoMessage extends MessageContent {
             }
             if (jsonObject.has(WIDTH)) {
                 mWidth = jsonObject.optInt(WIDTH);
+            }
+            if (jsonObject.has(DURATION)) {
+                mDuration = jsonObject.optInt(DURATION);
+            }
+            if (jsonObject.has(SIZE)) {
+                mSize = jsonObject.optLong(SIZE);
             }
             if (jsonObject.has(EXTRA)) {
                 mExtra = jsonObject.optString(EXTRA);
@@ -103,6 +111,22 @@ public class VideoMessage extends MessageContent {
         mWidth = width;
     }
 
+    public long getSize() {
+        return mSize;
+    }
+
+    public void setSize(long size) {
+        mSize = size;
+    }
+
+    public int getDuration() {
+        return mDuration;
+    }
+
+    public void setDuration(int duration) {
+        mDuration = duration;
+    }
+
     public String getExtra() {
         return mExtra;
     }
@@ -114,11 +138,15 @@ public class VideoMessage extends MessageContent {
     private String mSnapshotUrl;
     private int mHeight;
     private int mWidth;
+    private long mSize;
+    private int mDuration;
     private String mExtra;
     private static final String URL = "url";
     private static final String POSTER = "poster";
     private static final String HEIGHT = "height";
     private static final String WIDTH = "width";
+    private static final String SIZE = "size";
+    private static final String DURATION = "duration";
     private static final String EXTRA = "extra";
     private static final String DIGEST = "[Video]";
 }
