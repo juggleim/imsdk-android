@@ -60,8 +60,8 @@ public class MainActivity extends AppCompatActivity {
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
 
                     //disconnect
-                    JetIM.getInstance().getConnectionManager().disconnect(false);
-                    JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+//                    JetIM.getInstance().getConnectionManager().disconnect(false);
+//                    JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 
                     //send message
 //                    try {
