@@ -152,6 +152,9 @@ public class ConnectionManager implements IConnectionManager {
 
     private void changeStatus(int status, int errorCode) {
         //todo thread
+        if (status == mCore.getConnectionStatus()) {
+            return;
+        }
         if (status == JetIMCore.ConnectionStatusInternal.IDLE) {
             mCore.setConnectionStatus(status);
             return;
@@ -172,11 +175,11 @@ public class ConnectionManager implements IConnectionManager {
             case JetIMCore.ConnectionStatusInternal.DISCONNECTED:
                 outStatus = JetIMConst.ConnectionStatus.DISCONNECTED;
                 break;
-            case JetIMCore.ConnectionStatusInternal.CONNECTING:
-                outStatus = JetIMConst.ConnectionStatus.CONNECTING;
-                break;
+
             case JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING:
                 reconnect();
+                //无需 break，跟 CONNECTING 一起处理
+            case JetIMCore.ConnectionStatusInternal.CONNECTING:
                 //已经在连接中，不需要再对外抛回调
                 if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING
                         || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
