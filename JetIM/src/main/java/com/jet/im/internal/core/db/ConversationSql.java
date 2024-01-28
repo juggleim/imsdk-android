@@ -2,6 +2,7 @@ package com.jet.im.internal.core.db;
 
 import android.database.Cursor;
 
+import com.jet.im.JetIMConst;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.model.Conversation;
 
@@ -67,6 +68,26 @@ class ConversationSql {
             + "last_read_message_index, is_top, top_time, mute, last_mention_message_id)"
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY timestamp DESC";
+    static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
+        if (direction == JetIMConst.PullDirection.OLDER) {
+            sql.append(" timestamp < ").append(timestamp);
+        } else {
+            sql.append(" timestamp > ").append(timestamp);
+        }
+        if (conversationTypes != null && conversationTypes.length > 0) {
+            sql.append(" AND conversation_type in (");
+            for (int i = 0; i < conversationTypes.length; i++) {
+                if (i > 0) {
+                    sql.append(", ");
+                }
+                sql.append(conversationTypes[i]);
+            }
+            sql.append(")");
+        }
+        sql.append(" ORDER BY timestamp DESC").append(" LIMIT ").append(count);
+        return sql.toString();
+    }
     static final String COL_CONVERSATION_TYPE = "conversation_type";
     static final String COL_CONVERSATION_ID = "conversation_id";
     static final String COL_DRAFT = "draft";

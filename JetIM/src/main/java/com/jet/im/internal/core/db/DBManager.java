@@ -115,24 +115,26 @@ public class DBManager {
     }
 
     public List<ConversationInfo> getConversationInfoList() {
-        List<ConversationInfo> list = new ArrayList<>();
-        List<String> messageIdList = new ArrayList<>();
         Cursor cursor = rawQuery(ConversationSql.SQL_GET_CONVERSATIONS, null);
         if (cursor == null) {
-            return list;
+            return new ArrayList<>();
         }
-        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            ConcreteConversationInfo info = ConversationSql.conversationInfoWithCursor(cursor);
-            String lastMessageId = CursorHelper.readString(cursor, ConversationSql.COL_LAST_MESSAGE_ID);
-            list.add(info);
-            messageIdList.add(lastMessageId);
-        }
+        List<ConversationInfo> list = conversationListFromCursor(cursor);
         cursor.close();
-        for (int i = 0; i < list.size(); i++) {
-            ConversationInfo info = list.get(i);
-            String messageId = messageIdList.get(i);
-            info.setLastMessage(getMessageWithMessageId(messageId));
+        return list;
+    }
+
+    public List<ConversationInfo> getConversationInfoList(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
+        if (timestamp == 0) {
+            timestamp = Long.MAX_VALUE;
         }
+        String sql = ConversationSql.sqlGetConversationsBy(conversationTypes, count, timestamp, direction);
+        Cursor cursor = rawQuery(sql, null);
+        if (cursor == null) {
+            return new ArrayList<>();
+        }
+        List<ConversationInfo> list = conversationListFromCursor(cursor);
+        cursor.close();
         return list;
     }
 
@@ -339,6 +341,23 @@ public class DBManager {
             ConcreteMessage message = MessageSql.messageWithCursor(cursor);
             list.add(message);
         }
+    }
+
+    private List<ConversationInfo> conversationListFromCursor(@NonNull Cursor cursor) {
+        List<ConversationInfo> list = new ArrayList<>();
+        List<String> messageIdList = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            ConcreteConversationInfo info = ConversationSql.conversationInfoWithCursor(cursor);
+            String lastMessageId = CursorHelper.readString(cursor, ConversationSql.COL_LAST_MESSAGE_ID);
+            list.add(info);
+            messageIdList.add(lastMessageId);
+        }
+        for (int i = 0; i < list.size(); i++) {
+            ConversationInfo info = list.get(i);
+            String messageId = messageIdList.get(i);
+            info.setLastMessage(getMessageWithMessageId(messageId));
+        }
+        return list;
     }
 
     private DBHelper mDBHelper;

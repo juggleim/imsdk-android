@@ -70,8 +70,12 @@ public class MainActivity extends AppCompatActivity {
 //                        throw new RuntimeException(e);
 //                    }
 
-//                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
-//                    Log.e("lifei", "conversationList count is " + l.size());
+                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
+                    Log.e("lifei", "conversationList count is " + l.size());
+
+                    int[] conversationTypes = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
+                    l = JetIM.getInstance().getConversationManager().getConversationInfoList( 100, 1706445483689L, JetIMConst.PullDirection.NEWER);
+                    Log.e("lifei", "conversationList count is " + l.size());
 //
 //                    //get conversation
 //                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
@@ -142,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+        JetIM.getInstance().getConnectionManager().connect(TOKEN2);
         JetIM.getInstance().getMessageManager().addListener("main", new IMessageManager.IMessageListener() {
             @Override
             public void onMessageReceive(Message message) {
@@ -184,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendMessages() throws InterruptedException {
-        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
+        Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
         TextMessage t = new TextMessage("sdfasdf");
         t.setExtra("extra");
         ImageMessage i = new ImageMessage();
@@ -221,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("TAG", "send message error, code is " + errorCode);
             }
         };
-//        Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
+        Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
 //        Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
 //        Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);

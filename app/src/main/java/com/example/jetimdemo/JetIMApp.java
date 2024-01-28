@@ -9,7 +9,7 @@ public class JetIMApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        JetIM.getInstance().setServer("http://8.130.171.185:8083");
+//        JetIM.getInstance().setServer("http://8.130.171.185:8083");
         JetIM.getInstance().init(this, "appkey");
     }
 }

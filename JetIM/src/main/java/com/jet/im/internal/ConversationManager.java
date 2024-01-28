@@ -1,5 +1,6 @@
 package com.jet.im.internal;
 
+import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
@@ -19,6 +20,16 @@ public class ConversationManager implements IConversationManager {
     @Override
     public List<ConversationInfo> getConversationInfoList() {
         return mCore.getDbManager().getConversationInfoList();
+    }
+
+    @Override
+    public List<ConversationInfo> getConversationInfoList(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
+        return mCore.getDbManager().getConversationInfoList(conversationTypes, count, timestamp, direction);
+    }
+
+    @Override
+    public List<ConversationInfo> getConversationInfoList(int count, long timestamp, JetIMConst.PullDirection direction) {
+        return getConversationInfoList(null, count, timestamp, direction);
     }
 
     @Override
