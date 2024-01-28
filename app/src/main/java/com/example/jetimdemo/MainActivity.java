@@ -60,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
 
                     //disconnect
-//                    JetIM.getInstance().getConnectionManager().disconnect(false);
+                    JetIM.getInstance().getConnectionManager().disconnect(false);
+                    JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 
                     //send message
 //                    try {
@@ -69,21 +70,21 @@ public class MainActivity extends AppCompatActivity {
 //                        throw new RuntimeException(e);
 //                    }
 
-                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
-                    Log.e("lifei", "conversationList count is " + l.size());
-
-                    //get conversation
-                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
-                    ConversationInfo info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
-
-                    //set draft
-                    JetIM.getInstance().getConversationManager().setDraft(conversation, "draft");
-                    info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
-
-                    //clear draft
-                    JetIM.getInstance().getConversationManager().clearDraft(conversation);
-                    info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
-                    Log.e("lifei", "conversationList count is " + l.size());
+//                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
+//                    Log.e("lifei", "conversationList count is " + l.size());
+//
+//                    //get conversation
+//                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
+//                    ConversationInfo info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+//
+//                    //set draft
+//                    JetIM.getInstance().getConversationManager().setDraft(conversation, "draft");
+//                    info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+//
+//                    //clear draft
+//                    JetIM.getInstance().getConversationManager().clearDraft(conversation);
+//                    info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+//                    Log.e("lifei", "conversationList count is " + l.size());
 
 
 

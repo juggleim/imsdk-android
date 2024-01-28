@@ -62,9 +62,7 @@ public class JWebSocket extends WebSocketClient {
                 conversation.getConversationType(),
                 conversation.getConversationId());
         mMsgCallbackMap.put(key, callback);
-        if (isOpen()) {
-            send(bytes);
-        }
+        sendWhenOpen(bytes);
     }
 
     public void syncConversations(long startTime,
@@ -74,25 +72,19 @@ public class JWebSocket extends WebSocketClient {
         Integer key = mMsgIndex;
         byte[] bytes = mPbData.syncConversationsData(startTime, count, userId, mMsgIndex++);
         mMsgCallbackMap.put(key, callback);
-        if (isOpen()) {
-            send(bytes);
-        }
+        sendWhenOpen(bytes);
     }
 
     public void syncMessages(long receiveTime,
                              long sendTime,
                              String userId) {
         byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mMsgIndex++);
-        if (isOpen()) {
-            send(bytes);
-        }
+        sendWhenOpen(bytes);
     }
 
     public void ping() {
         byte[] bytes = mPbData.pingData();
-        if (isOpen()) {
-            send(bytes);
-        }
+        sendWhenOpen(bytes);
     }
 
     public interface IWebSocketConnectListener {
@@ -187,23 +179,17 @@ public class JWebSocket extends WebSocketClient {
                 JUtility.getNetworkType(mContext),
                 JUtility.getCarrier(mContext),
                 "");
-        if (isOpen()) {
-            send(bytes);
-        }
+        sendWhenOpen(bytes);
     }
 
     private void sendDisconnectMsg(boolean receivePush) {
         byte[] bytes = mPbData.disconnectData(receivePush);
-        if (isOpen()) {
-            send(bytes);
-        }
+        sendWhenOpen(bytes);
     }
 
     private void sendPublishAck(int index) {
         byte[] bytes = mPbData.publishAckData(index);
-        if (isOpen()) {
-            send(bytes);
-        }
+        sendWhenOpen(bytes);
     }
 
     private void handleConnectAckMsg(@NonNull PBRcvObj.ConnectAck ack) {
@@ -267,6 +253,12 @@ public class JWebSocket extends WebSocketClient {
 
     private void handlePong() {
         LoggerUtils.d("pong");
+    }
+
+    private void sendWhenOpen(byte[] bytes) {
+        if (isOpen()) {
+            send(bytes);
+        }
     }
 
     private String mAppKey;
