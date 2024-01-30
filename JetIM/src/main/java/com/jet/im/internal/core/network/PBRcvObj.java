@@ -5,7 +5,7 @@ import com.jet.im.internal.model.ConcreteMessage;
 
 import java.util.List;
 
-import web_socket_msg.ImWebSocket;
+import app_messages.Connect;
 
 class PBRcvObj {
 
@@ -29,7 +29,7 @@ class PBRcvObj {
     }
 
     static class QryAck {
-        QryAck(ImWebSocket.QueryAckMsgBody body) {
+        QryAck(Connect.QueryAckMsgBody body) {
             this.index = body.getIndex();
             this.code = body.getCode();
             this.timestamp = body.getTimestamp();
@@ -43,7 +43,7 @@ class PBRcvObj {
         boolean isFinished;
         List<ConcreteMessage> msgList;
 
-        QryHisMsgAck(ImWebSocket.QueryAckMsgBody body) {
+        QryHisMsgAck(Connect.QueryAckMsgBody body) {
             super(body);
         }
     }
@@ -52,7 +52,7 @@ class PBRcvObj {
         boolean isFinished;
         List<ConcreteConversationInfo> convList;
 
-        SyncConvAck(ImWebSocket.QueryAckMsgBody body) {
+        SyncConvAck(Connect.QueryAckMsgBody body) {
             super(body);
         }
     }

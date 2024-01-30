@@ -2,6 +2,43 @@ syntax = "proto3";
 
 package app_messages;
 
+enum RpcMsgType{
+    UserPub = 0;
+    UserPubAck = 1;
+    ServerPub = 2;
+    ServerPubAck = 3;
+    QueryMsg = 4;
+    QueryAck = 5;
+    QueryConfirm = 6;
+}
+message RpcMessageWraper{
+    RpcMsgType rpcMsgType = 1;
+    string appKey = 2;
+    string session = 3;
+    string method = 4;
+    string targetId = 5;
+    string sourceMethod = 6;
+    string requesterId = 7;
+    int32 qos = 8;
+    int32 reqIndex = 9;
+    int32 publishType = 10;
+    bool isFromApi = 11;
+    map<string,string> extParams = 12;
+    int32 terminalNum = 13;
+
+    int32 resultCode = 21;
+    int64 msgSendTime = 22;
+    string msgId = 23;
+    int64 msgIndex = 24;
+
+    string groupId = 31;
+    repeated string targetIds = 32;
+
+    bytes appDataBytes = 50;
+    UserInfo senderInfo = 51;
+}
+
+//message
 message UpMsg {
     string msgType = 1;
     bytes msgContent= 2;
@@ -9,11 +46,21 @@ message UpMsg {
     string clientUid = 4;
     PushData pushData = 5;
     MentionInfo mentionInfo = 6;
+    DownMsg referMsg = 7;
+    repeated string toUserIds = 8;
+    MergedMsgs mergedMsgs = 9;
+}
+message MergedMsgs{
+    ChannelType channelType = 1;
+    string userId = 2;
+    string targetId = 3;
+    repeated SimpleMsg msgs = 4;
 }
 
 message MentionInfo {
     MentionType mentionType = 1;
-    repeated string targetIds = 2;
+    repeated UserInfo targetUsers = 2;
+    // repeated string targetIds = 2;
 }
 
 enum MentionType{
@@ -45,6 +92,11 @@ message DownMsg{
     PushData pushData = 13;
     MentionInfo mentionInfo = 14;
     bool isReaded = 15;
+    DownMsg referMsg = 16;
+    UserInfo targetUserInfo = 17;
+    GroupInfo groupInfo = 18;
+    MergedMsgs mergedMsgs = 19;
+    int32 undisturbType = 20;
 }
 enum ChannelType {
     Unknown = 0;
@@ -56,22 +108,32 @@ enum ChannelType {
 message Notify{
     NotifyType type = 1;
     int64 syncTime = 2;
+    string chatroomId = 3;
 }
 enum NotifyType {
     Default = 0;
     Msg = 1;
+    ChatroomMsg = 2;
 }
 message SyncMsgReq{
     int64 syncTime = 1;//收件箱同步时间
     bool containsSendBox = 2;//是否包含发件箱消息
     int64 sendBoxSyncTime = 3;//发件箱同步时间
+    string chatroomId = 4;
 }
 message DownMsgSet{
     repeated DownMsg msgs = 1;
     int64 syncTime = 2;
     bool isFinished = 3;
+    UserInfo targetUserInfo = 4;
+    GroupInfo groupInfo = 5;
+}
+message KvItem{
+    string key=1;
+    string value=2;
 }
 
+//history message
 message AddHisMsgReq{
     string senderId = 1;
     string targetId = 2;
@@ -96,60 +158,13 @@ message QryHisMsgsReq{
     int64 startTime = 3;
     int32 count = 4;
     int32 order = 5;
+    repeated string msgTypes = 6;
 }
 
-message QryConversationsReq{
-    int64 startTime = 1;
-    int32 count = 2;
-    int32 order = 3;
-}
-message QryConversationsResp{
-    repeated Conversation conversations = 1;
-    bool isFinished = 2;
-}
-message Conversation{
-    //string converId = 1;
-    string targetId = 2;
-    ChannelType channelType = 3;
-    int64 updateTime = 4;
-    int64 unreadCount = 5;
-    DownMsg msg = 6;
-    int64 latestReadedMsgIndex = 7;
-    MentionMsg LatestMentionMsg = 8;
-}
-
-message MentionMsg{
-    MentionType mentionType = 1;
-    string senderId = 2;
-    string msgId = 3;
-    int64 msgIndex = 4;
-    int64 msgTime = 5;
-}
-
-message QryMentionMsgsReq{
+message QryHisMsgByIdsReq{
     string targetId = 1;
     ChannelType channelType = 2;
-    int64 startIndex = 3;
-    int32 count = 4;
-    int32 order = 5;
-}
-
-message QryMentionMsgsResp{
-    repeated MentionMsg mentionMsgs = 1;
-    bool isFinished = 2;
-}
-
-message SyncConversationsReq{
-    int64 startTime = 1;
-    int32 count = 2;
-}
-
-message DelConversationReq{
-    repeated Conversation conversations = 1;
-}
-
-message ClearUnreadReq{
-    repeated Conversation conversations = 1;
+    repeated string msgIds = 3;
 }
 
 message RecallMsgReq{
@@ -166,6 +181,12 @@ message MarkReadReq{
     ChannelType channelType = 2;
     repeated SimpleMsg msgs = 3;
     repeated IndexScope indexScopes = 4;
+}
+
+message CleanHisMsgReq{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    int64 cleanMsgTime = 3;
 }
 
 message SimpleMsg{
@@ -186,4 +207,336 @@ message ModifyMsgReq{
     int64 msgTime = 4;
     int64 msgIndex = 5;
     bytes msgContent = 6;
+}
+
+message MergeMsgReq{
+    string parentMsgId = 1;
+    MergedMsgs mergedMsgs = 2;
+}
+
+message QryMergedMsgsReq{
+    int64 startTime = 1;
+    int32 count = 2;
+    int32 order = 3;
+}
+
+//conversation
+message QryConversationsReq{
+    int64 startTime = 1;
+    int32 count = 2;
+    int32 order = 3;
+}
+message QryConversationsResp{
+    repeated Conversation conversations = 1;
+    bool isFinished = 2;
+}
+message Conversation{
+    //string converId = 1;
+    string targetId = 2;
+    ChannelType channelType = 3;
+    int64 updateTime = 4;
+    int64 unreadCount = 5;
+    DownMsg msg = 6;
+    int64 latestReadedMsgIndex = 7;
+    MentionMsg LatestMentionMsg = 8;
+    int32 isTop = 9;
+    int64 topUpdatedTime = 10;
+    int32 undisturbType = 11;
+    UserInfo targetUserInfo = 12;
+    GroupInfo groupInfo = 13;
+    int64 syncTime = 14;
+}
+
+message MentionMsg{
+    MentionType mentionType = 1;
+    string msgId = 2;
+    int64 msgIndex = 3;
+    int64 msgTime = 4;
+    UserInfo senderInfo = 5;
+}
+
+message QryMentionMsgsReq{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    int64 startIndex = 3;
+    int32 count = 4;
+    int32 order = 5;
+}
+
+message QryMentionMsgsResp{
+    repeated MentionMsg mentionMsgs = 1;
+    bool isFinished = 2;
+}
+
+message SyncConversationsReq{
+    int64 startTime = 1;
+    int32 count = 2;
+}
+
+message QryTotalUnreadCountReq{
+
+}
+message QryTotalUnreadCountResp{
+    int64 totalCount = 1;
+}
+
+message ConversationsReq{
+    repeated Conversation conversations = 1;
+}
+
+message ClearUnreadReq{
+    repeated Conversation conversations = 1;
+}
+
+message UndisturbConversReq {
+    string userId = 1;
+    repeated UndisturbConverItem items = 2;
+}
+message UndisturbConverItem {
+    string targetId = 1;
+    ChannelType channelType = 2;
+    int32 undisturbType = 3;
+}
+message QryTopConversReq{
+    int64 startTime = 1;
+}
+message QryUndisturbReq{
+    string targetId=1;
+    ChannelType channelType = 2;
+}
+message QryReadedInfosReq{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    repeated string msgIds = 3;
+}
+message QryReadedInfosResp{
+    repeated ReadedInfoItem items = 1;
+}
+message ReadedInfoItem{
+    string msgId = 1;
+    int32 readedCount = 2;
+    int32 totalCount = 3;
+}
+message QryReadedDetailReq{
+    string targetId = 1;
+    ChannelType channelType = 2;
+    string msgId = 3;
+}
+message QryReadedDetailResp{
+    int32 readedCount = 1;
+    int32 totalCount = 2;
+    repeated MemberReadedDetailItem readedMemberIds = 3;
+    repeated MemberReadedDetailItem unreadedMemberIds = 4;
+}
+message MemberReadedDetailItem{
+    string memberId = 1;
+    int64 time = 2;
+}
+
+//user
+message UserInfo{
+    string userId = 1;
+    string nickname = 2;
+    string userPortrait = 3;
+    repeated KvItem extFields = 4;
+    int64 updatedTime = 5;
+}
+message UserIdsReq{
+    repeated string userIds = 1;
+    bool noDispatch = 11;
+}
+message UserIdReq{
+    string userId = 1;
+}
+
+message UserInfosResp{
+    map<string,UserInfo> userInfoMap = 1;
+}
+
+message UserRegReq{
+    string userId = 1;
+    string nickname = 2;
+    string userPortrait = 3;
+}
+
+message UserRegResp{
+    string userId = 1;
+    string token = 2;
+}
+
+message UserOnlineStatusReq{
+    repeated string userIds = 1;
+}
+
+message UserOnlineStatusResp{
+    repeated UserOnlineItem items = 1;
+}
+
+message UserOnlineItem {
+    string userId = 1;
+    bool isOnline = 2;
+}
+
+message BanUsersReq{
+    repeated string userIds = 1;
+    BanType banType = 2;
+    int64 endTime = 3;
+
+    bool isAdd=4;
+}
+
+enum BanType {
+    Permanent=0;
+    Temporary=1;
+}
+
+message BanUser {
+    string userId = 1;
+    BanType banType = 2;
+    int64 endTime = 3;
+    int64 createdTime= 4;
+}
+
+message QryBanUsersReq{
+    int64 limit = 1;
+    string offset = 2;
+}
+
+message QryBanUsersResp{
+    repeated BanUser items = 1; 
+    string offset = 2;
+}
+
+message BlockUsersReq{
+    repeated string userIds = 1;
+    bool isAdd = 2;
+}
+
+message QryBlockUsersReq{
+    string userId = 1;
+    int64 limit = 2;
+    string offset = 3;
+}
+message BlockUser{
+    string blockUserId = 1;
+    int64 createdTime = 2;
+}
+message QryBlockUsersResp{
+    repeated BlockUser items = 1;
+    string offset = 2;
+}
+enum OnlineType{
+    Offline = 0;
+    Online = 1;
+}
+message OnlineStatus{
+    OnlineType type = 1;
+
+    bytes extraData = 11;
+}
+message KickUserReq {
+    string userId = 1;
+    repeated string platforms = 2;
+}
+
+//group
+message GroupInfo{
+    string groupId = 1;
+    string groupName = 2;
+    string groupPortrait = 3;
+    int32 isMute = 4;
+    repeated KvItem extFields = 5;
+    int64 updatedTime = 6;
+}
+
+message GroupMembersReq {
+    string groupId = 1;
+    string  groupName = 2;
+    string groupPortrait = 3;
+    repeated string memberIds = 4;
+}
+
+message GroupMuteReq {
+    string groupId = 1;
+    int32 isMute = 2;
+}
+message GroupInfoReq{
+    string groupId = 1;
+}
+message GroupIdsReq{
+    repeated string groupIds = 1;
+    bool noDispatch = 11;
+}
+message GroupInfosResp{
+    map<string,GroupInfo> groupInfoMap = 1;
+}
+
+message GroupMemberMuteReq{
+    string groupId = 1;
+    repeated string memberIds = 2;
+    int32 isMute = 3;
+}
+
+message GroupMembersResp{
+   repeated GroupMember items = 1;
+    string offset = 2;
+}
+message GroupMember{
+    string memberId = 1;
+    int32 isMute = 2;
+}
+
+message QryGroupMembersReq{
+    string groupId = 1;
+    int64 limit = 2;
+    string offset = 3;
+}
+
+message CheckGroupMembersReq{
+    string groupId = 1;
+    repeated string memberIds = 2;
+}
+message CheckGroupMembersResp{
+    map<string,int64> memberIdMap = 1;
+}
+
+// chatroom
+message JoinChatRoomReq{
+    string chatId = 1;
+}
+message ChatRoomDispatchReq{
+    string chatId = 1;
+    repeated string memberIds = 2;
+    ChatRoomDispatchType dispatchType = 3;
+}
+enum ChatRoomDispatchType {
+    DispatchDefault = 0;
+    JoinChatroom = 1;
+    QuitChatroom = 2;
+}
+
+// file
+message QryFileCredReq{
+    FileType fileType = 1;
+}
+enum FileType {
+    DefaultFileType = 0;
+    Image = 1;
+    Audio = 2;
+    Video = 3;
+    File = 4;
+}
+message QryFileCredResp{
+    OssType ossType = 1;
+    oneof ossOf{
+        QiniuCredResp qiniuCred = 11;
+    }
+}
+enum OssType{
+    DefaultOss = 0;
+    Qiniu = 1;
+}
+message QiniuCredResp{
+    string domain = 1;
+    string token = 2;
 }

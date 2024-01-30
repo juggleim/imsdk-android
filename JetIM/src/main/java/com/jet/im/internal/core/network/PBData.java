@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import app_messages.Appmessages;
-import web_socket_msg.ImWebSocket;
+import app_messages.Connect;
 
 class PBData {
     byte[] connectData(String appKey,
@@ -34,7 +34,7 @@ class PBData {
                        String networkId,
                        String ispNum,
                        String clientIp) {
-        ImWebSocket.ConnectMsgBody body = ImWebSocket.ConnectMsgBody.newBuilder()
+        Connect.ConnectMsgBody body = Connect.ConnectMsgBody.newBuilder()
                 .setProtoId(PROTO_ID)
                 .setSdkVersion(SDK_VERSION)
                 .setAppkey(appKey)
@@ -48,7 +48,7 @@ class PBData {
                 .setNetworkId(networkId)
                 .setIspNum(ispNum)
                 .setClientIp(clientIp).build();
-        ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.newBuilder()
+        Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.connect)
                 .setQos(Qos.yes)
@@ -59,11 +59,11 @@ class PBData {
 
     byte[] disconnectData(boolean receivePush) {
         int code = receivePush ? 0 : 1;
-        ImWebSocket.DisconnectMsgBody body = ImWebSocket.DisconnectMsgBody.newBuilder()
+        Connect.DisconnectMsgBody body = Connect.DisconnectMsgBody.newBuilder()
                 .setCode(code)
                 .setTimestamp(System.currentTimeMillis())
                 .build();
-        ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.newBuilder()
+        Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.disconnect)
                 .setQos(Qos.no)
@@ -105,14 +105,14 @@ class PBData {
         }
 
 
-        ImWebSocket.PublishMsgBody publishMsgBody = ImWebSocket.PublishMsgBody.newBuilder()
+        Connect.PublishMsgBody publishMsgBody = Connect.PublishMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(topic)
                 .setTargetId(conversationId)
                 .setData(upMsg.toByteString())
                 .build();
 
-        ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.newBuilder()
+        Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.publish)
                 .setQos(Qos.yes)
@@ -127,7 +127,7 @@ class PBData {
                 .setCount(count)
                 .build();
 
-        ImWebSocket.QueryMsgBody body = ImWebSocket.QueryMsgBody.newBuilder()
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(SYNC_CONV)
                 .setTargetId(userId)
@@ -135,7 +135,7 @@ class PBData {
                 .build();
 
         mMsgCmdMap.put(index, body.getTopic());
-        ImWebSocket.ImWebsocketMsg m = ImWebSocket.ImWebsocketMsg.newBuilder()
+        Connect.ImWebsocketMsg m = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.query)
                 .setQos(Qos.yes)
@@ -151,14 +151,14 @@ class PBData {
                 .setSendBoxSyncTime(sendTime)
                 .build();
 
-        ImWebSocket.QueryMsgBody body = ImWebSocket.QueryMsgBody.newBuilder()
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(SYNC_MSG)
                 .setTargetId(userId)
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
-        ImWebSocket.ImWebsocketMsg m = ImWebSocket.ImWebsocketMsg.newBuilder()
+        Connect.ImWebsocketMsg m = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.query)
                 .setQos(Qos.yes)
@@ -168,7 +168,7 @@ class PBData {
     }
 
     byte[] pingData() {
-        ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.newBuilder()
+        Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.ping)
                 .setQos(Qos.no)
@@ -177,11 +177,11 @@ class PBData {
     }
 
     byte[] publishAckData(int index) {
-        ImWebSocket.PublishAckMsgBody body = ImWebSocket.PublishAckMsgBody.newBuilder()
+        Connect.PublishAckMsgBody body = Connect.PublishAckMsgBody.newBuilder()
                 .setIndex(index)
                 .build();
 
-        ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.newBuilder()
+        Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.publishAck)
                 .setQos(Qos.no)
@@ -193,7 +193,7 @@ class PBData {
     PBRcvObj rcvObjWithBytes(ByteBuffer byteBuffer) {
         PBRcvObj obj = new PBRcvObj();
         try {
-            ImWebSocket.ImWebsocketMsg msg = ImWebSocket.ImWebsocketMsg.parseFrom(byteBuffer);
+            Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.parseFrom(byteBuffer);
             if (msg == null) {
                 LoggerUtils.e("rcvObjWithBytes msg is null");
                 obj.setRcvType(PBRcvObj.PBRcvType.parseError);
@@ -283,7 +283,7 @@ class PBData {
     }
 
     @NonNull
-    private PBRcvObj qryHisMsgAckWithImWebsocketMsg(@NonNull ImWebSocket.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj qryHisMsgAckWithImWebsocketMsg(@NonNull Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.DownMsgSet set = Appmessages.DownMsgSet.parseFrom(msg.getQryAckMsgBody().getData());
         obj.setRcvType(PBRcvObj.PBRcvType.qryHisMessagesAck);
@@ -299,7 +299,7 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj syncConversationsAckWithImWebsocketMsg(ImWebSocket.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj syncConversationsAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.QryConversationsResp resp = Appmessages.QryConversationsResp.parseFrom(msg.getQryAckMsgBody().getData());
         obj.setRcvType(PBRcvObj.PBRcvType.syncConversationsAck);
@@ -315,7 +315,7 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj syncMsgAckWithImWebsocketMsg(ImWebSocket.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj syncMsgAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.DownMsgSet set = Appmessages.DownMsgSet.parseFrom(msg.getQryAckMsgBody().getData());
         obj.setRcvType(PBRcvObj.PBRcvType.syncMessagesAck);
