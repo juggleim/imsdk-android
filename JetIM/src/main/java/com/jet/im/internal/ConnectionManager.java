@@ -119,7 +119,7 @@ public class ConnectionManager implements IConnectionManager {
 
                 @Override
                 public void onDisconnect(int errorCode) {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);
+                    changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode);
                 }
 
                 @Override
@@ -171,7 +171,7 @@ public class ConnectionManager implements IConnectionManager {
             mHeartBeatManager.start();
         }
         if (status != JetIMCore.ConnectionStatusInternal.CONNECTED
-                && mCore.getConnectionStatus() != JetIMCore.ConnectionStatusInternal.CONNECTED) {
+                && mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED) {
             mHeartBeatManager.stop();
         }
         JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
