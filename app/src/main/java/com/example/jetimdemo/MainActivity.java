@@ -19,6 +19,7 @@ import com.example.jetimdemo.databinding.ActivityMainBinding;
 import com.jet.im.JetIM;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
+import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
@@ -147,6 +148,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         JetIM.getInstance().getConnectionManager().connect(TOKEN1);
+        JetIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
+            @Override
+            public void onMessageSyncComplete() {
+                Log.d("lifei", "onMessageSyncComplete");
+            }
+        });
+        JetIM.getInstance().getConversationManager().addSyncListener("main", new IConversationManager.IConversationSyncListener() {
+            @Override
+            public void onConversationSyncComplete() {
+                Log.d("lifei", "onConversationSyncComplete");
+            }
+        });
         JetIM.getInstance().getMessageManager().addListener("main", new IMessageManager.IMessageListener() {
             @Override
             public void onMessageReceive(Message message) {

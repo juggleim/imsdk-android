@@ -1,5 +1,7 @@
 package com.jet.im.internal;
 
+import android.text.TextUtils;
+
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
@@ -10,6 +12,8 @@ import com.jet.im.model.ConversationInfo;
 import com.jet.im.utils.LoggerUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConversationManager implements IConversationManager {
 
@@ -52,6 +56,24 @@ public class ConversationManager implements IConversationManager {
         setDraft(conversation, "");
     }
 
+    @Override
+    public void addSyncListener(String key, IConversationSyncListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mSyncListenerMap == null) {
+            mSyncListenerMap = new ConcurrentHashMap<>();
+        }
+        mSyncListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeSyncListener(String key) {
+        if (!TextUtils.isEmpty(key) && mSyncListenerMap != null) {
+            mSyncListenerMap.remove(key);
+        }
+    }
+
     void syncConversations(ICompleteCallback callback) {
         if (mCore.getWebSocket() == null) {
             return;
@@ -69,6 +91,11 @@ public class ConversationManager implements IConversationManager {
                 if (!isFinished) {
                     syncConversations(callback);
                 } else {
+                    if (mSyncListenerMap != null) {
+                        for (Map.Entry<String, IConversationSyncListener> entry : mSyncListenerMap.entrySet()) {
+                            entry.getValue().onConversationSyncComplete();
+                        }
+                    }
                     if (callback != null) {
                         callback.onComplete();
                     }
@@ -90,5 +117,6 @@ public class ConversationManager implements IConversationManager {
     }
 
     private final JetIMCore mCore;
+    private ConcurrentHashMap<String, IConversationSyncListener> mSyncListenerMap;
     private static final int CONVERSATION_SYNC_COUNT = 100;
 }

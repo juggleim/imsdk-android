@@ -26,4 +26,12 @@ public interface IConversationManager {
     void setDraft(Conversation conversation, String draft);
 
     void clearDraft(Conversation conversation);
+
+    void addSyncListener(String key, IConversationSyncListener listener);
+
+    void removeSyncListener(String key);
+
+    interface IConversationSyncListener {
+        void onConversationSyncComplete();
+    }
 }
