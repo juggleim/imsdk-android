@@ -118,6 +118,11 @@ public class ConnectionManager implements IConnectionManager {
                 }
 
                 @Override
+                public void onDisconnect(int errorCode) {
+                    changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);
+                }
+
+                @Override
                 public void onWebSocketFail() {
                     changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
                 }

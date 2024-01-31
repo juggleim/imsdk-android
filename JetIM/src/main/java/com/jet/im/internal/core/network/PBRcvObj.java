@@ -61,6 +61,11 @@ class PBRcvObj {
         long syncTime;
     }
 
+    static class DisconnectMsg {
+        int code;
+        long timestamp;
+    }
+
     static class PBRcvType {
         static final int parseError = 0;
         static final int cmdMatchError = 1;
@@ -72,6 +77,7 @@ class PBRcvObj {
         static final int publishMsg = 7;
         static final int publishMsgNtf = 8;
         static final int pong = 9;
+        static final int disconnectMsg = 10;
     }
 
     public int getRcvType() {
@@ -88,6 +94,7 @@ class PBRcvObj {
     SyncConvAck mSyncConvAck;
     PublishMsgBody mPublishMsgBody;
     PublishMsgNtf mPublishMsgNtf;
+    DisconnectMsg mDisconnectMsg;
     private int mRcvType;
 }
 

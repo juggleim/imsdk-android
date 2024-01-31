@@ -274,6 +274,14 @@ class PBData {
                     }
                     break;
 
+                case DISCONNECTMSGBODY:
+                    obj.setRcvType(PBRcvObj.PBRcvType.disconnectMsg);
+                    PBRcvObj.DisconnectMsg m = new PBRcvObj.DisconnectMsg();
+                    m.code = msg.getDisconnectMsgBody().getCode();
+                    m.timestamp = msg.getDisconnectMsgBody().getTimestamp();
+                    obj.mDisconnectMsg = m;
+                    break;
+
                     //todo
             }
         } catch (InvalidProtocolBufferException e) {

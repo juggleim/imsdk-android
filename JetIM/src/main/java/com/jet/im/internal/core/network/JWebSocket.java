@@ -89,6 +89,7 @@ public class JWebSocket extends WebSocketClient {
 
     public interface IWebSocketConnectListener {
         void onConnectComplete(int errorCode, String userId);
+        void onDisconnect(int errorCode);
         void onWebSocketFail();
         void onWebSocketClose();
     }
@@ -140,6 +141,9 @@ public class JWebSocket extends WebSocketClient {
                 break;
             case PBRcvObj.PBRcvType.pong:
                 handlePong();
+                break;
+            case PBRcvObj.PBRcvType.disconnectMsg:
+                handleDisconnectMsg(obj.mDisconnectMsg);
                 break;
         }
     }
@@ -252,6 +256,12 @@ public class JWebSocket extends WebSocketClient {
 
     private void handlePong() {
         LoggerUtils.d("pong");
+    }
+
+    private void handleDisconnectMsg(PBRcvObj.DisconnectMsg msg) {
+        if (mConnectListener != null) {
+            mConnectListener.onDisconnect(msg.code);
+        }
     }
 
     private void sendWhenOpen(byte[] bytes) {
