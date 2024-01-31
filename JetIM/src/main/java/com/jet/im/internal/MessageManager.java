@@ -52,7 +52,11 @@ public class MessageManager implements IMessageManager {
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long msgIndex) {
-                mCore.setMessageSendSyncTime(timestamp);
+                if (mSyncProcessing) {
+                    mCachedSendTime = timestamp;
+                } else {
+                    mCore.setMessageSendSyncTime(timestamp);
+                }
                 mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, msgIndex);
                 message.setClientMsgNo(clientMsgNo);
                 message.setMessageId(msgId);
@@ -156,6 +160,7 @@ public class MessageManager implements IMessageManager {
 
 
     void syncMessage() {
+        mSyncProcessing = true;
         if (!mHasSetMessageListener) {
             mHasSetMessageListener = true;
             if (mCore.getWebSocket() != null) {
@@ -174,6 +179,15 @@ public class MessageManager implements IMessageManager {
                         if (!isFinished) {
                             sync();
                         } else {
+                            mSyncProcessing = false;
+                            if (mCachedSendTime > 0) {
+                                mCore.setMessageSendSyncTime(mCachedSendTime);
+                                mCachedSendTime = -1;
+                            }
+                            if (mCachedReceiveTime > 0) {
+                                mCore.setMessageReceiveTime(mCachedReceiveTime);
+                                mCachedReceiveTime = -1;
+                            }
                             if (mSyncListenerMap != null) {
                                 for (Map.Entry<String, IMessageSyncListener> entry : mSyncListenerMap.entrySet()) {
                                     entry.getValue().onMessageSyncComplete();
@@ -186,6 +200,7 @@ public class MessageManager implements IMessageManager {
                     public void onSyncNotify(long syncTime) {
                         LoggerUtils.d("onSyncNotify, syncTime is " + syncTime + ", receiveSyncTime is " + mCore.getMessageReceiveTime());
                         if (syncTime > mCore.getMessageReceiveTime()) {
+                            mSyncProcessing = true;
                             sync();
                         }
 
@@ -215,11 +230,20 @@ public class MessageManager implements IMessageManager {
                 }
             }
         }
-        if (sendTime > 0) {
-            mCore.setMessageSendSyncTime(sendTime);
-        }
-        if (receiveTime > 0) {
-            mCore.setMessageReceiveTime(receiveTime);
+        if (mSyncProcessing) {
+            if (sendTime > 0) {
+                mCachedSendTime = sendTime;
+            }
+            if (receiveTime > 0) {
+                mCachedReceiveTime = receiveTime;
+            }
+        } else {
+            if (sendTime > 0) {
+                mCore.setMessageSendSyncTime(sendTime);
+            }
+            if (receiveTime > 0) {
+                mCore.setMessageReceiveTime(receiveTime);
+            }
         }
     }
 
@@ -236,6 +260,9 @@ public class MessageManager implements IMessageManager {
         return Long.toString(result);
     }
     private int mIncreaseId = 0;
+    private boolean mSyncProcessing = false;
+    private long mCachedReceiveTime = -1;
+    private long mCachedSendTime = -1;
     private boolean mHasSetMessageListener = false;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
