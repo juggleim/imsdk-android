@@ -94,6 +94,7 @@ public class JWebSocket extends WebSocketClient {
     }
 
     public interface IWebSocketMessageListener {
+        void onMessageReceive(ConcreteMessage message);
         void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished);
         void onSyncNotify(long syncTime);
     }
@@ -235,10 +236,8 @@ public class JWebSocket extends WebSocketClient {
     }
 
     private void handleReceiveMessage(PBRcvObj.PublishMsgBody body) {
-        List<ConcreteMessage> list = new ArrayList<>(1);
-        list.add(body.rcvMessage);
         if (mMessageListener != null) {
-            mMessageListener.onMessageReceive(list, true);
+            mMessageListener.onMessageReceive(body.rcvMessage);
         }
         if (body.qos == 1) {
             sendPublishAck(body.index);

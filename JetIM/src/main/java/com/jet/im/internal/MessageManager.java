@@ -135,38 +135,46 @@ public class MessageManager implements IMessageManager {
         }
     }
 
+    @Override
+    public void addSyncListener(String key, IMessageSyncListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mSyncListenerMap == null) {
+            mSyncListenerMap = new ConcurrentHashMap<>();
+        }
+        mSyncListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeSyncListener(String key) {
+        if (!TextUtils.isEmpty(key) && mSyncListenerMap != null) {
+            mSyncListenerMap.remove(key);
+        }
+    }
+
 
     void syncMessage() {
         mCore.getWebSocket().setMessageListener(new JWebSocket.IWebSocketMessageListener() {
             @Override
-            public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
-                //todo 排重
-                //todo cmd message 吞掉
-                mCore.getDbManager().insertMessages(messages);
+            public void onMessageReceive(ConcreteMessage message) {
+                List<ConcreteMessage> list = new ArrayList<>();
+                list.add(message);
+                handleReceiveMessages(list);
+            }
 
-                long sendTime = 0;
-                long receiveTime = 0;
-                for (ConcreteMessage message : messages) {
-                    if (message.getDirection() == Message.MessageDirection.SEND) {
-                        sendTime = message.getTimestamp();
-                    } else if (message.getDirection() == Message.MessageDirection.RECEIVE) {
-                        receiveTime = message.getTimestamp();
-                    }
-                    if (mListenerMap != null) {
-                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
-                            entry.getValue().onMessageReceive(message);
-                        }
-                    }
-                }
-                if (sendTime > 0) {
-                    mCore.setMessageSendSyncTime(sendTime);
-                }
-                if (receiveTime > 0) {
-                    mCore.setMessageReceiveTime(receiveTime);
-                }
+            @Override
+            public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
+                handleReceiveMessages(messages);
 
                 if (!isFinished) {
                     sync();
+                } else {
+                    if (mSyncListenerMap != null) {
+                        for (Map.Entry<String, IMessageSyncListener> entry : mSyncListenerMap.entrySet()) {
+                            entry.getValue().onMessageSyncComplete();
+                        }
+                    }
                 }
             }
 
@@ -182,6 +190,33 @@ public class MessageManager implements IMessageManager {
         sync();
     }
 
+    private void handleReceiveMessages(List<ConcreteMessage> messages) {
+        //todo 排重
+        //todo cmd message 吞掉
+        mCore.getDbManager().insertMessages(messages);
+
+        long sendTime = 0;
+        long receiveTime = 0;
+        for (ConcreteMessage message : messages) {
+            if (message.getDirection() == Message.MessageDirection.SEND) {
+                sendTime = message.getTimestamp();
+            } else if (message.getDirection() == Message.MessageDirection.RECEIVE) {
+                receiveTime = message.getTimestamp();
+            }
+            if (mListenerMap != null) {
+                for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                    entry.getValue().onMessageReceive(message);
+                }
+            }
+        }
+        if (sendTime > 0) {
+            mCore.setMessageSendSyncTime(sendTime);
+        }
+        if (receiveTime > 0) {
+            mCore.setMessageReceiveTime(receiveTime);
+        }
+    }
+
     private void sync() {
         mCore.getWebSocket().syncMessages(mCore.getMessageReceiveTime(), mCore.getMessageSendSyncTime(), mCore.getUserId());
     }
@@ -194,4 +229,5 @@ public class MessageManager implements IMessageManager {
     }
     private int mIncreaseId = 0;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
+    private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
 }

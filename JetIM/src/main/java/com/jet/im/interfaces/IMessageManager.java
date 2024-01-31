@@ -41,7 +41,14 @@ public interface IMessageManager {
     void addListener(String key, IMessageListener listener);
     void removeListener(String key);
 
+    void addSyncListener(String key, IMessageSyncListener listener);
+    void removeSyncListener(String key);
+
     interface IMessageListener {
         void onMessageReceive(Message message);
+    }
+
+    interface IMessageSyncListener {
+        void onMessageSyncComplete();
     }
 }
