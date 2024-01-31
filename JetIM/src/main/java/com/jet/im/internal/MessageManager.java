@@ -72,8 +72,9 @@ public class MessageManager implements IMessageManager {
                 }
             }
         };
-
-        mCore.getWebSocket().sendIMMessage(content, conversation, message.getClientUid(), messageCallback);
+        if (mCore.getWebSocket() != null) {
+            mCore.getWebSocket().sendIMMessage(content, conversation, message.getClientUid(), messageCallback);
+        }
         return message;
     }
 
@@ -155,38 +156,43 @@ public class MessageManager implements IMessageManager {
 
 
     void syncMessage() {
-        mCore.getWebSocket().setMessageListener(new JWebSocket.IWebSocketMessageListener() {
-            @Override
-            public void onMessageReceive(ConcreteMessage message) {
-                List<ConcreteMessage> list = new ArrayList<>();
-                list.add(message);
-                handleReceiveMessages(list);
-            }
+        if (!mHasSetMessageListener) {
+            mHasSetMessageListener = true;
+            if (mCore.getWebSocket() != null) {
+                mCore.getWebSocket().setMessageListener(new JWebSocket.IWebSocketMessageListener() {
+                    @Override
+                    public void onMessageReceive(ConcreteMessage message) {
+                        List<ConcreteMessage> list = new ArrayList<>();
+                        list.add(message);
+                        handleReceiveMessages(list);
+                    }
 
-            @Override
-            public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
-                handleReceiveMessages(messages);
+                    @Override
+                    public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
+                        handleReceiveMessages(messages);
 
-                if (!isFinished) {
-                    sync();
-                } else {
-                    if (mSyncListenerMap != null) {
-                        for (Map.Entry<String, IMessageSyncListener> entry : mSyncListenerMap.entrySet()) {
-                            entry.getValue().onMessageSyncComplete();
+                        if (!isFinished) {
+                            sync();
+                        } else {
+                            if (mSyncListenerMap != null) {
+                                for (Map.Entry<String, IMessageSyncListener> entry : mSyncListenerMap.entrySet()) {
+                                    entry.getValue().onMessageSyncComplete();
+                                }
+                            }
                         }
                     }
-                }
-            }
 
-            @Override
-            public void onSyncNotify(long syncTime) {
-                LoggerUtils.d("onSyncNotify, syncTime is " + syncTime + ", receiveSyncTime is " + mCore.getMessageReceiveTime());
-                if (syncTime > mCore.getMessageReceiveTime()) {
-                    sync();
-                }
+                    @Override
+                    public void onSyncNotify(long syncTime) {
+                        LoggerUtils.d("onSyncNotify, syncTime is " + syncTime + ", receiveSyncTime is " + mCore.getMessageReceiveTime());
+                        if (syncTime > mCore.getMessageReceiveTime()) {
+                            sync();
+                        }
 
+                    }
+                });
             }
-        });
+        }
         sync();
     }
 
@@ -218,7 +224,9 @@ public class MessageManager implements IMessageManager {
     }
 
     private void sync() {
-        mCore.getWebSocket().syncMessages(mCore.getMessageReceiveTime(), mCore.getMessageSendSyncTime(), mCore.getUserId());
+        if (mCore.getWebSocket() != null) {
+            mCore.getWebSocket().syncMessages(mCore.getMessageReceiveTime(), mCore.getMessageSendSyncTime(), mCore.getUserId());
+        }
     }
 
     private String createClientUid() {
@@ -228,6 +236,7 @@ public class MessageManager implements IMessageManager {
         return Long.toString(result);
     }
     private int mIncreaseId = 0;
+    private boolean mHasSetMessageListener = false;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
 }

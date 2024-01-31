@@ -53,6 +53,9 @@ public class ConversationManager implements IConversationManager {
     }
 
     void syncConversations(ICompleteCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            return;
+        }
         mCore.getWebSocket().syncConversations(mCore.getConversationSyncTime(), CONVERSATION_SYNC_COUNT, mCore.getUserId(), new SyncConversationsCallback() {
             @Override
             public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, boolean isFinished) {

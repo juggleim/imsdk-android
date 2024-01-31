@@ -17,7 +17,9 @@ public class HeartBeatManager {
             @Override
             public void run() {
                 LoggerUtils.d("send ping");
-                mCore.getWebSocket().ping();
+                if (mCore.getWebSocket() != null) {
+                    mCore.getWebSocket().ping();
+                }
             }
         }, PING_INTERVAL, PING_INTERVAL);
     }
