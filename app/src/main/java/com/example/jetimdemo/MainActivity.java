@@ -236,10 +236,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(Message message, int errorCode) {
                 Log.i("TAG", "send message error, code is " + errorCode);
+                Message mm = JetIM.getInstance().getMessageManager().resendMessage(message, new IMessageManager.ISendMessageCallback() {
+                    @Override
+                    public void onSuccess(Message message) {
+                        Log.i("TAG", "send message success");
+                    }
+
+                    @Override
+                    public void onError(Message message, int errorCode) {
+                        Log.i("TAG", "send message error, code is " + errorCode);
+                    }
+                });
+                Log.i("TAG", "resend ");
             }
         };
         Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
-//        Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
+        Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
 //        Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
 //        Thread.sleep(500);

@@ -22,4 +22,6 @@ public class JErrorCode {
     public static final int USER_KICKED_BY_OTHER_CLIENT = 11011;
     //用户注销下线
     public static final int USER_LOG_OUT = 11012;
+
+    public static final int INVALID_PARAM = 21003;
 }

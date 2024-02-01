@@ -16,6 +16,9 @@ public interface IMessageManager {
                      Conversation conversation,
                      ISendMessageCallback callback);
 
+    Message resendMessage(Message message,
+                          ISendMessageCallback callback);
+
     List<Message> getMessages(Conversation conversation,
                               int count,
                               long timestamp,

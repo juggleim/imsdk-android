@@ -85,6 +85,21 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public Message resendMessage(Message message, ISendMessageCallback callback) {
+        if (message.getClientMsgNo() <= 0
+        || message.getContent() == null
+        || message.getConversation() == null
+        || message.getConversation().getConversationId() == null) {
+            if (callback != null) {
+                callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM);
+            }
+            return message;
+        }
+        deleteMessageByClientMsgNo(message.getClientMsgNo());
+        return sendMessage(message.getContent(), message.getConversation(), callback);
+    }
+
+    @Override
     public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction) {
         return getMessages(conversation, count, timestamp, direction, new ArrayList<>());
     }
