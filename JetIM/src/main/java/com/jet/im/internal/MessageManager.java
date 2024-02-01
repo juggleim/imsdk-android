@@ -6,6 +6,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.internal.core.network.JWebSocket;
+import com.jet.im.internal.core.network.QryHisMsgCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
@@ -132,6 +133,33 @@ public class MessageManager implements IMessageManager {
     @Override
     public void clearMessages(Conversation conversation) {
         mCore.getDbManager().clearMessages(conversation);
+    }
+
+    @Override
+    public void getRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetMessagesCallback callback) {
+        if (count > 100) {
+            count = 100;
+        }
+        mCore.getWebSocket().queryHisMsg(conversation, startTime, count, direction, new QryHisMsgCallback() {
+            @Override
+            public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
+                //todo 排重
+                //todo cmd message 吞掉
+                //当拉回来的消息本地数据库存在时，需要把本地数据库的 clientMsgNo 赋值回 message 里
+                mCore.getDbManager().insertMessages(messages);
+                if (callback != null) {
+                    List<Message> result = new ArrayList<>(messages);
+                    callback.onSuccess(result);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
     }
 
     @Override

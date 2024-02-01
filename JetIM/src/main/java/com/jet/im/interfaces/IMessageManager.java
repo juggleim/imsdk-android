@@ -12,6 +12,11 @@ public interface IMessageManager {
         void onSuccess(Message message);
         void onError(Message message, int errorCode);
     }
+
+    interface IGetMessagesCallback {
+        void onSuccess(List<Message> messages);
+        void onError(int errorCode);
+    }
     Message sendMessage(MessageContent content,
                      Conversation conversation,
                      ISendMessageCallback callback);
@@ -39,6 +44,12 @@ public interface IMessageManager {
     void deleteMessageByMessageId(String messageId);
 
     void clearMessages(Conversation conversation);
+
+    void getRemoteMessages(Conversation conversation,
+                           int count,
+                           long startTime,
+                           JetIMConst.PullDirection direction,
+                           IGetMessagesCallback callback);
 
     void registerContentType(Class<? extends MessageContent> messageContentClass);
     void addListener(String key, IMessageListener listener);

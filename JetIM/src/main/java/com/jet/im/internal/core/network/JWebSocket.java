@@ -5,6 +5,7 @@ import android.os.Build;
 
 import androidx.annotation.NonNull;
 
+import com.jet.im.JetIMConst;
 import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.util.JUtility;
@@ -79,6 +80,13 @@ public class JWebSocket extends WebSocketClient {
                              long sendTime,
                              String userId) {
         byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mMsgIndex++);
+        sendWhenOpen(bytes);
+    }
+
+    public void queryHisMsg(Conversation conversation, long startTime, int count, JetIMConst.PullDirection direction, QryHisMsgCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, mMsgIndex++);
+        mMsgCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
@@ -218,7 +226,16 @@ public class JWebSocket extends WebSocketClient {
     }
 
     private void handleQryHisMsgAck(PBRcvObj.QryHisMsgAck ack) {
-        //todo
+        LoggerUtils.d("handleQryHisMsgAck");
+        IWebSocketCallback callback = mMsgCallbackMap.remove(ack.index);
+        if (callback instanceof QryHisMsgCallback) {
+            QryHisMsgCallback qCallback = (QryHisMsgCallback) callback;
+            if (ack.code != 0) {
+                qCallback.onError(ack.code);
+            } else {
+                qCallback.onSuccess(ack.msgList, ack.isFinished);
+            }
+        }
     }
 
     private void handleSyncConversationAck(PBRcvObj.SyncConvAck ack) {

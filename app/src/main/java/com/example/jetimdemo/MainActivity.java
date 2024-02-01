@@ -60,16 +60,30 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
 
+                    //get remote messages
+                    Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid5");
+                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, 0, JetIMConst.PullDirection.NEWER, new IMessageManager.IGetMessagesCallback() {
+                        @Override
+                        public void onSuccess(List<Message> messages) {
+                            Log.i("lifei", "getRemoteMessage count is  " + messages.size());
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            Log.i("lifei", "getRemoteMessage error code is  " + errorCode);
+                        }
+                    });
+
                     //disconnect
 //                    JetIM.getInstance().getConnectionManager().disconnect(false);
 //                    JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 
                     //send message
-                    try {
-                        sendMessages();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+//                    try {
+//                        sendMessages();
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
 
 //                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
 //                    Log.e("lifei", "conversationList count is " + l.size());

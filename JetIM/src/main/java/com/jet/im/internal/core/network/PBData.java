@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
@@ -155,6 +156,31 @@ class PBData {
                 .setIndex(index)
                 .setTopic(SYNC_MSG)
                 .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = Connect.ImWebsocketMsg.newBuilder()
+                .setVersion(PROTOCOL_VERSION)
+                .setCmd(CmdType.query)
+                .setQos(Qos.yes)
+                .setQryMsgBody(body)
+                .build();
+        return m.toByteArray();
+    }
+
+    byte[] queryHisMsgData(Conversation conversation, long startTime, int count, JetIMConst.PullDirection direction, int index) {
+        int order = direction == JetIMConst.PullDirection.OLDER ? 0 : 1;
+        Appmessages.QryHisMsgsReq req = Appmessages.QryHisMsgsReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setStartTime(startTime)
+                .setCount(count)
+                .setOrder(order)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_HIS_MSG)
+                .setTargetId(conversation.getConversationId())
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
