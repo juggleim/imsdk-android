@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN1);
+        JetIM.getInstance().getConnectionManager().connect("CgZhcHBrZXkaIIVPMcNbO8kmKTnyaqLevfKvQvtfKhrO0R5H//8SfduP");
         JetIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
             @Override
             public void onMessageSyncComplete() {

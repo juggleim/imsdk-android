@@ -169,12 +169,12 @@ public class MessageManager implements IMessageManager {
                     public void onMessageReceive(ConcreteMessage message) {
                         List<ConcreteMessage> list = new ArrayList<>();
                         list.add(message);
-                        handleReceiveMessages(list);
+                        handleReceiveMessages(list, false);
                     }
 
                     @Override
                     public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
-                        handleReceiveMessages(messages);
+                        handleReceiveMessages(messages, true);
 
                         if (!isFinished) {
                             sync();
@@ -211,7 +211,7 @@ public class MessageManager implements IMessageManager {
         sync();
     }
 
-    private void handleReceiveMessages(List<ConcreteMessage> messages) {
+    private void handleReceiveMessages(List<ConcreteMessage> messages, boolean isSync) {
         //todo 排重
         //todo cmd message 吞掉
         mCore.getDbManager().insertMessages(messages);
@@ -230,7 +230,8 @@ public class MessageManager implements IMessageManager {
                 }
             }
         }
-        if (mSyncProcessing) {
+        ////直发的消息，而且正在同步中，不直接更新 sync time
+        if (!isSync && mSyncProcessing) {
             if (sendTime > 0) {
                 mCachedSendTime = sendTime;
             }
