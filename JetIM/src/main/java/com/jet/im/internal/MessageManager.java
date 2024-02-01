@@ -70,6 +70,8 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode, long clientMsgNo) {
+                message.setState(Message.MessageState.FAIL);
+                mCore.getDbManager().messageSendFail(clientMsgNo);
                 if (callback != null) {
                     message.setClientMsgNo(clientMsgNo);
                     callback.onError(message, errorCode);

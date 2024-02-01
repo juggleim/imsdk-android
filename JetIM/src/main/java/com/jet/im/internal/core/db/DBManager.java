@@ -280,6 +280,11 @@ public class DBManager {
         execSQL(sql, args);
     }
 
+    public void messageSendFail(long clientMsgNo) {
+        String sql = MessageSql.sqlMessageSendFail(clientMsgNo);
+        execSQL(sql);
+    }
+
     public void deleteMessageByClientMsgNo(long clientMsgNo) {
         String sql = MessageSql.SQL_DELETE_MESSAGE + MessageSql.SQL_CLIENT_MSG_NO_IS + clientMsgNo;
         execSQL(sql);

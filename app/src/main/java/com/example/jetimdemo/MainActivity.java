@@ -65,18 +65,18 @@ public class MainActivity extends AppCompatActivity {
 //                    JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 
                     //send message
-//                    try {
-//                        sendMessages();
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
+                    try {
+                        sendMessages();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
 
-                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
-                    Log.e("lifei", "conversationList count is " + l.size());
-
-                    int[] conversationTypes = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
-                    l = JetIM.getInstance().getConversationManager().getConversationInfoList( 100, 1706445483689L, JetIMConst.PullDirection.NEWER);
-                    Log.e("lifei", "conversationList count is " + l.size());
+//                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
+//                    Log.e("lifei", "conversationList count is " + l.size());
+//
+//                    int[] conversationTypes = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
+//                    l = JetIM.getInstance().getConversationManager().getConversationInfoList( 100, 1706445483689L, JetIMConst.PullDirection.NEWER);
+//                    Log.e("lifei", "conversationList count is " + l.size());
 //
 //                    //get conversation
 //                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect("CgZhcHBrZXkaIIVPMcNbO8kmKTnyaqLevfKvQvtfKhrO0R5H//8SfduP");
+        JetIM.getInstance().getConnectionManager().connect(TOKEN1);
         JetIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
             @Override
             public void onMessageSyncComplete() {
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
 //        Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
 //        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
+//        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
 
     }
 
