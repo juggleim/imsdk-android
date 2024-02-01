@@ -61,18 +61,18 @@ public class MainActivity extends AppCompatActivity {
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
 
                     //get remote messages
-                    Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid5");
-                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, 0, JetIMConst.PullDirection.NEWER, new IMessageManager.IGetMessagesCallback() {
-                        @Override
-                        public void onSuccess(List<Message> messages) {
-                            Log.i("lifei", "getRemoteMessage count is  " + messages.size());
-                        }
-
-                        @Override
-                        public void onError(int errorCode) {
-                            Log.i("lifei", "getRemoteMessage error code is  " + errorCode);
-                        }
-                    });
+//                    Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid5");
+//                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, System.currentTimeMillis(), JetIMConst.PullDirection.NEWER, new IMessageManager.IGetMessagesCallback() {
+//                        @Override
+//                        public void onSuccess(List<Message> messages) {
+//                            Log.i("lifei", "getRemoteMessage count is  " + messages.size());
+//                        }
+//
+//                        @Override
+//                        public void onError(int errorCode) {
+//                            Log.i("lifei", "getRemoteMessage error code is  " + errorCode);
+//                        }
+//                    });
 
                     //disconnect
 //                    JetIM.getInstance().getConnectionManager().disconnect(false);
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendMessages() throws InterruptedException {
-        Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
         TextMessage t = new TextMessage("sdfasdf");
         t.setExtra("extra");
         ImageMessage i = new ImageMessage();

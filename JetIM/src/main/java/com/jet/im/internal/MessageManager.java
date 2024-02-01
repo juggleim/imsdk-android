@@ -46,6 +46,7 @@ public class MessageManager implements IMessageManager {
         message.setState(Message.MessageState.SENDING);
         message.setSenderUserId(mCore.getUserId());
         message.setClientUid(createClientUid());
+        message.setTimestamp(System.currentTimeMillis());
 
         List<ConcreteMessage> list = new ArrayList<>(1);
         list.add(message);
