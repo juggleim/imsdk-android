@@ -91,17 +91,16 @@ class PBData {
         String topic = "";
         switch (conversationType) {
             case PRIVATE:
-                topic = "p_msg";
+                topic = P_MSG;
                 break;
             case GROUP:
-                topic = "g_msg";
+                topic = G_MSG;
                 break;
             case CHATROOM:
-                topic = "c_msg";
+                topic = C_MSG;
                 break;
             case SYSTEM:
                 //todo 系统消息还没做
-//                topic =
                 break;
         }
 
@@ -113,12 +112,30 @@ class PBData {
                 .setData(upMsg.toByteString())
                 .build();
 
-        Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
-                .setVersion(PROTOCOL_VERSION)
-                .setCmd(CmdType.publish)
-                .setQos(Qos.yes)
-                .setPublishMsgBody(publishMsgBody)
+        mMsgCmdMap.put(index, topic);
+
+        Connect.ImWebsocketMsg msg = createImWebsocketMsgWithPublishMsg(publishMsgBody);
+        return msg.toByteArray();
+    }
+
+    byte[] recallMessageData(String messageId, Conversation conversation, long timestamp, int index) {
+        Appmessages.RecallMsgReq req = Appmessages.RecallMsgReq.newBuilder()
+                .setMsgId(messageId)
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setMsgTime(timestamp)
                 .build();
+
+        Connect.PublishMsgBody publishMsg = Connect.PublishMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RECALL_MSG)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, RECALL_MSG);
+
+        Connect.ImWebsocketMsg msg = createImWebsocketMsgWithPublishMsg(publishMsg);
         return msg.toByteArray();
     }
 
@@ -227,6 +244,7 @@ class PBData {
             }
             if (msg.getCmd() == CmdType.pong) {
                 obj.setRcvType(PBRcvObj.PBRcvType.pong);
+                LoggerUtils.d("mMsgCmdMap size is " + mMsgCmdMap.size());
                 return obj;
             }
             switch (msg.getTestofCase()) {
@@ -238,8 +256,12 @@ class PBData {
                     obj.mConnectAck = ack;
                     break;
 
-                case PUBACKMSGBODY:
-                    obj.setRcvType(PBRcvObj.PBRcvType.publishMsgAck);
+                case PUBACKMSGBODY: {
+                    int type = getTypeInCmdMap(msg.getPubAckMsgBody().getIndex());
+                    obj.setRcvType(type);
+                    if (type == PBRcvObj.PBRcvType.cmdMatchError) {
+                        break;
+                    }
                     PBRcvObj.PublishMsgAck a = new PBRcvObj.PublishMsgAck();
                     a.index = msg.getPubAckMsgBody().getIndex();
                     a.code = msg.getPubAckMsgBody().getCode();
@@ -247,21 +269,13 @@ class PBData {
                     a.timestamp = msg.getPubAckMsgBody().getTimestamp();
                     a.msgIndex = msg.getPubAckMsgBody().getMsgIndex();
                     obj.mPublishMsgAck = a;
+                }
                     break;
 
                 case QRYACKMSGBODY:
-                    String cachedCmd = mMsgCmdMap.remove(msg.getQryAckMsgBody().getIndex());
-                    if (TextUtils.isEmpty(cachedCmd)) {
-                        LoggerUtils.e("rcvObjWithBytes ack can't match a cached cmd");
-                        obj.setRcvType(PBRcvObj.PBRcvType.cmdMatchError);
-                        return obj;
-                    }
-                    Integer type = sCmdAckMap.get(cachedCmd);
-                    if (type == null) {
-                        LoggerUtils.e("rcvObjWithBytes ack cmd match error, cmd is " + cachedCmd);
-                        obj.setRcvType(PBRcvObj.PBRcvType.cmdMatchError);
-                        return obj;
-                    }
+                    int type = getTypeInCmdMap(msg.getQryAckMsgBody().getIndex());
+                    obj.setRcvType(type);
+
                     switch (type) {
                         case PBRcvObj.PBRcvType.qryHisMessagesAck:
                             obj = qryHisMsgAckWithImWebsocketMsg(msg);
@@ -366,6 +380,15 @@ class PBData {
         return obj;
     }
 
+    private Connect.ImWebsocketMsg createImWebsocketMsgWithPublishMsg(Connect.PublishMsgBody publishMsgBody) {
+        return Connect.ImWebsocketMsg.newBuilder()
+                .setVersion(PROTOCOL_VERSION)
+                .setCmd(CmdType.publish)
+                .setQos(Qos.yes)
+                .setPublishMsgBody(publishMsgBody)
+                .build();
+    }
+
     private ConcreteMessage messageWithDownMsg(Appmessages.DownMsg downMsg) {
         ConcreteMessage message = new ConcreteMessage();
         Conversation.ConversationType type = conversationTypeFromChannelType(downMsg.getChannelType());
@@ -381,6 +404,12 @@ class PBData {
         message.setSenderUserId(downMsg.getSenderId());
         message.setMsgIndex(downMsg.getMsgIndex());
         message.setContent(ContentTypeCenter.getInstance().getContent(downMsg.getMsgContent().toByteArray(), downMsg.getMsgType()));
+        int flags = ContentTypeCenter.getInstance().flagsWithType(downMsg.getMsgType());
+        if (flags < 0) {
+            message.setFlags(downMsg.getFlags());
+        } else {
+            message.setFlags(flags);
+        }
         return message;
     }
 
@@ -417,6 +446,20 @@ class PBData {
         return result;
     }
 
+    private int getTypeInCmdMap(Integer index) {
+        String cachedCmd = mMsgCmdMap.remove(index);
+        if (TextUtils.isEmpty(cachedCmd)) {
+            LoggerUtils.e("rcvObjWithBytes ack can't match a cached cmd");
+            return PBRcvObj.PBRcvType.cmdMatchError;
+        }
+        Integer type = sCmdAckMap.get(cachedCmd);
+        if (type == null) {
+            LoggerUtils.e("rcvObjWithBytes ack cmd match error, cmd is " + cachedCmd);
+            return PBRcvObj.PBRcvType.cmdMatchError;
+        }
+        return type;
+    }
+
     private static class CmdType {
         private static final int connect = 0;
         private static final int connectAck = 1;
@@ -439,6 +482,10 @@ class PBData {
     private static final String QRY_HIS_MSG = "qry_hismsgs";
     private static final String SYNC_CONV = "sync_convers";
     private static final String SYNC_MSG = "sync_msgs";
+    private static final String RECALL_MSG = "recall_msg";
+    private static final String P_MSG = "p_msg";
+    private static final String G_MSG = "g_msg";
+    private static final String C_MSG = "c_msg";
     private static final String NTF = "ntf";
     private static final String MSG = "msg";
     private static final HashMap<String, Integer> sCmdAckMap = new HashMap<String, Integer>() {
@@ -446,6 +493,10 @@ class PBData {
             put(QRY_HIS_MSG, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(SYNC_CONV, PBRcvObj.PBRcvType.syncConversationsAck);
             put(SYNC_MSG, PBRcvObj.PBRcvType.syncMessagesAck);
+            put(P_MSG, PBRcvObj.PBRcvType.publishMsgAck);
+            put(G_MSG, PBRcvObj.PBRcvType.publishMsgAck);
+            put(C_MSG, PBRcvObj.PBRcvType.publishMsgAck);
+            put(RECALL_MSG, PBRcvObj.PBRcvType.recall);
         }
     };
 

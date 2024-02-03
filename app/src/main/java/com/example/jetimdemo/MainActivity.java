@@ -85,6 +85,19 @@ public class MainActivity extends AppCompatActivity {
 //                        throw new RuntimeException(e);
 //                    }
 
+                    //recall message
+//                    JetIM.getInstance().getMessageManager().recallMessage("nppyex2n2guk5g4v", new IMessageManager.IRecallMessageCallback() {
+//                        @Override
+//                        public void onSuccess(Message message) {
+//                            Log.i("lifei", "recall success");
+//                        }
+//
+//                        @Override
+//                        public void onError(int errorCode) {
+//                            Log.i("lifei", "recall error code is " + errorCode);
+//                        }
+//                    });
+
 //                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
 //                    Log.e("lifei", "conversationList count is " + l.size());
 //
@@ -161,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN1);
+        JetIM.getInstance().getConnectionManager().connect(TOKEN5);
         JetIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
             @Override
             public void onMessageSyncComplete() {
@@ -193,6 +206,11 @@ public class MainActivity extends AppCompatActivity {
                     Log.i("lifei", "voice message, extra is " + v.getExtra());
                 }
             }
+
+            @Override
+            public void onMessageRecall(Message message) {
+                Log.d("lifei", "onMessageRecall, messageId is " + message.getMessageId());
+            }
         });
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -215,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendMessages() throws InterruptedException {
-        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid4");
         TextMessage t = new TextMessage("sdfasdf");
         t.setExtra("extra");
         ImageMessage i = new ImageMessage();
@@ -266,14 +284,14 @@ public class MainActivity extends AppCompatActivity {
         };
         Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
         Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
 
     }
 

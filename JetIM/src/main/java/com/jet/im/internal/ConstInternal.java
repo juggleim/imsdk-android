@@ -31,5 +31,8 @@ public class ConstInternal {
         static final int WEB_SOCKET_FAILURE = 21001;
         static final int NAVI_FAILURE = 21002;
         static final int INVALID_PARAM = 21003;
+
+        static final int MESSAGE_NOT_EXIST = 22001;
+        static final int MESSAGE_ALREADY_RECALLED = 22002;
     }
 }

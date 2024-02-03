@@ -51,5 +51,21 @@ public class ContentTypeCenter {
         return content;
     }
 
+    public int flagsWithType(String type) {
+        Class<? extends MessageContent> cls = mContentTypeMap.get(type);
+        if (cls == null) {
+            return -1;
+        }
+        try {
+            Constructor<? extends MessageContent> constructor = cls.getDeclaredConstructor();
+            MessageContent content = constructor.newInstance();
+            return content.getFlags();
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException |
+                 InstantiationException e) {
+            LoggerUtils.e("flagsWithType exception, msg is " + e.getMessage());
+        }
+        return -1;
+    }
+
     private final ConcurrentHashMap<String, Class<? extends MessageContent>> mContentTypeMap = new ConcurrentHashMap<>();
 }

@@ -17,6 +17,11 @@ public interface IMessageManager {
         void onSuccess(List<Message> messages);
         void onError(int errorCode);
     }
+
+    interface IRecallMessageCallback {
+        void onSuccess(Message message);
+        void onError(int errorCode);
+    }
     Message sendMessage(MessageContent content,
                      Conversation conversation,
                      ISendMessageCallback callback);
@@ -45,6 +50,8 @@ public interface IMessageManager {
 
     void clearMessages(Conversation conversation);
 
+    void recallMessage(String messageId, IRecallMessageCallback callback);
+
     void getRemoteMessages(Conversation conversation,
                            int count,
                            long startTime,
@@ -60,6 +67,7 @@ public interface IMessageManager {
 
     interface IMessageListener {
         void onMessageReceive(Message message);
+        void onMessageRecall(Message message);
     }
 
     interface IMessageSyncListener {

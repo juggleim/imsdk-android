@@ -78,6 +78,7 @@ class PBRcvObj {
         static final int publishMsgNtf = 8;
         static final int pong = 9;
         static final int disconnectMsg = 10;
+        static final int recall = 11;
     }
 
     public int getRcvType() {

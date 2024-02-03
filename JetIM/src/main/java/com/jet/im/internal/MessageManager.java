@@ -2,18 +2,22 @@ package com.jet.im.internal;
 
 import android.text.TextUtils;
 
+import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.QryHisMsgCallback;
+import com.jet.im.internal.core.network.RecallMessageCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
+import com.jet.im.model.messages.RecallInfoMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
@@ -33,6 +37,8 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(FileMessage.class);
         ContentTypeCenter.getInstance().registerContentType(VoiceMessage.class);
         ContentTypeCenter.getInstance().registerContentType(VideoMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(RecallInfoMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(RecallCmdMessage.class);
     }
     private final JetIMCore mCore;
 
@@ -137,6 +143,51 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public void recallMessage(String messageId, IRecallMessageCallback callback) {
+        List<String> idList = new ArrayList<>(1);
+        idList.add(messageId);
+        List<Message> messages = getMessagesByMessageIds(idList);
+        if (messages.size() > 0) {
+            Message m = messages.get(0);
+
+            if (m.getContentType().equals(RecallInfoMessage.CONTENT_TYPE)) {
+                if (callback != null) {
+                    callback.onError(JErrorCode.MESSAGE_ALREADY_RECALLED);
+                }
+                return;
+            }
+            mCore.getWebSocket().recallMessage(messageId, m.getConversation(), m.getTimestamp(), new RecallMessageCallback(messageId) {
+                @Override
+                public void onSuccess(long timestamp) {
+                    if (mSyncProcessing) {
+                        mCachedSendTime = timestamp;
+                    } else {
+                        mCore.setMessageSendSyncTime(timestamp);
+                    }
+                    m.setContentType(RecallInfoMessage.CONTENT_TYPE);
+                    RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
+                    m.setContent(recallInfoMessage);
+                    mCore.getDbManager().updateMessageContent(recallInfoMessage, m.getContentType(), messageId);
+                    if (callback != null) {
+                        callback.onSuccess(m);
+                    }
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                }
+            });
+        } else {
+            if (callback != null) {
+                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+            }
+        }
+    }
+
+    @Override
     public void getRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetMessagesCallback callback) {
         if (count > 100) {
             count = 100;
@@ -145,7 +196,6 @@ public class MessageManager implements IMessageManager {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 //todo 排重
-                //todo cmd message 吞掉
                 //当拉回来的消息本地数据库存在时，需要把本地数据库的 clientMsgNo 赋值回 message 里
                 mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
@@ -256,11 +306,34 @@ public class MessageManager implements IMessageManager {
         }
         sync();
     }
+    
+    private List<ConcreteMessage> messagesToSave(List<ConcreteMessage> messages) {
+        List<ConcreteMessage> list = new ArrayList<>();
+        for (ConcreteMessage message : messages) {
+            if ((message.getFlags() & MessageContent.MessageFlag.IS_SAVE.getValue()) != 0) {
+                list.add(message);
+            }
+        }
+        return list;
+    }
+
+    private Message handleRecallCmdMessage(String messageId) {
+        RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
+        mCore.getDbManager().updateMessageContent(recallInfoMessage, RecallInfoMessage.CONTENT_TYPE, messageId);
+        List<String> ids = new ArrayList<>(1);
+        ids.add(messageId);
+        List<Message> messages = mCore.getDbManager().getMessagesByMessageIds(ids);
+        if (messages.size() > 0) {
+            return messages.get(0);
+        }
+        return null;
+    }
 
     private void handleReceiveMessages(List<ConcreteMessage> messages, boolean isSync) {
         //todo 排重
-        //todo cmd message 吞掉
-        mCore.getDbManager().insertMessages(messages);
+
+        List<ConcreteMessage> messagesToSave = messagesToSave(messages);
+        mCore.getDbManager().insertMessages(messagesToSave);
 
         long sendTime = 0;
         long receiveTime = 0;
@@ -269,6 +342,21 @@ public class MessageManager implements IMessageManager {
                 sendTime = message.getTimestamp();
             } else if (message.getDirection() == Message.MessageDirection.RECEIVE) {
                 receiveTime = message.getTimestamp();
+            }
+
+            //recall message
+            if (message.getContentType().equals(RecallCmdMessage.CONTENT_TYPE)) {
+                RecallCmdMessage cmd = (RecallCmdMessage) message.getContent();
+                Message recallMessage = handleRecallCmdMessage(cmd.getOriginalMessageId());
+                //recallMessage 为空表示被撤回的消息本地不存在，不需要回调
+                if (recallMessage != null) {
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageRecall(recallMessage);
+                        }
+                    }
+                }
+                continue;
             }
             if (mListenerMap != null) {
                 for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {

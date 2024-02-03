@@ -1,7 +1,7 @@
 package com.jet.im.model;
 
 public abstract class MessageContent {
-    enum MessageFlag {
+    public enum MessageFlag {
         /// 是否命令消息
         IS_CMD(1),
         // 是否计未读数
@@ -10,7 +10,7 @@ public abstract class MessageContent {
         IS_STATUS(4),
         // 是否存入历史消息
         IS_SAVE(8);
-        int getValue() {
+        public int getValue() {
             return mValue;
         }
         MessageFlag(int value) {

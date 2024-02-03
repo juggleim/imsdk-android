@@ -19,6 +19,15 @@ public class ConcreteMessage extends Message {
         mClientUid = clientUid;
     }
 
+    public int getFlags() {
+        return flags;
+    }
+
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
+
     private long mMsgIndex;
     private String mClientUid;
+    private int flags;
 }

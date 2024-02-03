@@ -24,4 +24,7 @@ public class JErrorCode {
     public static final int USER_LOG_OUT = 11012;
 
     public static final int INVALID_PARAM = 21003;
+
+    public static final int MESSAGE_NOT_EXIST = 22001;
+    public static final int MESSAGE_ALREADY_RECALLED = 22002;
 }

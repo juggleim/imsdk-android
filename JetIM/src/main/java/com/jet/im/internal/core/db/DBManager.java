@@ -14,6 +14,7 @@ import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.Message;
+import com.jet.im.model.MessageContent;
 import com.jet.im.utils.LoggerUtils;
 
 import org.w3c.dom.Text;
@@ -278,6 +279,14 @@ public class DBManager {
         Object[] args = new Object[]{msgId};
         String sql = MessageSql.sqlUpdateMessageAfterSend(Message.MessageState.SENT.getValue(), clientMsgNo, timestamp, msgIndex);
         execSQL(sql, args);
+    }
+
+    public void updateMessageContent(MessageContent content, String type, String messageId) {
+        Object[] args = new Object[3];
+        args[0] = new String(content.encode());
+        args[1] = type;
+        args[2] = messageId;
+        execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT, args);
     }
 
     public void messageSendFail(long clientMsgNo) {

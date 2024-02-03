@@ -66,6 +66,16 @@ public class JWebSocket extends WebSocketClient {
         sendWhenOpen(bytes);
     }
 
+    public void recallMessage(String messageId,
+                              Conversation conversation,
+                              long timestamp,
+                              RecallMessageCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, mMsgIndex++);
+        mMsgCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void syncConversations(long startTime,
                                   int count,
                                   String userId,
@@ -152,6 +162,9 @@ public class JWebSocket extends WebSocketClient {
                 break;
             case PBRcvObj.PBRcvType.disconnectMsg:
                 handleDisconnectMsg(obj.mDisconnectMsg);
+                break;
+            case PBRcvObj.PBRcvType.recall:
+                handleRecallMessage(obj.mPublishMsgAck);
                 break;
         }
     }
@@ -272,12 +285,25 @@ public class JWebSocket extends WebSocketClient {
     }
 
     private void handlePong() {
-        LoggerUtils.d("pong");
+        LoggerUtils.d("pong, mMsgCallbackMap count is " + mMsgCallbackMap.size());
     }
 
     private void handleDisconnectMsg(PBRcvObj.DisconnectMsg msg) {
         if (mConnectListener != null) {
             mConnectListener.onDisconnect(msg.code);
+        }
+    }
+
+    private void handleRecallMessage(PBRcvObj.PublishMsgAck ack) {
+        LoggerUtils.d("handleRecallMessage, code is " + ack.code);
+        IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
+        if (c instanceof RecallMessageCallback) {
+            RecallMessageCallback callback = (RecallMessageCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.timestamp);
+            }
         }
     }
 
@@ -294,7 +320,7 @@ public class JWebSocket extends WebSocketClient {
     private IWebSocketConnectListener mConnectListener;
     private IWebSocketMessageListener mMessageListener;
     private Integer mMsgIndex = 0;
-    private final ConcurrentHashMap<Integer, IWebSocketCallback>mMsgCallbackMap;
+    private final ConcurrentHashMap<Integer, IWebSocketCallback> mMsgCallbackMap;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
 
