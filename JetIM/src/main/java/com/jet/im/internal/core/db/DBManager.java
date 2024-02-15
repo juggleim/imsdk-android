@@ -39,8 +39,8 @@ public class DBManager {
         if (mDBHelper != null) {
             mDb = null;
             mDBHelper.close();
+            mDBHelper = null;
         }
-        mDBHelper = null;
     }
 
     public boolean isOpen() {

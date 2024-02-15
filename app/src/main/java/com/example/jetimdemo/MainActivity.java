@@ -38,6 +38,8 @@ import android.view.MenuItem;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+
+    private int mConnectCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +79,43 @@ public class MainActivity extends AppCompatActivity {
 //                    });
 
                     //disconnect
-//                    JetIM.getInstance().getConnectionManager().disconnect(false);
-//                    JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+                    if (mConnectCount == 0) {
+                        mConnectCount ++;
+                        JetIM.getInstance().getConnectionManager().disconnect(false);
+                        Timer timer = new Timer();
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+                            }
+                        }, 10000);
+                    } else if (mConnectCount == 1) {
+                        mConnectCount ++;
+                        JetIM.getInstance().getConnectionManager().disconnect(false);
+                        Timer timer = new Timer();
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                JetIM.getInstance().getConnectionManager().connect(TOKEN1);
+                            }
+                        }, 10000);
+                    } else if (mConnectCount == 2) {
+                        mConnectCount ++;
+                        List convs = JetIM.getInstance().getConversationManager().getConversationInfoList();
+                        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
+                        Message m = JetIM.getInstance().getMessageManager().sendMessage(new TextMessage("text"), c, new IMessageManager.ISendMessageCallback() {
+                            @Override
+                            public void onSuccess(Message message) {
+                                Log.i("lifei", "send success clientMsgNo is " + message.getClientMsgNo());
+                            }
+
+                            @Override
+                            public void onError(Message message, int errorCode) {
+
+                            }
+                        });
+                        Log.i("lifei", "send m clientMsgNo is " + m.getClientMsgNo());
+                    }
 
                     //send message
 //                    try {
@@ -86,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 
                     //recall message
-//                    JetIM.getInstance().getMessageManager().recallMessage("nppyex2n2guk5g4v", new IMessageManager.IRecallMessageCallback() {
+//                    JetIM.getInstance().getMessageManager().recallMessage("npqml4eq2ane43gq", new IMessageManager.IRecallMessageCallback() {
 //                        @Override
 //                        public void onSuccess(Message message) {
 //                            Log.i("lifei", "recall success");
@@ -174,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN5);
+        JetIM.getInstance().getConnectionManager().connect(TOKEN1);
         JetIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
             @Override
             public void onMessageSyncComplete() {
@@ -284,14 +323,14 @@ public class MainActivity extends AppCompatActivity {
         };
         Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
         Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
 
     }
 
