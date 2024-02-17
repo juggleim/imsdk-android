@@ -3,8 +3,13 @@ package com.jet.im.internal.core.db;
 import android.database.Cursor;
 
 import com.jet.im.JetIMConst;
+import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
+import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.Message;
+
+import java.nio.charset.StandardCharsets;
 
 class ConversationSql {
 
@@ -22,11 +27,31 @@ class ConversationSql {
         info.setTopTime(CursorHelper.readLong(cursor, COL_TOP_TIME));
         boolean isMute = CursorHelper.readInt(cursor, COL_MUTE) != 0;
         info.setMute(isMute);
+        ConcreteMessage lastMessage = new ConcreteMessage();
+        lastMessage.setConversation(c);
+        lastMessage.setContentType(CursorHelper.readString(cursor, COL_LAST_MESSAGE_TYPE));
+        lastMessage.setMessageId(CursorHelper.readString(cursor, COL_LAST_MESSAGE_ID));
+        lastMessage.setClientUid(CursorHelper.readString(cursor, COL_LAST_MESSAGE_CLIENT_UID));
+        Message.MessageDirection direction = Message.MessageDirection.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_DIRECTION));
+        lastMessage.setDirection(direction);
+        Message.MessageState state = Message.MessageState.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_STATE));
+        lastMessage.setState(state);
+        boolean hasRead = CursorHelper.readInt(cursor, COL_LAST_MESSAGE_HAS_READ) != 0;
+        lastMessage.setHasRead(hasRead);
+        lastMessage.setTimestamp(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_TIMESTAMP));
+        lastMessage.setSenderUserId(CursorHelper.readString(cursor, COL_LAST_MESSAGE_SENDER));
+        String content = CursorHelper.readString(cursor, COL_LAST_MESSAGE_CONTENT);
+        if (content != null) {
+            lastMessage.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), lastMessage.getContentType()));
+        }
+        lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
+        info.setLastMessage(lastMessage);
         return info;
     }
 
     static Object[] argsWithConcreteConversationInfo(ConcreteConversationInfo info) {
-        Object[] args = new Object[9];
+        ConcreteMessage lastMessage = (ConcreteMessage)info.getLastMessage();
+        Object[] args = new Object[18];
         args[0] = info.getConversation().getConversationType().getValue();
         args[1] = info.getConversation().getConversationId();
         args[2] = info.getUpdateTime();
@@ -36,6 +61,15 @@ class ConversationSql {
         args[6] = info.getTopTime();
         args[7] = info.isMute();
         args[8] = "0";
+        args[9] = lastMessage.getContentType();
+        args[10] = lastMessage.getClientUid();
+        args[11] = lastMessage.getDirection().getValue();
+        args[12] = lastMessage.getState().getValue();
+        args[13] = lastMessage.isHasRead();
+        args[14] = lastMessage.getTimestamp();
+        args[15] = lastMessage.getSenderUserId();
+        args[16] = new String(lastMessage.getContent().encode());
+        args[17] = lastMessage.getMsgIndex();
         return args;
     }
     static String sqlGetConversation(int type) {
@@ -60,13 +94,25 @@ class ConversationSql {
             + "is_top BOOLEAN,"
             + "top_time INTEGER,"
             + "mute BOOLEAN,"
-            + "last_mention_message_id VARCHAR (64)"
+            + "last_mention_message_id VARCHAR (64),"
+            + "last_message_type VARCHAR (64),"
+            + "last_message_client_uid VARCHAR (64),"
+            + "last_message_direction BOOLEAN,"
+            + "last_message_state SMALLINT,"
+            + "last_message_has_read BOOLEAN,"
+            + "last_message_timestamp INTEGER,"
+            + "last_message_sender VARCHAR (64),"
+            + "last_message_content TEXT,"
+            + "last_message_message_index INTEGER"
             + ")";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation ON conversation_info(conversation_type, conversation_id)";
     static final String SQL_INSERT_CONVERSATION = "INSERT OR REPLACE INTO conversation_info"
             + "(conversation_type, conversation_id, timestamp, last_message_id,"
-            + "last_read_message_index, is_top, top_time, mute, last_mention_message_id)"
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + "last_read_message_index, is_top, top_time, mute, last_mention_message_id,"
+            + "last_message_type, last_message_client_uid, last_message_direction, last_message_state,"
+            + "last_message_has_read, last_message_timestamp, last_message_sender, last_message_content,"
+            + "last_message_message_index)"
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY timestamp DESC";
     static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
         StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
@@ -98,4 +144,14 @@ class ConversationSql {
     static final String COL_TOP_TIME = "top_time";
     static final String COL_MUTE = "mute";
     static final String COL_LAST_MENTION_MESSAGE_ID = "last_mention_message_id";
+    static final String COL_LAST_MESSAGE_TYPE = "last_message_type";
+    static final String COL_LAST_MESSAGE_CLIENT_UID = "last_message_client_uid";
+    static final String COL_LAST_MESSAGE_DIRECTION = "last_message_direction";
+    static final String COL_LAST_MESSAGE_STATE = "last_message_state";
+    static final String COL_LAST_MESSAGE_HAS_READ = "last_message_has_read";
+    static final String COL_LAST_MESSAGE_TIMESTAMP = "last_message_timestamp";
+    static final String COL_LAST_MESSAGE_SENDER = "last_message_sender";
+    static final String COL_LAST_MESSAGE_CONTENT = "last_message_content";
+    static final String COL_LAST_MESSAGE_INDEX = "last_message_message_index";
+
 }

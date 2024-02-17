@@ -109,7 +109,6 @@ public class DBManager {
         for (ConcreteConversationInfo info : list) {
             Object[] args = ConversationSql.argsWithConcreteConversationInfo(info);
             execSQL(ConversationSql.SQL_INSERT_CONVERSATION, args);
-            insertMessage(info.getLastMessage());
         }
         mDb.setTransactionSuccessful();
         mDb.endTransaction();
@@ -143,16 +142,11 @@ public class DBManager {
         String[] args = new String[]{conversation.getConversationId()};
         Cursor cursor = rawQuery(ConversationSql.sqlGetConversation(conversation.getConversationType().getValue()), args);
         ConcreteConversationInfo result = null;
-        String lastMessageId = null;
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 result = ConversationSql.conversationInfoWithCursor(cursor);
-                lastMessageId = CursorHelper.readString(cursor, ConversationSql.COL_LAST_MESSAGE_ID);
             }
             cursor.close();
-        }
-        if (result != null) {
-            result.setLastMessage(getMessageWithMessageId(lastMessageId));
         }
         return result;
     }
@@ -368,17 +362,9 @@ public class DBManager {
 
     private List<ConversationInfo> conversationListFromCursor(@NonNull Cursor cursor) {
         List<ConversationInfo> list = new ArrayList<>();
-        List<String> messageIdList = new ArrayList<>();
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             ConcreteConversationInfo info = ConversationSql.conversationInfoWithCursor(cursor);
-            String lastMessageId = CursorHelper.readString(cursor, ConversationSql.COL_LAST_MESSAGE_ID);
             list.add(info);
-            messageIdList.add(lastMessageId);
-        }
-        for (int i = 0; i < list.size(); i++) {
-            ConversationInfo info = list.get(i);
-            String messageId = messageIdList.get(i);
-            info.setLastMessage(getMessageWithMessageId(messageId));
         }
         return list;
     }

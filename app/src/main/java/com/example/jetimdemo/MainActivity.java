@@ -137,8 +137,9 @@ public class MainActivity extends AppCompatActivity {
 //                        }
 //                    });
 
-//                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
-//                    Log.e("lifei", "conversationList count is " + l.size());
+                    // get conversations
+                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
+                    Log.e("lifei", "conversationList count is " + l.size());
 //
 //                    int[] conversationTypes = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
 //                    l = JetIM.getInstance().getConversationManager().getConversationInfoList( 100, 1706445483689L, JetIMConst.PullDirection.NEWER);
