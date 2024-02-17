@@ -195,8 +195,6 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().queryHisMsg(conversation, startTime, count, direction, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
-                //todo 排重
-                //当拉回来的消息本地数据库存在时，需要把本地数据库的 clientMsgNo 赋值回 message 里
                 mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
@@ -330,8 +328,6 @@ public class MessageManager implements IMessageManager {
     }
 
     private void handleReceiveMessages(List<ConcreteMessage> messages, boolean isSync) {
-        //todo 排重
-
         List<ConcreteMessage> messagesToSave = messagesToSave(messages);
         mCore.getDbManager().insertMessages(messagesToSave);
 
@@ -356,6 +352,12 @@ public class MessageManager implements IMessageManager {
                         }
                     }
                 }
+                continue;
+            }
+            if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
+                continue;
+            }
+            if (message.isExisted()) {
                 continue;
             }
             if (mListenerMap != null) {

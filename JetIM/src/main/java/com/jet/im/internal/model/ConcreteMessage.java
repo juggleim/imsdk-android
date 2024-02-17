@@ -20,14 +20,23 @@ public class ConcreteMessage extends Message {
     }
 
     public int getFlags() {
-        return flags;
+        return mFlags;
     }
 
     public void setFlags(int flags) {
-        this.flags = flags;
+        this.mFlags = flags;
+    }
+
+    public boolean isExisted() {
+        return mExisted;
+    }
+
+    public void setExisted(boolean existed) {
+        mExisted = existed;
     }
 
     private long mMsgIndex;
     private String mClientUid;
-    private int flags;
+    private int mFlags;
+    private boolean mExisted;
 }

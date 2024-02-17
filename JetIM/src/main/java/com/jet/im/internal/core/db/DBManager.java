@@ -265,8 +265,17 @@ public class DBManager {
         }
         mDb.beginTransaction();
         for (ConcreteMessage message : list) {
-            long clientMsgNo = insertMessage(message);
-            message.setClientMsgNo(clientMsgNo);
+            ConcreteMessage m = null;
+            if (!TextUtils.isEmpty(message.getMessageId())) {
+                m = getMessageWithMessageId(message.getMessageId());
+            }
+            if (m != null) {
+                message.setClientMsgNo(m.getClientMsgNo());
+                message.setExisted(true);
+            } else {
+                long clientMsgNo = insertMessage(message);
+                message.setClientMsgNo(clientMsgNo);
+            }
         }
         mDb.setTransactionSuccessful();
         mDb.endTransaction();

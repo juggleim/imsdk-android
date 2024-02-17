@@ -79,43 +79,43 @@ public class MainActivity extends AppCompatActivity {
 //                    });
 
                     //disconnect
-                    if (mConnectCount == 0) {
-                        mConnectCount ++;
-                        JetIM.getInstance().getConnectionManager().disconnect(false);
-                        Timer timer = new Timer();
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                JetIM.getInstance().getConnectionManager().connect(TOKEN3);
-                            }
-                        }, 10000);
-                    } else if (mConnectCount == 1) {
-                        mConnectCount ++;
-                        JetIM.getInstance().getConnectionManager().disconnect(false);
-                        Timer timer = new Timer();
-                        timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                JetIM.getInstance().getConnectionManager().connect(TOKEN1);
-                            }
-                        }, 10000);
-                    } else if (mConnectCount == 2) {
-                        mConnectCount ++;
-                        List convs = JetIM.getInstance().getConversationManager().getConversationInfoList();
-                        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
-                        Message m = JetIM.getInstance().getMessageManager().sendMessage(new TextMessage("text"), c, new IMessageManager.ISendMessageCallback() {
-                            @Override
-                            public void onSuccess(Message message) {
-                                Log.i("lifei", "send success clientMsgNo is " + message.getClientMsgNo());
-                            }
-
-                            @Override
-                            public void onError(Message message, int errorCode) {
-
-                            }
-                        });
-                        Log.i("lifei", "send m clientMsgNo is " + m.getClientMsgNo());
-                    }
+//                    if (mConnectCount == 0) {
+//                        mConnectCount ++;
+//                        JetIM.getInstance().getConnectionManager().disconnect(false);
+//                        Timer timer = new Timer();
+//                        timer.schedule(new TimerTask() {
+//                            @Override
+//                            public void run() {
+//                                JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+//                            }
+//                        }, 10000);
+//                    } else if (mConnectCount == 1) {
+//                        mConnectCount ++;
+//                        JetIM.getInstance().getConnectionManager().disconnect(false);
+//                        Timer timer = new Timer();
+//                        timer.schedule(new TimerTask() {
+//                            @Override
+//                            public void run() {
+//                                JetIM.getInstance().getConnectionManager().connect(TOKEN1);
+//                            }
+//                        }, 10000);
+//                    } else if (mConnectCount == 2) {
+//                        mConnectCount ++;
+//                        List convs = JetIM.getInstance().getConversationManager().getConversationInfoList();
+//                        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
+//                        Message m = JetIM.getInstance().getMessageManager().sendMessage(new TextMessage("text"), c, new IMessageManager.ISendMessageCallback() {
+//                            @Override
+//                            public void onSuccess(Message message) {
+//                                Log.i("lifei", "send success clientMsgNo is " + message.getClientMsgNo());
+//                            }
+//
+//                            @Override
+//                            public void onError(Message message, int errorCode) {
+//
+//                            }
+//                        });
+//                        Log.i("lifei", "send m clientMsgNo is " + m.getClientMsgNo());
+//                    }
 
                     //send message
 //                    try {
