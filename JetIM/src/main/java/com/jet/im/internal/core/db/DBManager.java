@@ -286,7 +286,11 @@ public class DBManager {
 
     public void updateMessageContent(MessageContent content, String type, String messageId) {
         Object[] args = new Object[3];
-        args[0] = new String(content.encode());
+        if (content != null) {
+            args[0] = new String(content.encode());
+        } else {
+            args[0] = "";
+        }
         args[1] = type;
         args[2] = messageId;
         execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT, args);

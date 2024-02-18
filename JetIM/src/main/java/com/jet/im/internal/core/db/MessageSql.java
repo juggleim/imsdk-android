@@ -47,7 +47,6 @@ class MessageSql {
             msgIndex = c.getMsgIndex();
             clientUid = c.getClientUid();
         }
-        byte[] data = message.getContent().encode();
         Object[] args = new Object[12];
         args[0] = message.getConversation().getConversationType().getValue();
         args[1] = message.getConversation().getConversationId();
@@ -59,7 +58,11 @@ class MessageSql {
         args[7] = message.isHasRead();
         args[8] = message.getTimestamp();
         args[9] = message.getSenderUserId();
-        args[10] = new String(data);
+        if (message.getContent() != null) {
+            args[10] = new String(message.getContent().encode());
+        } else {
+            args[10] = "";
+        }
         args[11] = msgIndex;
         return args;
     }

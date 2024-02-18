@@ -68,7 +68,11 @@ class ConversationSql {
         args[13] = lastMessage.isHasRead();
         args[14] = lastMessage.getTimestamp();
         args[15] = lastMessage.getSenderUserId();
-        args[16] = new String(lastMessage.getContent().encode());
+        if (lastMessage.getContent() != null) {
+            args[16] = new String(lastMessage.getContent().encode());
+        } else {
+            args[16] = "";
+        }
         args[17] = lastMessage.getMsgIndex();
         return args;
     }

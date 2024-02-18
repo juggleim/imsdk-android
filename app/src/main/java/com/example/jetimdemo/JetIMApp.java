@@ -9,7 +9,7 @@ public class JetIMApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-//        JetIM.getInstance().setServer("https://nav.gxjipei.com");
+        JetIM.getInstance().setServer("https://nav.gxjipei.com");
         JetIM.getInstance().init(this, "appkey");
     }
 }
