@@ -52,6 +52,7 @@ public class ConnectionManager implements IConnectionManager {
 
     @Override
     public void disconnect(boolean receivePush) {
+        LoggerUtils.i("user disconnect receivePush is " + receivePush);
         changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
         mCore.getDbManager().closeDB();
         dbStatusNotice(JetIMCore.DbStatus.CLOSED);
@@ -227,6 +228,10 @@ public class ConnectionManager implements IConnectionManager {
                     mReconnectTimer = null;
                 }
                 //todo 重连整理
+                if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED
+                || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING) {
+                    return;
+                }
                 connect(mCore.getToken());
             }
         }, RECONNECT_INTERVAL);

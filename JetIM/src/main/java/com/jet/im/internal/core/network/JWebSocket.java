@@ -131,8 +131,8 @@ public class JWebSocket extends WebSocketClient {
 
     @Override
     public void onMessage(ByteBuffer bytes) {
-        LoggerUtils.i("JWebSocket, onMessage bytes");
         PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
+        LoggerUtils.i("JWebSocket, onMessage bytes, type is " + obj.getRcvType());
         switch (obj.getRcvType()) {
             case PBRcvObj.PBRcvType.parseError:
                 break;
@@ -171,8 +171,8 @@ public class JWebSocket extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        LoggerUtils.i("JWebSocket, onClose, code is " + code + " reason is " + reason);
-        if (mConnectListener != null) {
+        LoggerUtils.i("JWebSocket, onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
+        if (remote && mConnectListener != null) {
             mConnectListener.onWebSocketClose();
         }
     }

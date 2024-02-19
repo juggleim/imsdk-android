@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
-
                     //get remote messages
 //                    Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid5");
 //                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, System.currentTimeMillis(), JetIMConst.PullDirection.NEWER, new IMessageManager.IGetMessagesCallback() {
@@ -79,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 //                    });
 
                     //disconnect
+//                    JetIM.getInstance().getConnectionManager().disconnect(false);
 //                    if (mConnectCount == 0) {
 //                        mConnectCount ++;
 //                        JetIM.getInstance().getConnectionManager().disconnect(false);
@@ -138,8 +138,8 @@ public class MainActivity extends AppCompatActivity {
 //                    });
 
                     // get conversations
-                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
-                    Log.e("lifei", "conversationList count is " + l.size());
+//                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
+//                    Log.e("lifei", "conversationList count is " + l.size());
 //
 //                    int[] conversationTypes = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
 //                    l = JetIM.getInstance().getConversationManager().getConversationInfoList( 100, 1706445483689L, JetIMConst.PullDirection.NEWER);
