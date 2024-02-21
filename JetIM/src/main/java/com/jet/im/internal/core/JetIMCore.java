@@ -2,6 +2,8 @@ package com.jet.im.internal.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.HandlerThread;
 
 import androidx.annotation.NonNull;
 
@@ -16,11 +18,15 @@ import java.util.List;
 public class JetIMCore {
 
     public JetIMCore() {
+        HandlerThread sendThread = new HandlerThread("JET_SEND");
+        sendThread.start();
+        mSendHandler = new Handler(sendThread.getLooper());
     }
     public JWebSocket getWebSocket() {
         return mWebSocket;
     }
     public void setWebSocket(JWebSocket ws) {
+        ws.setSendHandler(mSendHandler);
         this.mWebSocket = ws;
     }
     public String getNaviUrl() {
@@ -165,6 +171,10 @@ public class JetIMCore {
         }
     }
 
+    public Handler getSendHandler() {
+        return mSendHandler;
+    }
+
     public static class ConnectionStatusInternal {
         public static final int IDLE = 0;
         public static final int CONNECTED = 1;
@@ -192,6 +202,7 @@ public class JetIMCore {
     private long mConversationSyncTime;
     private long mMessageSendSyncTime;
     private long mMessageReceiveTime;
+    private Handler mSendHandler;
 
     private final String APP_KEY = "AppKey";
     private final String TOKEN = "Token";

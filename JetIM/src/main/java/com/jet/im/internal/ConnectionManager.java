@@ -36,7 +36,7 @@ public class ConnectionManager implements IConnectionManager {
         }
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE);
 
-        mWorkHandler.post(() -> NaviManager.request(mCore.getNaviUrl(), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
+        mNaviHandler.post(() -> NaviManager.request(mCore.getNaviUrl(), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
             @Override
             public void onSuccess(String userId, List<String> servers) {
                 mCore.setServers(servers);
@@ -86,9 +86,9 @@ public class ConnectionManager implements IConnectionManager {
         this.mMessageManager = messageManager;
         this.mHeartBeatManager = new HeartBeatManager(core);
 
-        HandlerThread thread = new HandlerThread("Jet_Connect");
+        HandlerThread thread = new HandlerThread("JET_NAVI");
         thread.start();
-        this.mWorkHandler = new Handler(thread.getLooper());
+        this.mNaviHandler = new Handler(thread.getLooper());
     }
 
     private void connectWebSocket(String token) {
@@ -160,57 +160,57 @@ public class ConnectionManager implements IConnectionManager {
     }
 
     private void changeStatus(int status, int errorCode) {
-        //todo thread
-
-        LoggerUtils.i("connection status " + status);
-        if (status == mCore.getConnectionStatus()) {
-            return;
-        }
-        if (status == JetIMCore.ConnectionStatusInternal.IDLE) {
-            mCore.setConnectionStatus(status);
-            return;
-        }
-        if (status == JetIMCore.ConnectionStatusInternal.CONNECTED
-                && mCore.getConnectionStatus() != JetIMCore.ConnectionStatusInternal.CONNECTED) {
-            mHeartBeatManager.start();
-        }
-        if (status != JetIMCore.ConnectionStatusInternal.CONNECTED
-                && mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED) {
-            mHeartBeatManager.stop();
-        }
-        JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
-        switch (status) {
-            case JetIMCore.ConnectionStatusInternal.CONNECTED:
-                outStatus = JetIMConst.ConnectionStatus.CONNECTED;
-                break;
-            case JetIMCore.ConnectionStatusInternal.DISCONNECTED:
-                outStatus = JetIMConst.ConnectionStatus.DISCONNECTED;
-                break;
-
-            case JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING:
-                reconnect();
-                //无需 break，跟 CONNECTING 一起处理
-            case JetIMCore.ConnectionStatusInternal.CONNECTING:
-                //已经在连接中，不需要再对外抛回调
-                if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING
-                        || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
-                    mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.CONNECTING);
-                    return;
-                }
-                outStatus = JetIMConst.ConnectionStatus.CONNECTING;
-                break;
-            case JetIMCore.ConnectionStatusInternal.FAILURE:
-                outStatus = JetIMConst.ConnectionStatus.FAILURE;
-            default:
-                break;
-        }
-        mCore.setConnectionStatus(status);
-        if (mConnectionStatusListenerMap != null) {
-            for (Map.Entry<String, IConnectionStatusListener> entry :
-                 mConnectionStatusListenerMap.entrySet()) {
-                entry.getValue().onStatusChange(outStatus, errorCode);
+        mCore.getSendHandler().post(() -> {
+            LoggerUtils.i("connection status " + status);
+            if (status == mCore.getConnectionStatus()) {
+                return;
             }
-        }
+            if (status == JetIMCore.ConnectionStatusInternal.IDLE) {
+                mCore.setConnectionStatus(status);
+                return;
+            }
+            if (status == JetIMCore.ConnectionStatusInternal.CONNECTED
+                    && mCore.getConnectionStatus() != JetIMCore.ConnectionStatusInternal.CONNECTED) {
+                mHeartBeatManager.start();
+            }
+            if (status != JetIMCore.ConnectionStatusInternal.CONNECTED
+                    && mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED) {
+                mHeartBeatManager.stop();
+            }
+            JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
+            switch (status) {
+                case JetIMCore.ConnectionStatusInternal.CONNECTED:
+                    outStatus = JetIMConst.ConnectionStatus.CONNECTED;
+                    break;
+                case JetIMCore.ConnectionStatusInternal.DISCONNECTED:
+                    outStatus = JetIMConst.ConnectionStatus.DISCONNECTED;
+                    break;
+
+                case JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING:
+                    reconnect();
+                    //无需 break，跟 CONNECTING 一起处理
+                case JetIMCore.ConnectionStatusInternal.CONNECTING:
+                    //已经在连接中，不需要再对外抛回调
+                    if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING
+                            || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
+                        mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.CONNECTING);
+                        return;
+                    }
+                    outStatus = JetIMConst.ConnectionStatus.CONNECTING;
+                    break;
+                case JetIMCore.ConnectionStatusInternal.FAILURE:
+                    outStatus = JetIMConst.ConnectionStatus.FAILURE;
+                default:
+                    break;
+            }
+            mCore.setConnectionStatus(status);
+            if (mConnectionStatusListenerMap != null) {
+                for (Map.Entry<String, IConnectionStatusListener> entry :
+                        mConnectionStatusListenerMap.entrySet()) {
+                    entry.getValue().onStatusChange(outStatus, errorCode);
+                }
+            }
+        });
     }
 
     private void reconnect() {
@@ -256,6 +256,6 @@ public class ConnectionManager implements IConnectionManager {
     private final HeartBeatManager mHeartBeatManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
-    private final Handler mWorkHandler;
+    private final Handler mNaviHandler;
     private static final int RECONNECT_INTERVAL = 5*1000;
 }

@@ -2,6 +2,7 @@ package com.jet.im.internal.core.network;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
 
 import androidx.annotation.NonNull;
 
@@ -193,6 +194,10 @@ public class JWebSocket extends WebSocketClient {
         mAppKey = appKey;
     }
 
+    public void setSendHandler(Handler sendHandler) {
+        mSendHandler = sendHandler;
+    }
+
     private void sendConnectMsg() {
         byte[] bytes = mPbData.connectData(mAppKey,
                 mToken,
@@ -308,9 +313,11 @@ public class JWebSocket extends WebSocketClient {
     }
 
     private void sendWhenOpen(byte[] bytes) {
-        if (isOpen()) {
-            send(bytes);
-        }
+        mSendHandler.post(() -> {
+            if (isOpen()) {
+                send(bytes);
+            }
+        });
     }
 
     private String mAppKey;
@@ -320,6 +327,7 @@ public class JWebSocket extends WebSocketClient {
     private IWebSocketConnectListener mConnectListener;
     private IWebSocketMessageListener mMessageListener;
     private Integer mMsgIndex = 0;
+    private Handler mSendHandler;
     private final ConcurrentHashMap<Integer, IWebSocketCallback> mMsgCallbackMap;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
