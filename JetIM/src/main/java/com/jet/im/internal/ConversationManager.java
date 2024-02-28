@@ -9,6 +9,7 @@ import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.model.ConcreteConversationInfo;
+import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.utils.LoggerUtils;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConversationManager implements IConversationManager {
+public class ConversationManager implements IConversationManager, MessageManager.ISendReceiveListener {
 
     public ConversationManager(JetIMCore core) {
         this.mCore = core;
@@ -194,8 +195,80 @@ public class ConversationManager implements IConversationManager {
         });
     }
 
+    @Override
+    public void onMessageSave(ConcreteMessage message) {
+        mCore.getDbManager().updateLastMessage(message);
+        noticeConversationAddOrUpdate(message);
+    }
+
+    @Override
+    public void onMessageSend(ConcreteMessage message) {
+        mCore.getDbManager().updateLastMessage(message);
+        updateSyncTime(message.getTimestamp());
+        noticeConversationAddOrUpdate(message);
+    }
+
+    @Override
+    public void onMessageReceive(ConcreteMessage message) {
+        mCore.getDbManager().updateLastMessage(message);
+        updateSyncTime(message.getTimestamp());
+        noticeConversationAddOrUpdate(message);
+    }
+
+    @Override
+    public void onConversationsDelete(List<Conversation> conversations) {
+        List<ConversationInfo> results = new ArrayList<>();
+        for (Conversation conversation : conversations) {
+            ConversationInfo info = new ConversationInfo();
+            info.setConversation(conversation);
+            results.add(info);
+        }
+        if (mListenerMap != null) {
+            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                entry.getValue().onConversationInfoDelete(results);
+            }
+        }
+    }
+
     interface ICompleteCallback {
         void onComplete();
+    }
+
+    private void noticeConversationAddOrUpdate(ConcreteMessage message) {
+        ConversationInfo info = getConversationInfo(message.getConversation());
+        if (info == null) {
+            ConcreteConversationInfo addInfo = new ConcreteConversationInfo();
+            addInfo.setConversation(message.getConversation());
+            addInfo.setUpdateTime(message.getTimestamp());
+            addInfo.setLastMessage(message);
+            List<ConcreteConversationInfo> l = new ArrayList<>();
+            l.add(addInfo);
+            mCore.getDbManager().insertConversations(l, null);
+            if (mListenerMap != null) {
+                List<ConversationInfo> result = new ArrayList<>(l);
+                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                    entry.getValue().onConversationInfoAdd(result);
+                }
+            }
+        } else {
+            if (mListenerMap != null) {
+                List<ConversationInfo> result = new ArrayList<>();
+                result.add(info);
+                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                    entry.getValue().onConversationInfoUpdate(result);
+                }
+            }
+        }
+    }
+
+    private void updateSyncTime(long timestamp) {
+        if (mSyncProcessing) {
+            if (timestamp > mCachedSyncTime) {
+                mCachedSyncTime = timestamp;
+            }
+        } else {
+            mCore.setConversationSyncTime(timestamp);
+        }
     }
 
     private final JetIMCore mCore;

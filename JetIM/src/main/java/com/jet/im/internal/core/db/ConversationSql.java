@@ -1,6 +1,7 @@
 package com.jet.im.internal.core.db;
 
 import android.database.Cursor;
+import android.text.TextUtils;
 
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
@@ -105,6 +106,32 @@ class ConversationSql {
         args[17] = lastMessage.getMsgIndex();
         return args;
     }
+
+    static Object[] argsWithUpdateLastMessage(ConcreteMessage message) {
+        Object[] args = new Object[13];
+        args[0] = message.getTimestamp();
+        if (TextUtils.isEmpty(message.getMessageId())) {
+            args[1] = "";
+        } else {
+            args[1] = message.getMessageId();
+        }
+        args[2] = message.getContentType();
+        args[3] = message.getClientUid();
+        args[4] = message.getDirection().getValue();
+        args[5] = message.getState().getValue();
+        args[6] = message.isHasRead();
+        args[7] = message.getTimestamp();
+        args[8] = message.getSenderUserId();
+        if (message.getContent() != null) {
+            args[9] = new String(message.getContent().encode());
+        } else {
+            args[9] = "";
+        }
+        args[10] = message.getMsgIndex();
+        args[11] = message.getConversation().getConversationType().getValue();
+        args[12] = message.getConversation().getConversationId();
+        return args;
+    }
     static String sqlGetConversation(int type) {
         return String.format("SELECT * FROM conversation_info WHERE conversation_type = %s AND conversation_id = ?", type);
     }
@@ -153,6 +180,11 @@ class ConversationSql {
             + "last_message_content=?, last_message_message_index=? WHERE conversation_type = ? "
             + "AND conversation_id = ?";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY timestamp DESC";
+    static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_message_type=?,"
+        + "last_message_client_uid=?, "
+        + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
+        + "last_message_sender=?, last_message_content=?, last_message_message_index=? WHERE "
+        + "conversation_type = ? AND conversation_id = ?";
     static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
         StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
         if (direction == JetIMConst.PullDirection.OLDER) {

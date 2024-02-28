@@ -175,6 +175,11 @@ public class DBManager {
         execSQL(ConversationSql.sqlSetDraft(conversation, draft));
     }
 
+    public void updateLastMessage(ConcreteMessage message) {
+        Object[] args = ConversationSql.argsWithUpdateLastMessage(message);
+        execSQL(ConversationSql.SQL_UPDATE_LAST_MESSAGE, args);
+    }
+
     public ConcreteMessage getMessageWithMessageId(String messageId) {
         ConcreteMessage message = null;
         if (TextUtils.isEmpty(messageId)) {

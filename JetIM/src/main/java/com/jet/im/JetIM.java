@@ -60,6 +60,7 @@ public class JetIM {
         mCore = core;
         mMessageManager = new MessageManager(core);
         mConversationManager = new ConversationManager(core);
+        mMessageManager.setSendReceiveListener(mConversationManager);
         mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager);
     }
 

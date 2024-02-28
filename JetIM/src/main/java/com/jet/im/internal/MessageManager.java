@@ -59,6 +59,11 @@ public class MessageManager implements IMessageManager {
         List<ConcreteMessage> list = new ArrayList<>(1);
         list.add(message);
         mCore.getDbManager().insertMessages(list);
+
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onMessageSave(message);
+        }
+
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long msgIndex) {
@@ -73,6 +78,11 @@ public class MessageManager implements IMessageManager {
                 message.setTimestamp(timestamp);
                 message.setMsgIndex(msgIndex);
                 message.setState(Message.MessageState.SENT);
+
+                if (mSendReceiveListener != null) {
+                    mSendReceiveListener.onMessageSend(message);
+                }
+
                 if (callback != null) {
                     callback.onSuccess(message);
                 }
@@ -254,6 +264,22 @@ public class MessageManager implements IMessageManager {
         }
     }
 
+    interface ISendReceiveListener {
+        void onMessageSave(ConcreteMessage message);
+        void onMessageSend(ConcreteMessage message);
+        void onMessageReceive(ConcreteMessage message);
+        void onConversationsDelete(List<Conversation> conversations);
+    }
+
+    public void setSendReceiveListener(ISendReceiveListener sendReceiveListener) {
+        mSendReceiveListener = sendReceiveListener;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        mSendReceiveListener = null;
+    }
 
     void syncMessage() {
         mSyncProcessing = true;
@@ -363,6 +389,9 @@ public class MessageManager implements IMessageManager {
                 for (Conversation deleteConv : deleteConvMessage.getConversations()) {
                     mCore.getDbManager().deleteConversationInfo(deleteConv);
                 }
+                if (mSendReceiveListener != null) {
+                    mSendReceiveListener.onConversationsDelete(deleteConvMessage.getConversations());
+                }
                 continue;
             }
 
@@ -372,6 +401,11 @@ public class MessageManager implements IMessageManager {
             if (message.isExisted()) {
                 continue;
             }
+
+            if (mSendReceiveListener != null) {
+                mSendReceiveListener.onMessageReceive(message);
+            }
+
             if (mListenerMap != null) {
                 for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
                     entry.getValue().onMessageReceive(message);
@@ -415,4 +449,5 @@ public class MessageManager implements IMessageManager {
     private boolean mHasSetMessageListener = false;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
+    private ISendReceiveListener mSendReceiveListener;
 }

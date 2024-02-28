@@ -121,17 +121,17 @@ public class MainActivity extends AppCompatActivity {
 
                     //send message
 
-//                    Handler mainHandler = new Handler(Looper.getMainLooper());
-//                    mainHandler.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            try {
-//                                sendMessages();
-//                            }  catch (InterruptedException e) {
-//                                throw new RuntimeException(e);
-//                            }
-//                        }
-//                    }, 20000);
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                sendMessages();
+                            }  catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }, 1000);
 
 
                     //recall message
@@ -179,8 +179,8 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.e("lifei", "message count is " + messages.size());
 
                     //delete conversation
-                    Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid5");
-                    JetIM.getInstance().getConversationManager().deleteConversationInfo(c);
+//                    Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid5");
+//                    JetIM.getInstance().getConversationManager().deleteConversationInfo(c);
 //
 //                    l = JetIM.getInstance().getConversationManager().getConversationInfoList();
 //                    Log.e("lifei", "conversationList count is " + l.size());
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendMessages() throws InterruptedException {
-        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid4");
+        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid8");
         TextMessage t = new TextMessage("sdfasdf");
         t.setExtra("extra");
         ImageMessage i = new ImageMessage();
