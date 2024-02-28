@@ -57,6 +57,24 @@ public class ConversationManager implements IConversationManager {
     }
 
     @Override
+    public void addListener(String key, IConversationListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mListenerMap == null) {
+            mListenerMap = new ConcurrentHashMap<>();
+        }
+        mListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeListener(String key) {
+        if (!TextUtils.isEmpty(key) && mListenerMap != null) {
+            mListenerMap.remove(key);
+        }
+    }
+
+    @Override
     public void addSyncListener(String key, IConversationSyncListener listener) {
         if (listener == null || TextUtils.isEmpty(key)) {
             return;
@@ -117,6 +135,7 @@ public class ConversationManager implements IConversationManager {
     }
 
     private final JetIMCore mCore;
+    private ConcurrentHashMap<String, IConversationListener> mListenerMap;
     private ConcurrentHashMap<String, IConversationSyncListener> mSyncListenerMap;
     private static final int CONVERSATION_SYNC_COUNT = 100;
 }

@@ -27,9 +27,20 @@ public interface IConversationManager {
 
     void clearDraft(Conversation conversation);
 
+    void addListener(String key, IConversationListener listener);
+
+    void removeListener(String key);
+
     void addSyncListener(String key, IConversationSyncListener listener);
 
     void removeSyncListener(String key);
+
+    interface IConversationListener {
+        void onConversationInfoAdd(List<ConversationInfo> conversationInfoList);
+        void onConversationInfoUpdate(List<ConversationInfo> conversationInfoList);
+        void onConversationInfoDelete(List<ConversationInfo> conversationInfoList);
+        void onTotalUnreadMessageCountUpdate(int count);
+    }
 
     interface IConversationSyncListener {
         void onConversationSyncComplete();

@@ -6,6 +6,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
@@ -118,11 +120,19 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 
                     //send message
-//                    try {
-//                        sendMessages();
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
+
+//                    Handler mainHandler = new Handler(Looper.getMainLooper());
+//                    mainHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            try {
+//                                sendMessages();
+//                            }  catch (InterruptedException e) {
+//                                throw new RuntimeException(e);
+//                            }
+//                        }
+//                    }, 20000);
+
 
                     //recall message
 //                    JetIM.getInstance().getMessageManager().recallMessage("npqml4eq2ane43gq", new IMessageManager.IRecallMessageCallback() {
@@ -214,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect("CgZhcHBrZXkaIIVPMcNbO8kmKTnyaqLevfIc5OWU1AeBhriUbgjnjMTA");
+        JetIM.getInstance().getConnectionManager().connect(TOKEN1);
         JetIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
             @Override
             public void onMessageSyncComplete() {
@@ -250,6 +260,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onMessageRecall(Message message) {
                 Log.d("lifei", "onMessageRecall, messageId is " + message.getMessageId());
+            }
+        });
+        JetIM.getInstance().getConversationManager().addListener("main", new IConversationManager.IConversationListener() {
+            @Override
+            public void onConversationInfoAdd(List<ConversationInfo> conversationInfoList) {
+                Log.i("lifei", "onConversationInfoAdd, count is " + conversationInfoList.size());
+            }
+
+            @Override
+            public void onConversationInfoUpdate(List<ConversationInfo> conversationInfoList) {
+                Log.i("lifei", "onConversationInfoUpdate, count is " + conversationInfoList.size());
+            }
+
+            @Override
+            public void onConversationInfoDelete(List<ConversationInfo> conversationInfoList) {
+                Log.i("lifei", "onConversationInfoDelete, count is " + conversationInfoList.size());
+            }
+
+            @Override
+            public void onTotalUnreadMessageCountUpdate(int count) {
+                Log.i("lifei", "onTotalUnreadMessageCountUpdate, count is " + count);
             }
         });
 
