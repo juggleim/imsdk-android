@@ -479,6 +479,7 @@ class PBData {
         info.setUpdateTime(conversation.getUpdateTime());
         info.setLastMessage(messageWithDownMsg(conversation.getMsg()));
         info.setLastReadMessageIndex(conversation.getLatestReadMsgIndex());
+        info.setSyncTime(conversation.getSyncTime());
         //todo mention
         return info;
     }
