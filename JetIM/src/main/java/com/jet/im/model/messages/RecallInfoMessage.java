@@ -54,7 +54,7 @@ public class RecallInfoMessage extends MessageContent {
     public void setExtra(String extra) {
         mExtra = extra;
     }
-    public static final String CONTENT_TYPE = "jg:recallInfo";
+    public static final String CONTENT_TYPE = "jg:recallinfo";
 
     private String mExtra;
 
