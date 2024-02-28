@@ -25,6 +25,7 @@ message RpcMessageWraper{
     bool isFromApi = 11;
     map<string,string> extParams = 12;
     int32 terminalNum = 13;
+    bool noSendbox = 14;
 
     int32 resultCode = 21;
     int64 msgSendTime = 22;
@@ -91,12 +92,14 @@ message DownMsg{
     string clientUid = 12;
     PushData pushData = 13;
     MentionInfo mentionInfo = 14;
-    bool isReaded = 15;
+    bool isRead = 15;
     DownMsg referMsg = 16;
     UserInfo targetUserInfo = 17;
     GroupInfo groupInfo = 18;
     MergedMsgs mergedMsgs = 19;
     int32 undisturbType = 20;
+    int32 memberCount = 21;
+    int32 readCount = 22;
 }
 enum ChannelType {
     Unknown = 0;
@@ -140,6 +143,7 @@ message AddHisMsgReq{
     ChannelType channelType = 3;
     int64 sendTime = 4;
     DownMsg msg = 5;
+    int32 GroupMemberCount = 6;
 }
 
 message QryMsgLatestIndexReq{
@@ -183,6 +187,12 @@ message MarkReadReq{
     repeated IndexScope indexScopes = 4;
 }
 
+message MarkGrpMsgReadReq{
+    string groupId = 1;
+    ChannelType channelType = 2;
+    repeated string msgIds = 3;
+}
+
 message CleanHisMsgReq{
     string targetId = 1;
     ChannelType channelType = 2;
@@ -220,6 +230,14 @@ message QryMergedMsgsReq{
     int32 order = 3;
 }
 
+message MsgExtItem {
+    string msgId = 1;
+    string targetId = 2;
+    ChannelType channelType = 3;
+    string key = 4;
+    string value = 5;
+}
+
 //conversation
 message QryConversationsReq{
     int64 startTime = 1;
@@ -237,7 +255,7 @@ message Conversation{
     int64 updateTime = 4;
     int64 unreadCount = 5;
     DownMsg msg = 6;
-    int64 latestReadedMsgIndex = 7;
+    int64 latestReadMsgIndex = 7;
     MentionMsg LatestMentionMsg = 8;
     int32 isTop = 9;
     int64 topUpdatedTime = 10;
@@ -245,6 +263,7 @@ message Conversation{
     UserInfo targetUserInfo = 12;
     GroupInfo groupInfo = 13;
     int64 syncTime = 14;
+    int32 isDelete = 15;
 }
 
 message MentionMsg{
@@ -304,32 +323,32 @@ message QryUndisturbReq{
     string targetId=1;
     ChannelType channelType = 2;
 }
-message QryReadedInfosReq{
+message QryReadInfosReq{
     string targetId = 1;
     ChannelType channelType = 2;
     repeated string msgIds = 3;
 }
-message QryReadedInfosResp{
-    repeated ReadedInfoItem items = 1;
+message QryReadInfosResp{
+    repeated ReadInfoItem items = 1;
 }
-message ReadedInfoItem{
+message ReadInfoItem{
     string msgId = 1;
-    int32 readedCount = 2;
+    int32 readCount = 2;
     int32 totalCount = 3;
 }
-message QryReadedDetailReq{
+message QryReadDetailReq{
     string targetId = 1;
     ChannelType channelType = 2;
     string msgId = 3;
 }
-message QryReadedDetailResp{
-    int32 readedCount = 1;
-    int32 totalCount = 2;
-    repeated MemberReadedDetailItem readedMemberIds = 3;
-    repeated MemberReadedDetailItem unreadedMemberIds = 4;
+message QryReadDetailResp{
+    int32 readCount = 1;
+    int32 memberCount = 2;
+    repeated MemberReadDetailItem readMembers = 3;
+    repeated MemberReadDetailItem unreadMembers = 4;
 }
-message MemberReadedDetailItem{
-    string memberId = 1;
+message MemberReadDetailItem{
+    UserInfo member = 1;
     int64 time = 2;
 }
 
@@ -462,6 +481,7 @@ message GroupMuteReq {
 }
 message GroupInfoReq{
     string groupId = 1;
+    repeated string careFields = 2;
 }
 message GroupIdsReq{
     repeated string groupIds = 1;
@@ -500,19 +520,62 @@ message CheckGroupMembersResp{
     map<string,int64> memberIdMap = 1;
 }
 
+message QryGrpSnapshotReq{
+    string groupId = 1;
+    int64 nearlyTime = 2;
+}
+
+message GroupSnapshot {
+    string groupId = 1;
+    repeated string memberIds = 2;
+}
+
 // chatroom
-message JoinChatRoomReq{
+message SyncChatroomReq{
+    string chatroomId = 1;
+    int64 syncTime = 2;
+    int64 attSyncTime = 3;
+}
+message SyncChatroomResp{
+    DownMsgSet msgs = 1;
+    ChatAtts atts = 2;
+    bool isFinished = 3;
+}
+message ChatRoomReq{
     string chatId = 1;
 }
-message ChatRoomDispatchReq{
+message ChatMembersDispatchReq{
     string chatId = 1;
     repeated string memberIds = 2;
-    ChatRoomDispatchType dispatchType = 3;
+    ChatMembersDispatchType dispatchType = 3;
 }
-enum ChatRoomDispatchType {
+enum ChatMembersDispatchType {
     DispatchDefault = 0;
     JoinChatroom = 1;
     QuitChatroom = 2;
+}
+message ChatAttReq{
+    string key = 1;
+    string value = 2;
+    bool isForce = 3;
+}
+message ChatAttItem{
+    string key = 1;
+    string value = 2;
+    int64 attTime = 3;
+    string userId = 4;
+    ChatAttOptType optType = 5;
+}
+enum ChatAttOptType{
+    ChatAttOpt_Default = 0;
+    ChatAttOpt_Add = 1;
+    ChatAttOpt_Del = 2;
+}
+message ChatAtts{
+    string chatId = 1;
+    repeated ChatAttItem atts = 2;
+    bool isComplete = 3;
+    bool isFinished = 4;
 }
 
 // file

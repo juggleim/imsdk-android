@@ -398,7 +398,7 @@ class PBData {
         message.setMessageId(downMsg.getMsgId());
         message.setClientUid(downMsg.getClientUid());
         message.setDirection(downMsg.getIsSend() ? Message.MessageDirection.SEND : Message.MessageDirection.RECEIVE);
-        message.setHasRead(downMsg.getIsReaded());
+        message.setHasRead(downMsg.getIsRead());
         message.setState(Message.MessageState.SENT);
         message.setTimestamp(downMsg.getMsgTime());
         message.setSenderUserId(downMsg.getSenderId());
@@ -420,7 +420,7 @@ class PBData {
         info.setUnreadCount((int)conversation.getUnreadCount());
         info.setUpdateTime(conversation.getUpdateTime());
         info.setLastMessage(messageWithDownMsg(conversation.getMsg()));
-        info.setLastReadMessageIndex(conversation.getLatestReadedMsgIndex());
+        info.setLastReadMessageIndex(conversation.getLatestReadMsgIndex());
         //todo mention
         return info;
     }
