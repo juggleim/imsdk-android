@@ -4,12 +4,21 @@ import com.jet.im.model.ConversationInfo;
 
 public class ConcreteConversationInfo extends ConversationInfo {
     public long getLastReadMessageIndex() {
-        return lastReadMessageIndex;
+        return mLastReadMessageIndex;
     }
 
     public void setLastReadMessageIndex(long lastReadMessageIndex) {
-        this.lastReadMessageIndex = lastReadMessageIndex;
+        this.mLastReadMessageIndex = lastReadMessageIndex;
     }
 
-    private long lastReadMessageIndex;
+    public long getSyncTime() {
+        return mSyncTime;
+    }
+
+    public void setSyncTime(long syncTime) {
+        mSyncTime = syncTime;
+    }
+
+    private long mLastReadMessageIndex;
+    private long mSyncTime;
 }

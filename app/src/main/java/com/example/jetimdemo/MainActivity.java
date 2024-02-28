@@ -178,9 +178,9 @@ public class MainActivity extends AppCompatActivity {
 //                    messages = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 0, JetIMConst.PullDirection.OLDER);
 //                    Log.e("lifei", "message count is " + messages.size());
 
-
                     //delete conversation
-//                    JetIM.getInstance().getConversationManager().deleteConversationInfo(conversation);
+                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+                    JetIM.getInstance().getConversationManager().deleteConversationInfo(c);
 //
 //                    l = JetIM.getInstance().getConversationManager().getConversationInfoList();
 //                    Log.e("lifei", "conversationList count is " + l.size());

@@ -3,6 +3,7 @@ package com.jet.im.internal.core.network;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -93,6 +94,25 @@ public class JWebSocket extends WebSocketClient {
         sendWhenOpen(bytes);
     }
 
+    public void deleteConversationInfo(Conversation conversation,
+                                       String userId,
+                                       WebSocketTimestampCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.deleteConversationData(conversation, userId, mMsgIndex++);
+        mMsgCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void clearUnreadCount(Conversation conversation,
+                                 String userId,
+                                 long msgIndex,
+                                 WebSocketTimestampCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, mMsgIndex++);
+        mMsgCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void queryHisMsg(Conversation conversation, long startTime, int count, JetIMConst.PullDirection direction, QryHisMsgCallback callback) {
         Integer key = mMsgIndex;
         byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, mMsgIndex++);
@@ -166,6 +186,15 @@ public class JWebSocket extends WebSocketClient {
             case PBRcvObj.PBRcvType.recall:
                 handleRecallMessage(obj.mPublishMsgAck);
                 break;
+            case PBRcvObj.PBRcvType.delConvAck:
+                handleDelConv(obj.mSimpleQryAck);
+                break;
+            case PBRcvObj.PBRcvType.clearUnreadAck:
+                handleClearUnread(obj.mSimpleQryAck);
+                break;
+            default:
+                break;
+
         }
     }
 
@@ -262,7 +291,7 @@ public class JWebSocket extends WebSocketClient {
             if (ack.code != 0) {
                 syncConversationsCallback.onError(ack.code);
             } else {
-                syncConversationsCallback.onSuccess(ack.convList, ack.isFinished);
+                syncConversationsCallback.onSuccess(ack.convList, ack.deletedConvList, ack.isFinished);
             }
         }
     }
@@ -303,6 +332,32 @@ public class JWebSocket extends WebSocketClient {
         IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
         if (c instanceof RecallMessageCallback) {
             RecallMessageCallback callback = (RecallMessageCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.timestamp);
+            }
+        }
+    }
+
+    private void handleDelConv(PBRcvObj.SimpleQryAck ack) {
+        LoggerUtils.d("handleDelConv, code is " + ack.code);
+        IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
+        if (c instanceof WebSocketTimestampCallback) {
+            WebSocketTimestampCallback callback = (WebSocketTimestampCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.timestamp);
+            }
+        }
+    }
+
+    private void handleClearUnread(PBRcvObj.SimpleQryAck ack) {
+        LoggerUtils.d("handleClearUnread, code is " + ack.code);
+        IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
+        if (c instanceof WebSocketTimestampCallback) {
+            WebSocketTimestampCallback callback = (WebSocketTimestampCallback) c;
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {

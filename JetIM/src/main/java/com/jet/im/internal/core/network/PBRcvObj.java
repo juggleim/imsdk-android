@@ -51,11 +51,19 @@ class PBRcvObj {
     static class SyncConvAck extends QryAck {
         boolean isFinished;
         List<ConcreteConversationInfo> convList;
+        List<ConcreteConversationInfo> deletedConvList;
 
         SyncConvAck(Connect.QueryAckMsgBody body) {
             super(body);
         }
     }
+
+    static class SimpleQryAck extends QryAck {
+        SimpleQryAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
 
     static class PublishMsgNtf {
         long syncTime;
@@ -79,6 +87,8 @@ class PBRcvObj {
         static final int pong = 9;
         static final int disconnectMsg = 10;
         static final int recall = 11;
+        static final int delConvAck = 12;
+        static final int clearUnreadAck = 13;
     }
 
     public int getRcvType() {
@@ -96,6 +106,7 @@ class PBRcvObj {
     PublishMsgBody mPublishMsgBody;
     PublishMsgNtf mPublishMsgNtf;
     DisconnectMsg mDisconnectMsg;
+    SimpleQryAck mSimpleQryAck;
     private int mRcvType;
 }
 

@@ -6,11 +6,13 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
+import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.utils.LoggerUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +21,7 @@ public class ConversationManager implements IConversationManager {
 
     public ConversationManager(JetIMCore core) {
         this.mCore = core;
+        this.mCachedSyncTime = -1;
     }
 
     @Override
@@ -44,6 +47,21 @@ public class ConversationManager implements IConversationManager {
     @Override
     public void deleteConversationInfo(Conversation conversation) {
         mCore.getDbManager().deleteConversationInfo(conversation);
+        //手动删除不给回调
+        if (mCore.getWebSocket() == null) {
+            return;
+        }
+        mCore.getWebSocket().deleteConversationInfo(conversation, mCore.getUserId(), new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                LoggerUtils.i("delete conversation success");
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                LoggerUtils.i("delete conversation fail, code is " + errorCode);
+            }
+        });
     }
 
     @Override
@@ -96,19 +114,45 @@ public class ConversationManager implements IConversationManager {
         if (mCore.getWebSocket() == null) {
             return;
         }
+        mSyncProcessing = true;
         mCore.getWebSocket().syncConversations(mCore.getConversationSyncTime(), CONVERSATION_SYNC_COUNT, mCore.getUserId(), new SyncConversationsCallback() {
             @Override
-            public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, boolean isFinished) {
+            public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, List<ConcreteConversationInfo> deleteConversationInfoList, boolean isFinished) {
+                long syncTime = 0;
                 if (conversationInfoList.size() > 0) {
                     ConcreteConversationInfo last = conversationInfoList.get(conversationInfoList.size() - 1);
-                    if (last.getUpdateTime() > 0) {
-                        mCore.setConversationSyncTime(last.getUpdateTime());
+                    if (last.getSyncTime() > syncTime) {
+                        syncTime = last.getSyncTime();
                     }
                     mCore.getDbManager().insertConversations(conversationInfoList);
+                    //TODO insert or update
+                }
+                if (deleteConversationInfoList.size() > 0) {
+                    ConcreteConversationInfo last = deleteConversationInfoList.get(deleteConversationInfoList.size() - 1);
+                    if (last.getSyncTime() > syncTime) {
+                        syncTime = last.getSyncTime();
+                    }
+                    for (ConcreteConversationInfo info : deleteConversationInfoList) {
+                        mCore.getDbManager().deleteConversationInfo(info.getConversation());
+                    }
+                    List<ConversationInfo> l = new ArrayList<>(deleteConversationInfoList);
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onConversationInfoDelete(l);
+                        }
+                    }
+                }
+                if (syncTime > 0) {
+                    mCore.setConversationSyncTime(syncTime);
                 }
                 if (!isFinished) {
                     syncConversations(callback);
                 } else {
+                    mSyncProcessing = false;
+                    if (mCachedSyncTime > 0) {
+                        mCore.setConversationSyncTime(mCachedSyncTime);
+                        mCachedSyncTime = -1;
+                    }
                     if (mSyncListenerMap != null) {
                         for (Map.Entry<String, IConversationSyncListener> entry : mSyncListenerMap.entrySet()) {
                             entry.getValue().onConversationSyncComplete();
@@ -137,5 +181,7 @@ public class ConversationManager implements IConversationManager {
     private final JetIMCore mCore;
     private ConcurrentHashMap<String, IConversationListener> mListenerMap;
     private ConcurrentHashMap<String, IConversationSyncListener> mSyncListenerMap;
+    private boolean mSyncProcessing;
+    private long mCachedSyncTime;
     private static final int CONVERSATION_SYNC_COUNT = 100;
 }

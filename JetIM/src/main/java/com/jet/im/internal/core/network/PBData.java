@@ -104,7 +104,6 @@ class PBData {
                 break;
         }
 
-
         Connect.PublishMsgBody publishMsgBody = Connect.PublishMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(topic)
@@ -153,12 +152,45 @@ class PBData {
                 .build();
 
         mMsgCmdMap.put(index, body.getTopic());
-        Connect.ImWebsocketMsg m = Connect.ImWebsocketMsg.newBuilder()
-                .setVersion(PROTOCOL_VERSION)
-                .setCmd(CmdType.query)
-                .setQos(Qos.yes)
-                .setQryMsgBody(body)
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] deleteConversationData(Conversation conversation, String userId, int index) {
+        Appmessages.Conversation c = pbConversationFromConversation(conversation).build();
+        Appmessages.ConversationsReq req = Appmessages.ConversationsReq.newBuilder()
+                .addConversations(c)
                 .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(DEL_CONV)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] clearUnreadCountData(Conversation conversation, String userId, long msgIndex, int index) {
+        Appmessages.Conversation.Builder builder = pbConversationFromConversation(conversation);
+        builder.setLatestReadMsgIndex(msgIndex);
+        Appmessages.Conversation c = builder.build();
+        Appmessages.ClearUnreadReq req = Appmessages.ClearUnreadReq.newBuilder()
+                .addConversations(c)
+                .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(CLEAR_UNREAD)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
     }
 
@@ -176,12 +208,7 @@ class PBData {
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
-        Connect.ImWebsocketMsg m = Connect.ImWebsocketMsg.newBuilder()
-                .setVersion(PROTOCOL_VERSION)
-                .setCmd(CmdType.query)
-                .setQos(Qos.yes)
-                .setQryMsgBody(body)
-                .build();
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);;
         return m.toByteArray();
     }
 
@@ -201,12 +228,7 @@ class PBData {
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
-        Connect.ImWebsocketMsg m = Connect.ImWebsocketMsg.newBuilder()
-                .setVersion(PROTOCOL_VERSION)
-                .setCmd(CmdType.query)
-                .setQos(Qos.yes)
-                .setQryMsgBody(body)
-                .build();
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);;
         return m.toByteArray();
     }
 
@@ -286,6 +308,14 @@ class PBData {
                         case PBRcvObj.PBRcvType.syncMessagesAck:
                             obj = syncMsgAckWithImWebsocketMsg(msg);
                             break;
+                        case PBRcvObj.PBRcvType.delConvAck:
+                            obj = delConvAckWithImWebsocketMsg(msg);
+                            break;
+
+                        case PBRcvObj.PBRcvType.clearUnreadAck:
+                            obj = clearUnreadAckWithImWebsocketMsg(msg);
+                            break;
+
                         default:
                             break;
                     }
@@ -322,7 +352,6 @@ class PBData {
                     obj.mDisconnectMsg = m;
                     break;
 
-                    //todo
             }
         } catch (InvalidProtocolBufferException e) {
             obj.setRcvType(PBRcvObj.PBRcvType.parseError);
@@ -354,11 +383,17 @@ class PBData {
         PBRcvObj.SyncConvAck a = new PBRcvObj.SyncConvAck(msg.getQryAckMsgBody());
         a.isFinished = resp.getIsFinished();
         List<ConcreteConversationInfo> list = new ArrayList<>();
+        List<ConcreteConversationInfo> deletedList = new ArrayList<>();
         for (Appmessages.Conversation conversation : resp.getConversationsList()) {
-            ConcreteConversationInfo info = conversationWithPBConversation(conversation);
-            list.add(info);
+            ConcreteConversationInfo info = conversationInfoWithPBConversation(conversation);
+            if (conversation.getIsDelete() > 0) {
+                deletedList.add(info);
+            } else {
+                list.add(info);
+            }
         }
         a.convList = list;
+        a.deletedConvList = deletedList;
         obj.mSyncConvAck = a;
         return obj;
     }
@@ -380,12 +415,35 @@ class PBData {
         return obj;
     }
 
+    private PBRcvObj delConvAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.delConvAck);
+        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(msg.getQryAckMsgBody());
+        return obj;
+    }
+
+    private PBRcvObj clearUnreadAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.clearUnreadAck);
+        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(msg.getQryAckMsgBody());
+        return obj;
+    }
+
     private Connect.ImWebsocketMsg createImWebsocketMsgWithPublishMsg(Connect.PublishMsgBody publishMsgBody) {
         return Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.publish)
                 .setQos(Qos.yes)
                 .setPublishMsgBody(publishMsgBody)
+                .build();
+    }
+
+    private Connect.ImWebsocketMsg createImWebsocketMsgWithQueryMsg(Connect.QueryMsgBody body) {
+        return Connect.ImWebsocketMsg.newBuilder()
+                .setVersion(PROTOCOL_VERSION)
+                .setCmd(CmdType.query)
+                .setQos(Qos.yes)
+                .setQryMsgBody(body)
                 .build();
     }
 
@@ -413,7 +471,7 @@ class PBData {
         return message;
     }
 
-    private ConcreteConversationInfo conversationWithPBConversation(Appmessages.Conversation conversation) {
+    private ConcreteConversationInfo conversationInfoWithPBConversation(Appmessages.Conversation conversation) {
         ConcreteConversationInfo info = new ConcreteConversationInfo();
         Conversation c = new Conversation(conversationTypeFromChannelType(conversation.getChannelType()), conversation.getTargetId());
         info.setConversation(c);
@@ -444,6 +502,12 @@ class PBData {
                 break;
         }
         return result;
+    }
+
+    private Appmessages.Conversation.Builder pbConversationFromConversation(Conversation conversation) {
+        return Appmessages.Conversation.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue());
     }
 
     private int getTypeInCmdMap(Integer index) {
@@ -483,6 +547,8 @@ class PBData {
     private static final String SYNC_CONV = "sync_convers";
     private static final String SYNC_MSG = "sync_msgs";
     private static final String RECALL_MSG = "recall_msg";
+    private static final String DEL_CONV = "del_convers";
+    private static final String CLEAR_UNREAD = "clear_unread";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -497,6 +563,8 @@ class PBData {
             put(G_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(C_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(RECALL_MSG, PBRcvObj.PBRcvType.recall);
+            put(DEL_CONV, PBRcvObj.PBRcvType.delConvAck);
+            put(CLEAR_UNREAD, PBRcvObj.PBRcvType.clearUnreadAck);
         }
     };
 
