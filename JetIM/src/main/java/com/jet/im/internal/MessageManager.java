@@ -11,6 +11,7 @@ import com.jet.im.internal.core.network.QryHisMsgCallback;
 import com.jet.im.internal.core.network.RecallMessageCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.messages.DeleteConvMessage;
 import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.Message;
@@ -39,6 +40,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(VideoMessage.class);
         ContentTypeCenter.getInstance().registerContentType(RecallInfoMessage.class);
         ContentTypeCenter.getInstance().registerContentType(RecallCmdMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(DeleteConvMessage.class);
     }
     private final JetIMCore mCore;
 
@@ -354,6 +356,16 @@ public class MessageManager implements IMessageManager {
                 }
                 continue;
             }
+
+            //delete conversation
+            if (message.getContentType().equals(DeleteConvMessage.CONTENT_TYPE)) {
+                DeleteConvMessage deleteConvMessage = (DeleteConvMessage) message.getContent();
+                for (Conversation deleteConv : deleteConvMessage.getConversations()) {
+                    mCore.getDbManager().deleteConversationInfo(deleteConv);
+                }
+                continue;
+            }
+
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
