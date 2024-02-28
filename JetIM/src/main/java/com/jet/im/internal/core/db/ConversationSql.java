@@ -49,7 +49,36 @@ class ConversationSql {
         return info;
     }
 
-    static Object[] argsWithConcreteConversationInfo(ConcreteConversationInfo info) {
+    static Object[] argsWithUpdateConcreteConversationInfo(ConcreteConversationInfo info) {
+        ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
+        Object[] args = new Object[18];
+
+        args[0] = info.getUpdateTime();
+        args[1] = info.getLastMessage().getMessageId();
+        args[2] = info.getLastReadMessageIndex();
+        args[3] = info.isTop();
+        args[4] = info.getTopTime();
+        args[5] = info.isMute();
+        args[6] = "0";
+        args[7] = lastMessage.getContentType();
+        args[8] = lastMessage.getClientUid();
+        args[9] = lastMessage.getDirection().getValue();
+        args[10] = lastMessage.getState().getValue();
+        args[11] = lastMessage.isHasRead();
+        args[12] = lastMessage.getTimestamp();
+        args[13] = lastMessage.getSenderUserId();
+        if (lastMessage.getContent() != null) {
+            args[14] = new String(lastMessage.getContent().encode());
+        } else {
+            args[14] = "";
+        }
+        args[15] = lastMessage.getMsgIndex();
+        args[16] = info.getConversation().getConversationType().getValue();
+        args[17] = info.getConversation().getConversationId();
+        return args;
+    }
+
+    static Object[] argsWithInsertConcreteConversationInfo(ConcreteConversationInfo info) {
         ConcreteMessage lastMessage = (ConcreteMessage)info.getLastMessage();
         Object[] args = new Object[18];
         args[0] = info.getConversation().getConversationType().getValue();
@@ -117,6 +146,12 @@ class ConversationSql {
             + "last_message_has_read, last_message_timestamp, last_message_sender, last_message_content,"
             + "last_message_message_index)"
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    static final String SQL_UPDATE_CONVERSATION = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_read_message_index=?, "
+            + "is_top=?, top_time=?, mute=?, last_mention_message_id=?, last_message_type=?,  "
+            + "last_message_client_uid=?, last_message_direction=?, last_message_state=?, "
+            + "last_message_has_read=?, last_message_timestamp=?, last_message_sender=?, "
+            + "last_message_content=?, last_message_message_index=? WHERE conversation_type = ? "
+            + "AND conversation_id = ?";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY timestamp DESC";
     static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
         StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");

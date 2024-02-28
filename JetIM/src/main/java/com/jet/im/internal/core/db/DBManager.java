@@ -17,8 +17,6 @@ import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.utils.LoggerUtils;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -101,17 +99,34 @@ public class DBManager {
         execSQL(ProfileSql.SQL_SET_VALUE, args);
     }
 
-    public void insertConversations(List<ConcreteConversationInfo> list) {
+    public interface IDbInsertConversationsCallback {
+        void onComplete(List<ConcreteConversationInfo> insertList, List<ConcreteConversationInfo> updateList);
+    }
+
+    public void insertConversations(List<ConcreteConversationInfo> list, IDbInsertConversationsCallback callback) {
         if (mDb == null) {
             return;
         }
+        List<ConcreteConversationInfo> insertConversations = new ArrayList<>();
+        List<ConcreteConversationInfo> updateConversations = new ArrayList<>();
         mDb.beginTransaction();
         for (ConcreteConversationInfo info : list) {
-            Object[] args = ConversationSql.argsWithConcreteConversationInfo(info);
-            execSQL(ConversationSql.SQL_INSERT_CONVERSATION, args);
+            ConcreteConversationInfo dbInfo = getConversationInfo(info.getConversation());
+            if (dbInfo != null) {
+                updateConversations.add(info);
+                Object[] args = ConversationSql.argsWithUpdateConcreteConversationInfo(info);
+                execSQL(ConversationSql.SQL_UPDATE_CONVERSATION, args);
+            } else {
+                insertConversations.add(info);
+                Object[] args = ConversationSql.argsWithInsertConcreteConversationInfo(info);
+                execSQL(ConversationSql.SQL_INSERT_CONVERSATION, args);
+            }
         }
         mDb.setTransactionSuccessful();
         mDb.endTransaction();
+        if (callback != null) {
+            callback.onComplete(insertConversations, updateConversations);
+        }
     }
 
     public List<ConversationInfo> getConversationInfoList() {

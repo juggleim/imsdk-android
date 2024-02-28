@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
+import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.model.ConcreteConversationInfo;
@@ -124,8 +125,27 @@ public class ConversationManager implements IConversationManager {
                     if (last.getSyncTime() > syncTime) {
                         syncTime = last.getSyncTime();
                     }
-                    mCore.getDbManager().insertConversations(conversationInfoList);
-                    //TODO insert or update
+                    mCore.getDbManager().insertConversations(conversationInfoList, new DBManager.IDbInsertConversationsCallback() {
+                        @Override
+                        public void onComplete(List<ConcreteConversationInfo> insertList, List<ConcreteConversationInfo> updateList) {
+                            if (insertList.size() > 0) {
+                                if (mListenerMap != null) {
+                                    List<ConversationInfo> l = new ArrayList<>(insertList);
+                                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                                        entry.getValue().onConversationInfoAdd(l);
+                                    }
+                                }
+                            }
+                            if (updateList.size() > 0) {
+                                if (mListenerMap != null) {
+                                    List<ConversationInfo> l = new ArrayList<>(updateList);
+                                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                                        entry.getValue().onConversationInfoUpdate(l);
+                                    }
+                                }
+                            }
+                        }
+                    });
                 }
                 if (deleteConversationInfoList.size() > 0) {
                     ConcreteConversationInfo last = deleteConversationInfoList.get(deleteConversationInfoList.size() - 1);

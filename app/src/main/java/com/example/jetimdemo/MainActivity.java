@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.e("lifei", "message count is " + messages.size());
 
                     //delete conversation
-                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+                    Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid5");
                     JetIM.getInstance().getConversationManager().deleteConversationInfo(c);
 //
 //                    l = JetIM.getInstance().getConversationManager().getConversationInfoList();
