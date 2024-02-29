@@ -45,7 +45,11 @@ public class ConnectionManager implements IConnectionManager {
 
             @Override
             public void onError(int errorCode) {
-                changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode);
+                if (errorCode == ConstInternal.ErrorCode.TOKEN_ILLEGAL) {
+                    changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);
+                } else {
+                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode);
+                }
             }
         }));
     }
@@ -193,7 +197,7 @@ public class ConnectionManager implements IConnectionManager {
                     //已经在连接中，不需要再对外抛回调
                     if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING
                             || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
-                        mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.CONNECTING);
+                        mCore.setConnectionStatus(status);
                         return;
                     }
                     outStatus = JetIMConst.ConnectionStatus.CONNECTING;
