@@ -29,6 +29,8 @@ public interface IMessageManager {
     Message resendMessage(Message message,
                           ISendMessageCallback callback);
 
+    Message saveMessage(MessageContent content, Conversation conversation);
+
     List<Message> getMessages(Conversation conversation,
                               int count,
                               long timestamp,

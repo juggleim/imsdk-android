@@ -43,7 +43,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(DeleteConvMessage.class);
     }
     private final JetIMCore mCore;
-
+    
     @Override
     public Message sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
         ConcreteMessage message = new ConcreteMessage();
@@ -117,6 +117,28 @@ public class MessageManager implements IMessageManager {
         }
         deleteMessageByClientMsgNo(message.getClientMsgNo());
         return sendMessage(message.getContent(), message.getConversation(), callback);
+    }
+
+    @Override
+    public Message saveMessage(MessageContent content, Conversation conversation) {
+        ConcreteMessage message = new ConcreteMessage();
+        message.setContent(content);
+        message.setConversation(conversation);
+        message.setContentType(content.getContentType());
+        message.setDirection(Message.MessageDirection.SEND);
+        message.setState(Message.MessageState.UNKNOWN);
+        message.setSenderUserId(mCore.getUserId());
+        message.setClientUid(createClientUid());
+        message.setTimestamp(System.currentTimeMillis());
+
+        List<ConcreteMessage> list = new ArrayList<>(1);
+        list.add(message);
+        mCore.getDbManager().insertMessages(list);
+
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onMessageSave(message);
+        }
+        return message;
     }
 
     @Override

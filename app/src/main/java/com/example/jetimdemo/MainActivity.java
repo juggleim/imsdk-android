@@ -121,15 +121,27 @@ public class MainActivity extends AppCompatActivity {
 
                     //send message
 
+//                    Handler mainHandler = new Handler(Looper.getMainLooper());
+//                    mainHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            try {
+//                                sendMessages();
+//                            }  catch (InterruptedException e) {
+//                                throw new RuntimeException(e);
+//                            }
+//                        }
+//                    }, 1000);
+
+                    //save message
                     Handler mainHandler = new Handler(Looper.getMainLooper());
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            try {
-                                sendMessages();
-                            }  catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
+                            TextMessage text = new TextMessage("saveText");
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid10");
+                            Message m = JetIM.getInstance().getMessageManager().saveMessage(text, c);
+                            Log.i("lifei", "save message");
                         }
                     }, 1000);
 
