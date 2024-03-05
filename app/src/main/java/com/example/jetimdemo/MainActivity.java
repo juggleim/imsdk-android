@@ -134,16 +134,22 @@ public class MainActivity extends AppCompatActivity {
 //                    }, 1000);
 
                     //save message
-                    Handler mainHandler = new Handler(Looper.getMainLooper());
-                    mainHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            TextMessage text = new TextMessage("saveText");
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid10");
-                            Message m = JetIM.getInstance().getMessageManager().saveMessage(text, c);
-                            Log.i("lifei", "save message");
-                        }
-                    }, 1000);
+//                    Handler mainHandler = new Handler(Looper.getMainLooper());
+//                    mainHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            TextMessage text = new TextMessage("saveText");
+//                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid10");
+//                            Message m = JetIM.getInstance().getMessageManager().saveMessage(text, c);
+//                            Log.i("lifei", "save message");
+//                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.UPLOADING);
+//                            long[] msgNos = {m.getClientMsgNo()};
+//                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
+//                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.FAIL);
+//                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
+//                            Log.i("lifei", "set message state");
+//                        }
+//                    }, 1000);
 
 
                     //recall message
@@ -204,8 +210,31 @@ public class MainActivity extends AppCompatActivity {
 //                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("npgdwvn5gf8grenb");
 
                     //get messages
-//                    List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 1705922710597L, JetIMConst.PullDirection.OLDER);
-//                    Log.e("lifei", "messageList count is " + messageList.size());
+//                    Handler mainHandler = new Handler(Looper.getMainLooper());
+//                    mainHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
+//                            List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(c, 100, 0, JetIMConst.PullDirection.OLDER);
+//                            Log.e("lifei", "messageList count is " + messageList.size());
+//                            //read receipt
+//                            List<String> messageIds = new ArrayList<>(2);
+//                            messageIds.add("nqbugt3zsgyg7sb5");
+//                            messageIds.add("nqbunavvglegrenb");
+//                            JetIM.getInstance().getMessageManager().sendReadReceipt(c, messageIds, new IMessageManager.ISendReadReceiptCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    Log.d("lifei", "send read receipt success");
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//                                    Log.e("lifei", "send read receipt error, code is " + code);
+//                                }
+//                            });
+//                        }
+//                    }, 1000);
+
 //
 //                    List<String> contentTypes = new ArrayList<>();
 //                    contentTypes.add("jg:file");
@@ -228,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
 //                    List<Message> messageList2 = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(clientMsgNos);
 //                    Log.e("lifei", "messageList count is " + messageList2.size());
 
+
                 }
             }
 
@@ -237,6 +267,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         JetIM.getInstance().getConnectionManager().connect(TOKEN1);
+        JetIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
+            @Override
+            public void onMessagesRead(Conversation conversation, List<String> messageIds) {
+                Log.d("lifei", "onMessageRead, count is " + messageIds.size() + ", conversationType is " + conversation.getConversationType() + ", conversationId is " + conversation.getConversationId());
+            }
+        });
         JetIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
             @Override
             public void onMessageSyncComplete() {

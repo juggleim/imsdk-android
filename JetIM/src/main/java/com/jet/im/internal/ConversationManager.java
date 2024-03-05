@@ -7,7 +7,7 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
-import com.jet.im.internal.core.network.WebSocketTimestampCallback;
+import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
@@ -53,9 +53,9 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (mCore.getWebSocket() == null) {
             return;
         }
-        mCore.getWebSocket().deleteConversationInfo(conversation, mCore.getUserId(), new WebSocketTimestampCallback() {
+        mCore.getWebSocket().deleteConversationInfo(conversation, mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
-            public void onSuccess(long timestamp) {
+            public void onSuccess() {
                 LoggerUtils.i("delete conversation success");
             }
 

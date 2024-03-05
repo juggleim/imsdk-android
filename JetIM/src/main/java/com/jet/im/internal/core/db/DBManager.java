@@ -321,6 +321,15 @@ public class DBManager {
         execSQL(sql);
     }
 
+    public void setMessageState(long clientMsgNo, Message.MessageState state) {
+        execSQL(MessageSql.sqlUpdateMessageState(state.getValue(), clientMsgNo));
+    }
+
+    public void setMessagesRead(List<String> messageIds) {
+        String[] args = messageIds.toArray(new String[0]);
+        execSQL(MessageSql.sqlSetMessagesRead(messageIds.size()), args);
+    }
+
     public void deleteMessageByClientMsgNo(long clientMsgNo) {
         String sql = MessageSql.SQL_DELETE_MESSAGE + MessageSql.SQL_CLIENT_MSG_NO_IS + clientMsgNo;
         execSQL(sql);

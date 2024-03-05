@@ -27,7 +27,8 @@ public class Message {
         UNKNOWN(0),
         SENDING(1),
         SENT(2),
-        FAIL(3);
+        FAIL(3),
+        UPLOADING(4);
         MessageState(int value) {
             this.mValue = value;
         }

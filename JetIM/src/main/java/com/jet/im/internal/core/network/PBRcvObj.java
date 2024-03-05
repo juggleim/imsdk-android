@@ -89,6 +89,7 @@ class PBRcvObj {
         static final int recall = 11;
         static final int delConvAck = 12;
         static final int clearUnreadAck = 13;
+        static final int markReadAck = 14;
     }
 
     public int getRcvType() {

@@ -22,6 +22,12 @@ public interface IMessageManager {
         void onSuccess(Message message);
         void onError(int errorCode);
     }
+
+    interface ISendReadReceiptCallback {
+        void onSuccess();
+        void onError(int errorCode);
+    }
+
     Message sendMessage(MessageContent content,
                      Conversation conversation,
                      ISendMessageCallback callback);
@@ -60,12 +66,21 @@ public interface IMessageManager {
                            JetIMConst.PullDirection direction,
                            IGetMessagesCallback callback);
 
+    void sendReadReceipt(Conversation conversation,
+                         List<String> messageIds,
+                         ISendReadReceiptCallback callback);
+
+    void setMessageState(long clientMsgNo, Message.MessageState state);
+
     void registerContentType(Class<? extends MessageContent> messageContentClass);
     void addListener(String key, IMessageListener listener);
     void removeListener(String key);
 
     void addSyncListener(String key, IMessageSyncListener listener);
     void removeSyncListener(String key);
+
+    void addReadReceiptListener(String key, IMessageReadReceiptListener listener);
+    void removeReadReceiptListener(String key);
 
     interface IMessageListener {
         void onMessageReceive(Message message);
@@ -74,5 +89,9 @@ public interface IMessageManager {
 
     interface IMessageSyncListener {
         void onMessageSyncComplete();
+    }
+
+    interface IMessageReadReceiptListener {
+        void onMessagesRead(Conversation conversation, List<String> messageIds);
     }
 }

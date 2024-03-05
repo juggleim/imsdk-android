@@ -10,8 +10,10 @@ import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.QryHisMsgCallback;
 import com.jet.im.internal.core.network.RecallMessageCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
+import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.model.messages.DeleteConvMessage;
+import com.jet.im.internal.model.messages.ReadNtfMessage;
 import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.Message;
@@ -41,9 +43,10 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(RecallInfoMessage.class);
         ContentTypeCenter.getInstance().registerContentType(RecallCmdMessage.class);
         ContentTypeCenter.getInstance().registerContentType(DeleteConvMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(ReadNtfMessage.class);
     }
     private final JetIMCore mCore;
-    
+
     @Override
     public Message sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
         ConcreteMessage message = new ConcreteMessage();
@@ -246,6 +249,31 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public void sendReadReceipt(Conversation conversation, List<String> messageIds, ISendReadReceiptCallback callback) {
+        mCore.getWebSocket().sendReadReceipt(conversation, messageIds, new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                mCore.getDbManager().setMessagesRead(messageIds);
+                if (callback != null) {
+                    callback.onSuccess();
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void setMessageState(long clientMsgNo, Message.MessageState state) {
+        mCore.getDbManager().setMessageState(clientMsgNo, state);
+    }
+
+    @Override
     public void registerContentType(Class<? extends MessageContent> messageContentClass) {
         ContentTypeCenter.getInstance().registerContentType(messageContentClass);
     }
@@ -283,6 +311,24 @@ public class MessageManager implements IMessageManager {
     public void removeSyncListener(String key) {
         if (!TextUtils.isEmpty(key) && mSyncListenerMap != null) {
             mSyncListenerMap.remove(key);
+        }
+    }
+
+    @Override
+    public void addReadReceiptListener(String key, IMessageReadReceiptListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mReadReceiptListenerMap == null) {
+            mReadReceiptListenerMap = new ConcurrentHashMap<>();
+        }
+        mReadReceiptListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeReadReceiptListener(String key) {
+        if (!TextUtils.isEmpty(key) && mReadReceiptListenerMap != null) {
+            mReadReceiptListenerMap.remove(key);
         }
     }
 
@@ -417,6 +463,18 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
+            //read ntf
+            if (message.getContentType().equals(ReadNtfMessage.CONTENT_TYPE)) {
+                ReadNtfMessage readNtfMessage = (ReadNtfMessage) message.getContent();
+                mCore.getDbManager().setMessagesRead(readNtfMessage.getMessageIds());
+                if (mReadReceiptListenerMap != null) {
+                    for (Map.Entry<String, IMessageReadReceiptListener> entry : mReadReceiptListenerMap.entrySet()) {
+                        entry.getValue().onMessagesRead(message.getConversation(), readNtfMessage.getMessageIds());
+                    }
+                }
+                continue;
+            }
+
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
@@ -471,5 +529,6 @@ public class MessageManager implements IMessageManager {
     private boolean mHasSetMessageListener = false;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
+    private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
     private ISendReceiveListener mSendReceiveListener;
 }

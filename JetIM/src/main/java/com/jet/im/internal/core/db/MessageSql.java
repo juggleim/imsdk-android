@@ -142,6 +142,13 @@ class MessageSql {
         return "SELECT * FROM message WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
 
+    static String sqlUpdateMessageState(int state, long clientMsgNo) {
+        return String.format("UPDATE message SET state = %s WHERE id = %s", state, clientMsgNo);
+    }
+    static String sqlSetMessagesRead(int count) {
+        return "UPDATE message SET has_read = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
+    }
+
     static String sqlGetMessagesByClientMsgNos(long[] nos) {
         StringBuilder sql = new StringBuilder("SELECT * FROM message WHERE id in (");
         for (int i = 0; i<nos.length; i++) {
