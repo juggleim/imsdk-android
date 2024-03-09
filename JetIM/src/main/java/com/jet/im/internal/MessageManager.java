@@ -13,6 +13,7 @@ import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.model.messages.DeleteConvMessage;
+import com.jet.im.internal.model.messages.GroupReadNtfMessage;
 import com.jet.im.internal.model.messages.ReadNtfMessage;
 import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.model.Conversation;
@@ -44,6 +45,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(RecallCmdMessage.class);
         ContentTypeCenter.getInstance().registerContentType(DeleteConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ReadNtfMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(GroupReadNtfMessage.class);
     }
     private final JetIMCore mCore;
 
@@ -470,6 +472,18 @@ public class MessageManager implements IMessageManager {
                 if (mReadReceiptListenerMap != null) {
                     for (Map.Entry<String, IMessageReadReceiptListener> entry : mReadReceiptListenerMap.entrySet()) {
                         entry.getValue().onMessagesRead(message.getConversation(), readNtfMessage.getMessageIds());
+                    }
+                }
+                continue;
+            }
+
+            //group read ntf
+            if (message.getContentType().equals(GroupReadNtfMessage.CONTENT_TYPE)) {
+                GroupReadNtfMessage groupReadNtfMessage = (GroupReadNtfMessage) message.getContent();
+                mCore.getDbManager().setGroupMessageReadInfo(groupReadNtfMessage.getMessages());
+                if (mReadReceiptListenerMap != null) {
+                    for (Map.Entry<String, IMessageReadReceiptListener> entry : mReadReceiptListenerMap.entrySet()) {
+                        entry.getValue().onGroupMessagesRead(message.getConversation(), groupReadNtfMessage.getMessages());
                     }
                 }
                 continue;

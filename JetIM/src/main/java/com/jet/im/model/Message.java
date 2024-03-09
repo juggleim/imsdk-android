@@ -126,6 +126,13 @@ public class Message {
         this.content = content;
     }
 
+    public GroupMessageReadInfo getGroupMessageReadInfo() {
+        return mGroupMessageReadInfo;
+    }
+
+    public void setGroupMessageReadInfo(GroupMessageReadInfo groupMessageReadInfo) {
+        mGroupMessageReadInfo = groupMessageReadInfo;
+    }
     private Conversation mConversation;
     /// 消息类型
     private String mContentType;
@@ -145,5 +152,6 @@ public class Message {
     private String mSenderUserId;
     /// 消息内容
     private MessageContent content;
+    private GroupMessageReadInfo mGroupMessageReadInfo;
 
 }

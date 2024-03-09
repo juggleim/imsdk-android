@@ -7,6 +7,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 
 import java.nio.charset.StandardCharsets;
@@ -36,6 +37,10 @@ class MessageSql {
             message.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType()));
         }
         message.setMsgIndex(CursorHelper.readLong(cursor, COL_MESSAGE_INDEX));
+        GroupMessageReadInfo info = new GroupMessageReadInfo();
+        info.setReadCount(CursorHelper.readInt(cursor, COL_READ_COUNT));
+        info.setMemberCount(CursorHelper.readInt(cursor, COL_MEMBER_COUNT));
+        message.setGroupMessageReadInfo(info);
         return message;
     }
 
@@ -93,6 +98,15 @@ class MessageSql {
             cv.put(COL_CONTENT, new String(message.getContent().encode()));
         }
         cv.put(COL_MESSAGE_INDEX, msgIndex);
+        if (message.getGroupMessageReadInfo() == null) {
+            return cv;
+        }
+        cv.put(COL_READ_COUNT, message.getGroupMessageReadInfo().getReadCount());
+        int memberCount = message.getGroupMessageReadInfo().getMemberCount();
+        if (memberCount == 0) {
+            memberCount = -1;
+        }
+        cv.put(COL_MEMBER_COUNT, memberCount);
         return cv;
     }
 
@@ -111,6 +125,8 @@ class MessageSql {
             + "content TEXT,"
             + "extra TEXT,"
             + "message_index INTEGER,"
+            + "read_count INTEGER DEFAULT 0,"
+            + "member_count INTEGER DEFAULT -1,"
             + "is_deleted BOOLEAN DEFAULT 0"
             + ")";
 
@@ -149,6 +165,10 @@ class MessageSql {
         return "UPDATE message SET has_read = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
 
+    static String sqlSetGroupReadInfo(int readCount, int memberCount, String messageId) {
+        return String.format("UPDATE message SET read_count = %s, member_count = %s WHERE message_uid = '%s'", readCount, memberCount, messageId);
+    }
+
     static String sqlGetMessagesByClientMsgNos(long[] nos) {
         StringBuilder sql = new StringBuilder("SELECT * FROM message WHERE id in (");
         for (int i = 0; i<nos.length; i++) {
@@ -167,7 +187,6 @@ class MessageSql {
     static final String SQL_ASC = " ASC";
     static final String SQL_DESC = " DESC";
     static final String SQL_LIMIT = " LIMIT ";
-    static final String SQL_INSERT_MESSAGE = "INSERT INTO message (conversation_type, conversation_id, type, message_uid, client_uid, direction, state, has_read, timestamp, sender, content, message_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     static String sqlUpdateMessageAfterSend(int state, long clientMsgNo, long timestamp, long messageIndex) {
         return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, message_index = %s WHERE id = %s", state, timestamp, messageIndex, clientMsgNo);
@@ -199,6 +218,8 @@ class MessageSql {
     static final String COL_CONTENT = "content";
     static final String COL_EXTRA = "extra";
     static final String COL_MESSAGE_INDEX = "message_index";
+    static final String COL_READ_COUNT = "read_count";
+    static final String COL_MEMBER_COUNT = "member_count";
     static final String COL_IS_DELETED = "is_deleted";
 
 }

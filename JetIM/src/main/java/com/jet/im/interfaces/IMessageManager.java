@@ -2,10 +2,12 @@ package com.jet.im.interfaces;
 
 import com.jet.im.JetIMConst;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IMessageManager {
     interface ISendMessageCallback {
@@ -93,5 +95,6 @@ public interface IMessageManager {
 
     interface IMessageReadReceiptListener {
         void onMessagesRead(Conversation conversation, List<String> messageIds);
+        void onGroupMessagesRead(Conversation conversation, Map<String, GroupMessageReadInfo> messages);
     }
 }

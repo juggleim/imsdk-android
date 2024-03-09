@@ -13,13 +13,16 @@ import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.utils.LoggerUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class DBManager {
     public boolean openIMDB(Context context, String appKey, String userId) {
@@ -328,6 +331,18 @@ public class DBManager {
     public void setMessagesRead(List<String> messageIds) {
         String[] args = messageIds.toArray(new String[0]);
         execSQL(MessageSql.sqlSetMessagesRead(messageIds.size()), args);
+    }
+
+    public void setGroupMessageReadInfo(Map<String, GroupMessageReadInfo> messages) {
+        if (mDb == null) {
+            return;
+        }
+        mDb.beginTransaction();
+        for (Map.Entry<String, GroupMessageReadInfo> entry : messages.entrySet()) {
+            mDb.execSQL(MessageSql.sqlSetGroupReadInfo(entry.getValue().getReadCount(), entry.getValue().getMemberCount(), entry.getKey()));
+        }
+        mDb.setTransactionSuccessful();
+        mDb.endTransaction();
     }
 
     public void deleteMessageByClientMsgNo(long clientMsgNo) {

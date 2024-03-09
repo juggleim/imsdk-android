@@ -11,6 +11,7 @@ import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.utils.LoggerUtils;
 
@@ -502,6 +503,10 @@ class PBData {
         } else {
             message.setFlags(flags);
         }
+        GroupMessageReadInfo info = new GroupMessageReadInfo();
+        info.setReadCount(downMsg.getReadCount());
+        info.setMemberCount(downMsg.getMemberCount());
+        message.setGroupMessageReadInfo(info);
         return message;
     }
 

@@ -25,6 +25,7 @@ import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.messages.FileMessage;
@@ -40,6 +41,7 @@ import android.view.MenuItem;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -120,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 
                     //send message
-
+//
 //                    Handler mainHandler = new Handler(Looper.getMainLooper());
 //                    mainHandler.postDelayed(new Runnable() {
 //                        @Override
@@ -134,22 +136,22 @@ public class MainActivity extends AppCompatActivity {
 //                    }, 1000);
 
                     //save message
-//                    Handler mainHandler = new Handler(Looper.getMainLooper());
-//                    mainHandler.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            TextMessage text = new TextMessage("saveText");
-//                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid10");
-//                            Message m = JetIM.getInstance().getMessageManager().saveMessage(text, c);
-//                            Log.i("lifei", "save message");
-//                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.UPLOADING);
-//                            long[] msgNos = {m.getClientMsgNo()};
-//                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
-//                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.FAIL);
-//                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
-//                            Log.i("lifei", "set message state");
-//                        }
-//                    }, 1000);
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            TextMessage text = new TextMessage("saveText");
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid10");
+                            Message m = JetIM.getInstance().getMessageManager().saveMessage(text, c);
+                            Log.i("lifei", "save message");
+                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.UPLOADING);
+                            long[] msgNos = {m.getClientMsgNo()};
+                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
+                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.FAIL);
+                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
+                            Log.i("lifei", "set message state");
+                        }
+                    }, 1000);
 
 
                     //recall message
@@ -266,11 +268,16 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN1);
+        JetIM.getInstance().getConnectionManager().connect(TOKEN3);
         JetIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {
                 Log.d("lifei", "onMessageRead, count is " + messageIds.size() + ", conversationType is " + conversation.getConversationType() + ", conversationId is " + conversation.getConversationId());
+            }
+
+            @Override
+            public void onGroupMessagesRead(Conversation conversation, Map<String, GroupMessageReadInfo> messages) {
+                Log.d("lifei", "onGroupMessagesRead, conversationType is " + conversation.getConversationType() + ", id is " + conversation.getConversationId() + ", count is " + messages.size());
             }
         });
         JetIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
@@ -352,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendMessages() throws InterruptedException {
-        Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid8");
+        Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
         TextMessage t = new TextMessage("sdfasdf");
         t.setExtra("extra");
         ImageMessage i = new ImageMessage();
