@@ -166,6 +166,82 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public void getMessagesByMessageIds(Conversation conversation, List<String> messageIds, IGetMessagesCallback callback) {
+        if (messageIds.size() == 0) {
+            if (callback != null) {
+                callback.onError(JErrorCode.INVALID_PARAM);
+            }
+            return;
+        }
+        List<Message> localMessages = mCore.getDbManager().getMessagesByMessageIds(messageIds);
+        List<String> notExistList = new ArrayList<>();
+        if (localMessages.size() == 0) {
+            notExistList = messageIds;
+        } else if (localMessages.size() < messageIds.size()) {
+            int localMessageIndex = 0;
+            for (int i = 0; i < messageIds.size(); i++) {
+                if (localMessageIndex == localMessages.size()) {
+                    notExistList.add(messageIds.get(i));
+                    continue;
+                }
+                if (messageIds.get(i).equals(localMessages.get(localMessageIndex).getMessageId())) {
+                    localMessageIndex++;
+                } else {
+                    notExistList.add(messageIds.get(i));
+                }
+            }
+        }
+        if (notExistList.size() > 0) {
+            mCore.getWebSocket().queryHisMsgByIds(conversation, notExistList, new QryHisMsgCallback() {
+                @Override
+                public void onSuccess(List<ConcreteMessage> remoteMessages, boolean isFinished) {
+                    List<Message> result = new ArrayList<>();
+                    for (String messageId : messageIds) {
+                        boolean isMatch = false;
+                        for (Message localMessage : localMessages) {
+                            if (messageId.equals(localMessage.getMessageId())) {
+                                result.add(localMessage);
+                                isMatch = true;
+                                break;
+                            }
+                        }
+                        if (isMatch) {
+                            continue;
+                        }
+                        for (Message remoteMessage : remoteMessages) {
+                            if (messageId.equals(remoteMessage.getMessageId())) {
+                                result.add(remoteMessage);
+                                break;
+                            }
+                        }
+                    }
+                    if (callback != null) {
+                        callback.onSuccess(result);
+                    }
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    if (localMessages.size() > 0) {
+                        if (callback != null) {
+                            callback.onSuccess(localMessages);
+                        }
+                    } else {
+                        if (callback != null) {
+                            callback.onError(errorCode);
+                        }
+                    }
+
+                }
+            });
+        } else {
+            if (callback != null) {
+                callback.onSuccess(localMessages);
+            }
+        }
+    }
+
+    @Override
     public List<Message> getMessagesByClientMsgNos(long[] clientMsgNos) {
         return mCore.getDbManager().getMessagesByClientMsgNos(clientMsgNos);
     }

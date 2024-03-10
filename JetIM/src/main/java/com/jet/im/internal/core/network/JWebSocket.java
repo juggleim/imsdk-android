@@ -137,6 +137,13 @@ public class JWebSocket extends WebSocketClient {
         sendWhenOpen(bytes);
     }
 
+    public void queryHisMsgByIds(Conversation conversation, List<String> messageIds, QryHisMsgCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.queryHisMsgDataByIds(conversation, messageIds, mMsgIndex++);
+        mMsgCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void ping() {
         byte[] bytes = mPbData.pingData();
         sendWhenOpen(bytes);

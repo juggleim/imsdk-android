@@ -58,6 +58,10 @@ public interface IMessageManager {
 
     List<Message> getMessagesByMessageIds(List<String> messageIdList);
 
+    void getMessagesByMessageIds(Conversation conversation,
+                                 List<String> messageIds,
+                                 IGetMessagesCallback callback);
+
     List<Message> getMessagesByClientMsgNos(long[] clientMsgNos);
 
     void deleteMessageByClientMsgNo(long clientMsgNo);

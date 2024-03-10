@@ -276,6 +276,25 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] queryHisMsgDataByIds(Conversation conversation, List<String> messageIds, int index) {
+        Appmessages.QryHisMsgByIdsReq.Builder builder = Appmessages.QryHisMsgByIdsReq.newBuilder();
+        builder.setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue());
+        for (String messageId : messageIds) {
+            builder.addMsgIds(messageId);
+        }
+        Appmessages.QryHisMsgByIdsReq req = builder.build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_HISMSG_BY_IDS)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -636,6 +655,7 @@ class PBData {
     private static final int PROTOCOL_VERSION = 1;
     private static final String SDK_VERSION = "1.0.0";
     private static final String QRY_HIS_MSG = "qry_hismsgs";
+    private static final String QRY_HISMSG_BY_IDS = "qry_hismsg_by_ids";
     private static final String SYNC_CONV = "sync_convers";
     private static final String SYNC_MSG = "sync_msgs";
     private static final String MARK_READ = "mark_read";
@@ -661,6 +681,7 @@ class PBData {
             put(CLEAR_UNREAD, PBRcvObj.PBRcvType.clearUnreadAck);
             put(MARK_READ, PBRcvObj.PBRcvType.markReadAck);
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
+            put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
         }
     };
 
