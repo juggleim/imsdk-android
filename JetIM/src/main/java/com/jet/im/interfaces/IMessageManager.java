@@ -5,6 +5,7 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.UserInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,11 @@ public interface IMessageManager {
 
     interface ISendReadReceiptCallback {
         void onSuccess();
+        void onError(int errorCode);
+    }
+
+    interface IGetGroupMessageReadDetailCallback {
+        void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers);
         void onError(int errorCode);
     }
 
@@ -71,6 +77,10 @@ public interface IMessageManager {
     void sendReadReceipt(Conversation conversation,
                          List<String> messageIds,
                          ISendReadReceiptCallback callback);
+
+    void getGroupMessageReadDetail(Conversation conversation,
+                                   String messageId,
+                                   IGetGroupMessageReadDetailCallback callback);
 
     void setMessageState(long clientMsgNo, Message.MessageState state);
 

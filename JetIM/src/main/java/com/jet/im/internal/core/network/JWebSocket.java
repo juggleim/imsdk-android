@@ -102,6 +102,15 @@ public class JWebSocket extends WebSocketClient {
         sendWhenOpen(bytes);
     }
 
+    public void getGroupMessageReadDetail(Conversation conversation,
+                                          String messageId,
+                                          QryReadDetailCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.getGroupMessageReadDetail(conversation, messageId, mMsgIndex++);
+        mMsgCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void deleteConversationInfo(Conversation conversation,
                                        String userId,
                                        WebSocketSimpleCallback callback) {
@@ -200,6 +209,9 @@ public class JWebSocket extends WebSocketClient {
                 break;
             case PBRcvObj.PBRcvType.markReadAck:
                 handleMarkRead(obj.mSimpleQryAck);
+                break;
+            case PBRcvObj.PBRcvType.qryReadDetailAck:
+                handleQryReadDetailAck(obj.mQryReadDetailAck);
                 break;
             default:
                 break;
@@ -384,6 +396,19 @@ public class JWebSocket extends WebSocketClient {
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess();
+            }
+        }
+    }
+
+    private void handleQryReadDetailAck(PBRcvObj.QryReadDetailAck ack) {
+        LoggerUtils.d("handleQryReadDetailAck, code is " + ack.code);
+        IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
+        if (c instanceof QryReadDetailCallback) {
+            QryReadDetailCallback callback = (QryReadDetailCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.readMembers, ack.unreadMembers);
             }
         }
     }

@@ -28,6 +28,7 @@ import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
@@ -67,6 +68,21 @@ public class MainActivity extends AppCompatActivity {
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
+                    //get group read detail
+                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+                    JetIM.getInstance().getMessageManager().getGroupMessageReadDetail(c, "nqel4yrhaa4k5g4v", new IMessageManager.IGetGroupMessageReadDetailCallback() {
+                        @Override
+                        public void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers) {
+                            Log.i("lifei", "getGroupMessageReadDetail, success");
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            Log.i("lifei", "getGroupMessageReadDetail, error");
+                        }
+                    });
+
+
                     //get remote messages
 //                    Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid5");
 //                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, System.currentTimeMillis(), JetIMConst.PullDirection.NEWER, new IMessageManager.IGetMessagesCallback() {
@@ -136,22 +152,22 @@ public class MainActivity extends AppCompatActivity {
 //                    }, 1000);
 
                     //save message
-                    Handler mainHandler = new Handler(Looper.getMainLooper());
-                    mainHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            TextMessage text = new TextMessage("saveText");
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid10");
-                            Message m = JetIM.getInstance().getMessageManager().saveMessage(text, c);
-                            Log.i("lifei", "save message");
-                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.UPLOADING);
-                            long[] msgNos = {m.getClientMsgNo()};
-                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
-                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.FAIL);
-                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
-                            Log.i("lifei", "set message state");
-                        }
-                    }, 1000);
+//                    Handler mainHandler = new Handler(Looper.getMainLooper());
+//                    mainHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            TextMessage text = new TextMessage("saveText");
+//                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid10");
+//                            Message m = JetIM.getInstance().getMessageManager().saveMessage(text, c);
+//                            Log.i("lifei", "save message");
+//                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.UPLOADING);
+//                            long[] msgNos = {m.getClientMsgNo()};
+//                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
+//                            JetIM.getInstance().getMessageManager().setMessageState(m.getClientMsgNo(), Message.MessageState.FAIL);
+//                            m = JetIM.getInstance().getMessageManager().getMessagesByClientMsgNos(msgNos).get(0);
+//                            Log.i("lifei", "set message state");
+//                        }
+//                    }, 1000);
 
 
                     //recall message

@@ -13,6 +13,7 @@ import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
+import com.jet.im.model.UserInfo;
 import com.jet.im.utils.LoggerUtils;
 
 import java.nio.ByteBuffer;
@@ -236,6 +237,25 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] getGroupMessageReadDetail(Conversation conversation,
+                                     String messageId,
+                                     int index) {
+        Appmessages.QryReadDetailReq req = Appmessages.QryReadDetailReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setMsgId(messageId)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_READ_DETAIL)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] queryHisMsgData(Conversation conversation, long startTime, int count, JetIMConst.PullDirection direction, int index) {
         int order = direction == JetIMConst.PullDirection.OLDER ? 0 : 1;
         Appmessages.QryHisMsgsReq req = Appmessages.QryHisMsgsReq.newBuilder()
@@ -344,6 +364,9 @@ class PBData {
                             obj = markReadAckWithImWebsocketMsg(msg);
                             break;
 
+                        case PBRcvObj.PBRcvType.qryReadDetailAck:
+                            obj = qryReadDetailAckWithImWebsocketMsg(msg);
+                            break;
                         default:
                             break;
                     }
@@ -464,6 +487,27 @@ class PBData {
         return obj;
     }
 
+    private PBRcvObj qryReadDetailAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.QryReadDetailResp resp = Appmessages.QryReadDetailResp.parseFrom(msg.getQryAckMsgBody().getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.qryReadDetailAck);
+        PBRcvObj.QryReadDetailAck a = new PBRcvObj.QryReadDetailAck(msg.getQryAckMsgBody());
+        List<UserInfo> readMembers = new ArrayList<>();
+        List<UserInfo> unreadMembers = new ArrayList<>();
+        for (Appmessages.MemberReadDetailItem item : resp.getReadMembersList()) {
+            UserInfo userInfo = userInfoWithMemberReadDetailItem(item);
+            readMembers.add(userInfo);
+        }
+        for (Appmessages.MemberReadDetailItem item : resp.getUnreadMembersList()) {
+            UserInfo userInfo = userInfoWithMemberReadDetailItem(item);
+            unreadMembers.add(userInfo);
+        }
+        a.readMembers = readMembers;
+        a.unreadMembers = unreadMembers;
+        obj.mQryReadDetailAck = a;
+        return obj;
+    }
+
     private Connect.ImWebsocketMsg createImWebsocketMsgWithPublishMsg(Connect.PublishMsgBody publishMsgBody) {
         return Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -521,6 +565,14 @@ class PBData {
         info.setSyncTime(conversation.getSyncTime());
         //todo mention
         return info;
+    }
+
+    private UserInfo userInfoWithMemberReadDetailItem(Appmessages.MemberReadDetailItem item) {
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUserId(item.getMember().getUserId());
+        userInfo.setUserName(item.getMember().getNickname());
+        userInfo.setPortrait(item.getMember().getUserPortrait());
+        return userInfo;
     }
 
     private Conversation.ConversationType conversationTypeFromChannelType(Appmessages.ChannelType channelType) {
@@ -590,6 +642,7 @@ class PBData {
     private static final String RECALL_MSG = "recall_msg";
     private static final String DEL_CONV = "del_convers";
     private static final String CLEAR_UNREAD = "clear_unread";
+    private static final String QRY_READ_DETAIL = "qry_read_detail";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -607,6 +660,7 @@ class PBData {
             put(DEL_CONV, PBRcvObj.PBRcvType.delConvAck);
             put(CLEAR_UNREAD, PBRcvObj.PBRcvType.clearUnreadAck);
             put(MARK_READ, PBRcvObj.PBRcvType.markReadAck);
+            put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
         }
     };
 

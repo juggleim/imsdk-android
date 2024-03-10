@@ -8,6 +8,7 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.QryHisMsgCallback;
+import com.jet.im.internal.core.network.QryReadDetailCallback;
 import com.jet.im.internal.core.network.RecallMessageCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
@@ -17,8 +18,10 @@ import com.jet.im.internal.model.messages.GroupReadNtfMessage;
 import com.jet.im.internal.model.messages.ReadNtfMessage;
 import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.RecallInfoMessage;
@@ -28,6 +31,7 @@ import com.jet.im.model.messages.VoiceMessage;
 import com.jet.im.utils.LoggerUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -258,6 +262,33 @@ public class MessageManager implements IMessageManager {
                 mCore.getDbManager().setMessagesRead(messageIds);
                 if (callback != null) {
                     callback.onSuccess();
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void getGroupMessageReadDetail(Conversation conversation, String messageId, IGetGroupMessageReadDetailCallback callback) {
+        mCore.getWebSocket().getGroupMessageReadDetail(conversation, messageId, new QryReadDetailCallback() {
+            @Override
+            public void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers) {
+                GroupMessageReadInfo info = new GroupMessageReadInfo();
+                info.setReadCount(readMembers.size());
+                info.setMemberCount(readMembers.size()+ unreadMembers.size());
+                mCore.getDbManager().setGroupMessageReadInfo(new HashMap<String, GroupMessageReadInfo>() {
+                    {
+                        put(messageId, info);
+                    }
+                });
+                if (callback != null) {
+                    callback.onSuccess(readMembers, unreadMembers);
                 }
             }
 

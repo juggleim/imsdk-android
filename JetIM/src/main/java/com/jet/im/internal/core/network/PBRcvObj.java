@@ -2,6 +2,7 @@ package com.jet.im.internal.core.network;
 
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.model.UserInfo;
 
 import java.util.List;
 
@@ -58,6 +59,14 @@ class PBRcvObj {
         }
     }
 
+    static class QryReadDetailAck extends QryAck {
+        List<UserInfo> readMembers;
+        List<UserInfo> unreadMembers;
+        QryReadDetailAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
     static class SimpleQryAck extends QryAck {
         SimpleQryAck(Connect.QueryAckMsgBody body) {
             super(body);
@@ -90,6 +99,7 @@ class PBRcvObj {
         static final int delConvAck = 12;
         static final int clearUnreadAck = 13;
         static final int markReadAck = 14;
+        static final int qryReadDetailAck = 15;
     }
 
     public int getRcvType() {
@@ -107,6 +117,7 @@ class PBRcvObj {
     PublishMsgBody mPublishMsgBody;
     PublishMsgNtf mPublishMsgNtf;
     DisconnectMsg mDisconnectMsg;
+    QryReadDetailAck mQryReadDetailAck;
     SimpleQryAck mSimpleQryAck;
     private int mRcvType;
 }
