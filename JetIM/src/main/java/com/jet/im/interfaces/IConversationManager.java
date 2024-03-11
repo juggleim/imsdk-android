@@ -8,6 +8,11 @@ import java.util.List;
 
 public interface IConversationManager {
 
+    interface ISimpleCallback {
+        void onSuccess();
+        void onError(int errorCode);
+    }
+
     List<ConversationInfo> getConversationInfoList();
 
     List<ConversationInfo> getConversationInfoList(int[] conversationTypes,
@@ -26,6 +31,10 @@ public interface IConversationManager {
     void setDraft(Conversation conversation, String draft);
 
     void clearDraft(Conversation conversation);
+
+    void setMute(Conversation conversation,
+                 boolean isMute,
+                 ISimpleCallback callback);
 
     void addListener(String key, IConversationListener listener);
 

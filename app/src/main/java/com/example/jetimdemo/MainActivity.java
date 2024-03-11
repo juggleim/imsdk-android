@@ -68,27 +68,42 @@ public class MainActivity extends AppCompatActivity {
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
+                    //conversation mute
+//                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                    JetIM.getInstance().getConversationManager().setMute(c, true, new IConversationManager.ISimpleCallback() {
+//                        @Override
+//                        public void onSuccess() {
+//                            Log.e("lifei", "setMute success");
+//                        }
+//
+//                        @Override
+//                        public void onError(int errorCode) {
+//                            Log.e("lifei", "setMute error, code is " + code);
+//                        }
+//                    });
+
+
                     //get messages by id
-                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("nqe4ddt6abgk5g4v");
-                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("nqfb27uugbsk5g4v");
-
-                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
-                    List<String> messageIds = new ArrayList<>();
-                    messageIds.add("nqe4dfu5sbgk5g4v");
-                    messageIds.add("nqe4ddt6abgk5g4v");
-                    messageIds.add("nqfb77e6gbuk5g4v");
-                    messageIds.add("nqfb27uugbsk5g4v");
-                    JetIM.getInstance().getMessageManager().getMessagesByMessageIds(c, messageIds, new IMessageManager.IGetMessagesCallback() {
-                        @Override
-                        public void onSuccess(List<Message> messages) {
-                            Log.e("lifei", "getMessagesByMessageIds success, count is " + messages.size());
-                        }
-
-                        @Override
-                        public void onError(int errorCode) {
-                            Log.e("lifei", "getMessagesByMessageIds error, code is " + errorCode);
-                        }
-                    });
+//                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("nqe4ddt6abgk5g4v");
+//                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("nqfb27uugbsk5g4v");
+//
+//                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                    List<String> messageIds = new ArrayList<>();
+//                    messageIds.add("nqe4dfu5sbgk5g4v");
+//                    messageIds.add("nqe4ddt6abgk5g4v");
+//                    messageIds.add("nqfb77e6gbuk5g4v");
+//                    messageIds.add("nqfb27uugbsk5g4v");
+//                    JetIM.getInstance().getMessageManager().getMessagesByMessageIds(c, messageIds, new IMessageManager.IGetMessagesCallback() {
+//                        @Override
+//                        public void onSuccess(List<Message> messages) {
+//                            Log.e("lifei", "getMessagesByMessageIds success, count is " + messages.size());
+//                        }
+//
+//                        @Override
+//                        public void onError(int errorCode) {
+//                            Log.e("lifei", "getMessagesByMessageIds error, code is " + errorCode);
+//                        }
+//                    });
 
                     //get group read detail
 //                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");

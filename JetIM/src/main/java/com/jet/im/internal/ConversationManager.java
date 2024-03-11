@@ -77,6 +77,26 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void setMute(Conversation conversation, boolean isMute, ISimpleCallback callback) {
+        mCore.getWebSocket().setMute(conversation, isMute, mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                mCore.getDbManager().setMute(conversation, isMute);
+                if (callback != null) {
+                    callback.onSuccess();
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
+    }
+
+    @Override
     public void addListener(String key, IConversationListener listener) {
         if (listener == null || TextUtils.isEmpty(key)) {
             return;

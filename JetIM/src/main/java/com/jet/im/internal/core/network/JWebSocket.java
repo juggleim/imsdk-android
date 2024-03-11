@@ -144,6 +144,13 @@ public class JWebSocket extends WebSocketClient {
         sendWhenOpen(bytes);
     }
 
+    public void setMute(Conversation conversation, boolean isMute, String userId, WebSocketSimpleCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mMsgIndex++);
+        mMsgCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void ping() {
         byte[] bytes = mPbData.pingData();
         sendWhenOpen(bytes);
@@ -208,17 +215,11 @@ public class JWebSocket extends WebSocketClient {
             case PBRcvObj.PBRcvType.recall:
                 handleRecallMessage(obj.mPublishMsgAck);
                 break;
-            case PBRcvObj.PBRcvType.delConvAck:
-                handleDelConv(obj.mSimpleQryAck);
-                break;
-            case PBRcvObj.PBRcvType.clearUnreadAck:
-                handleClearUnread(obj.mSimpleQryAck);
-                break;
-            case PBRcvObj.PBRcvType.markReadAck:
-                handleMarkRead(obj.mSimpleQryAck);
-                break;
             case PBRcvObj.PBRcvType.qryReadDetailAck:
                 handleQryReadDetailAck(obj.mQryReadDetailAck);
+                break;
+            case PBRcvObj.PBRcvType.simpleQryAck:
+                handleSimpleQryAck(obj.mSimpleQryAck);
                 break;
             default:
                 break;
@@ -368,34 +369,8 @@ public class JWebSocket extends WebSocketClient {
         }
     }
 
-    private void handleDelConv(PBRcvObj.SimpleQryAck ack) {
-        LoggerUtils.d("handleDelConv, code is " + ack.code);
-        IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
-        if (c instanceof WebSocketSimpleCallback) {
-            WebSocketSimpleCallback callback = (WebSocketSimpleCallback) c;
-            if (ack.code != 0) {
-                callback.onError(ack.code);
-            } else {
-                callback.onSuccess();
-            }
-        }
-    }
-
-    private void handleClearUnread(PBRcvObj.SimpleQryAck ack) {
-        LoggerUtils.d("handleClearUnread, code is " + ack.code);
-        IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
-        if (c instanceof WebSocketSimpleCallback) {
-            WebSocketSimpleCallback callback = (WebSocketSimpleCallback) c;
-            if (ack.code != 0) {
-                callback.onError(ack.code);
-            } else {
-                callback.onSuccess();
-            }
-        }
-    }
-
-    private void handleMarkRead(PBRcvObj.SimpleQryAck ack) {
-        LoggerUtils.d("handleMarkRead, code is " + ack.code);
+    private void handleSimpleQryAck(PBRcvObj.SimpleQryAck ack) {
+        LoggerUtils.d("handleSimpleQryAck, code is " + ack.code);
         IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
         if (c instanceof WebSocketSimpleCallback) {
             WebSocketSimpleCallback callback = (WebSocketSimpleCallback) c;

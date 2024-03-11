@@ -213,7 +213,7 @@ class PBData {
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
-        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);;
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
     }
 
@@ -275,7 +275,7 @@ class PBData {
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
-        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);;
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
     }
 
@@ -291,6 +291,27 @@ class PBData {
                 .setIndex(index)
                 .setTopic(QRY_HISMSG_BY_IDS)
                 .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] disturbData(Conversation conversation, String userId, boolean isMute, int index) {
+        Appmessages.UndisturbConverItem item = Appmessages.UndisturbConverItem.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setUndisturbType(isMute?1:0)
+                .build();
+        Appmessages.UndisturbConversReq req = Appmessages.UndisturbConversReq.newBuilder()
+                .setUserId(userId)
+                .addItems(item)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(UNDISTURB_CONVERS)
+                .setTargetId(userId)
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
@@ -374,20 +395,11 @@ class PBData {
                         case PBRcvObj.PBRcvType.syncMessagesAck:
                             obj = syncMsgAckWithImWebsocketMsg(msg);
                             break;
-                        case PBRcvObj.PBRcvType.delConvAck:
-                            obj = delConvAckWithImWebsocketMsg(msg);
-                            break;
-
-                        case PBRcvObj.PBRcvType.clearUnreadAck:
-                            obj = clearUnreadAckWithImWebsocketMsg(msg);
-                            break;
-
-                        case PBRcvObj.PBRcvType.markReadAck:
-                            obj = markReadAckWithImWebsocketMsg(msg);
-                            break;
-
                         case PBRcvObj.PBRcvType.qryReadDetailAck:
                             obj = qryReadDetailAckWithImWebsocketMsg(msg);
+                            break;
+                        case PBRcvObj.PBRcvType.simpleQryAck:
+                            obj = simpleQryAckWithImWebsocketMsg(msg);
                             break;
                         default:
                             break;
@@ -488,23 +500,9 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj delConvAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) {
+    private PBRcvObj simpleQryAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) {
         PBRcvObj obj = new PBRcvObj();
-        obj.setRcvType(PBRcvObj.PBRcvType.delConvAck);
-        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(msg.getQryAckMsgBody());
-        return obj;
-    }
-
-    private PBRcvObj clearUnreadAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) {
-        PBRcvObj obj = new PBRcvObj();
-        obj.setRcvType(PBRcvObj.PBRcvType.clearUnreadAck);
-        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(msg.getQryAckMsgBody());
-        return obj;
-    }
-
-    private PBRcvObj markReadAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) {
-        PBRcvObj obj = new PBRcvObj();
-        obj.setRcvType(PBRcvObj.PBRcvType.markReadAck);
+        obj.setRcvType(PBRcvObj.PBRcvType.simpleQryAck);
         obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(msg.getQryAckMsgBody());
         return obj;
     }
@@ -585,6 +583,7 @@ class PBData {
         info.setLastMessage(messageWithDownMsg(conversation.getMsg()));
         info.setLastReadMessageIndex(conversation.getLatestReadMsgIndex());
         info.setSyncTime(conversation.getSyncTime());
+        info.setMute(conversation.getUndisturbType()==1);
         //todo mention
         return info;
     }
@@ -666,6 +665,7 @@ class PBData {
     private static final String DEL_CONV = "del_convers";
     private static final String CLEAR_UNREAD = "clear_unread";
     private static final String QRY_READ_DETAIL = "qry_read_detail";
+    private static final String UNDISTURB_CONVERS = "undisturb_convers";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -680,11 +680,12 @@ class PBData {
             put(G_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(C_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(RECALL_MSG, PBRcvObj.PBRcvType.recall);
-            put(DEL_CONV, PBRcvObj.PBRcvType.delConvAck);
-            put(CLEAR_UNREAD, PBRcvObj.PBRcvType.clearUnreadAck);
-            put(MARK_READ, PBRcvObj.PBRcvType.markReadAck);
+            put(DEL_CONV, PBRcvObj.PBRcvType.simpleQryAck);
+            put(CLEAR_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
+            put(MARK_READ, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
+            put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
         }
     };
 

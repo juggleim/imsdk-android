@@ -96,10 +96,8 @@ class PBRcvObj {
         static final int pong = 9;
         static final int disconnectMsg = 10;
         static final int recall = 11;
-        static final int delConvAck = 12;
-        static final int clearUnreadAck = 13;
-        static final int markReadAck = 14;
-        static final int qryReadDetailAck = 15;
+        static final int qryReadDetailAck = 12;
+        static final int simpleQryAck = 13;
     }
 
     public int getRcvType() {
