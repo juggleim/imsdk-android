@@ -21,6 +21,7 @@ message ConnectMsgBody{
     string clientIp = 13;
     
     string packageName = 14;
+    string pushChannel = 15;
 }
 
 message ConnectAckMsgBody{

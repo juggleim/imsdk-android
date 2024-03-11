@@ -50,7 +50,10 @@ class PBData {
                 .setPushToken(pushToken)
                 .setNetworkId(networkId)
                 .setIspNum(ispNum)
-                .setClientIp(clientIp).build();
+                .setClientIp(clientIp)
+                .setPackageName("cn.wahu.im")
+                .setPushChannel("Huawei")
+                .build();
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.connect)
