@@ -178,6 +178,10 @@ public class DBManager {
         execSQL(ConversationSql.sqlSetDraft(conversation, draft));
     }
 
+    public void setMute(Conversation conversation, boolean isMute) {
+        execSQL(ConversationSql.sqlSetMute(conversation, isMute));
+    }
+
     public void updateLastMessage(ConcreteMessage message) {
         Object[] args = ConversationSql.argsWithUpdateLastMessage(message);
         execSQL(ConversationSql.SQL_UPDATE_LAST_MESSAGE, args);
