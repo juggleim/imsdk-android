@@ -3,6 +3,8 @@ package com.jet.im;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.jet.im.interfaces.IUserInfoManager;
+import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.interfaces.IConversationManager;
@@ -50,6 +52,9 @@ public class JetIM {
     public IConversationManager getConversationManager() {
         return mConversationManager;
     }
+    public IUserInfoManager getUserInfoManager() {
+        return mUserInfoManager;
+    }
 
     private static class SingletonHolder {
         static final JetIM sInstance = new JetIM();
@@ -62,10 +67,12 @@ public class JetIM {
         mConversationManager = new ConversationManager(core);
         mMessageManager.setSendReceiveListener(mConversationManager);
         mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager);
+        mUserInfoManager = new UserInfoManager(core);
     }
 
     private final ConnectionManager mConnectionManager;
     private final MessageManager mMessageManager;
     private final ConversationManager mConversationManager;
+    private final UserInfoManager mUserInfoManager;
     private final JetIMCore mCore;
 }

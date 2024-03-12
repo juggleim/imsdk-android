@@ -1,6 +1,8 @@
 package com.jet.im.internal.model;
 
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupInfo;
+import com.jet.im.model.UserInfo;
 
 public class ConcreteConversationInfo extends ConversationInfo {
     public long getLastReadMessageIndex() {
@@ -19,6 +21,24 @@ public class ConcreteConversationInfo extends ConversationInfo {
         mSyncTime = syncTime;
     }
 
+    public GroupInfo getGroupInfo() {
+        return mGroupInfo;
+    }
+
+    public void setGroupInfo(GroupInfo groupInfo) {
+        mGroupInfo = groupInfo;
+    }
+
+    public UserInfo getTargetUserInfo() {
+        return mTargetUserInfo;
+    }
+
+    public void setTargetUserInfo(UserInfo userInfo) {
+        mTargetUserInfo = userInfo;
+    }
+
     private long mLastReadMessageIndex;
     private long mSyncTime;
+    private GroupInfo mGroupInfo;
+    private UserInfo mTargetUserInfo;
 }

@@ -1,6 +1,8 @@
 package com.jet.im.internal.model;
 
+import com.jet.im.model.GroupInfo;
 import com.jet.im.model.Message;
+import com.jet.im.model.UserInfo;
 
 public class ConcreteMessage extends Message {
     public long getMsgIndex() {
@@ -35,8 +37,26 @@ public class ConcreteMessage extends Message {
         mExisted = existed;
     }
 
+    public GroupInfo getGroupInfo() {
+        return mGroupInfo;
+    }
+
+    public void setGroupInfo(GroupInfo groupInfo) {
+        mGroupInfo = groupInfo;
+    }
+
+    public UserInfo getTargetUserInfo() {
+        return mTargetUserInfo;
+    }
+
+    public void setTargetUserInfo(UserInfo targetUserInfo) {
+        mTargetUserInfo = targetUserInfo;
+    }
+
     private long mMsgIndex;
     private String mClientUid;
     private int mFlags;
     private boolean mExisted;
+    private GroupInfo mGroupInfo;
+    private UserInfo mTargetUserInfo;
 }

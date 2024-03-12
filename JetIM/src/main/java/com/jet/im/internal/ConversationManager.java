@@ -12,9 +12,12 @@ import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupInfo;
+import com.jet.im.model.UserInfo;
 import com.jet.im.utils.LoggerUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -142,6 +145,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, List<ConcreteConversationInfo> deleteConversationInfoList, boolean isFinished) {
                 long syncTime = 0;
                 if (conversationInfoList.size() > 0) {
+                    updateUserInfo(conversationInfoList);
                     ConcreteConversationInfo last = conversationInfoList.get(conversationInfoList.size() - 1);
                     if (last.getSyncTime() > syncTime) {
                         syncTime = last.getSyncTime();
@@ -169,6 +173,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     });
                 }
                 if (deleteConversationInfoList.size() > 0) {
+                    updateUserInfo(deleteConversationInfoList);
                     ConcreteConversationInfo last = deleteConversationInfoList.get(deleteConversationInfoList.size() - 1);
                     if (last.getSyncTime() > syncTime) {
                         syncTime = last.getSyncTime();
@@ -289,6 +294,21 @@ public class ConversationManager implements IConversationManager, MessageManager
         } else {
             mCore.setConversationSyncTime(timestamp);
         }
+    }
+
+    private void updateUserInfo(List<ConcreteConversationInfo> conversationInfoList) {
+        Map<String, GroupInfo> groupInfoMap = new HashMap<>();
+        Map<String, UserInfo> userInfoMap = new HashMap<>();
+        for (ConcreteConversationInfo info : conversationInfoList) {
+            if (info.getGroupInfo() != null && !TextUtils.isEmpty(info.getGroupInfo().getGroupId())) {
+                groupInfoMap.put(info.getGroupInfo().getGroupId(), info.getGroupInfo());
+            }
+            if (info.getTargetUserInfo() != null && !TextUtils.isEmpty(info.getTargetUserInfo().getUserId())) {
+                userInfoMap.put(info.getTargetUserInfo().getUserId(), info.getTargetUserInfo());
+            }
+        }
+        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mCore.getDbManager().insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
     }
 
     private final JetIMCore mCore;

@@ -11,6 +11,7 @@ import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.UserInfo;
@@ -571,6 +572,8 @@ class PBData {
         info.setReadCount(downMsg.getReadCount());
         info.setMemberCount(downMsg.getMemberCount());
         message.setGroupMessageReadInfo(info);
+        message.setGroupInfo(groupInfoWithPBGroupInfo(downMsg.getGroupInfo()));
+        message.setTargetUserInfo(userInfoWithPBUserInfo(downMsg.getTargetUserInfo()));
         return message;
     }
 
@@ -584,6 +587,8 @@ class PBData {
         info.setLastReadMessageIndex(conversation.getLatestReadMsgIndex());
         info.setSyncTime(conversation.getSyncTime());
         info.setMute(conversation.getUndisturbType()==1);
+        info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
+        info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
         //todo mention
         return info;
     }
@@ -594,6 +599,28 @@ class PBData {
         userInfo.setUserName(item.getMember().getNickname());
         userInfo.setPortrait(item.getMember().getUserPortrait());
         return userInfo;
+    }
+
+    private UserInfo userInfoWithPBUserInfo(Appmessages.UserInfo pbUserInfo) {
+        if (pbUserInfo == null) {
+            return null;
+        }
+        UserInfo result = new UserInfo();
+        result.setUserId(pbUserInfo.getUserId());
+        result.setUserName(pbUserInfo.getNickname());
+        result.setPortrait(pbUserInfo.getUserPortrait());
+        return result;
+    }
+
+    private GroupInfo groupInfoWithPBGroupInfo(Appmessages.GroupInfo pbGroupInfo) {
+        if (pbGroupInfo == null) {
+            return null;
+        }
+        GroupInfo result = new GroupInfo();
+        result.setGroupId(pbGroupInfo.getGroupId());
+        result.setGroupName(pbGroupInfo.getGroupName());
+        result.setPortrait(pbGroupInfo.getGroupPortrait());
+        return result;
     }
 
     private Conversation.ConversationType conversationTypeFromChannelType(Appmessages.ChannelType channelType) {

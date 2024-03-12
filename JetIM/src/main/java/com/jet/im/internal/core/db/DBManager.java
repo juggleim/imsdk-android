@@ -13,9 +13,11 @@ import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.UserInfo;
 import com.jet.im.utils.LoggerUtils;
 
 import java.io.File;
@@ -362,6 +364,58 @@ public class DBManager {
 
     public void clearMessages(Conversation conversation) {
         execSQL(MessageSql.sqlClearMessages(conversation));
+    }
+
+    public UserInfo getUserInfo(String userId) {
+        if (TextUtils.isEmpty(userId)) {
+            return null;
+        }
+        UserInfo info = null;
+        String[] args = new String[]{userId};
+        Cursor cursor = rawQuery(UserInfoSql.SQL_GET_USER_INFO, args);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                info = UserInfoSql.userInfoWithCursor(cursor);
+            }
+            cursor.close();
+        }
+        return info;
+    }
+
+    public GroupInfo getGroupInfo(String groupId) {
+        if (TextUtils.isEmpty(groupId)) {
+            return null;
+        }
+        GroupInfo info = null;
+        String[] args = new String[]{groupId};
+        Cursor cursor = rawQuery(UserInfoSql.SQL_GET_GROUP_INFO, args);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                info = UserInfoSql.groupInfoWithCursor(cursor);
+            }
+            cursor.close();
+        }
+        return info;
+    }
+
+    public void insertUserInfoList(List<UserInfo> userInfoList) {
+        mDb.beginTransaction();
+        for (UserInfo info : userInfoList) {
+            String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), ""};
+            execSQL(UserInfoSql.SQL_INSERT_USER_INFO, args);
+        }
+        mDb.setTransactionSuccessful();
+        mDb.endTransaction();
+    }
+
+    public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
+        mDb.beginTransaction();
+        for (GroupInfo info : groupInfoList) {
+            String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), ""};
+            execSQL(UserInfoSql.SQL_INSERT_GROUP_INFO, args);
+        }
+        mDb.setTransactionSuccessful();
+        mDb.endTransaction();
     }
 
     private Cursor rawQuery(String sql, String[] selectionArgs) {

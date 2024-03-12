@@ -18,6 +18,7 @@ import com.jet.im.internal.model.messages.GroupReadNtfMessage;
 import com.jet.im.internal.model.messages.ReadNtfMessage;
 import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
@@ -535,6 +536,7 @@ public class MessageManager implements IMessageManager {
     private void handleReceiveMessages(List<ConcreteMessage> messages, boolean isSync) {
         List<ConcreteMessage> messagesToSave = messagesToSave(messages);
         mCore.getDbManager().insertMessages(messagesToSave);
+        updateUserInfo(messagesToSave);
 
         long sendTime = 0;
         long receiveTime = 0;
@@ -635,6 +637,21 @@ public class MessageManager implements IMessageManager {
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().syncMessages(mCore.getMessageReceiveTime(), mCore.getMessageSendSyncTime(), mCore.getUserId());
         }
+    }
+
+    private void updateUserInfo(List<ConcreteMessage> messages) {
+        Map<String, GroupInfo> groupInfoMap = new HashMap<>();
+        Map<String, UserInfo> userInfoMap = new HashMap<>();
+        for (ConcreteMessage message : messages) {
+            if (message.getGroupInfo() != null && !TextUtils.isEmpty(message.getGroupInfo().getGroupId())) {
+                groupInfoMap.put(message.getGroupInfo().getGroupId(), message.getGroupInfo());
+            }
+            if (message.getTargetUserInfo() != null && !TextUtils.isEmpty(message.getTargetUserInfo().getUserId())) {
+                userInfoMap.put(message.getTargetUserInfo().getUserId(), message.getTargetUserInfo());
+            }
+        }
+        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mCore.getDbManager().insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
     }
 
     private String createClientUid() {

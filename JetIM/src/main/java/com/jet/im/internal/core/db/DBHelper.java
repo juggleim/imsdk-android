@@ -16,6 +16,10 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_INDEX);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_TABLE);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_TABLE);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_INDEX);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_INDEX);
     }
 
     @Override

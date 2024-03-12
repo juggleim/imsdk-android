@@ -25,6 +25,7 @@ import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
@@ -68,6 +69,13 @@ public class MainActivity extends AppCompatActivity {
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
+                    //user info
+                    UserInfo user2 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid2");
+                    GroupInfo group1 = JetIM.getInstance().getUserInfoManager().getGroupInfo("groupid1");
+                    UserInfo user10 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid10");
+                    GroupInfo group11 = JetIM.getInstance().getUserInfoManager().getGroupInfo("group11");
+                    Log.e("lifei", "lifei");
+
                     //conversation mute
 //                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
 //                    JetIM.getInstance().getConversationManager().setMute(c, true, new IConversationManager.ISimpleCallback() {
