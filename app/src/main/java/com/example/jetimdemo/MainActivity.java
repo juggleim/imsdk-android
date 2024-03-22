@@ -27,11 +27,13 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
+import com.jet.im.model.MergeMessagePreviewUnit;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
+import com.jet.im.model.messages.MergeMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
@@ -69,12 +71,72 @@ public class MainActivity extends AppCompatActivity {
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
+                    //send merge message
+//                    List<String> messageIdList = new ArrayList<>();
+//                    messageIdList.add("nqnwmfppsu6k5g4v");
+//                    messageIdList.add("nqnwmef62u4k5g4v");
+//                    messageIdList.add("nqnwmdthsu2k5g4v");
+//
+//                    List<MergeMessagePreviewUnit> previewList = new ArrayList<>();
+//                    for (int i = 0; i < 3; i++) {
+//                        MergeMessagePreviewUnit unit = new MergeMessagePreviewUnit();
+//                        unit.setPreviewContent("previewContent" + i);
+//                        UserInfo userInfo = new UserInfo();
+//                        userInfo.setUserId("userId" + i);
+//                        userInfo.setUserName("userName" + i);
+//                        unit.setSender(userInfo);
+//                        previewList.add(unit);
+//                    }
+//                    MergeMessage merge = new MergeMessage("title", messageIdList, previewList);
+//                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//
+//                    Message m = JetIM.getInstance().getMessageManager().sendMessage(merge, c, new IMessageManager.ISendMessageCallback() {
+//                        @Override
+//                        public void onSuccess(Message message) {
+//                            Log.e("lifei", "lifei");
+//                        }
+//
+//                        @Override
+//                        public void onError(Message message, int errorCode) {
+//                            Log.e("lifei", "lifei");
+//                        }
+//                    });
+//                    Log.e("lifei", "lifei");
+
+                    //query merge messag
+
+
+                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesCallback() {
+                        @Override
+                        public void onSuccess(List<Message> messages) {
+                            Log.e("lifei", "lifei");
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            Log.e("lifei", "lifei");
+                        }
+                    });
+
+//                    JetIM.getInstance().getMessageManager().getMergedMessageList("nqnw4blmgwck5g4v", new IMessageManager.IGetMessagesCallback() {
+//                        @Override
+//                        public void onSuccess(List<Message> messages) {
+//                            Log.e("lifei", "lifei");
+//                        }
+//
+//                        @Override
+//                        public void onError(int errorCode) {
+//                            Log.e("lifei", "lifei");
+//                        }
+//                    });
+
                     //user info
-                    UserInfo user2 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid2");
-                    GroupInfo group1 = JetIM.getInstance().getUserInfoManager().getGroupInfo("groupid1");
-                    UserInfo user10 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid10");
-                    GroupInfo group11 = JetIM.getInstance().getUserInfoManager().getGroupInfo("group11");
-                    Log.e("lifei", "lifei");
+//                    UserInfo user2 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid2");
+//                    GroupInfo group1 = JetIM.getInstance().getUserInfoManager().getGroupInfo("groupid1");
+//                    UserInfo user10 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid10");
+//                    GroupInfo group11 = JetIM.getInstance().getUserInfoManager().getGroupInfo("group11");
+//                    Log.e("lifei", "lifei");
 
                     //conversation mute
 //                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");

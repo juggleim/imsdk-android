@@ -86,6 +86,9 @@ public interface IMessageManager {
                                    String messageId,
                                    IGetGroupMessageReadDetailCallback callback);
 
+    void getMergedMessageList(String messageId,
+                              IGetMessagesCallback callback);
+
     void setMessageState(long clientMsgNo, Message.MessageState state);
 
     void registerContentType(Class<? extends MessageContent> messageContentClass);

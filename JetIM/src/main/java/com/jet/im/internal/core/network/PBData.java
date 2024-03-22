@@ -14,6 +14,7 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
+import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
 import com.jet.im.utils.LoggerUtils;
 
@@ -83,16 +84,36 @@ class PBData {
                            byte[] msgData,
                            int flags,
                            String clientUid,
+                           List<ConcreteMessage> mergedMsgList,
+                           String userId,
                            int index,
                            Conversation.ConversationType conversationType,
                            String conversationId) {
         ByteString byteString = ByteString.copyFrom(msgData);
-        Appmessages.UpMsg upMsg = Appmessages.UpMsg.newBuilder()
-                .setMsgType(contentType)
+        Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
+        upMsgBuilder.setMsgType(contentType)
                 .setMsgContent(byteString)
                 .setFlags(flags)
-                .setClientUid(clientUid)
-                .build();
+                .setClientUid(clientUid);
+
+        if (mergedMsgList != null && mergedMsgList.size() > 0) {
+            upMsgBuilder.setFlags(flags | MessageContent.MessageFlag.IS_MERGED.getValue());
+            Appmessages.MergedMsgs.Builder mergedMsgsBuilder = Appmessages.MergedMsgs.newBuilder();
+            mergedMsgsBuilder.setChannelTypeValue(conversationType.getValue())
+                    .setUserId(userId)
+                    .setTargetId(conversationId);
+
+            for (ConcreteMessage msg : mergedMsgList) {
+                Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
+                        .setMsgId(msg.getMessageId())
+                        .setMsgTime(msg.getTimestamp())
+                        .setMsgIndex(msg.getMsgIndex())
+                        .build();
+                mergedMsgsBuilder.addMsgs(simpleMsg);
+            }
+            upMsgBuilder.setMergedMsgs(mergedMsgsBuilder.build());
+        }
+        Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
         String topic = "";
         switch (conversationType) {
@@ -313,6 +334,28 @@ class PBData {
                 .setIndex(index)
                 .setTopic(UNDISTURB_CONVERS)
                 .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getMergedMessageList(String messageId,
+                                long timestamp,
+                                int count,
+                                JetIMConst.PullDirection direction,
+                                int index) {
+        int order = direction == JetIMConst.PullDirection.OLDER ? 0 : 1;
+        Appmessages.QryMergedMsgsReq req = Appmessages.QryMergedMsgsReq.newBuilder()
+                .setStartTime(timestamp)
+                .setCount(count)
+                .setOrder(order)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_MERGED_MSGS)
+                .setTargetId(messageId)
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
@@ -693,6 +736,7 @@ class PBData {
     private static final String CLEAR_UNREAD = "clear_unread";
     private static final String QRY_READ_DETAIL = "qry_read_detail";
     private static final String UNDISTURB_CONVERS = "undisturb_convers";
+    private static final String QRY_MERGED_MSGS = "qry_merged_msgs";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -713,6 +757,7 @@ class PBData {
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
         }
     };
 

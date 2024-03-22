@@ -9,7 +9,10 @@ public abstract class MessageContent {
         // 是否状态消息
         IS_STATUS(4),
         // 是否存入历史消息
-        IS_SAVE(8);
+        IS_SAVE(8),
+        IS_MODIFIED(16),
+        IS_MERGED(32),
+        IS_MUTE(64);
         public int getValue() {
             return mValue;
         }

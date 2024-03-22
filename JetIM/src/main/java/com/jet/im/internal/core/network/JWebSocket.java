@@ -53,12 +53,16 @@ public class JWebSocket extends WebSocketClient {
     public void sendIMMessage(MessageContent content,
                               Conversation conversation,
                               String clientUid,
+                              List<ConcreteMessage> mergedMsgList,
+                              String userId,
                               SendMessageCallback callback) {
         Integer key = mMsgIndex;
         byte[] bytes = mPbData.sendMessageData(content.getContentType(),
                 content.encode(),
                 content.getFlags(),
                 clientUid,
+                mergedMsgList,
+                userId,
                 mMsgIndex++,
                 conversation.getConversationType(),
                 conversation.getConversationId());
@@ -147,6 +151,17 @@ public class JWebSocket extends WebSocketClient {
     public void setMute(Conversation conversation, boolean isMute, String userId, WebSocketSimpleCallback callback) {
         Integer key = mMsgIndex;
         byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mMsgIndex++);
+        mMsgCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getMergedMessageList(String messageId,
+                                     long timestamp,
+                                     int count,
+                                     JetIMConst.PullDirection direction,
+                                     QryHisMsgCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.getMergedMessageList(messageId, timestamp, count, direction, mMsgIndex++);
         mMsgCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }

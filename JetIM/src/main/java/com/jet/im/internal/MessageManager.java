@@ -25,6 +25,7 @@ import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
+import com.jet.im.model.messages.MergeMessage;
 import com.jet.im.model.messages.RecallInfoMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VideoMessage;
@@ -51,11 +52,18 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(DeleteConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ReadNtfMessage.class);
         ContentTypeCenter.getInstance().registerContentType(GroupReadNtfMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(MergeMessage.class);
     }
     private final JetIMCore mCore;
 
     @Override
     public Message sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
+        List mergedMessages = null;
+        if (content instanceof MergeMessage) {
+            MergeMessage mergeMessage = (MergeMessage) content;
+            mergedMessages = mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
+        }
+
         ConcreteMessage message = new ConcreteMessage();
         message.setContent(content);
         message.setConversation(conversation);
@@ -109,7 +117,7 @@ public class MessageManager implements IMessageManager {
             }
         };
         if (mCore.getWebSocket() != null) {
-            mCore.getWebSocket().sendIMMessage(content, conversation, message.getClientUid(), messageCallback);
+            mCore.getWebSocket().sendIMMessage(content, conversation, message.getClientUid(), mergedMessages, mCore.getUserId(), messageCallback);
         }
         return message;
     }
@@ -366,6 +374,26 @@ public class MessageManager implements IMessageManager {
                 });
                 if (callback != null) {
                     callback.onSuccess(readMembers, unreadMembers);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void getMergedMessageList(String messageId, IGetMessagesCallback callback) {
+        mCore.getWebSocket().getMergedMessageList(messageId, 0, 100, JetIMConst.PullDirection.OLDER, new QryHisMsgCallback() {
+            @Override
+            public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
+                if (callback != null) {
+                    List<Message> result = new ArrayList<>(messages);
+                    callback.onSuccess(result);
                 }
             }
 
