@@ -106,18 +106,18 @@ public class MainActivity extends AppCompatActivity {
                     //query merge messag
 
 
-                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
-                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesCallback() {
-                        @Override
-                        public void onSuccess(List<Message> messages) {
-                            Log.e("lifei", "lifei");
-                        }
-
-                        @Override
-                        public void onError(int errorCode) {
-                            Log.e("lifei", "lifei");
-                        }
-                    });
+//                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesCallback() {
+//                        @Override
+//                        public void onSuccess(List<Message> messages) {
+//                            Log.e("lifei", "lifei");
+//                        }
+//
+//                        @Override
+//                        public void onError(int errorCode) {
+//                            Log.e("lifei", "lifei");
+//                        }
+//                    });
 
 //                    JetIM.getInstance().getMessageManager().getMergedMessageList("nqnw4blmgwck5g4v", new IMessageManager.IGetMessagesCallback() {
 //                        @Override
@@ -303,13 +303,11 @@ public class MainActivity extends AppCompatActivity {
 //                    ConversationInfo info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
 //
 //                    //set draft
-//                    JetIM.getInstance().getConversationManager().setDraft(conversation, "draft");
-//                    info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
+                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+                    JetIM.getInstance().getConversationManager().setDraft(conversation, "draft");
 //
 //                    //clear draft
-//                    JetIM.getInstance().getConversationManager().clearDraft(conversation);
-//                    info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
-//                    Log.e("lifei", "conversationList count is " + l.size());
+                    JetIM.getInstance().getConversationManager().clearDraft(conversation);
 
 
 

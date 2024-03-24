@@ -72,6 +72,12 @@ public class ConversationManager implements IConversationManager, MessageManager
     @Override
     public void setDraft(Conversation conversation, String draft) {
         mCore.getDbManager().setDraft(conversation, draft);
+        ConversationInfo info = mCore.getDbManager().getConversationInfo(conversation);
+        List<ConversationInfo> l = new ArrayList<>();
+        l.add(info);
+        for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+            entry.getValue().onConversationInfoUpdate(l);
+        }
     }
 
     @Override

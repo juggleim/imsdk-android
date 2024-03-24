@@ -19,3 +19,13 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keepattributes Exceptions,InnerClasses
+-keepattributes Signature
+
+-keep interface com.jet.im.interfaces.** {*;}
+-keep class com.jet.im.model.** {*;}
+-keep class com.jet.im.JErrorCode {*;}
+-keep class com.jet.im.JetIM {*;}
+-keep class com.jet.im.JetIMConst {*;}
+-keep class * implements com.jet.im.model.MessageContent {*;}
