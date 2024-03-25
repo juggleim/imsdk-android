@@ -303,11 +303,11 @@ public class MainActivity extends AppCompatActivity {
 //                    ConversationInfo info = JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
 //
 //                    //set draft
-                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
-                    JetIM.getInstance().getConversationManager().setDraft(conversation, "draft");
+//                    Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+//                    JetIM.getInstance().getConversationManager().setDraft(conversation, "draft");
 //
 //                    //clear draft
-                    JetIM.getInstance().getConversationManager().clearDraft(conversation);
+//                    JetIM.getInstance().getConversationManager().clearDraft(conversation);
 
 
 

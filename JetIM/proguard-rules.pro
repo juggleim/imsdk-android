@@ -24,8 +24,10 @@
 -keepattributes Signature
 
 -keep interface com.jet.im.interfaces.** {*;}
+-keep interface com.jet.im.interfaces.**$* {*;}
 -keep class com.jet.im.model.** {*;}
 -keep class com.jet.im.JErrorCode {*;}
 -keep class com.jet.im.JetIM {*;}
 -keep class com.jet.im.JetIMConst {*;}
--keep class * implements com.jet.im.model.MessageContent {*;}
+-keep class com.jet.im.JetIMConst$* {*;}
+#-keep class * implements com.jet.im.model.MessageContent {*;}
