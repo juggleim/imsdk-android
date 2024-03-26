@@ -71,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
+                    //push token
+                    JetIM.getInstance().getConnectionManager().registerPushToken(JetIMConst.PushChannel.HUAWEI, "pushToken");
+
                     //send merge message
 //                    List<String> messageIdList = new ArrayList<>();
 //                    messageIdList.add("nqnwmfppsu6k5g4v");
@@ -104,10 +107,7 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.e("lifei", "lifei");
 
                     //query merge messag
-
-
-//                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
-//                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesCallback() {
+//                    JetIM.getInstance().getMessageManager().getMergedMessageList("nqn2zvdescggrenb", new IMessageManager.IGetMessagesCallback() {
 //                        @Override
 //                        public void onSuccess(List<Message> messages) {
 //                            Log.e("lifei", "lifei");
@@ -119,7 +119,8 @@ public class MainActivity extends AppCompatActivity {
 //                        }
 //                    });
 
-//                    JetIM.getInstance().getMessageManager().getMergedMessageList("nqnw4blmgwck5g4v", new IMessageManager.IGetMessagesCallback() {
+//                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                    JetIM.getInstance().getMessageManager().getRemoteMessages(c, 100, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesCallback() {
 //                        @Override
 //                        public void onSuccess(List<Message> messages) {
 //                            Log.e("lifei", "lifei");

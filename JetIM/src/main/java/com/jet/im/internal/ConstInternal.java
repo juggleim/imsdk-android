@@ -28,6 +28,11 @@ public class ConstInternal {
         //用户注销下线
         static final int USER_LOG_OUT = 11012;
 
+        //群组不存在
+        static final int GROUP_NOT_EXIST = 13001;
+        //不是群成员
+        static final int NOT_GROUP_MEMBER = 13002;
+
         static final int WEB_SOCKET_FAILURE = 21001;
         static final int NAVI_FAILURE = 21002;
         static final int INVALID_PARAM = 21003;

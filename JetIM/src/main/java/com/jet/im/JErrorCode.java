@@ -23,6 +23,11 @@ public class JErrorCode {
     //用户注销下线
     public static final int USER_LOG_OUT = 11012;
 
+    //群组不存在
+    public static final int GROUP_NOT_EXIST = 13001;
+    //不是群成员
+    public static final int NOT_GROUP_MEMBER = 13002;
+
     public static final int INVALID_PARAM = 21003;
 
     public static final int MESSAGE_NOT_EXIST = 22001;

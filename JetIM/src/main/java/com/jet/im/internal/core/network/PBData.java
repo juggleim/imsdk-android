@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import app_messages.Appmessages;
 import app_messages.Connect;
+import app_messages.Pushtoken;
 
 class PBData {
     byte[] connectData(String appKey,
@@ -35,12 +36,14 @@ class PBData {
                        String deviceCompany,
                        String deviceModel,
                        String osVersion,
+                       String packageName,
+                       JetIMConst.PushChannel pushChannel,
                        String pushToken,
                        String networkId,
                        String ispNum,
                        String clientIp) {
-        Connect.ConnectMsgBody body = Connect.ConnectMsgBody.newBuilder()
-                .setProtoId(PROTO_ID)
+        Connect.ConnectMsgBody.Builder builder = Connect.ConnectMsgBody.newBuilder();
+        builder.setProtoId(PROTO_ID)
                 .setSdkVersion(SDK_VERSION)
                 .setAppkey(appKey)
                 .setToken(token)
@@ -49,13 +52,24 @@ class PBData {
                 .setDeviceCompany(deviceCompany)
                 .setDeviceModel(deviceModel)
                 .setDeviceOsVersion(osVersion)
-                .setPushToken(pushToken)
                 .setNetworkId(networkId)
                 .setIspNum(ispNum)
                 .setClientIp(clientIp)
-                .setPackageName("cn.wahu.im")
-                .setPushChannel("Huawei")
-                .build();
+                .setPackageName(packageName);
+        if (!TextUtils.isEmpty(pushToken)) {
+            builder.setPushToken(pushToken);
+        }
+        if (pushChannel != null) {
+            switch (pushChannel) {
+                case HUAWEI:
+                    builder.setPushChannel("Huawei");
+                    break;
+                case XIAOMI:
+                    builder.setPushChannel("Xiaomi");
+                    break;
+            }
+        }
+        Connect.ConnectMsgBody body = builder.build();
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.connect)
@@ -107,7 +121,7 @@ class PBData {
                 Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
                         .setMsgId(msg.getMessageId())
                         .setMsgTime(msg.getTimestamp())
-                        .setMsgIndex(msg.getMsgIndex())
+                        .setMsgReadIndex(msg.getMsgIndex())
                         .build();
                 mergedMsgsBuilder.addMsgs(simpleMsg);
             }
@@ -203,7 +217,7 @@ class PBData {
 
     byte[] clearUnreadCountData(Conversation conversation, String userId, long msgIndex, int index) {
         Appmessages.Conversation.Builder builder = pbConversationFromConversation(conversation);
-        builder.setLatestReadMsgIndex(msgIndex);
+        builder.setLatestUnreadIndex(msgIndex);
         Appmessages.Conversation c = builder.build();
         Appmessages.ClearUnreadReq req = Appmessages.ClearUnreadReq.newBuilder()
                 .addConversations(c)
@@ -361,6 +375,31 @@ class PBData {
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
+    }
+
+    byte[] registerPushToken(JetIMConst.PushChannel channel,
+                             String token,
+                             String deviceId,
+                             String packageName,
+                             String userId,
+                             int index) {
+        Pushtoken.RegPushTokenReq req = Pushtoken.RegPushTokenReq.newBuilder()
+                .setDeviceId(deviceId)
+                .setPlatformValue(PLATFORM_ANDROID)
+                .setPushChannelValue(channel.getValue())
+                .setPushToken(token)
+                .setPackageName(packageName)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(REG_PUSH_TOKEN)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+
     }
 
     byte[] pingData() {
@@ -627,7 +666,7 @@ class PBData {
         info.setUnreadCount((int)conversation.getUnreadCount());
         info.setUpdateTime(conversation.getUpdateTime());
         info.setLastMessage(messageWithDownMsg(conversation.getMsg()));
-        info.setLastReadMessageIndex(conversation.getLatestReadMsgIndex());
+        info.setLastReadMessageIndex(conversation.getLatestReadIndex());
         info.setSyncTime(conversation.getSyncTime());
         info.setMute(conversation.getUndisturbType()==1);
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
@@ -726,6 +765,7 @@ class PBData {
     private static final String PROTO_ID = "1";
     private static final int PROTOCOL_VERSION = 1;
     private static final String SDK_VERSION = "1.0.0";
+    private static final int PLATFORM_ANDROID = 1;
     private static final String QRY_HIS_MSG = "qry_hismsgs";
     private static final String QRY_HISMSG_BY_IDS = "qry_hismsg_by_ids";
     private static final String SYNC_CONV = "sync_convers";
@@ -737,6 +777,7 @@ class PBData {
     private static final String QRY_READ_DETAIL = "qry_read_detail";
     private static final String UNDISTURB_CONVERS = "undisturb_convers";
     private static final String QRY_MERGED_MSGS = "qry_merged_msgs";
+    private static final String REG_PUSH_TOKEN = "reg_push_token";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -758,6 +799,7 @@ class PBData {
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
+            put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
         }
     };
 

@@ -166,6 +166,18 @@ public class JWebSocket extends WebSocketClient {
         sendWhenOpen(bytes);
     }
 
+    public void registerPushToken(JetIMConst.PushChannel channel, String token, String userId, WebSocketSimpleCallback callback) {
+        Integer key = mMsgIndex;
+        byte[] bytes = mPbData.registerPushToken(channel,
+                token,
+                JUtility.getDeviceId(mContext),
+                mContext.getPackageName(),
+                userId,
+                mMsgIndex++);
+        mMsgCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void ping() {
         byte[] bytes = mPbData.pingData();
         sendWhenOpen(bytes);
@@ -270,6 +282,14 @@ public class JWebSocket extends WebSocketClient {
         mSendHandler = sendHandler;
     }
 
+    public void setPushChannel(JetIMConst.PushChannel pushChannel) {
+        mPushChannel = pushChannel;
+    }
+
+    public void setPushToken(String pushToken) {
+        mPushToken = pushToken;
+    }
+
     private void sendConnectMsg() {
         byte[] bytes = mPbData.connectData(mAppKey,
                 mToken,
@@ -278,7 +298,9 @@ public class JWebSocket extends WebSocketClient {
                 Build.BRAND,
                 Build.MODEL,
                 Build.VERSION.RELEASE,
-                "pushToken",
+                mContext.getPackageName(),
+                mPushChannel,
+                mPushToken,
                 JUtility.getNetworkType(mContext),
                 JUtility.getCarrier(mContext),
                 "");
@@ -420,6 +442,8 @@ public class JWebSocket extends WebSocketClient {
 
     private String mAppKey;
     private String mToken;
+    private JetIMConst.PushChannel mPushChannel;
+    private String mPushToken;
     private final PBData mPbData;
     private final Context mContext;
     private IWebSocketConnectListener mConnectListener;

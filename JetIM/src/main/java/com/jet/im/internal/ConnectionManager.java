@@ -8,6 +8,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.internal.core.network.JWebSocket;
+import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.utils.LoggerUtils;
 
 import java.net.URI;
@@ -63,6 +64,26 @@ public class ConnectionManager implements IConnectionManager {
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().disconnect(receivePush);
         }
+    }
+
+    @Override
+    public void registerPushToken(JetIMConst.PushChannel channel, String token) {
+        mPushChannel = channel;
+        mPushToken = token;
+        if (mCore.getWebSocket() == null) {
+            return;
+        }
+        mCore.getWebSocket().registerPushToken(channel, token, mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                LoggerUtils.i("register push token success");
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                LoggerUtils.e("register push token error, code is " + errorCode);
+            }
+        });
     }
 
     @Override
@@ -142,10 +163,18 @@ public class ConnectionManager implements IConnectionManager {
                     changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
                 }
             });
+            mCore.getWebSocket().setPushChannel(mPushChannel);
+            if (!TextUtils.isEmpty(mPushToken)) {
+                mCore.getWebSocket().setPushToken(mPushToken);
+            }
             mCore.getWebSocket().connect();
         } else {
             mCore.getWebSocket().setAppKey(mCore.getAppKey());
             mCore.getWebSocket().setToken(token);
+            mCore.getWebSocket().setPushChannel(mPushChannel);
+            if (!TextUtils.isEmpty(mPushToken)) {
+                mCore.getWebSocket().setPushToken(mPushToken);
+            }
             mCore.getWebSocket().reconnect();
         }
     }
@@ -260,6 +289,8 @@ public class ConnectionManager implements IConnectionManager {
     private final HeartBeatManager mHeartBeatManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
+    private JetIMConst.PushChannel mPushChannel;
+    private String mPushToken;
     private final Handler mNaviHandler;
     private static final int RECONNECT_INTERVAL = 5*1000;
 }

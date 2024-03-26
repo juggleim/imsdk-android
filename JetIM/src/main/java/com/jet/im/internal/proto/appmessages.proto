@@ -100,6 +100,7 @@ message DownMsg{
     int32 undisturbType = 20;
     int32 memberCount = 21;
     int32 readCount = 22;
+    int64 unreadIndex = 23;
 }
 enum ChannelType {
     Unknown = 0;
@@ -202,7 +203,7 @@ message CleanHisMsgReq{
 message SimpleMsg{
     string msgId = 1;
     int64 msgTime = 2;
-    int64 msgIndex = 3;
+    int64 msgReadIndex = 3;
 }
 
 message IndexScope{
@@ -255,7 +256,7 @@ message Conversation{
     int64 updateTime = 4;
     int64 unreadCount = 5;
     DownMsg msg = 6;
-    int64 latestReadMsgIndex = 7;
+    int64 latestReadIndex = 7;
     MentionMsg LatestMentionMsg = 8;
     int32 isTop = 9;
     int64 topUpdatedTime = 10;
@@ -264,6 +265,7 @@ message Conversation{
     GroupInfo groupInfo = 13;
     int64 syncTime = 14;
     int32 isDelete = 15;
+    int64 latestUnreadIndex = 16;
 }
 
 message MentionMsg{
@@ -319,10 +321,6 @@ message UndisturbConverItem {
 message QryTopConversReq{
     int64 startTime = 1;
 }
-message QryUndisturbReq{
-    string targetId=1;
-    ChannelType channelType = 2;
-}
 message QryReadInfosReq{
     string targetId = 1;
     ChannelType channelType = 2;
@@ -350,6 +348,16 @@ message QryReadDetailResp{
 message MemberReadDetailItem{
     UserInfo member = 1;
     int64 time = 2;
+}
+message QryConverReq{
+    string targetId=1;
+    ChannelType channelType = 2;
+}
+message QryConverResp{
+    string targetId=1;
+    ChannelType channelType = 2;
+    int64 unreadIndex = 3;
+    int32 undisturbType = 4;
 }
 
 //user
@@ -473,6 +481,7 @@ message GroupMembersReq {
     string  groupName = 2;
     string groupPortrait = 3;
     repeated string memberIds = 4;
+    repeated KvItem extFields = 5;
 }
 
 message GroupMuteReq {

@@ -7,6 +7,8 @@ public interface IConnectionManager {
 
     void disconnect(boolean receivePush);
 
+    void registerPushToken(JetIMConst.PushChannel channel, String token);
+
     void addConnectionStatusListener(String key, IConnectionStatusListener listener);
 
     void removeConnectionStatusListener(String key);
