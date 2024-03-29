@@ -11,7 +11,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/GooglePlugin" />
+            <option value="$PROJECT_DIR$/HWPlugin" />
             <option value="$PROJECT_DIR$/JetIM" />
+            <option value="$PROJECT_DIR$/Push" />
+            <option value="$PROJECT_DIR$/XMPlugin" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

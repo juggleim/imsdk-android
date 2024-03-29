@@ -8,6 +8,8 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven {url 'https://developer.hihonor.com/repo'}
+        maven { url 'https://developer.huawei.com/repo/' }
         google()
         mavenCentral()
     }
@@ -16,3 +18,7 @@ dependencyResolutionManagement {
 rootProject.name = "JetIMDemo"
 include ':app'
 include ':JetIM'
+include ':Push'
+include ':HWPlugin'
+include ':XMPlugin'
+include ':GooglePlugin'
