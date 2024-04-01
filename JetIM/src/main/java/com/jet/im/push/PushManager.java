@@ -3,10 +3,10 @@ package com.jet.im.push;
 import android.content.Context;
 import android.util.Log;
 
+import com.jet.im.internal.util.JUtility;
 import com.jet.im.push.google.GooglePush;
 import com.jet.im.push.hw.HWPush;
 import com.jet.im.push.xm.XMPush;
-import com.jet.im.utils.DeviceUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class PushManager implements IPush.Callback {
      */
     public List<IPush> getRegisterPush() {
         List<IPush> result = new ArrayList<>();
-        String os = DeviceUtils.getDeviceManufacturer().toLowerCase();
+        String os = JUtility.getDeviceManufacturer().toLowerCase();
         for (Map.Entry<PushType, IPush> item : iPushMap.entrySet()) {
             if (item.getKey() == PushType.GOOGLE) {
                 result.add(item.getValue());

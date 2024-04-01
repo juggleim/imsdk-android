@@ -3,9 +3,6 @@ package com.jet.im.push.hw;
 import com.huawei.hms.push.HmsMessageService;
 import com.jet.im.push.PushType;
 
-/**
- * Created by Android Studio. User: lvhongzhen Date: 2019-12-25 Time: 14:23
- */
 public class HMSPushService extends HmsMessageService {
     @Override
     public void onNewToken(String pS) {

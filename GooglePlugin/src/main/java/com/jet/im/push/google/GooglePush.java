@@ -2,10 +2,6 @@ package com.jet.im.push.google;
 
 import android.content.Context;
 
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -36,18 +32,15 @@ public class GooglePush implements IPush {
             FirebaseMessaging.getInstance()
                     .getToken()
                     .addOnCompleteListener(
-                            new OnCompleteListener<String>() {
-                                @Override
-                                public void onComplete(@NonNull Task<String> task) {
-                                    if (!task.isSuccessful()) {
-                                        Exception exception = task.getException();
-                                        callback.onError(getType(), -1, exception == null ? "get fcm token error" : exception.getMessage());
-                                        return;
-                                    }
-
-                                    String token = task.getResult();
-                                    callback.onReceivedToken(getType(), token);
+                            task -> {
+                                if (!task.isSuccessful()) {
+                                    Exception exception = task.getException();
+                                    callback.onError(getType(), -1, exception == null ? "get fcm token error" : exception.getMessage());
+                                    return;
                                 }
+
+                                String token = task.getResult();
+                                callback.onReceivedToken(getType(), token);
                             });
         } catch (Exception e) {
             callback.onError(getType(), -1, e.getMessage());

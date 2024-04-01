@@ -12,8 +12,8 @@ public class PushConfig {
     }
 
     public static class XMConfig {
-        private String appId;
-        private String appKey;
+        private final String appId;
+        private final String appKey;
 
         public XMConfig(String appId, String appKey) {
             this.appId = appId;

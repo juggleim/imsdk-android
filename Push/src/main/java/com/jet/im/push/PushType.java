@@ -13,7 +13,7 @@ public enum PushType {
     VIVO("VIVO", "vivo"),
     OPPO("OPPO", "oppo|realme|oneplus"),
     HONOR("HONOR", "honor");
-    private String name;
+    private final String name;
     private String os;
 
     PushType(String name, String os) {

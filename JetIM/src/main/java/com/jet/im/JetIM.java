@@ -31,13 +31,13 @@ public class JetIM {
         }
         LoggerUtils.i("init, appKey is " + appKey);
         mCore.setContext(context);
+        PushManager.getInstance().init(context,pushConfig);
         if (appKey.equals(mCore.getAppKey())) {
             return;
         }
         mCore.setAppKey(appKey);
         mCore.setUserId("");
         mCore.setToken("");
-        PushManager.getInstance().init(context,pushConfig);
     }
 
     public void setServer(String serverUrl) {

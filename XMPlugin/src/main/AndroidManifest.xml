@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.rong.push.plugin.xiaomi">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <permission
         android:name="${applicationId}.permission.MIPUSH_RECEIVE"
