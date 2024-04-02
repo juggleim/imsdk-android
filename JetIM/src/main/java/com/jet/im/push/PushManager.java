@@ -3,6 +3,8 @@ package com.jet.im.push;
 import android.content.Context;
 import android.util.Log;
 
+import com.jet.im.JetIM;
+import com.jet.im.JetIMConst;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.push.google.GooglePush;
 import com.jet.im.push.hw.HWPush;
@@ -12,24 +14,37 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class PushManager implements IPush.Callback {
     private static final String TAG = "PushManager";
-
+    private ThreadPoolExecutor pushExecutor;
     Map<PushType, IPush> iPushMap = new HashMap<>();
 
     public static PushManager getInstance() {
         return PushManager.SingletonHolder.sInstance;
     }
 
+    private PushManager() {
+        pushExecutor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        pushExecutor.allowCoreThreadTimeOut(true);
+    }
+
     public void init(Context context, PushConfig config) {
-        initHW();
-        initXM();
-        initGoogle();
-        List<IPush> pushList = getRegisterPush();
-        for (IPush item : pushList) {
-            item.getToken(context, config, this);
-        }
+        pushExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                initHW();
+                initXM();
+                initGoogle();
+                List<IPush> pushList = getRegisterPush();
+                for (IPush item : pushList) {
+                    item.getToken(context, config, PushManager.this);
+                }
+            }
+        });
     }
 
     /**
@@ -84,6 +99,12 @@ public class PushManager implements IPush.Callback {
     @Override
     public void onReceivedToken(PushType type, String token) {
         //todo 1.本地持久化，2.调用上报 token 接口
+        pushExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                JetIM.getInstance().getConnectionManager().registerPushToken(JetIMConst.PushChannel.getPushChannel(type), token);
+            }
+        });
     }
 
     @Override
