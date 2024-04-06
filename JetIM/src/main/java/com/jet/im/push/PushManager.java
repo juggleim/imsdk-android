@@ -82,7 +82,7 @@ public class PushManager implements IPush.Callback {
             IPush push = new XMPush();
             iPushMap.put(push.getType(), push);
         } catch (ClassNotFoundException e) {
-            Log.d(TAG, "not register hw");
+            Log.d(TAG, "not register xm");
         }
     }
 
@@ -92,7 +92,7 @@ public class PushManager implements IPush.Callback {
             IPush push = new GooglePush();
             iPushMap.put(push.getType(), push);
         } catch (ClassNotFoundException e) {
-            Log.d(TAG, "not register hw");
+            Log.d(TAG, "not register google");
         }
     }
 

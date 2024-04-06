@@ -176,10 +176,6 @@ public class JetIMCore {
         }
     }
 
-    public void uploadPushToken(@NonNull PushType type, @NonNull String token) {
-        PushManager.getInstance().onReceivedToken(type,token);
-    }
-
     public Handler getSendHandler() {
         return mSendHandler;
     }
