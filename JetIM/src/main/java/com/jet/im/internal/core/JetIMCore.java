@@ -22,13 +22,16 @@ public class JetIMCore {
         sendThread.start();
         mSendHandler = new Handler(sendThread.getLooper());
     }
+
     public JWebSocket getWebSocket() {
         return mWebSocket;
     }
+
     public void setWebSocket(JWebSocket ws) {
         ws.setSendHandler(mSendHandler);
         this.mWebSocket = ws;
     }
+
     public String getNaviUrl() {
         if (mNaviUrl == null) {
             mNaviUrl = ConstInternal.NAVI_URL;

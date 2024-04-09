@@ -6,12 +6,9 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
-import androidx.core.view.WindowCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -25,29 +22,21 @@ import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
-import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
-import com.jet.im.model.MergeMessagePreviewUnit;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
-import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
-import com.jet.im.model.messages.MergeMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.push.PushChannel;
 
 import android.view.Menu;
 import android.view.MenuItem;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -72,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
                     //push token
-                    JetIM.getInstance().getConnectionManager().registerPushToken(JetIMConst.PushChannel.HUAWEI, "pushToken");
+                    JetIM.getInstance().getConnectionManager().registerPushToken(PushChannel.HUAWEI, "pushToken");
 
                     //send merge message
 //                    List<String> messageIdList = new ArrayList<>();
