@@ -217,7 +217,7 @@ class PBData {
 
     byte[] clearUnreadCountData(Conversation conversation, String userId, long msgIndex, int index) {
         Appmessages.Conversation.Builder builder = pbConversationFromConversation(conversation);
-        builder.setLatestUnreadIndex(msgIndex);
+        builder.setLatestReadIndex(msgIndex);
         Appmessages.Conversation c = builder.build();
         Appmessages.ClearUnreadReq req = Appmessages.ClearUnreadReq.newBuilder()
                 .addConversations(c)
