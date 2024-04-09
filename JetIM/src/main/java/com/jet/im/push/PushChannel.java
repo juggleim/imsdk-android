@@ -5,18 +5,20 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public enum PushType {
-    HUAWEI("HW", "huawei"),
-    XIAOMI("MI", "xiaomi"),
-    GOOGLE("FCM", "google"),
-    MEIZU("MEIZU", "meizu"),
-    VIVO("VIVO", "vivo"),
-    OPPO("OPPO", "oppo|realme|oneplus"),
-    HONOR("HONOR", "honor");
+public enum PushChannel {
+    HUAWEI(2,"HW", "huawei"),
+    XIAOMI(3,"MI", "xiaomi"),
+    GOOGLE(4,"FCM", "google"),
+    MEIZU(5,"MEIZU", "meizu"),
+    VIVO(6,"VIVO", "vivo"),
+    OPPO(7,"OPPO", "oppo|realme|oneplus"),
+    HONOR(8,"HONOR", "honor");
     private final String name;
     private String os;
+    private int code;
 
-    PushType(String name, String os) {
+    PushChannel(int code, String name, String os) {
+        this.code = code;
         this.name = name;
         this.os = os;
     }
@@ -27,6 +29,10 @@ public enum PushType {
 
     public String getOs() {
         return os;
+    }
+
+    public int getCode() {
+        return code;
     }
 
     /**

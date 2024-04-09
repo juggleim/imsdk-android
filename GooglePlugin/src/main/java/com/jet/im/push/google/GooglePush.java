@@ -7,7 +7,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.jet.im.push.IPush;
 import com.jet.im.push.PushConfig;
-import com.jet.im.push.PushType;
+import com.jet.im.push.PushChannel;
 
 public class GooglePush implements IPush {
     static Callback sCallback;
@@ -48,7 +48,7 @@ public class GooglePush implements IPush {
     }
 
     @Override
-    public PushType getType() {
-        return PushType.XIAOMI;
+    public PushChannel getType() {
+        return PushChannel.XIAOMI;
     }
 }

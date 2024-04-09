@@ -85,7 +85,7 @@ public class JetIM {
     private final JetIMCore mCore;
 
     public static class InitConfig {
-        private PushConfig pushConfig;
+        private PushConfig pushConfig=new PushConfig();
 
         public PushConfig getPushConfig() {
             return pushConfig;

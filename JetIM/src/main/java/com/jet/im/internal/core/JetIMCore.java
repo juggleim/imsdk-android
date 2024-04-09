@@ -11,8 +11,6 @@ import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.util.JUtility;
-import com.jet.im.push.PushManager;
-import com.jet.im.push.PushType;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,7 +3,7 @@ package com.jet.im.push.xm;
 
 import android.content.Context;
 
-import com.jet.im.push.PushType;
+import com.jet.im.push.PushChannel;
 import com.xiaomi.mipush.sdk.ErrorCode;
 import com.xiaomi.mipush.sdk.MiPushClient;
 import com.xiaomi.mipush.sdk.MiPushCommandMessage;
@@ -32,11 +32,11 @@ public class MiMessageReceiver extends PushMessageReceiver {
         if (MiPushClient.COMMAND_REGISTER.equals(command)) {
             if (message.getResultCode() == ErrorCode.SUCCESS) {
                 if (XMPush.sCallback != null) {
-                    XMPush.sCallback.onReceivedToken(PushType.XIAOMI, cmdArg1);
+                    XMPush.sCallback.onReceivedToken(PushChannel.XIAOMI, cmdArg1);
                 }
             } else {
                 if (XMPush.sCallback != null) {
-                    XMPush.sCallback.onError(PushType.XIAOMI, Long.valueOf(message.getResultCode()).intValue(), message.getReason());
+                    XMPush.sCallback.onError(PushChannel.XIAOMI, Long.valueOf(message.getResultCode()).intValue(), message.getReason());
                 }
             }
         }

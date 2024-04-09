@@ -3,12 +3,11 @@ package com.jet.im.push.hw;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.huawei.agconnect.config.AGConnectServicesConfig;
 import com.huawei.hms.aaid.HmsInstanceId;
 import com.huawei.hms.common.ApiException;
 import com.jet.im.push.IPush;
 import com.jet.im.push.PushConfig;
-import com.jet.im.push.PushType;
+import com.jet.im.push.PushChannel;
 
 public class HWPush implements IPush {
     static IPush.Callback sCallback;
@@ -16,9 +15,11 @@ public class HWPush implements IPush {
     @Override
     public void getToken(Context context, PushConfig config, IPush.Callback callback) {
         sCallback = callback;
+        if (config.getHWConfig() == null) {
+            return;
+        }
         try {
-            String appId = AGConnectServicesConfig.fromContext(context).getString("client/app_id");
-            String token = HmsInstanceId.getInstance(context).getToken(appId, "HCM");
+            String token = HmsInstanceId.getInstance(context).getToken(config.getHWConfig().getAppId(), "HCM");
             if (!TextUtils.isEmpty(token)) {
                 callback.onReceivedToken(getType(), token);
             }
@@ -29,7 +30,7 @@ public class HWPush implements IPush {
     }
 
     @Override
-    public PushType getType() {
-        return PushType.HUAWEI;
+    public PushChannel getType() {
+        return PushChannel.HUAWEI;
     }
 }

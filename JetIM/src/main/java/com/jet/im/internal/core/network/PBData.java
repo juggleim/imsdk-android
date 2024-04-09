@@ -16,6 +16,7 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
+import com.jet.im.push.PushChannel;
 import com.jet.im.utils.LoggerUtils;
 
 import java.nio.ByteBuffer;
@@ -37,7 +38,7 @@ class PBData {
                        String deviceModel,
                        String osVersion,
                        String packageName,
-                       JetIMConst.PushChannel pushChannel,
+                       PushChannel pushChannel,
                        String pushToken,
                        String networkId,
                        String ispNum,
@@ -338,7 +339,7 @@ class PBData {
         Appmessages.UndisturbConverItem item = Appmessages.UndisturbConverItem.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
-                .setUndisturbType(isMute?1:0)
+                .setUndisturbType(isMute ? 1 : 0)
                 .build();
         Appmessages.UndisturbConversReq req = Appmessages.UndisturbConversReq.newBuilder()
                 .setUserId(userId)
@@ -377,7 +378,7 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] registerPushToken(JetIMConst.PushChannel channel,
+    byte[] registerPushToken(PushChannel channel,
                              String token,
                              String deviceId,
                              String packageName,
@@ -386,7 +387,7 @@ class PBData {
         Pushtoken.RegPushTokenReq req = Pushtoken.RegPushTokenReq.newBuilder()
                 .setDeviceId(deviceId)
                 .setPlatformValue(PLATFORM_ANDROID)
-                .setPushChannelValue(channel.getValue())
+                .setPushChannelValue(channel.getCode())
                 .setPushToken(token)
                 .setPackageName(packageName)
                 .build();
@@ -462,7 +463,7 @@ class PBData {
                     a.msgIndex = msg.getPubAckMsgBody().getMsgIndex();
                     obj.mPublishMsgAck = a;
                 }
-                    break;
+                break;
 
                 case QRYACKMSGBODY:
                     int type = getTypeInCmdMap(msg.getQryAckMsgBody().getIndex());
@@ -663,12 +664,12 @@ class PBData {
         ConcreteConversationInfo info = new ConcreteConversationInfo();
         Conversation c = new Conversation(conversationTypeFromChannelType(conversation.getChannelType()), conversation.getTargetId());
         info.setConversation(c);
-        info.setUnreadCount((int)conversation.getUnreadCount());
+        info.setUnreadCount((int) conversation.getUnreadCount());
         info.setUpdateTime(conversation.getUpdateTime());
         info.setLastMessage(messageWithDownMsg(conversation.getMsg()));
         info.setLastReadMessageIndex(conversation.getLatestReadIndex());
         info.setSyncTime(conversation.getSyncTime());
-        info.setMute(conversation.getUndisturbType()==1);
+        info.setMute(conversation.getUndisturbType() == 1);
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
         info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
         //todo mention
@@ -758,10 +759,12 @@ class PBData {
         private static final int ping = 8;
         private static final int pong = 9;
     }
+
     private static class Qos {
         private static final int no = 0;
         private static final int yes = 1;
     }
+
     private static final String PROTO_ID = "1";
     private static final int PROTOCOL_VERSION = 1;
     private static final String SDK_VERSION = "1.0.0";

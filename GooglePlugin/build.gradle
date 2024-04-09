@@ -30,7 +30,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:23.1.2'
     // Google Play Service
     implementation 'com.google.android.gms:play-services-gcm:17.0.0'
-    implementation project(path: ':Push')
+    implementation project(path: ':JetIM')
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     testImplementation 'junit:junit:4.13.2'

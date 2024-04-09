@@ -8,11 +8,11 @@ public interface IPush {
      */
     void getToken(Context context, PushConfig config, Callback callback);
 
-    PushType getType();
+    PushChannel getType();
 
     interface Callback {
-        void onReceivedToken(PushType type,String token);
+        void onReceivedToken(PushChannel type, String token);
 
-        void onError(PushType type,int code, String msg);
+        void onError(PushChannel type, int code, String msg);
     }
 }

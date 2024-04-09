@@ -26,7 +26,7 @@ android {
 }
 
 dependencies {
-    implementation project(path: ':Push')
+    implementation project(path: ':JetIM')
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     compileOnly files('libs/MiPush_SDK_Client_5_9_9-C_3rd.aar')

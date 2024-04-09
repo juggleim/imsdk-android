@@ -12,6 +12,7 @@ import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
+import com.jet.im.push.PushChannel;
 import com.jet.im.utils.LoggerUtils;
 
 import org.java_websocket.client.WebSocketClient;
@@ -166,7 +167,7 @@ public class JWebSocket extends WebSocketClient {
         sendWhenOpen(bytes);
     }
 
-    public void registerPushToken(JetIMConst.PushChannel channel, String token, String userId, WebSocketSimpleCallback callback) {
+    public void registerPushToken(PushChannel channel, String token, String userId, WebSocketSimpleCallback callback) {
         Integer key = mMsgIndex;
         byte[] bytes = mPbData.registerPushToken(channel,
                 token,
@@ -185,14 +186,19 @@ public class JWebSocket extends WebSocketClient {
 
     public interface IWebSocketConnectListener {
         void onConnectComplete(int errorCode, String userId);
+
         void onDisconnect(int errorCode);
+
         void onWebSocketFail();
+
         void onWebSocketClose();
     }
 
     public interface IWebSocketMessageListener {
         void onMessageReceive(ConcreteMessage message);
+
         void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished);
+
         void onSyncNotify(long syncTime);
     }
 
@@ -264,7 +270,7 @@ public class JWebSocket extends WebSocketClient {
 
     @Override
     public void onError(Exception ex) {
-        LoggerUtils.i("JWebSocket, onError, msg is " +ex.getMessage());
+        LoggerUtils.i("JWebSocket, onError, msg is " + ex.getMessage());
         if (mConnectListener != null) {
             mConnectListener.onWebSocketFail();
         }
@@ -282,7 +288,7 @@ public class JWebSocket extends WebSocketClient {
         mSendHandler = sendHandler;
     }
 
-    public void setPushChannel(JetIMConst.PushChannel pushChannel) {
+    public void setPushChannel(PushChannel pushChannel) {
         mPushChannel = pushChannel;
     }
 
@@ -442,7 +448,7 @@ public class JWebSocket extends WebSocketClient {
 
     private String mAppKey;
     private String mToken;
-    private JetIMConst.PushChannel mPushChannel;
+    private PushChannel mPushChannel;
     private String mPushToken;
     private final PBData mPbData;
     private final Context mContext;

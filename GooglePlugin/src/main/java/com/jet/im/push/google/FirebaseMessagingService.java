@@ -3,7 +3,7 @@ package com.jet.im.push.google;
 import androidx.annotation.NonNull;
 
 import com.google.firebase.messaging.RemoteMessage;
-import com.jet.im.push.PushType;
+import com.jet.im.push.PushChannel;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +42,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     public void onNewToken(@NonNull String s) {
         super.onNewToken(s);
         if (GooglePush.sCallback != null) {
-            GooglePush.sCallback.onReceivedToken(PushType.GOOGLE, s);
+            GooglePush.sCallback.onReceivedToken(PushChannel.GOOGLE, s);
         }
     }
 }

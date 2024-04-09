@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.jet.im.push.IPush;
 import com.jet.im.push.PushConfig;
-import com.jet.im.push.PushType;
+import com.jet.im.push.PushChannel;
 import com.xiaomi.mipush.sdk.MiPushClient;
 
 public class XMPush implements IPush {
@@ -13,14 +13,14 @@ public class XMPush implements IPush {
     @Override
     public void getToken(Context context, PushConfig config, Callback callback) {
         sCallback = callback;
-        if (config.getXmConfig() != null) {
-            MiPushClient.registerPush(context, config.getXmConfig().getAppId(), config.getXmConfig().getAppKey());
+        if (config.getXMConfig() != null) {
+            MiPushClient.registerPush(context, config.getXMConfig().getAppId(), config.getXMConfig().getAppKey());
         }
 
     }
 
     @Override
-    public PushType getType() {
-        return PushType.XIAOMI;
+    public PushChannel getType() {
+        return PushChannel.XIAOMI;
     }
 }

@@ -5,10 +5,11 @@ import android.os.HandlerThread;
 import android.text.TextUtils;
 
 import com.jet.im.JetIMConst;
-import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConnectionManager;
+import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
+import com.jet.im.push.PushChannel;
 import com.jet.im.utils.LoggerUtils;
 
 import java.net.URI;
@@ -67,7 +68,7 @@ public class ConnectionManager implements IConnectionManager {
     }
 
     @Override
-    public void registerPushToken(JetIMConst.PushChannel channel, String token) {
+    public void registerPushToken(PushChannel channel, String token) {
         mPushChannel = channel;
         mPushToken = token;
         if (mCore.getWebSocket() == null) {
@@ -262,7 +263,7 @@ public class ConnectionManager implements IConnectionManager {
                 }
                 //todo 重连整理
                 if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED
-                || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING) {
+                        || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING) {
                     return;
                 }
                 connect(mCore.getToken());
@@ -289,8 +290,8 @@ public class ConnectionManager implements IConnectionManager {
     private final HeartBeatManager mHeartBeatManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
-    private JetIMConst.PushChannel mPushChannel;
+    private PushChannel mPushChannel;
     private String mPushToken;
     private final Handler mNaviHandler;
-    private static final int RECONNECT_INTERVAL = 5*1000;
+    private static final int RECONNECT_INTERVAL = 5 * 1000;
 }
