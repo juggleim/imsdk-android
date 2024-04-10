@@ -22,6 +22,7 @@ import com.jet.im.utils.LoggerUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -237,6 +238,9 @@ public class DBManager {
             return list;
         }
         addMessagesFromCursor(list, cursor);
+        if (direction == JetIMConst.PullDirection.OLDER) {
+            Collections.reverse(list);
+        }
         cursor.close();
         return list;
     }

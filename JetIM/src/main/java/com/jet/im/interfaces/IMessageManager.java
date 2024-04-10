@@ -78,6 +78,12 @@ public interface IMessageManager {
                            JetIMConst.PullDirection direction,
                            IGetMessagesCallback callback);
 
+    void getLocalAndRemoteMessages(Conversation conversation,
+                                   int count,
+                                   long startTime,
+                                   JetIMConst.PullDirection direction,
+                                   IGetMessagesCallback callback);
+
     void sendReadReceipt(Conversation conversation,
                          List<String> messageIds,
                          ISendReadReceiptCallback callback);

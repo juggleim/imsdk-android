@@ -340,6 +340,43 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public void getLocalAndRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetMessagesCallback callback) {
+        if (count <= 0) {
+            if (callback != null) {
+                callback.onSuccess(new ArrayList<>());
+            }
+            return;
+        }
+        if (count > 100) {
+            count = 100;
+        }
+        List localMessages = getMessages(conversation, count, startTime, direction);
+        boolean needRemote = false;
+        if (localMessages != null && localMessages.size() > 0) {
+            ConcreteMessage message = (ConcreteMessage) localMessages.get(0);
+            long seqNo = message.getSeqNo();
+            for (int i = 0; i < localMessages.size(); i++) {
+                if (i > 0) {
+                    ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
+                    if (m.getSeqNo() > ++seqNo) {
+                        needRemote = true;
+                        break;
+                    }
+                }
+            }
+        } else {
+            needRemote = true;
+        }
+        if (needRemote) {
+            getRemoteMessages(conversation, count, startTime, direction, callback);
+        } else {
+            if (callback != null) {
+                callback.onSuccess(localMessages);
+            }
+        }
+    }
+
+    @Override
     public void sendReadReceipt(Conversation conversation, List<String> messageIds, ISendReadReceiptCallback callback) {
         mCore.getWebSocket().sendReadReceipt(conversation, messageIds, new WebSocketSimpleCallback() {
             @Override
