@@ -36,7 +36,7 @@ public class JWebSocket extends WebSocketClient {
         mToken = token;
         mContext = context;
         mPbData = new PBData();
-        mMsgCallbackMap = new ConcurrentHashMap<>();
+        mCmdCallbackMap = new ConcurrentHashMap<>();
     }
 
     public void disconnect(Boolean receivePush) {
@@ -57,17 +57,17 @@ public class JWebSocket extends WebSocketClient {
                               List<ConcreteMessage> mergedMsgList,
                               String userId,
                               SendMessageCallback callback) {
-        Integer key = mMsgIndex;
+        Integer key = mCmdIndex;
         byte[] bytes = mPbData.sendMessageData(content.getContentType(),
                 content.encode(),
                 content.getFlags(),
                 clientUid,
                 mergedMsgList,
                 userId,
-                mMsgIndex++,
+                mCmdIndex++,
                 conversation.getConversationType(),
                 conversation.getConversationId());
-        mMsgCallbackMap.put(key, callback);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
@@ -75,9 +75,9 @@ public class JWebSocket extends WebSocketClient {
                               Conversation conversation,
                               long timestamp,
                               RecallMessageCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
@@ -85,43 +85,43 @@ public class JWebSocket extends WebSocketClient {
                                   int count,
                                   String userId,
                                   SyncConversationsCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.syncConversationsData(startTime, count, userId, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.syncConversationsData(startTime, count, userId, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
     public void syncMessages(long receiveTime,
                              long sendTime,
                              String userId) {
-        byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mMsgIndex++);
+        byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mCmdIndex++);
         sendWhenOpen(bytes);
     }
 
     public void sendReadReceipt(Conversation conversation,
                                 List<String> messageIds,
                                 WebSocketSimpleCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.sendReadReceiptData(conversation, messageIds, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.sendReadReceiptData(conversation, messageIds, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
     public void getGroupMessageReadDetail(Conversation conversation,
                                           String messageId,
                                           QryReadDetailCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.getGroupMessageReadDetail(conversation, messageId, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getGroupMessageReadDetail(conversation, messageId, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
     public void deleteConversationInfo(Conversation conversation,
                                        String userId,
                                        WebSocketSimpleCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.deleteConversationData(conversation, userId, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.deleteConversationData(conversation, userId, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
@@ -129,30 +129,30 @@ public class JWebSocket extends WebSocketClient {
                                  String userId,
                                  long msgIndex,
                                  WebSocketSimpleCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
     public void queryHisMsg(Conversation conversation, long startTime, int count, JetIMConst.PullDirection direction, QryHisMsgCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
     public void queryHisMsgByIds(Conversation conversation, List<String> messageIds, QryHisMsgCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.queryHisMsgDataByIds(conversation, messageIds, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.queryHisMsgDataByIds(conversation, messageIds, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
     public void setMute(Conversation conversation, boolean isMute, String userId, WebSocketSimpleCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
@@ -161,21 +161,21 @@ public class JWebSocket extends WebSocketClient {
                                      int count,
                                      JetIMConst.PullDirection direction,
                                      QryHisMsgCallback callback) {
-        Integer key = mMsgIndex;
-        byte[] bytes = mPbData.getMergedMessageList(messageId, timestamp, count, direction, mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getMergedMessageList(messageId, timestamp, count, direction, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
     public void registerPushToken(PushChannel channel, String token, String userId, WebSocketSimpleCallback callback) {
-        Integer key = mMsgIndex;
+        Integer key = mCmdIndex;
         byte[] bytes = mPbData.registerPushToken(channel,
                 token,
                 JUtility.getDeviceId(mContext),
                 mContext.getPackageName(),
                 userId,
-                mMsgIndex++);
-        mMsgCallbackMap.put(key, callback);
+                mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
 
@@ -332,20 +332,20 @@ public class JWebSocket extends WebSocketClient {
 
     private void handlePublishAckMsg(PBRcvObj.PublishMsgAck ack) {
         LoggerUtils.d("handlePublishAckMsg, msgId is " + ack.msgId + ", code is " + ack.code);
-        IWebSocketCallback callback = mMsgCallbackMap.remove(ack.index);
+        IWebSocketCallback callback = mCmdCallbackMap.remove(ack.index);
         if (callback instanceof SendMessageCallback) {
             SendMessageCallback sCallback = (SendMessageCallback) callback;
             if (ack.code != 0) {
                 sCallback.onError(ack.code, sCallback.getClientMsgNo());
             } else {
-                sCallback.onSuccess(sCallback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.msgIndex);
+                sCallback.onSuccess(sCallback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.seqNo);
             }
         }
     }
 
     private void handleQryHisMsgAck(PBRcvObj.QryHisMsgAck ack) {
         LoggerUtils.d("handleQryHisMsgAck");
-        IWebSocketCallback callback = mMsgCallbackMap.remove(ack.index);
+        IWebSocketCallback callback = mCmdCallbackMap.remove(ack.index);
         if (callback instanceof QryHisMsgCallback) {
             QryHisMsgCallback qCallback = (QryHisMsgCallback) callback;
             if (ack.code != 0) {
@@ -357,7 +357,7 @@ public class JWebSocket extends WebSocketClient {
     }
 
     private void handleSyncConversationAck(PBRcvObj.SyncConvAck ack) {
-        IWebSocketCallback callback = mMsgCallbackMap.remove(ack.index);
+        IWebSocketCallback callback = mCmdCallbackMap.remove(ack.index);
         if (callback instanceof SyncConversationsCallback) {
             SyncConversationsCallback syncConversationsCallback = (SyncConversationsCallback) callback;
             if (ack.code != 0) {
@@ -390,7 +390,7 @@ public class JWebSocket extends WebSocketClient {
     }
 
     private void handlePong() {
-        LoggerUtils.d("pong, mMsgCallbackMap count is " + mMsgCallbackMap.size());
+        LoggerUtils.d("pong, mMsgCallbackMap count is " + mCmdCallbackMap.size());
     }
 
     private void handleDisconnectMsg(PBRcvObj.DisconnectMsg msg) {
@@ -401,7 +401,7 @@ public class JWebSocket extends WebSocketClient {
 
     private void handleRecallMessage(PBRcvObj.PublishMsgAck ack) {
         LoggerUtils.d("handleRecallMessage, code is " + ack.code);
-        IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
+        IWebSocketCallback c = mCmdCallbackMap.remove(ack.index);
         if (c instanceof RecallMessageCallback) {
             RecallMessageCallback callback = (RecallMessageCallback) c;
             if (ack.code != 0) {
@@ -414,7 +414,7 @@ public class JWebSocket extends WebSocketClient {
 
     private void handleSimpleQryAck(PBRcvObj.SimpleQryAck ack) {
         LoggerUtils.d("handleSimpleQryAck, code is " + ack.code);
-        IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
+        IWebSocketCallback c = mCmdCallbackMap.remove(ack.index);
         if (c instanceof WebSocketSimpleCallback) {
             WebSocketSimpleCallback callback = (WebSocketSimpleCallback) c;
             if (ack.code != 0) {
@@ -427,7 +427,7 @@ public class JWebSocket extends WebSocketClient {
 
     private void handleQryReadDetailAck(PBRcvObj.QryReadDetailAck ack) {
         LoggerUtils.d("handleQryReadDetailAck, code is " + ack.code);
-        IWebSocketCallback c = mMsgCallbackMap.remove(ack.index);
+        IWebSocketCallback c = mCmdCallbackMap.remove(ack.index);
         if (c instanceof QryReadDetailCallback) {
             QryReadDetailCallback callback = (QryReadDetailCallback) c;
             if (ack.code != 0) {
@@ -454,9 +454,9 @@ public class JWebSocket extends WebSocketClient {
     private final Context mContext;
     private IWebSocketConnectListener mConnectListener;
     private IWebSocketMessageListener mMessageListener;
-    private Integer mMsgIndex = 0;
+    private Integer mCmdIndex = 0;
     private Handler mSendHandler;
-    private final ConcurrentHashMap<Integer, IWebSocketCallback> mMsgCallbackMap;
+    private final ConcurrentHashMap<Integer, IWebSocketCallback> mCmdCallbackMap;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
 

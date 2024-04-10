@@ -36,6 +36,7 @@ class MessageSql {
         if (content != null) {
             message.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType()));
         }
+        message.setSeqNo(CursorHelper.readLong(cursor, COL_SEQ_NO));
         message.setMsgIndex(CursorHelper.readLong(cursor, COL_MESSAGE_INDEX));
         GroupMessageReadInfo info = new GroupMessageReadInfo();
         info.setReadCount(CursorHelper.readInt(cursor, COL_READ_COUNT));
@@ -44,43 +45,17 @@ class MessageSql {
         return message;
     }
 
-    static Object[] argsWithMessage(Message message) {
-        long msgIndex = 0;
-        String clientUid = "";
-        if (message instanceof ConcreteMessage) {
-            ConcreteMessage c = (ConcreteMessage) message;
-            msgIndex = c.getMsgIndex();
-            clientUid = c.getClientUid();
-        }
-        Object[] args = new Object[12];
-        args[0] = message.getConversation().getConversationType().getValue();
-        args[1] = message.getConversation().getConversationId();
-        args[2] = message.getContentType();
-        args[3] = message.getMessageId();
-        args[4] = clientUid;
-        args[5] = message.getDirection().getValue();
-        args[6] = message.getState().getValue();
-        args[7] = message.isHasRead();
-        args[8] = message.getTimestamp();
-        args[9] = message.getSenderUserId();
-        if (message.getContent() != null) {
-            args[10] = new String(message.getContent().encode());
-        } else {
-            args[10] = "";
-        }
-        args[11] = msgIndex;
-        return args;
-    }
-
     static ContentValues getMessageInsertCV(Message message) {
         ContentValues cv = new ContentValues();
         if (message == null) {
             return cv;
         }
+        long seqNo = 0;
         long msgIndex = 0;
         String clientUid = "";
         if (message instanceof ConcreteMessage) {
             ConcreteMessage c = (ConcreteMessage) message;
+            seqNo = c.getSeqNo();
             msgIndex = c.getMsgIndex();
             clientUid = c.getClientUid();
         }
@@ -97,6 +72,7 @@ class MessageSql {
         if (message.getContent() != null) {
             cv.put(COL_CONTENT, new String(message.getContent().encode()));
         }
+        cv.put(COL_SEQ_NO, seqNo);
         cv.put(COL_MESSAGE_INDEX, msgIndex);
         if (message.getGroupMessageReadInfo() == null) {
             return cv;
@@ -124,6 +100,7 @@ class MessageSql {
             + "sender VARCHAR (64),"
             + "content TEXT,"
             + "extra TEXT,"
+            + "seq_no INTEGER,"
             + "message_index INTEGER,"
             + "read_count INTEGER DEFAULT 0,"
             + "member_count INTEGER DEFAULT -1,"
@@ -188,8 +165,8 @@ class MessageSql {
     static final String SQL_DESC = " DESC";
     static final String SQL_LIMIT = " LIMIT ";
 
-    static String sqlUpdateMessageAfterSend(int state, long clientMsgNo, long timestamp, long messageIndex) {
-        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, message_index = %s WHERE id = %s", state, timestamp, messageIndex, clientMsgNo);
+    static String sqlUpdateMessageAfterSend(int state, long clientMsgNo, long timestamp, long seqNo) {
+        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s WHERE id = %s", state, timestamp, seqNo, clientMsgNo);
     }
 
     static final String SQL_UPDATE_MESSAGE_CONTENT = "UPDATE message SET content = ?, type = ? WHERE message_uid = ?";
@@ -217,6 +194,7 @@ class MessageSql {
     static final String COL_SENDER = "sender";
     static final String COL_CONTENT = "content";
     static final String COL_EXTRA = "extra";
+    static final String COL_SEQ_NO = "seq_no";
     static final String COL_MESSAGE_INDEX = "message_index";
     static final String COL_READ_COUNT = "read_count";
     static final String COL_MEMBER_COUNT = "member_count";

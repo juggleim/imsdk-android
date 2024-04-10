@@ -20,7 +20,7 @@ class PBRcvObj {
         int code;
         String msgId;
         long timestamp;
-        long msgIndex;
+        long seqNo;
     }
 
     static class PublishMsgBody {

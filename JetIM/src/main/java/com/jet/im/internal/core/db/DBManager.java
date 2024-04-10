@@ -22,7 +22,6 @@ import com.jet.im.utils.LoggerUtils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -184,6 +183,22 @@ public class DBManager {
         execSQL(ConversationSql.sqlSetMute(conversation, isMute));
     }
 
+    public void clearUnreadCount(Conversation conversation, long msgIndex) {
+        execSQL(ConversationSql.sqlClearUnreadCount(conversation, msgIndex));
+    }
+
+    public int getTotalUnreadCount() {
+        Cursor cursor = rawQuery(ConversationSql.SQL_GET_TOTAL_UNREAD_COUNT, null);
+        int count = 0;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+            }
+            cursor.close();
+        }
+        return count;
+    }
+
     public void updateLastMessage(ConcreteMessage message) {
         Object[] args = ConversationSql.argsWithUpdateLastMessage(message);
         execSQL(ConversationSql.SQL_UPDATE_LAST_MESSAGE, args);
@@ -307,9 +322,9 @@ public class DBManager {
     public void updateMessageAfterSend(long clientMsgNo,
                                        String msgId,
                                        long timestamp,
-                                       long msgIndex) {
+                                       long seqNo) {
         Object[] args = new Object[]{msgId};
-        String sql = MessageSql.sqlUpdateMessageAfterSend(Message.MessageState.SENT.getValue(), clientMsgNo, timestamp, msgIndex);
+        String sql = MessageSql.sqlUpdateMessageAfterSend(Message.MessageState.SENT.getValue(), clientMsgNo, timestamp, seqNo);
         execSQL(sql, args);
     }
 

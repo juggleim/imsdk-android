@@ -122,7 +122,7 @@ class PBData {
                 Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
                         .setMsgId(msg.getMessageId())
                         .setMsgTime(msg.getTimestamp())
-                        .setMsgReadIndex(msg.getMsgIndex())
+                        .setMsgReadIndex(msg.getSeqNo())
                         .build();
                 mergedMsgsBuilder.addMsgs(simpleMsg);
             }
@@ -460,7 +460,7 @@ class PBData {
                     a.code = msg.getPubAckMsgBody().getCode();
                     a.msgId = msg.getPubAckMsgBody().getMsgId();
                     a.timestamp = msg.getPubAckMsgBody().getTimestamp();
-                    a.msgIndex = msg.getPubAckMsgBody().getMsgIndex();
+                    a.seqNo = msg.getPubAckMsgBody().getMsgIndex();
                     obj.mPublishMsgAck = a;
                 }
                 break;
@@ -643,7 +643,8 @@ class PBData {
         message.setState(Message.MessageState.SENT);
         message.setTimestamp(downMsg.getMsgTime());
         message.setSenderUserId(downMsg.getSenderId());
-        message.setMsgIndex(downMsg.getMsgIndex());
+        message.setSeqNo(downMsg.getMsgIndex());
+        message.setMsgIndex(downMsg.getUnreadIndex());
         message.setContent(ContentTypeCenter.getInstance().getContent(downMsg.getMsgContent().toByteArray(), downMsg.getMsgType()));
         int flags = ContentTypeCenter.getInstance().flagsWithType(downMsg.getMsgType());
         if (flags < 0) {
@@ -668,6 +669,7 @@ class PBData {
         info.setUpdateTime(conversation.getUpdateTime());
         info.setLastMessage(messageWithDownMsg(conversation.getMsg()));
         info.setLastReadMessageIndex(conversation.getLatestReadIndex());
+        info.setLastMessageIndex(conversation.getLatestUnreadIndex());
         info.setSyncTime(conversation.getSyncTime());
         info.setMute(conversation.getUndisturbType() == 1);
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));

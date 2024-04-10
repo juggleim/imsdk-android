@@ -36,6 +36,10 @@ public interface IConversationManager {
                  boolean isMute,
                  ISimpleCallback callback);
 
+    int getTotalUnreadCount();
+
+    void clearUnreadCount(Conversation conversation);
+
     void addListener(String key, IConversationListener listener);
 
     void removeListener(String key);

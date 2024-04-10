@@ -5,6 +5,14 @@ import com.jet.im.model.Message;
 import com.jet.im.model.UserInfo;
 
 public class ConcreteMessage extends Message {
+    public long getSeqNo() {
+        return mSeqNo;
+    }
+
+    public void setSeqNo(long seqNo) {
+        mSeqNo = seqNo;
+    }
+
     public long getMsgIndex() {
         return mMsgIndex;
     }
@@ -53,6 +61,7 @@ public class ConcreteMessage extends Message {
         mTargetUserInfo = targetUserInfo;
     }
 
+    private long mSeqNo;
     private long mMsgIndex;
     private String mClientUid;
     private int mFlags;

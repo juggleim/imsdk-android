@@ -106,6 +106,32 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public int getTotalUnreadCount() {
+        return mCore.getDbManager().getTotalUnreadCount();
+    }
+
+    @Override
+    public void clearUnreadCount(Conversation conversation) {
+        ConcreteConversationInfo info = mCore.getDbManager().getConversationInfo(conversation);
+        if (info == null) {
+            return;
+        }
+        mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
+        noticeTotalUnreadCountChange();
+        mCore.getWebSocket().clearUnreadCount(conversation, mCore.getUserId(), info.getLastMessageIndex(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                LoggerUtils.i("clear unread success");
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                LoggerUtils.i("clear unread error, code is " + errorCode);
+            }
+        });
+    }
+
+    @Override
     public void addListener(String key, IConversationListener listener) {
         if (listener == null || TextUtils.isEmpty(key)) {
             return;
@@ -177,6 +203,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                             }
                         }
                     });
+                    noticeTotalUnreadCountChange();
                 }
                 if (deleteConversationInfoList.size() > 0) {
                     updateUserInfo(deleteConversationInfoList);
@@ -244,6 +271,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         mCore.getDbManager().updateLastMessage(message);
         updateSyncTime(message.getTimestamp());
         noticeConversationAddOrUpdate(message);
+        noticeTotalUnreadCountChange();
     }
 
     @Override
@@ -315,6 +343,18 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
         mCore.getDbManager().insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
+    }
+
+    private void noticeTotalUnreadCountChange() {
+        int count = mCore.getDbManager().getTotalUnreadCount();
+        if (count < 0) {
+            return;
+        }
+        if (mListenerMap != null) {
+            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                entry.getValue().onTotalUnreadMessageCountUpdate(count);
+            }
+        }
     }
 
     private final JetIMCore mCore;

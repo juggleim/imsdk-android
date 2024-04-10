@@ -6,6 +6,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
                     //push token
-                    JetIM.getInstance().getConnectionManager().registerPushToken(PushChannel.HUAWEI, "pushToken");
+//                    JetIM.getInstance().getConnectionManager().registerPushToken(PushChannel.HUAWEI, "pushToken");
 
                     //send merge message
 //                    List<String> messageIdList = new ArrayList<>();
@@ -283,6 +285,12 @@ public class MainActivity extends AppCompatActivity {
                     // get conversations
 //                    List<ConversationInfo> l = JetIM.getInstance().getConversationManager().getConversationInfoList();
 //                    Log.e("lifei", "conversationList count is " + l.size());
+//
+//                    Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                    JetIM.getInstance().getConversationManager().clearUnreadCount(c);
+////
+//                    ConversationInfo info = JetIM.getInstance().getConversationManager().getConversationInfo(c);
+//                    Log.e("lifei", "sa";
 //
 //                    int[] conversationTypes = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
 //                    l = JetIM.getInstance().getConversationManager().getConversationInfoList( 100, 1706445483689L, JetIMConst.PullDirection.NEWER);
@@ -521,14 +529,14 @@ public class MainActivity extends AppCompatActivity {
         };
         Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
         Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
-//        Thread.sleep(500);
-//        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+        Thread.sleep(500);
+        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
 
     }
 

@@ -13,6 +13,14 @@ public class ConcreteConversationInfo extends ConversationInfo {
         this.mLastReadMessageIndex = lastReadMessageIndex;
     }
 
+    public long getLastMessageIndex() {
+        return mLastMessageIndex;
+    }
+
+    public void setLastMessageIndex(long lastMessageIndex) {
+        mLastMessageIndex = lastMessageIndex;
+    }
+
     public long getSyncTime() {
         return mSyncTime;
     }
@@ -38,6 +46,7 @@ public class ConcreteConversationInfo extends ConversationInfo {
     }
 
     private long mLastReadMessageIndex;
+    private long mLastMessageIndex;
     private long mSyncTime;
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;

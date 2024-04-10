@@ -84,17 +84,17 @@ public class MessageManager implements IMessageManager {
 
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
-            public void onSuccess(long clientMsgNo, String msgId, long timestamp, long msgIndex) {
+            public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo) {
                 if (mSyncProcessing) {
                     mCachedSendTime = timestamp;
                 } else {
                     mCore.setMessageSendSyncTime(timestamp);
                 }
-                mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, msgIndex);
+                mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, seqNo);
                 message.setClientMsgNo(clientMsgNo);
                 message.setMessageId(msgId);
                 message.setTimestamp(timestamp);
-                message.setMsgIndex(msgIndex);
+                message.setSeqNo(seqNo);
                 message.setState(Message.MessageState.SENT);
 
                 if (mSendReceiveListener != null) {
