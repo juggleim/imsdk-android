@@ -331,42 +331,42 @@ public class MainActivity extends AppCompatActivity {
 //                    JetIM.getInstance().getMessageManager().deleteMessageByMessageId("npgdwvn5gf8grenb");
 
                     //get messages
-                    Handler mainHandler = new Handler(Looper.getMainLooper());
-                    mainHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
-                            JetIM.getInstance().getMessageManager().deleteMessageByMessageId("nq22hsyqgagk5g4v");
-                            JetIM.getInstance().getMessageManager().getLocalAndRemoteMessages(c, 10, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesCallback() {
-                                @Override
-                                public void onSuccess(List<Message> messages) {
-                                    Log.e("lifei", "get local and remote messages, count is " + messages.size());
-                                }
-
-                                @Override
-                                public void onError(int errorCode) {
-                                    Log.e("lifei", "get local and remote messages, error is " + errorCode);
-                                }
-                            });
-//                            List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(c, 100, 1712719858489L, JetIMConst.PullDirection.NEWER);
-//                            Log.e("lifei", "messageList count is " + messageList.size());
-                            //read receipt
-//                            List<String> messageIds = new ArrayList<>(2);
-//                            messageIds.add("nqbugt3zsgyg7sb5");
-//                            messageIds.add("nqbunavvglegrenb");
-//                            JetIM.getInstance().getMessageManager().sendReadReceipt(c, messageIds, new IMessageManager.ISendReadReceiptCallback() {
+//                    Handler mainHandler = new Handler(Looper.getMainLooper());
+//                    mainHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                            JetIM.getInstance().getMessageManager().deleteMessageByMessageId("nq22hsyqgagk5g4v");
+//                            JetIM.getInstance().getMessageManager().getLocalAndRemoteMessages(c, 10, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesCallback() {
 //                                @Override
-//                                public void onSuccess() {
-//                                    Log.d("lifei", "send read receipt success");
+//                                public void onSuccess(List<Message> messages) {
+//                                    Log.e("lifei", "get local and remote messages, count is " + messages.size());
 //                                }
 //
 //                                @Override
 //                                public void onError(int errorCode) {
-//                                    Log.e("lifei", "send read receipt error, code is " + code);
+//                                    Log.e("lifei", "get local and remote messages, error is " + errorCode);
 //                                }
 //                            });
-                        }
-                    }, 1000);
+////                            List<Message> messageList = JetIM.getInstance().getMessageManager().getMessages(c, 100, 1712719858489L, JetIMConst.PullDirection.NEWER);
+////                            Log.e("lifei", "messageList count is " + messageList.size());
+//                            //read receipt
+////                            List<String> messageIds = new ArrayList<>(2);
+////                            messageIds.add("nqbugt3zsgyg7sb5");
+////                            messageIds.add("nqbunavvglegrenb");
+////                            JetIM.getInstance().getMessageManager().sendReadReceipt(c, messageIds, new IMessageManager.ISendReadReceiptCallback() {
+////                                @Override
+////                                public void onSuccess() {
+////                                    Log.d("lifei", "send read receipt success");
+////                                }
+////
+////                                @Override
+////                                public void onError(int errorCode) {
+////                                    Log.e("lifei", "send read receipt error, code is " + code);
+////                                }
+////                            });
+//                        }
+//                    }, 1000);
 
 //
 //                    List<String> contentTypes = new ArrayList<>();

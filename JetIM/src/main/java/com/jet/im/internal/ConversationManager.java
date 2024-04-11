@@ -300,6 +300,9 @@ public class ConversationManager implements IConversationManager, MessageManager
             addInfo.setConversation(message.getConversation());
             addInfo.setUpdateTime(message.getTimestamp());
             addInfo.setLastMessage(message);
+            addInfo.setLastMessageIndex(message.getMsgIndex());
+            addInfo.setLastReadMessageIndex(message.getMsgIndex() - 1);
+            addInfo.setUnreadCount(1);
             List<ConcreteConversationInfo> l = new ArrayList<>();
             l.add(addInfo);
             mCore.getDbManager().insertConversations(l, null);
