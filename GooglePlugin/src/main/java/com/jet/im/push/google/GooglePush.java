@@ -15,12 +15,13 @@ public class GooglePush implements IPush {
     @Override
     public void getToken(Context context, PushConfig config, Callback callback) {
         sCallback = callback;
-        // 检验是否正确配置，如果配置有问题，不再往下执行
-        if (FirebaseOptions.fromResource(context) == null) {
-            callback.onError(getType(), -1, "load fcm sdk applicationId failed");
-            return;
-        }
+
         try {
+            // 检验是否正确配置，如果配置有问题，不再往下执行
+            if (FirebaseOptions.fromResource(context) == null) {
+                callback.onError(getType(), -1, "load fcm sdk applicationId failed");
+                return;
+            }
             // 提前触发一次初始化，确保某些情况下FirebaseApp初始化失败，抛出异常
             FirebaseApp.initializeApp(context);
         } catch (Exception e) {
