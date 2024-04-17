@@ -4,8 +4,8 @@ import android.text.TextUtils;
 
 import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
-import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IMessageManager;
+import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.QryHisMsgCallback;
 import com.jet.im.internal.core.network.QryReadDetailCallback;
@@ -54,6 +54,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(GroupReadNtfMessage.class);
         ContentTypeCenter.getInstance().registerContentType(MergeMessage.class);
     }
+
     private final JetIMCore mCore;
 
     @Override
@@ -125,9 +126,9 @@ public class MessageManager implements IMessageManager {
     @Override
     public Message resendMessage(Message message, ISendMessageCallback callback) {
         if (message.getClientMsgNo() <= 0
-        || message.getContent() == null
-        || message.getConversation() == null
-        || message.getConversation().getConversationId() == null) {
+                || message.getContent() == null
+                || message.getConversation() == null
+                || message.getConversation().getConversationId() == null) {
             if (callback != null) {
                 callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM);
             }
@@ -258,6 +259,11 @@ public class MessageManager implements IMessageManager {
     @Override
     public void deleteMessageByClientMsgNo(long clientMsgNo) {
         mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
+    }
+
+    @Override
+    public List<Message> searchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
+        return mCore.getDbManager().getMessagesBySearchContent(searchContent, count, timestamp, direction, contentTypes);
     }
 
     @Override
@@ -403,7 +409,7 @@ public class MessageManager implements IMessageManager {
             public void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers) {
                 GroupMessageReadInfo info = new GroupMessageReadInfo();
                 info.setReadCount(readMembers.size());
-                info.setMemberCount(readMembers.size()+ unreadMembers.size());
+                info.setMemberCount(readMembers.size() + unreadMembers.size());
                 mCore.getDbManager().setGroupMessageReadInfo(new HashMap<String, GroupMessageReadInfo>() {
                     {
                         put(messageId, info);
@@ -509,8 +515,11 @@ public class MessageManager implements IMessageManager {
 
     interface ISendReceiveListener {
         void onMessageSave(ConcreteMessage message);
+
         void onMessageSend(ConcreteMessage message);
+
         void onMessageReceive(ConcreteMessage message);
+
         void onConversationsDelete(List<Conversation> conversations);
     }
 
@@ -575,7 +584,7 @@ public class MessageManager implements IMessageManager {
         }
         sync();
     }
-    
+
     private List<ConcreteMessage> messagesToSave(List<ConcreteMessage> messages) {
         List<ConcreteMessage> list = new ArrayList<>();
         for (ConcreteMessage message : messages) {
@@ -725,6 +734,7 @@ public class MessageManager implements IMessageManager {
         result = result * 1000 + mIncreaseId++;
         return Long.toString(result);
     }
+
     private int mIncreaseId = 0;
     private boolean mSyncProcessing = false;
     private long mCachedReceiveTime = -1;

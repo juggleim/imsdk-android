@@ -63,7 +63,7 @@ public class FileMessage extends MessageContent {
             if (jsonObject.has(EXTRA)) {
                 mExtra = jsonObject.optString(EXTRA);
             }
-         } catch (JSONException e) {
+        } catch (JSONException e) {
             LoggerUtils.e("FileMessage decode JSONException " + e.getMessage());
         }
     }
@@ -111,6 +111,11 @@ public class FileMessage extends MessageContent {
 
     public void setExtra(String extra) {
         mExtra = extra;
+    }
+
+    @Override
+    public String getSearchContent() {
+        return TextUtils.isEmpty(mName) ? "" : mName;
     }
 
     private String mName;

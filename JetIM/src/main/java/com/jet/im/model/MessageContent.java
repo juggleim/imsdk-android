@@ -40,4 +40,7 @@ public abstract class MessageContent {
 
     protected String mContentType;
 
+    public String getSearchContent(){
+        return "";
+    };
 }

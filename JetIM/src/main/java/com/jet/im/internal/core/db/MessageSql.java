@@ -11,7 +11,6 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 class MessageSql {
     static ConcreteMessage messageWithCursor(Cursor cursor) {
@@ -71,6 +70,7 @@ class MessageSql {
         cv.put(COL_SENDER, message.getSenderUserId());
         if (message.getContent() != null) {
             cv.put(COL_CONTENT, new String(message.getContent().encode()));
+            cv.put(COL_SEARCH_CONTENT, message.getContent().getSearchContent());
         }
         cv.put(COL_SEQ_NO, seqNo);
         cv.put(COL_MESSAGE_INDEX, msgIndex);
@@ -104,13 +104,15 @@ class MessageSql {
             + "message_index INTEGER,"
             + "read_count INTEGER DEFAULT 0,"
             + "member_count INTEGER DEFAULT -1,"
-            + "is_deleted BOOLEAN DEFAULT 0"
+            + "is_deleted BOOLEAN DEFAULT 0,"
+            + "search_content TEXT"
             + ")";
 
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
     static final String SQL_AND_TYPE_IN = " AND type in ";
+
     static String sqlGetMessagesInConversation(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction, int size) {
         String sql = String.format("SELECT * FROM message WHERE conversation_type = %s AND conversation_id = ? AND is_deleted = 0", conversation.getConversationType().getValue());
         if (direction == JetIMConst.PullDirection.NEWER) {
@@ -138,6 +140,7 @@ class MessageSql {
     static String sqlUpdateMessageState(int state, long clientMsgNo) {
         return String.format("UPDATE message SET state = %s WHERE id = %s", state, clientMsgNo);
     }
+
     static String sqlSetMessagesRead(int count) {
         return "UPDATE message SET has_read = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
@@ -148,7 +151,7 @@ class MessageSql {
 
     static String sqlGetMessagesByClientMsgNos(long[] nos) {
         StringBuilder sql = new StringBuilder("SELECT * FROM message WHERE id in (");
-        for (int i = 0; i<nos.length; i++) {
+        for (int i = 0; i < nos.length; i++) {
             if (i > 0) {
                 sql.append(", ");
             }
@@ -169,17 +172,42 @@ class MessageSql {
         return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s WHERE id = %s", state, timestamp, seqNo, clientMsgNo);
     }
 
-    static final String SQL_UPDATE_MESSAGE_CONTENT = "UPDATE message SET content = ?, type = ? WHERE message_uid = ?";
+    static final String SQL_UPDATE_MESSAGE_CONTENT = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE message_uid = ?";
 
     static String sqlMessageSendFail(long clientMsgNo) {
         return String.format("UPDATE message SET state = %s WHERE id = %s", Message.MessageState.FAIL.getValue(), clientMsgNo);
     }
+
     static final String SQL_DELETE_MESSAGE = "UPDATE message SET is_deleted = 1 WHERE";
+
     static String sqlClearMessages(Conversation conversation) {
         return String.format("UPDATE message SET is_deleted = 1 WHERE conversation_type = %s AND conversation_id = '%s'", conversation.getConversationType().getValue(), conversation.getConversationId());
     }
+
     static final String SQL_CLIENT_MSG_NO_IS = " id = ";
     static final String SQL_MESSAGE_ID_IS = " message_uid = ?";
+
+    static final String SQL_FIND_MESSAGE_BY_SEARCH_CONTENT = "";
+
+    static String sqlGetMessagesBySearchContent(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, int size) {
+        String sql = String.format("SELECT * FROM message WHERE search_content LIKE %s AND is_deleted = 0", "%" + searchContent + "%");
+        if (direction == JetIMConst.PullDirection.NEWER) {
+            sql = sql + SQL_AND_GREATER_THAN + timestamp;
+        } else {
+            sql = sql + SQL_AND_LESS_THAN + timestamp;
+        }
+        if (size > 0) {
+            sql = sql + SQL_AND_TYPE_IN + CursorHelper.getQuestionMarkPlaceholder(size);
+        }
+        sql = sql + SQL_ORDER_BY_TIMESTAMP;
+        if (direction == JetIMConst.PullDirection.NEWER) {
+            sql = sql + SQL_ASC;
+        } else {
+            sql = sql + SQL_DESC;
+        }
+        sql = sql + SQL_LIMIT + count;
+        return sql;
+    }
 
     static final String COL_CONVERSATION_TYPE = "conversation_type";
     static final String COL_CONVERSATION_ID = "conversation_id";
@@ -199,5 +227,6 @@ class MessageSql {
     static final String COL_READ_COUNT = "read_count";
     static final String COL_MEMBER_COUNT = "member_count";
     static final String COL_IS_DELETED = "is_deleted";
+    static final String COL_SEARCH_CONTENT = "search_content";
 
 }

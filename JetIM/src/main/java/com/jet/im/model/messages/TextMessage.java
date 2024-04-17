@@ -79,6 +79,11 @@ public class TextMessage extends MessageContent {
         mExtra = extra;
     }
 
+    @Override
+    public String getSearchContent() {
+        return TextUtils.isEmpty(mContent) ? "" : mContent;
+    }
+
     private String mContent;
     private String mExtra;
     private static final String CONTENT = "content";

@@ -227,10 +227,10 @@ public class DBManager {
         }
         int contentTypeSize = contentTypes.size();
         String sql = MessageSql.sqlGetMessagesInConversation(conversation, count, timestamp, direction, contentTypeSize);
-        String[] args = new String[contentTypeSize+1];
+        String[] args = new String[contentTypeSize + 1];
         args[0] = conversation.getConversationId();
-        for (int i = 0; i < contentTypeSize; i ++) {
-            args[i+1] = contentTypes.get(i);
+        for (int i = 0; i < contentTypeSize; i++) {
+            args[i + 1] = contentTypes.get(i);
         }
         Cursor cursor = rawQuery(sql, args);
         List<Message> list = new ArrayList<>();
@@ -296,6 +296,31 @@ public class DBManager {
         return messages;
     }
 
+    public List<Message> getMessagesBySearchContent(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
+        List<Message> result = new ArrayList<>();
+        if (TextUtils.isEmpty(searchContent)) return result;
+
+        if (timestamp == 0) {
+            timestamp = Long.MAX_VALUE;
+        }
+        int contentTypeSize = contentTypes.size();
+        String sql = MessageSql.sqlGetMessagesBySearchContent(searchContent, count, timestamp, direction, contentTypeSize);
+        String[] args = new String[contentTypeSize];
+        for (int i = 0; i < contentTypeSize; i++) {
+            args[i] = contentTypes.get(i);
+        }
+        Cursor cursor = rawQuery(sql, args);
+        if (cursor == null) {
+            return result;
+        }
+        addMessagesFromCursor(result, cursor);
+        if (direction == JetIMConst.PullDirection.OLDER) {
+            Collections.reverse(result);
+        }
+        cursor.close();
+        return result;
+    }
+
     public long insertMessage(Message message) {
         ContentValues cv = MessageSql.getMessageInsertCV(message);
         return insert(MessageSql.TABLE, cv);
@@ -333,14 +358,16 @@ public class DBManager {
     }
 
     public void updateMessageContent(MessageContent content, String type, String messageId) {
-        Object[] args = new Object[3];
+        Object[] args = new Object[4];
         if (content != null) {
             args[0] = new String(content.encode());
+            args[2] = content.getSearchContent();
         } else {
             args[0] = "";
+            args[2] = "";
         }
         args[1] = type;
-        args[2] = messageId;
+        args[3] = messageId;
         execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT, args);
     }
 
@@ -464,6 +491,7 @@ public class DBManager {
         }
         return mDb.insertWithOnConflict(table, "", cv, SQLiteDatabase.CONFLICT_IGNORE);
     }
+
     private String getOrCreateDbPath(Context context, String appKey, String userId) {
         File file = context.getFilesDir();
         String path = file.getAbsolutePath();

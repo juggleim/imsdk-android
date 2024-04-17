@@ -13,32 +13,37 @@ import java.util.Map;
 public interface IMessageManager {
     interface ISendMessageCallback {
         void onSuccess(Message message);
+
         void onError(Message message, int errorCode);
     }
 
     interface IGetMessagesCallback {
         void onSuccess(List<Message> messages);
+
         void onError(int errorCode);
     }
 
     interface IRecallMessageCallback {
         void onSuccess(Message message);
+
         void onError(int errorCode);
     }
 
     interface ISendReadReceiptCallback {
         void onSuccess();
+
         void onError(int errorCode);
     }
 
     interface IGetGroupMessageReadDetailCallback {
         void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers);
+
         void onError(int errorCode);
     }
 
     Message sendMessage(MessageContent content,
-                     Conversation conversation,
-                     ISendMessageCallback callback);
+                        Conversation conversation,
+                        ISendMessageCallback callback);
 
     Message resendMessage(Message message,
                           ISendMessageCallback callback);
@@ -63,6 +68,13 @@ public interface IMessageManager {
                                  IGetMessagesCallback callback);
 
     List<Message> getMessagesByClientMsgNos(long[] clientMsgNos);
+
+    List<Message> searchMessage(
+            String searchContent,
+            int count,
+            long timestamp,
+            JetIMConst.PullDirection direction,
+            List<String> contentTypes);
 
     void deleteMessageByClientMsgNo(long clientMsgNo);
 
@@ -98,17 +110,22 @@ public interface IMessageManager {
     void setMessageState(long clientMsgNo, Message.MessageState state);
 
     void registerContentType(Class<? extends MessageContent> messageContentClass);
+
     void addListener(String key, IMessageListener listener);
+
     void removeListener(String key);
 
     void addSyncListener(String key, IMessageSyncListener listener);
+
     void removeSyncListener(String key);
 
     void addReadReceiptListener(String key, IMessageReadReceiptListener listener);
+
     void removeReadReceiptListener(String key);
 
     interface IMessageListener {
         void onMessageReceive(Message message);
+
         void onMessageRecall(Message message);
     }
 
@@ -118,6 +135,7 @@ public interface IMessageManager {
 
     interface IMessageReadReceiptListener {
         void onMessagesRead(Conversation conversation, List<String> messageIds);
+
         void onGroupMessagesRead(Conversation conversation, Map<String, GroupMessageReadInfo> messages);
     }
 }
