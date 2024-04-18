@@ -73,6 +73,12 @@ public interface IMessageManager {
             String searchContent,
             int count,
             long timestamp,
+            JetIMConst.PullDirection direction);
+
+    List<Message> searchMessage(
+            String searchContent,
+            int count,
+            long timestamp,
             JetIMConst.PullDirection direction,
             List<String> contentTypes);
 
