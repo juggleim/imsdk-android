@@ -187,8 +187,6 @@ class MessageSql {
     static final String SQL_CLIENT_MSG_NO_IS = " id = ";
     static final String SQL_MESSAGE_ID_IS = " message_uid = ?";
 
-    static final String SQL_FIND_MESSAGE_BY_SEARCH_CONTENT = "";
-
     static String sqlSearchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, int size) {
         String sql = String.format("SELECT * FROM message WHERE search_content LIKE '%%%s%%' AND is_deleted = 0", searchContent);
         if (direction == JetIMConst.PullDirection.NEWER) {
