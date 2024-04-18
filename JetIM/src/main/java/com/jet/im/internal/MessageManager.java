@@ -263,7 +263,7 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public List<Message> searchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
-        return mCore.getDbManager().getMessagesBySearchContent(searchContent, count, timestamp, direction, contentTypes);
+        return mCore.getDbManager().searchMessage(searchContent, count, timestamp, direction, contentTypes);
     }
 
     @Override

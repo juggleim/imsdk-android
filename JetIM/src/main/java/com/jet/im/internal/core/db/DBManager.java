@@ -296,7 +296,7 @@ public class DBManager {
         return messages;
     }
 
-    public List<Message> getMessagesBySearchContent(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
+    public List<Message> searchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
         List<Message> result = new ArrayList<>();
         if (TextUtils.isEmpty(searchContent)) return result;
 
@@ -304,7 +304,7 @@ public class DBManager {
             timestamp = Long.MAX_VALUE;
         }
         int contentTypeSize = contentTypes.size();
-        String sql = MessageSql.sqlGetMessagesBySearchContent(searchContent, count, timestamp, direction, contentTypeSize);
+        String sql = MessageSql.sqlSearchMessage(searchContent, count, timestamp, direction, contentTypeSize);
         String[] args = new String[contentTypeSize];
         for (int i = 0; i < contentTypeSize; i++) {
             args[i] = contentTypes.get(i);
