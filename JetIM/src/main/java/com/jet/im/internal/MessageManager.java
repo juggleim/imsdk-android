@@ -509,6 +509,16 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public void setLocalAttribute(String messageId, String attribute) {
+
+    }
+
+    @Override
+    public String getLocalAttribute(String messageId) {
+        return null;
+    }
+
+    @Override
     public void setMessageState(long clientMsgNo, Message.MessageState state) {
         mCore.getDbManager().setMessageState(clientMsgNo, state);
     }
