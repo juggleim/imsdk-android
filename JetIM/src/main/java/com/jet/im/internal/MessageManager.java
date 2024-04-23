@@ -388,6 +388,65 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public void getLocalAndRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetLocalAndRemoteMessagesCallback callback) {
+        if (count <= 0) {
+            if (callback != null) {
+                callback.onGetLocalList(new ArrayList<>());
+            }
+            return;
+        }
+        if (count > 100) {
+            count = 100;
+        }
+        List<Message> localMessages = getMessages(conversation, count, startTime, direction);
+        //如果本地消息为空，需要获取远端消息
+        boolean needRemote = localMessages == null || localMessages.isEmpty();
+        if (!needRemote) {
+            //获取本地消息列表中首条消息
+            long firstMessageSeqNo = ((ConcreteMessage) localMessages.get(0)).getSeqNo();
+            //判断是否需要获取远端消息
+            needRemote = isRemoteMessagesNeeded(localMessages, count, firstMessageSeqNo);
+        }
+        if (callback != null) {
+            callback.onGetLocalList(localMessages);
+        }
+        if (needRemote) {
+            getRemoteMessages(conversation, count, startTime, direction, new IGetMessagesCallback() {
+                @Override
+                public void onSuccess(List<Message> messages) {
+                    if (callback != null) {
+                        callback.onGetRemoteList(messages);
+                    }
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    if (callback != null) {
+                        callback.onGetRemoteList(new ArrayList<>());
+                    }
+                }
+            });
+        }
+    }
+
+    private boolean isRemoteMessagesNeeded(List<Message> localMessages, int count, long firstMessageSeqNo) {
+        //如果本地消息数量不满足分页需求数量，且本地首条消息不是该会话的首条消息，需要获取远端消息
+        if (localMessages.size() < count && firstMessageSeqNo != 1) {
+            return true;
+        }
+        //判断本地列表中的消息是否连续，不连续时需要获取远端消息
+        long expectedSeqNo = firstMessageSeqNo;
+        for (int i = 0; i < localMessages.size(); i++) {
+            if (i == 0) continue;
+            ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
+            if (m.getSeqNo() > ++expectedSeqNo && Message.MessageState.SENT == m.getState()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void sendReadReceipt(Conversation conversation, List<String> messageIds, ISendReadReceiptCallback callback) {
         mCore.getWebSocket().sendReadReceipt(conversation, messageIds, new WebSocketSimpleCallback() {
             @Override
