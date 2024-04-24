@@ -18,7 +18,7 @@ public interface IMessageManager {
     }
 
     interface IGetLocalAndRemoteMessagesCallback {
-        void onGetLocalList(List<Message> messages);
+        void onGetLocalList(List<Message> messages, boolean hasRemote);
 
         void onGetRemoteList(List<Message> messages);
 

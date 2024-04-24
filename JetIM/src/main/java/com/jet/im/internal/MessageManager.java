@@ -33,9 +33,13 @@ import com.jet.im.model.messages.VoiceMessage;
 import com.jet.im.utils.LoggerUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageManager implements IMessageManager {
@@ -391,7 +395,7 @@ public class MessageManager implements IMessageManager {
     public void getLocalAndRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetLocalAndRemoteMessagesCallback callback) {
         if (count <= 0) {
             if (callback != null) {
-                callback.onGetLocalList(new ArrayList<>());
+                callback.onGetLocalList(new ArrayList<>(), false);
             }
             return;
         }
@@ -408,21 +412,31 @@ public class MessageManager implements IMessageManager {
             needRemote = isRemoteMessagesNeeded(localMessages, count, firstMessageSeqNo);
         }
         if (callback != null) {
-            callback.onGetLocalList(localMessages);
+            callback.onGetLocalList(localMessages, needRemote);
         }
         if (needRemote) {
             getRemoteMessages(conversation, count, startTime, direction, new IGetMessagesCallback() {
                 @Override
                 public void onSuccess(List<Message> messages) {
+                    //合并去重
+                    List<Message> mergeList = mergeLocalAndRemoteMessages(localMessages == null ? new ArrayList<>() : localMessages, messages);
+                    //消息排序
+                    Collections.sort(mergeList, new Comparator<Message>() {
+                        @Override
+                        public int compare(Message o1, Message o2) {
+                            return Long.compare(o1.getTimestamp(), o2.getTimestamp());
+                        }
+                    });
+                    //返回合并后的消息列表
                     if (callback != null) {
-                        callback.onGetRemoteList(messages);
+                        callback.onGetRemoteList(mergeList);
                     }
                 }
 
                 @Override
                 public void onError(int errorCode) {
                     if (callback != null) {
-                        callback.onGetRemoteList(new ArrayList<>());
+                        callback.onError(errorCode);
                     }
                 }
             });
@@ -444,6 +458,23 @@ public class MessageManager implements IMessageManager {
             }
         }
         return false;
+    }
+
+    private List<Message> mergeLocalAndRemoteMessages(List<Message> localList, List<Message> remoteList) {
+        Set<Long> seqNoSet = new HashSet<>();
+        List<Message> mergedList = new ArrayList<>();
+        //合并localList和remoteList，并去重
+        for (Message message : remoteList) {
+            if (seqNoSet.add((message).getClientMsgNo())) {
+                mergedList.add(message);
+            }
+        }
+        for (Message message : localList) {
+            if (seqNoSet.add((message).getClientMsgNo())) {
+                mergedList.add(message);
+            }
+        }
+        return mergedList;
     }
 
     @Override
