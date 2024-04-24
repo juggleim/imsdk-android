@@ -355,43 +355,6 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void getLocalAndRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetMessagesCallback callback) {
-        if (count <= 0) {
-            if (callback != null) {
-                callback.onSuccess(new ArrayList<>());
-            }
-            return;
-        }
-        if (count > 100) {
-            count = 100;
-        }
-        List localMessages = getMessages(conversation, count, startTime, direction);
-        boolean needRemote = false;
-        if (localMessages != null && localMessages.size() > 0) {
-            ConcreteMessage message = (ConcreteMessage) localMessages.get(0);
-            long seqNo = message.getSeqNo();
-            for (int i = 0; i < localMessages.size(); i++) {
-                if (i > 0) {
-                    ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
-                    if (m.getSeqNo() > ++seqNo) {
-                        needRemote = true;
-                        break;
-                    }
-                }
-            }
-        } else {
-            needRemote = true;
-        }
-        if (needRemote) {
-            getRemoteMessages(conversation, count, startTime, direction, callback);
-        } else {
-            if (callback != null) {
-                callback.onSuccess(localMessages);
-            }
-        }
-    }
-
-    @Override
     public void getLocalAndRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetLocalAndRemoteMessagesCallback callback) {
         if (count <= 0) {
             if (callback != null) {
@@ -436,13 +399,14 @@ public class MessageManager implements IMessageManager {
                 @Override
                 public void onError(int errorCode) {
                     if (callback != null) {
-                        callback.onError(errorCode);
+                        callback.onGetRemoteListError(errorCode);
                     }
                 }
             });
         }
     }
 
+    //判断是否需要同步远端数据
     private boolean isRemoteMessagesNeeded(List<Message> localMessages, int count, long firstMessageSeqNo) {
         //如果本地消息数量不满足分页需求数量，且本地首条消息不是该会话的首条消息，需要获取远端消息
         if (localMessages.size() < count && firstMessageSeqNo != 1) {
@@ -460,10 +424,10 @@ public class MessageManager implements IMessageManager {
         return false;
     }
 
+    //合并localList和remoteList并去重
     private List<Message> mergeLocalAndRemoteMessages(List<Message> localList, List<Message> remoteList) {
         Set<Long> seqNoSet = new HashSet<>();
         List<Message> mergedList = new ArrayList<>();
-        //合并localList和remoteList，并去重
         for (Message message : remoteList) {
             if (seqNoSet.add((message).getClientMsgNo())) {
                 mergedList.add(message);

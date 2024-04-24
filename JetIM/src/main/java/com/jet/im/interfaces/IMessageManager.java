@@ -22,7 +22,7 @@ public interface IMessageManager {
 
         void onGetRemoteList(List<Message> messages);
 
-        void onError(int errorCode);
+        void onGetRemoteListError(int errorCode);
     }
 
     interface IGetMessagesCallback {
@@ -103,12 +103,6 @@ public interface IMessageManager {
                            long startTime,
                            JetIMConst.PullDirection direction,
                            IGetMessagesCallback callback);
-
-    void getLocalAndRemoteMessages(Conversation conversation,
-                                   int count,
-                                   long startTime,
-                                   JetIMConst.PullDirection direction,
-                                   IGetMessagesCallback callback);
 
     void getLocalAndRemoteMessages(Conversation conversation,
                                    int count,
