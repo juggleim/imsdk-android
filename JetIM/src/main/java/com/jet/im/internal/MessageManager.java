@@ -417,8 +417,10 @@ public class MessageManager implements IMessageManager {
         for (int i = 0; i < localMessages.size(); i++) {
             if (i == 0) continue;
             ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
-            if (m.getSeqNo() > ++expectedSeqNo && Message.MessageState.SENT == m.getState()) {
-                return true;
+            if (Message.MessageState.SENT == m.getState() && m.getSeqNo() > 0) {
+                if (m.getSeqNo() > ++expectedSeqNo) {
+                    return true;
+                }
             }
         }
         return false;
