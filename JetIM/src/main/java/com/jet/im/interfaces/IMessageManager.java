@@ -90,6 +90,21 @@ public interface IMessageManager {
             JetIMConst.PullDirection direction,
             List<String> contentTypes);
 
+    List<Message> searchMessageInConversation(
+            Conversation conversation,
+            String searchContent,
+            int count,
+            long timestamp,
+            JetIMConst.PullDirection direction);
+
+    List<Message> searchMessageInConversation(
+            Conversation conversation,
+            String searchContent,
+            int count,
+            long timestamp,
+            JetIMConst.PullDirection direction,
+            List<String> contentTypes);
+
     void deleteMessageByClientMsgNo(long clientMsgNo);
 
     void deleteMessageByMessageId(String messageId);
