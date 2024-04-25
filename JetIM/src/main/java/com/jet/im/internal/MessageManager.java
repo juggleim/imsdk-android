@@ -33,9 +33,13 @@ import com.jet.im.model.messages.VoiceMessage;
 import com.jet.im.utils.LoggerUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageManager implements IMessageManager {
@@ -351,40 +355,92 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void getLocalAndRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetMessagesCallback callback) {
+    public void getLocalAndRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetLocalAndRemoteMessagesCallback callback) {
         if (count <= 0) {
             if (callback != null) {
-                callback.onSuccess(new ArrayList<>());
+                callback.onGetLocalList(new ArrayList<>(), false);
             }
             return;
         }
         if (count > 100) {
             count = 100;
         }
-        List localMessages = getMessages(conversation, count, startTime, direction);
-        boolean needRemote = false;
-        if (localMessages != null && localMessages.size() > 0) {
-            ConcreteMessage message = (ConcreteMessage) localMessages.get(0);
-            long seqNo = message.getSeqNo();
-            for (int i = 0; i < localMessages.size(); i++) {
-                if (i > 0) {
-                    ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
-                    if (m.getSeqNo() > ++seqNo) {
-                        needRemote = true;
-                        break;
-                    }
-                }
-            }
-        } else {
-            needRemote = true;
+        List<Message> localMessages = getMessages(conversation, count, startTime, direction);
+        //如果本地消息为空，需要获取远端消息
+        boolean needRemote = localMessages == null || localMessages.isEmpty();
+        if (!needRemote) {
+            //获取本地消息列表中首条消息
+            long firstMessageSeqNo = ((ConcreteMessage) localMessages.get(0)).getSeqNo();
+            //判断是否需要获取远端消息
+            needRemote = isRemoteMessagesNeeded(localMessages, count, firstMessageSeqNo);
+        }
+        if (callback != null) {
+            callback.onGetLocalList(localMessages, needRemote);
         }
         if (needRemote) {
-            getRemoteMessages(conversation, count, startTime, direction, callback);
-        } else {
-            if (callback != null) {
-                callback.onSuccess(localMessages);
+            getRemoteMessages(conversation, count, startTime, direction, new IGetMessagesCallback() {
+                @Override
+                public void onSuccess(List<Message> messages) {
+                    //合并去重
+                    List<Message> mergeList = mergeLocalAndRemoteMessages(localMessages == null ? new ArrayList<>() : localMessages, messages);
+                    //消息排序
+                    Collections.sort(mergeList, new Comparator<Message>() {
+                        @Override
+                        public int compare(Message o1, Message o2) {
+                            return Long.compare(o1.getTimestamp(), o2.getTimestamp());
+                        }
+                    });
+                    //返回合并后的消息列表
+                    if (callback != null) {
+                        callback.onGetRemoteList(mergeList);
+                    }
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    if (callback != null) {
+                        callback.onGetRemoteListError(errorCode);
+                    }
+                }
+            });
+        }
+    }
+
+    //判断是否需要同步远端数据
+    private boolean isRemoteMessagesNeeded(List<Message> localMessages, int count, long firstMessageSeqNo) {
+        //如果本地消息数量不满足分页需求数量，且本地首条消息不是该会话的首条消息，需要获取远端消息
+        if (localMessages.size() < count && firstMessageSeqNo != 1) {
+            return true;
+        }
+        //判断本地列表中的消息是否连续，不连续时需要获取远端消息
+        long expectedSeqNo = firstMessageSeqNo;
+        for (int i = 0; i < localMessages.size(); i++) {
+            if (i == 0) continue;
+            ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
+            if (Message.MessageState.SENT == m.getState() && m.getSeqNo() > 0) {
+                if (m.getSeqNo() > ++expectedSeqNo) {
+                    return true;
+                }
             }
         }
+        return false;
+    }
+
+    //合并localList和remoteList并去重
+    private List<Message> mergeLocalAndRemoteMessages(List<Message> localList, List<Message> remoteList) {
+        Set<Long> seqNoSet = new HashSet<>();
+        List<Message> mergedList = new ArrayList<>();
+        for (Message message : remoteList) {
+            if (seqNoSet.add((message).getClientMsgNo())) {
+                mergedList.add(message);
+            }
+        }
+        for (Message message : localList) {
+            if (seqNoSet.add((message).getClientMsgNo())) {
+                mergedList.add(message);
+            }
+        }
+        return mergedList;
     }
 
     @Override
@@ -452,6 +508,16 @@ public class MessageManager implements IMessageManager {
                 }
             }
         });
+    }
+
+    @Override
+    public void setLocalAttribute(String messageId, String attribute) {
+
+    }
+
+    @Override
+    public String getLocalAttribute(String messageId) {
+        return null;
     }
 
     @Override

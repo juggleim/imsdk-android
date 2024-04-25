@@ -17,6 +17,14 @@ public interface IMessageManager {
         void onError(Message message, int errorCode);
     }
 
+    interface IGetLocalAndRemoteMessagesCallback {
+        void onGetLocalList(List<Message> messages, boolean hasRemote);
+
+        void onGetRemoteList(List<Message> messages);
+
+        void onGetRemoteListError(int errorCode);
+    }
+
     interface IGetMessagesCallback {
         void onSuccess(List<Message> messages);
 
@@ -100,7 +108,7 @@ public interface IMessageManager {
                                    int count,
                                    long startTime,
                                    JetIMConst.PullDirection direction,
-                                   IGetMessagesCallback callback);
+                                   IGetLocalAndRemoteMessagesCallback callback);
 
     void sendReadReceipt(Conversation conversation,
                          List<String> messageIds,
