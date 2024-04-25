@@ -263,12 +263,22 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public List<Message> searchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction) {
-        return mCore.getDbManager().searchMessage(searchContent, count, timestamp, direction, new ArrayList<>());
+        return searchMessage(searchContent, count, timestamp, direction, new ArrayList<>());
     }
 
     @Override
     public List<Message> searchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
-        return mCore.getDbManager().searchMessage(searchContent, count, timestamp, direction, contentTypes);
+        return searchMessageInConversation(null, searchContent, count, timestamp, direction, new ArrayList<>());
+    }
+
+    @Override
+    public List<Message> searchMessageInConversation(Conversation conversation, String searchContent, int count, long timestamp, JetIMConst.PullDirection direction) {
+        return searchMessageInConversation(conversation, searchContent, count, timestamp, direction, new ArrayList<>());
+    }
+
+    @Override
+    public List<Message> searchMessageInConversation(Conversation conversation, String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
+        return mCore.getDbManager().searchMessage(conversation, searchContent, count, timestamp, direction, contentTypes);
     }
 
     @Override
@@ -452,6 +462,16 @@ public class MessageManager implements IMessageManager {
                 }
             }
         });
+    }
+
+    @Override
+    public void setLocalAttribute(String messageId, String attribute) {
+
+    }
+
+    @Override
+    public String getLocalAttribute(String messageId) {
+        return null;
     }
 
     @Override

@@ -296,15 +296,22 @@ public class DBManager {
         return messages;
     }
 
-    public List<Message> searchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
+    public List<Message> searchMessage(Conversation conversation, String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
         List<Message> result = new ArrayList<>();
-        if (TextUtils.isEmpty(searchContent)) return result;
+        if (TextUtils.isEmpty(searchContent) || count < 1) return result;
 
         if (timestamp == 0) {
             timestamp = Long.MAX_VALUE;
         }
+        if (direction == null) {
+            direction = JetIMConst.PullDirection.OLDER;
+        }
+        if (contentTypes == null) {
+            contentTypes = new ArrayList<>();
+        }
+
         int contentTypeSize = contentTypes.size();
-        String sql = MessageSql.sqlSearchMessage(searchContent, count, timestamp, direction, contentTypeSize);
+        String sql = MessageSql.sqlSearchMessage(conversation, searchContent, count, timestamp, direction, contentTypeSize);
         String[] args = new String[contentTypeSize];
         for (int i = 0; i < contentTypeSize; i++) {
             args[i] = contentTypes.get(i);
@@ -314,7 +321,7 @@ public class DBManager {
             return result;
         }
         addMessagesFromCursor(result, cursor);
-        if (direction == JetIMConst.PullDirection.OLDER) {
+        if (JetIMConst.PullDirection.OLDER == direction) {
             Collections.reverse(result);
         }
         cursor.close();

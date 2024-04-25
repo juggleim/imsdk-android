@@ -187,9 +187,14 @@ class MessageSql {
     static final String SQL_CLIENT_MSG_NO_IS = " id = ";
     static final String SQL_MESSAGE_ID_IS = " message_uid = ?";
 
-    static String sqlSearchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, int size) {
-        String sql = String.format("SELECT * FROM message WHERE search_content LIKE '%%%s%%' AND is_deleted = 0", searchContent);
-        if (direction == JetIMConst.PullDirection.NEWER) {
+    static String sqlSearchMessage(Conversation conversation, String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, int size) {
+        String sql;
+        if (conversation == null) {
+            sql = String.format("SELECT * FROM message WHERE search_content LIKE '%%%s%%' AND is_deleted = 0", searchContent);
+        } else {
+            sql = String.format("SELECT * FROM message WHERE search_content LIKE '%%%s%%' AND is_deleted = 0 AND conversation_type = %s AND conversation_id = %s", searchContent, conversation.getConversationType().getValue(), conversation.getConversationId());
+        }
+        if (JetIMConst.PullDirection.NEWER == direction) {
             sql = sql + SQL_AND_GREATER_THAN + timestamp;
         } else {
             sql = sql + SQL_AND_LESS_THAN + timestamp;
@@ -198,7 +203,7 @@ class MessageSql {
             sql = sql + SQL_AND_TYPE_IN + CursorHelper.getQuestionMarkPlaceholder(size);
         }
         sql = sql + SQL_ORDER_BY_TIMESTAMP;
-        if (direction == JetIMConst.PullDirection.NEWER) {
+        if (JetIMConst.PullDirection.NEWER == direction) {
             sql = sql + SQL_ASC;
         } else {
             sql = sql + SQL_DESC;
