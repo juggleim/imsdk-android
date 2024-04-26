@@ -140,6 +140,10 @@ public interface IMessageManager {
 
     String getLocalAttribute(String messageId);
 
+    void setLocalAttribute(long clientMsgNo, String attribute);
+
+    String getLocalAttribute(long clientMsgNo);
+
     void setMessageState(long clientMsgNo, Message.MessageState state);
 
     void registerContentType(Class<? extends MessageContent> messageContentClass);

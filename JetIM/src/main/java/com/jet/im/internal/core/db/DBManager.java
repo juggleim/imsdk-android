@@ -328,6 +328,42 @@ public class DBManager {
         return result;
     }
 
+    public void updateLocalAttribute(String messageId, String attribute) {
+        if (TextUtils.isEmpty(messageId)) return;
+        execSQL(MessageSql.sqlUpdateLocalAttribute(messageId, attribute == null ? "" : attribute));
+    }
+
+    public String getLocalAttribute(String messageId) {
+        if (TextUtils.isEmpty(messageId)) return "";
+        String sql = MessageSql.sqlGetLocalAttribute(messageId);
+        Cursor cursor = rawQuery(sql, null);
+        String result = "";
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                result = CursorHelper.readString(cursor, MessageSql.COL_LOCAL_ATTRIBUTE);
+            }
+            cursor.close();
+        }
+        return result;
+    }
+
+    public void updateLocalAttribute(long clientMsgNo, String attribute) {
+        execSQL(MessageSql.sqlUpdateLocalAttribute(clientMsgNo, attribute == null ? "" : attribute));
+    }
+
+    public String getLocalAttribute(long clientMsgNo) {
+        String sql = MessageSql.sqlGetLocalAttribute(clientMsgNo);
+        Cursor cursor = rawQuery(sql, null);
+        String result = "";
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                result = CursorHelper.readString(cursor, MessageSql.COL_LOCAL_ATTRIBUTE);
+            }
+            cursor.close();
+        }
+        return result;
+    }
+
     public long insertMessage(Message message) {
         ContentValues cv = MessageSql.getMessageInsertCV(message);
         return insert(MessageSql.TABLE, cv);

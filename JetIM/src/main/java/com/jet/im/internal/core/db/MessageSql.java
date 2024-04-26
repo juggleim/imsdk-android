@@ -41,6 +41,7 @@ class MessageSql {
         info.setReadCount(CursorHelper.readInt(cursor, COL_READ_COUNT));
         info.setMemberCount(CursorHelper.readInt(cursor, COL_MEMBER_COUNT));
         message.setGroupMessageReadInfo(info);
+        message.setLocalAttribute(CursorHelper.readString(cursor, COL_LOCAL_ATTRIBUTE));
         return message;
     }
 
@@ -83,6 +84,9 @@ class MessageSql {
             memberCount = -1;
         }
         cv.put(COL_MEMBER_COUNT, memberCount);
+        if (message.getLocalAttribute() != null) {
+            cv.put(COL_LOCAL_ATTRIBUTE, message.getLocalAttribute());
+        }
         return cv;
     }
 
@@ -105,7 +109,8 @@ class MessageSql {
             + "read_count INTEGER DEFAULT 0,"
             + "member_count INTEGER DEFAULT -1,"
             + "is_deleted BOOLEAN DEFAULT 0,"
-            + "search_content TEXT"
+            + "search_content TEXT,"
+            + "local_attribute TEXT"
             + ")";
 
     static final String TABLE = "message";
@@ -212,6 +217,22 @@ class MessageSql {
         return sql;
     }
 
+    static String sqlUpdateLocalAttribute(String messageId, String localAttribute) {
+        return String.format("UPDATE message SET local_attribute = '%s' WHERE message_uid = '%s'", localAttribute, messageId);
+    }
+
+    static String sqlUpdateLocalAttribute(long clientMsgNo, String localAttribute) {
+        return String.format("UPDATE message SET local_attribute = '%s' WHERE id = '%s'", localAttribute, clientMsgNo);
+    }
+
+    static String sqlGetLocalAttribute(String messageId) {
+        return String.format("SELECT local_attribute FROM message WHERE message_uid = '%s'", messageId);
+    }
+
+    static String sqlGetLocalAttribute(long clientMsgNo) {
+        return String.format("SELECT local_attribute FROM message WHERE id = '%s'", clientMsgNo);
+    }
+
     static final String COL_CONVERSATION_TYPE = "conversation_type";
     static final String COL_CONVERSATION_ID = "conversation_id";
     static final String COL_MESSAGE_ID = "id";
@@ -231,5 +252,5 @@ class MessageSql {
     static final String COL_MEMBER_COUNT = "member_count";
     static final String COL_IS_DELETED = "is_deleted";
     static final String COL_SEARCH_CONTENT = "search_content";
-
+    static final String COL_LOCAL_ATTRIBUTE = "local_attribute";
 }

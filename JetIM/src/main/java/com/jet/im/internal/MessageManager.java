@@ -522,12 +522,22 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void setLocalAttribute(String messageId, String attribute) {
-
+        mCore.getDbManager().updateLocalAttribute(messageId, attribute);
     }
 
     @Override
     public String getLocalAttribute(String messageId) {
-        return null;
+        return mCore.getDbManager().getLocalAttribute(messageId);
+    }
+
+    @Override
+    public void setLocalAttribute(long clientMsgNo, String attribute) {
+        mCore.getDbManager().updateLocalAttribute(clientMsgNo, attribute);
+    }
+
+    @Override
+    public String getLocalAttribute(long clientMsgNo) {
+        return mCore.getDbManager().getLocalAttribute(clientMsgNo);
     }
 
     @Override
