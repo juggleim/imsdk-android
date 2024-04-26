@@ -188,6 +188,10 @@ public class DBManager {
         execSQL(ConversationSql.sqlClearUnreadCount(conversation, msgIndex));
     }
 
+    public void clearTotalUnreadCount() {
+        execSQL(ConversationSql.sqlClearTotalUnreadCount());
+    }
+
     public int getTotalUnreadCount() {
         Cursor cursor = rawQuery(ConversationSql.SQL_GET_TOTAL_UNREAD_COUNT, null);
         int count = 0;

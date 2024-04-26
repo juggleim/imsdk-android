@@ -132,6 +132,12 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void clearTotalUnreadCount() {
+        mCore.getDbManager().clearTotalUnreadCount();
+        noticeTotalUnreadCountChange();
+    }
+
+    @Override
     public void addListener(String key, IConversationListener listener) {
         if (listener == null || TextUtils.isEmpty(key)) {
             return;

@@ -10,6 +10,7 @@ public interface IConversationManager {
 
     interface ISimpleCallback {
         void onSuccess();
+
         void onError(int errorCode);
     }
 
@@ -40,6 +41,8 @@ public interface IConversationManager {
 
     void clearUnreadCount(Conversation conversation);
 
+    void clearTotalUnreadCount();
+
     void addListener(String key, IConversationListener listener);
 
     void removeListener(String key);
@@ -50,8 +53,11 @@ public interface IConversationManager {
 
     interface IConversationListener {
         void onConversationInfoAdd(List<ConversationInfo> conversationInfoList);
+
         void onConversationInfoUpdate(List<ConversationInfo> conversationInfoList);
+
         void onConversationInfoDelete(List<ConversationInfo> conversationInfoList);
+
         void onTotalUnreadMessageCountUpdate(int count);
     }
 
