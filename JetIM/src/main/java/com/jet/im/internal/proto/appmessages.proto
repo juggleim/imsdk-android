@@ -295,7 +295,7 @@ message SyncConversationsReq{
 }
 
 message QryTotalUnreadCountReq{
-
+    int64 time = 1;
 }
 message QryTotalUnreadCountResp{
     int64 totalCount = 1;
@@ -430,7 +430,7 @@ message QryBanUsersReq{
 }
 
 message QryBanUsersResp{
-    repeated BanUser items = 1; 
+    repeated BanUser items = 1;
     string offset = 2;
 }
 

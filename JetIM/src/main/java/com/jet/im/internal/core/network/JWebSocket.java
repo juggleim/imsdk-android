@@ -135,6 +135,13 @@ public class JWebSocket extends WebSocketClient {
         sendWhenOpen(bytes);
     }
 
+    public void clearTotalUnreadCount(String userId, long time, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.clearTotalUnreadCountData(userId, time, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void queryHisMsg(Conversation conversation, long startTime, int count, JetIMConst.PullDirection direction, QryHisMsgCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, mCmdIndex++);

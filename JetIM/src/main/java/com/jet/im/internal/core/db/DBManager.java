@@ -368,6 +368,19 @@ public class DBManager {
         return result;
     }
 
+    public long getNewestStatusSentMessageTimestamp() {
+        String sql = MessageSql.getNewestStatusSentMessageTimestamp();
+        Cursor cursor = rawQuery(sql, null);
+        long result = System.currentTimeMillis();
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                result = CursorHelper.readLong(cursor, "max_timestamp");
+            }
+            cursor.close();
+        }
+        return result;
+    }
+
     public long insertMessage(Message message) {
         ContentValues cv = MessageSql.getMessageInsertCV(message);
         return insert(MessageSql.TABLE, cv);
