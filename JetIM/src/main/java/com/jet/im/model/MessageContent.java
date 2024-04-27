@@ -44,10 +44,6 @@ public abstract class MessageContent {
         return "";
     }
 
-    public void setContentType(String contentType) {
-        mContentType = contentType;
-    }
-
     public MessageMentionInfo getMentionInfo() {
         return mMentionInfo;
     }

@@ -797,7 +797,9 @@ public class MessageManager implements IMessageManager {
                     && message.getContent().getMentionInfo() != null
                     && message.getContent().getMentionInfo().getTargetUsers() != null) {
                 for (UserInfo userInfo : message.getContent().getMentionInfo().getTargetUsers()) {
-                    userInfoMap.put(userInfo.getUserId(), userInfo);
+                    if (userInfo.getUserId() != null) {
+                        userInfoMap.put(userInfo.getUserId(), userInfo);
+                    }
                 }
             }
 

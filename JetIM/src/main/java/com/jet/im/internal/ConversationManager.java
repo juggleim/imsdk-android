@@ -302,9 +302,11 @@ public class ConversationManager implements IConversationManager, MessageManager
             if (MessageMentionInfo.MentionType.ALL == message.getContent().getMentionInfo().getType()
                     || MessageMentionInfo.MentionType.ALL_AND_SOMEONE == message.getContent().getMentionInfo().getType()) {
                 hasMention = true;
-            } else if (MessageMentionInfo.MentionType.SOMEONE == message.getContent().getMentionInfo().getType()) {
+            } else if (MessageMentionInfo.MentionType.SOMEONE == message.getContent().getMentionInfo().getType()
+                    && message.getContent().getMentionInfo().getTargetUsers() != null) {
                 for (UserInfo userInfo : message.getContent().getMentionInfo().getTargetUsers()) {
-                    if (userInfo.getUserId().equals(mCore.getUserId())) {
+                    if (userInfo.getUserId() != null
+                            && userInfo.getUserId().equals(mCore.getUserId())) {
                         hasMention = true;
                         break;
                     }
