@@ -65,6 +65,14 @@ public class ConversationInfo {
         mDraft = draft;
     }
 
+    public boolean hasMentioned() {
+        return mHasMentioned;
+    }
+
+    public void setHasMentioned(boolean hasMentioned) {
+        mHasMentioned = hasMentioned;
+    }
+
     private Conversation mConversation;
     private int mUnreadCount;
     private long mUpdateTime;
@@ -73,4 +81,5 @@ public class ConversationInfo {
     private long mTopTime;
     private boolean mMute;
     private String mDraft;
+    private boolean mHasMentioned;
 }

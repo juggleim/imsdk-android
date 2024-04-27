@@ -184,6 +184,10 @@ public class DBManager {
         execSQL(ConversationSql.sqlSetMute(conversation, isMute));
     }
 
+    public void setMention(Conversation conversation, boolean isMention) {
+        execSQL(ConversationSql.sqlSetMention(conversation, isMention));
+    }
+
     public void clearUnreadCount(Conversation conversation, long msgIndex) {
         execSQL(ConversationSql.sqlClearUnreadCount(conversation, msgIndex));
     }

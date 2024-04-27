@@ -136,6 +136,12 @@ public interface IMessageManager {
     void getMergedMessageList(String messageId,
                               IGetMessagesCallback callback);
 
+    void getMentionMessageList(Conversation conversation,
+                               int count,
+                               long time,
+                               JetIMConst.PullDirection direction,
+                               IGetMessagesCallback callback);
+
     void setLocalAttribute(String messageId, String attribute);
 
     String getLocalAttribute(String messageId);

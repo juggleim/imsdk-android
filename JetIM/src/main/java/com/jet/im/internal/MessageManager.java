@@ -505,6 +505,28 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().getMergedMessageList(messageId, 0, 100, JetIMConst.PullDirection.OLDER, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
+                mCore.getDbManager().insertMessages(messages);
+                if (callback != null) {
+                    List<Message> result = new ArrayList<>(messages);
+                    callback.onSuccess(result);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void getMentionMessageList(Conversation conversation, int count, long time, JetIMConst.PullDirection direction, IGetMessagesCallback callback) {
+        mCore.getWebSocket().getMentionMessageList(conversation, time, count, direction, new QryHisMsgCallback() {
+            @Override
+            public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
+                mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
                     callback.onSuccess(result);
@@ -705,6 +727,7 @@ public class MessageManager implements IMessageManager {
 
         long sendTime = 0;
         long receiveTime = 0;
+        Map<String, UserInfo> userInfoMap = new HashMap<>();
         for (ConcreteMessage message : messages) {
             if (message.getDirection() == Message.MessageDirection.SEND) {
                 sendTime = message.getTimestamp();
@@ -770,6 +793,14 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
+            if (message.getContent() != null
+                    && message.getContent().getMentionInfo() != null
+                    && message.getContent().getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo userInfo : message.getContent().getMentionInfo().getTargetUsers()) {
+                    userInfoMap.put(userInfo.getUserId(), userInfo);
+                }
+            }
+
             if (mSendReceiveListener != null) {
                 mSendReceiveListener.onMessageReceive(message);
             }
@@ -780,6 +811,7 @@ public class MessageManager implements IMessageManager {
                 }
             }
         }
+        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
         ////直发的消息，而且正在同步中，不直接更新 sync time
         if (!isSync && mSyncProcessing) {
             if (sendTime > 0) {

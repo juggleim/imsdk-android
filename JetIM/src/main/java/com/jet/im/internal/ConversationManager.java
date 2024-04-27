@@ -13,6 +13,8 @@ import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
+import com.jet.im.model.Message;
+import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.utils.LoggerUtils;
 
@@ -117,6 +119,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             return;
         }
         mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
+        mCore.getDbManager().setMention(conversation, false);
         noticeTotalUnreadCountChange();
         mCore.getWebSocket().clearUnreadCount(conversation, mCore.getUserId(), info.getLastMessageIndex(), new WebSocketSimpleCallback() {
             @Override
@@ -255,22 +258,19 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void onMessageSave(ConcreteMessage message) {
-        mCore.getDbManager().updateLastMessage(message);
-        noticeConversationAddOrUpdate(message);
+        addOrUpdateConversationIfNeed(message);
     }
 
     @Override
     public void onMessageSend(ConcreteMessage message) {
-        mCore.getDbManager().updateLastMessage(message);
+        addOrUpdateConversationIfNeed(message);
         updateSyncTime(message.getTimestamp());
-        noticeConversationAddOrUpdate(message);
     }
 
     @Override
     public void onMessageReceive(ConcreteMessage message) {
-        mCore.getDbManager().updateLastMessage(message);
+        addOrUpdateConversationIfNeed(message);
         updateSyncTime(message.getTimestamp());
-        noticeConversationAddOrUpdate(message);
         noticeTotalUnreadCountChange();
     }
 
@@ -293,7 +293,25 @@ public class ConversationManager implements IConversationManager, MessageManager
         void onComplete();
     }
 
-    private void noticeConversationAddOrUpdate(ConcreteMessage message) {
+    private void addOrUpdateConversationIfNeed(ConcreteMessage message) {
+        boolean hasMention = false;
+        //接收到的消息才处理 mention
+        if (Message.MessageDirection.RECEIVE == message.getDirection()
+                && message.getContent() != null
+                && message.getContent().getMentionInfo() != null) {
+            if (MessageMentionInfo.MentionType.ALL == message.getContent().getMentionInfo().getType()
+                    || MessageMentionInfo.MentionType.ALL_AND_SOMEONE == message.getContent().getMentionInfo().getType()) {
+                hasMention = true;
+            } else if (MessageMentionInfo.MentionType.SOMEONE == message.getContent().getMentionInfo().getType()) {
+                for (UserInfo userInfo : message.getContent().getMentionInfo().getTargetUsers()) {
+                    if (userInfo.getUserId().equals(mCore.getUserId())) {
+                        hasMention = true;
+                        break;
+                    }
+                }
+            }
+        }
+
         ConversationInfo info = getConversationInfo(message.getConversation());
         if (info == null) {
             ConcreteConversationInfo addInfo = new ConcreteConversationInfo();
@@ -303,6 +321,9 @@ public class ConversationManager implements IConversationManager, MessageManager
             addInfo.setLastMessageIndex(message.getMsgIndex());
             addInfo.setLastReadMessageIndex(message.getMsgIndex() - 1);
             addInfo.setUnreadCount(1);
+            if (hasMention) {
+                addInfo.setHasMentioned(true);
+            }
             List<ConcreteConversationInfo> l = new ArrayList<>();
             l.add(addInfo);
             mCore.getDbManager().insertConversations(l, null);
@@ -313,6 +334,11 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
         } else {
+            if (hasMention) {
+                mCore.getDbManager().setMention(message.getConversation(), true);
+                info.setHasMentioned(true);
+            }
+            mCore.getDbManager().updateLastMessage(message);
             if (mListenerMap != null) {
                 List<ConversationInfo> result = new ArrayList<>();
                 result.add(info);

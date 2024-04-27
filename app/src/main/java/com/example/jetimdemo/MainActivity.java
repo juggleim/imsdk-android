@@ -27,6 +27,7 @@ import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
@@ -62,6 +63,44 @@ public class MainActivity extends AppCompatActivity {
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                            JetIM.getInstance().getConversationManager().clearUnreadCount(c);
+                            List<ConversationInfo> conversations = JetIM.getInstance().getConversationManager().getConversationInfoList();
+
+                            List<Message> messages = JetIM.getInstance().getMessageManager().getMessages(c, 100, 0, JetIMConst.PullDirection.OLDER);
+
+                        }
+                    }, 1000);
+
+                    //send mention message
+//                    Handler mainHandler = new Handler(Looper.getMainLooper());
+//                    mainHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            TextMessage t = new TextMessage("test mention");
+//                            MessageMentionInfo mentionInfo = new MessageMentionInfo();
+//                            mentionInfo.setType(MessageMentionInfo.MentionType.ALL);
+//                            t.setMentionInfo(mentionInfo);
+//                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                            JetIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
+//                                @Override
+//                                public void onSuccess(Message message) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onError(Message message, int errorCode) {
+//
+//                                }
+//                            });
+//                        }
+//                    }, 1000);
+
+
                     //push token
 //                    JetIM.getInstance().getConnectionManager().registerPushToken(PushChannel.HUAWEI, "pushToken");
 
@@ -399,7 +438,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+        JetIM.getInstance().getConnectionManager().connect(TOKEN5);
         JetIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {

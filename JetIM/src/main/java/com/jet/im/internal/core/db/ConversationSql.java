@@ -29,6 +29,8 @@ class ConversationSql {
         info.setTopTime(CursorHelper.readLong(cursor, COL_TOP_TIME));
         boolean isMute = CursorHelper.readInt(cursor, COL_MUTE) != 0;
         info.setMute(isMute);
+        boolean isMention = CursorHelper.readInt(cursor, COL_HAS_MENTION) != 0;
+        info.setHasMentioned(isMention);
         long lastMessageIndex = CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX);
         int unreadCount = (int) (lastMessageIndex - info.getLastReadMessageIndex());
         info.setUnreadCount(unreadCount);
@@ -66,7 +68,7 @@ class ConversationSql {
         args[4] = info.isTop();
         args[5] = info.getTopTime();
         args[6] = info.isMute();
-        args[7] = "0";
+        args[7] = info.hasMentioned();
         args[8] = lastMessage.getContentType();
         args[9] = lastMessage.getClientUid();
         args[10] = lastMessage.getDirection().getValue();
@@ -97,7 +99,7 @@ class ConversationSql {
         args[6] = info.isTop();
         args[7] = info.getTopTime();
         args[8] = info.isMute();
-        args[9] = "0";
+        args[9] = info.hasMentioned();
         args[10] = lastMessage.getContentType();
         args[11] = lastMessage.getClientUid();
         args[12] = lastMessage.getDirection().getValue();
@@ -161,6 +163,9 @@ class ConversationSql {
     static String sqlSetMute(Conversation conversation, boolean isMute) {
         return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute?1:0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
+    static String sqlSetMention(Conversation conversation, boolean isMention) {
+        return String.format("UPDATE conversation_info SET has_mentioned = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMention?1:0, conversation.getConversationType().getValue(), conversation.getConversationId());
+    }
     static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS conversation_info ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             + "conversation_type SMALLINT,"
@@ -173,7 +178,7 @@ class ConversationSql {
             + "is_top BOOLEAN,"
             + "top_time INTEGER,"
             + "mute BOOLEAN,"
-            + "last_mention_message_id VARCHAR (64),"
+            + "has_mentioned BOOLEAN,"
             + "last_message_type VARCHAR (64),"
             + "last_message_client_uid VARCHAR (64),"
             + "last_message_direction BOOLEAN,"
@@ -187,13 +192,13 @@ class ConversationSql {
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation ON conversation_info(conversation_type, conversation_id)";
     static final String SQL_INSERT_CONVERSATION = "INSERT OR REPLACE INTO conversation_info"
             + "(conversation_type, conversation_id, timestamp, last_message_id,"
-            + "last_read_message_index, last_message_index, is_top, top_time, mute, last_mention_message_id,"
+            + "last_read_message_index, last_message_index, is_top, top_time, mute, has_mentioned,"
             + "last_message_type, last_message_client_uid, last_message_direction, last_message_state,"
             + "last_message_has_read, last_message_timestamp, last_message_sender, last_message_content,"
             + "last_message_seq_no)"
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     static final String SQL_UPDATE_CONVERSATION = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_read_message_index=?, "
-            + "last_message_index=?, is_top=?, top_time=?, mute=?, last_mention_message_id=?, last_message_type=?,  "
+            + "last_message_index=?, is_top=?, top_time=?, mute=?, has_mentioned=?, last_message_type=?,  "
             + "last_message_client_uid=?, last_message_direction=?, last_message_state=?, "
             + "last_message_has_read=?, last_message_timestamp=?, last_message_sender=?, "
             + "last_message_content=?, last_message_seq_no=? WHERE conversation_type = ? "
@@ -234,7 +239,7 @@ class ConversationSql {
     static final String COL_IS_TOP = "is_top";
     static final String COL_TOP_TIME = "top_time";
     static final String COL_MUTE = "mute";
-    static final String COL_LAST_MENTION_MESSAGE_ID = "last_mention_message_id";
+    static final String COL_HAS_MENTION = "has_mentioned";
     static final String COL_LAST_MESSAGE_TYPE = "last_message_type";
     static final String COL_LAST_MESSAGE_CLIENT_UID = "last_message_client_uid";
     static final String COL_LAST_MESSAGE_DIRECTION = "last_message_direction";

@@ -30,7 +30,7 @@ message RpcMessageWraper{
     int32 resultCode = 21;
     int64 msgSendTime = 22;
     string msgId = 23;
-    int64 msgIndex = 24;
+    int64 msgSeqNo = 24;
 
     string groupId = 31;
     repeated string targetIds = 32;
@@ -83,7 +83,7 @@ message DownMsg{
     string msgType = 3;
     string senderId = 4;
     string msgId = 5;
-    int64 msgIndex = 6;
+    int64 msgSeqNo = 6;
     bytes msgContent = 7;
     int64 msgTime = 8;
     int32 flags = 9;
@@ -147,6 +147,13 @@ message AddHisMsgReq{
     int32 GroupMemberCount = 6;
 }
 
+message DelHisMsgsReq{
+    string senderId = 1;
+    string targetId = 2;
+    ChannelType channelType = 3;
+    repeated SimpleMsg msgs = 4; 
+}
+
 message QryMsgLatestIndexReq{
     string converId = 1;
     ChannelType channelType = 2;
@@ -154,7 +161,7 @@ message QryMsgLatestIndexReq{
 message QryMsgLatestIndexResp{
     string converId = 1;
     ChannelType ChannelType = 2;
-    int64 msgIndex = 3;
+    int64 msgSeqNo = 3;
 }
 
 message QryHisMsgsReq{
@@ -216,7 +223,7 @@ message ModifyMsgReq{
     ChannelType channelType = 2;
     string msgId = 3;
     int64 msgTime = 4;
-    int64 msgIndex = 5;
+    int64 msgSeqNo = 5;
     bytes msgContent = 6;
 }
 
@@ -250,7 +257,7 @@ message QryConversationsResp{
     bool isFinished = 2;
 }
 message Conversation{
-    //string converId = 1;
+    string userId = 1;
     string targetId = 2;
     ChannelType channelType = 3;
     int64 updateTime = 4;
@@ -270,22 +277,20 @@ message Conversation{
 
 message MentionMsg{
     MentionType mentionType = 1;
-    string msgId = 2;
-    int64 msgIndex = 3;
-    int64 msgTime = 4;
-    UserInfo senderInfo = 5;
+    UserInfo senderInfo = 2;
+    DownMsg msg = 3;
 }
 
 message QryMentionMsgsReq{
     string targetId = 1;
     ChannelType channelType = 2;
-    int64 startIndex = 3;
+    int64 startTime = 3;
     int32 count = 4;
     int32 order = 5;
 }
 
 message QryMentionMsgsResp{
-    repeated MentionMsg mentionMsgs = 1;
+    repeated DownMsg mentionMsgs = 1;
     bool isFinished = 2;
 }
 
@@ -380,12 +385,6 @@ message UserInfosResp{
     map<string,UserInfo> userInfoMap = 1;
 }
 
-message UserRegReq{
-    string userId = 1;
-    string nickname = 2;
-    string userPortrait = 3;
-}
-
 message UserRegResp{
     string userId = 1;
     string token = 2;
@@ -464,6 +463,7 @@ message OnlineStatus{
 message KickUserReq {
     string userId = 1;
     repeated string platforms = 2;
+    repeated string deviceIds = 3;
 }
 
 //group

@@ -9,6 +9,8 @@ import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
+import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageMentionInfo;
 
 import java.nio.charset.StandardCharsets;
 
@@ -32,8 +34,9 @@ class MessageSql {
         message.setTimestamp(CursorHelper.readLong(cursor, COL_TIMESTAMP));
         message.setSenderUserId(CursorHelper.readString(cursor, COL_SENDER));
         String content = CursorHelper.readString(cursor, COL_CONTENT);
+        MessageContent messageContent = null;
         if (content != null) {
-            message.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType()));
+            messageContent = ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType());
         }
         message.setSeqNo(CursorHelper.readLong(cursor, COL_SEQ_NO));
         message.setMsgIndex(CursorHelper.readLong(cursor, COL_MESSAGE_INDEX));
@@ -42,6 +45,13 @@ class MessageSql {
         info.setMemberCount(CursorHelper.readInt(cursor, COL_MEMBER_COUNT));
         message.setGroupMessageReadInfo(info);
         message.setLocalAttribute(CursorHelper.readString(cursor, COL_LOCAL_ATTRIBUTE));
+        String mentionInfoStr = CursorHelper.readString(cursor, COL_MENTION_INFO);
+        if (messageContent != null) {
+            if (mentionInfoStr != null && mentionInfoStr.length() > 0) {
+                messageContent.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
+            }
+            message.setContent(messageContent);
+        }
         return message;
     }
 
@@ -87,6 +97,9 @@ class MessageSql {
         if (message.getLocalAttribute() != null) {
             cv.put(COL_LOCAL_ATTRIBUTE, message.getLocalAttribute());
         }
+        if (message.getContent() != null && message.getContent().getMentionInfo() != null) {
+            cv.put(COL_MENTION_INFO, message.getContent().getMentionInfo().encodeToJson());
+        }
         return cv;
     }
 
@@ -110,7 +123,8 @@ class MessageSql {
             + "member_count INTEGER DEFAULT -1,"
             + "is_deleted BOOLEAN DEFAULT 0,"
             + "search_content TEXT,"
-            + "local_attribute TEXT"
+            + "local_attribute TEXT,"
+            + "mention_info TEXT"
             + ")";
 
     static final String TABLE = "message";
@@ -253,4 +267,5 @@ class MessageSql {
     static final String COL_IS_DELETED = "is_deleted";
     static final String COL_SEARCH_CONTENT = "search_content";
     static final String COL_LOCAL_ATTRIBUTE = "local_attribute";
+    static final String COL_MENTION_INFO = "mention_info";
 }

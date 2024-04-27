@@ -66,7 +66,8 @@ public class JWebSocket extends WebSocketClient {
                 userId,
                 mCmdIndex++,
                 conversation.getConversationType(),
-                conversation.getConversationId());
+                conversation.getConversationId(),
+                content.getMentionInfo());
         mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
@@ -163,6 +164,17 @@ public class JWebSocket extends WebSocketClient {
                                      QryHisMsgCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.getMergedMessageList(messageId, timestamp, count, direction, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getMentionMessageList(Conversation conversation,
+                                      long time,
+                                      int count,
+                                      JetIMConst.PullDirection direction,
+                                      QryHisMsgCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getMentionMessages(conversation, time, count, direction, mCmdIndex++);
         mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }

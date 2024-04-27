@@ -15,6 +15,7 @@ import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.push.PushChannel;
 import com.jet.im.utils.LoggerUtils;
@@ -103,7 +104,8 @@ class PBData {
                            String userId,
                            int index,
                            Conversation.ConversationType conversationType,
-                           String conversationId) {
+                           String conversationId,
+                           MessageMentionInfo mentionInfo) {
         ByteString byteString = ByteString.copyFrom(msgData);
         Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
         upMsgBuilder.setMsgType(contentType)
@@ -128,6 +130,21 @@ class PBData {
             }
             upMsgBuilder.setMergedMsgs(mergedMsgsBuilder.build());
         }
+
+        if (mentionInfo != null) {
+            Appmessages.MentionInfo.Builder pbMentionBuilder = Appmessages.MentionInfo.newBuilder();
+            pbMentionBuilder.setMentionTypeValue(mentionInfo.getType().getValue());
+            if (mentionInfo.getTargetUsers() != null) {
+                for (UserInfo userInfo : mentionInfo.getTargetUsers()) {
+                    Appmessages.UserInfo pbUser = Appmessages.UserInfo.newBuilder()
+                            .setUserId(userInfo.getUserId())
+                            .build();
+                    pbMentionBuilder.addTargetUsers(pbUser);
+                }
+            }
+            upMsgBuilder.setMentionInfo(pbMentionBuilder);
+        }
+
         Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
         String topic = "";
@@ -403,6 +420,31 @@ class PBData {
 
     }
 
+    byte[] getMentionMessages(Conversation conversation,
+                              long timestamp,
+                              int count,
+                              JetIMConst.PullDirection direction,
+                              int index) {
+        int order = direction == JetIMConst.PullDirection.OLDER ? 0 : 1;
+        Appmessages.QryMentionMsgsReq req = Appmessages.QryMentionMsgsReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setStartTime(timestamp)
+                .setCount(count)
+                .setOrder(order)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_MENTION_MSGS)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -643,9 +685,9 @@ class PBData {
         message.setState(Message.MessageState.SENT);
         message.setTimestamp(downMsg.getMsgTime());
         message.setSenderUserId(downMsg.getSenderId());
-        message.setSeqNo(downMsg.getMsgIndex());
+        message.setSeqNo(downMsg.getMsgSeqNo());
         message.setMsgIndex(downMsg.getUnreadIndex());
-        message.setContent(ContentTypeCenter.getInstance().getContent(downMsg.getMsgContent().toByteArray(), downMsg.getMsgType()));
+        MessageContent messageContent = ContentTypeCenter.getInstance().getContent(downMsg.getMsgContent().toByteArray(), downMsg.getMsgType());
         int flags = ContentTypeCenter.getInstance().flagsWithType(downMsg.getMsgType());
         if (flags < 0) {
             message.setFlags(downMsg.getFlags());
@@ -658,6 +700,20 @@ class PBData {
         message.setGroupMessageReadInfo(info);
         message.setGroupInfo(groupInfoWithPBGroupInfo(downMsg.getGroupInfo()));
         message.setTargetUserInfo(userInfoWithPBUserInfo(downMsg.getTargetUserInfo()));
+        if (downMsg.hasMentionInfo() && Appmessages.MentionType.MentionDefault != downMsg.getMentionInfo().getMentionType()) {
+            MessageMentionInfo mentionInfo = new MessageMentionInfo();
+            mentionInfo.setType(mentionTypeFromPbMentionType(downMsg.getMentionInfo().getMentionType()));
+            List<UserInfo> mentionUserList = new ArrayList<>();
+            for (Appmessages.UserInfo pbUserInfo : downMsg.getMentionInfo().getTargetUsersList()) {
+                UserInfo user = userInfoWithPBUserInfo(pbUserInfo);
+                if (user != null) {
+                    mentionUserList.add(user);
+                }
+            }
+            mentionInfo.setTargetUsers(mentionUserList);
+            messageContent.setMentionInfo(mentionInfo);
+        }
+        message.setContent(messageContent);
         return message;
     }
 
@@ -674,7 +730,9 @@ class PBData {
         info.setMute(conversation.getUndisturbType() == 1);
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
         info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
-        //todo mention
+        if (conversation.hasLatestMentionMsg()) {
+            info.setHasMentioned(true);
+        }
         return info;
     }
 
@@ -727,6 +785,24 @@ class PBData {
                 break;
         }
         return result;
+    }
+
+    private MessageMentionInfo.MentionType mentionTypeFromPbMentionType(Appmessages.MentionType pbMentionType) {
+        MessageMentionInfo.MentionType type = MessageMentionInfo.MentionType.DEFAULT;
+        switch (pbMentionType) {
+            case MentionAll:
+                type = MessageMentionInfo.MentionType.ALL;
+                break;
+            case MentionSomeone:
+                type = MessageMentionInfo.MentionType.SOMEONE;
+                break;
+            case MentionAllAndSomeone:
+                type = MessageMentionInfo.MentionType.ALL_AND_SOMEONE;
+                break;
+            default:
+                break;
+        }
+        return type;
     }
 
     private Appmessages.Conversation.Builder pbConversationFromConversation(Conversation conversation) {
@@ -783,6 +859,7 @@ class PBData {
     private static final String UNDISTURB_CONVERS = "undisturb_convers";
     private static final String QRY_MERGED_MSGS = "qry_merged_msgs";
     private static final String REG_PUSH_TOKEN = "reg_push_token";
+    private static final String QRY_MENTION_MSGS = "qry_mention_msgs";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
