@@ -882,6 +882,7 @@ class PBData {
             put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
+            put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
         }
     };
 

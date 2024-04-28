@@ -72,7 +72,17 @@ public class MainActivity extends AppCompatActivity {
                             List<ConversationInfo> conversations = JetIM.getInstance().getConversationManager().getConversationInfoList();
 
                             List<Message> messages = JetIM.getInstance().getMessageManager().getMessages(c, 100, 0, JetIMConst.PullDirection.OLDER);
+                            JetIM.getInstance().getMessageManager().getMentionMessageList(c, 100, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesCallback() {
+                                @Override
+                                public void onSuccess(List<Message> messages) {
+                                    Log.i("lifei", "mention success");
+                                }
 
+                                @Override
+                                public void onError(int errorCode) {
+                                    Log.i("lifei", "mention error");
+                                }
+                            });
                         }
                     }, 1000);
 
