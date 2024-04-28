@@ -21,7 +21,7 @@ class ConversationSql {
         Conversation c = new Conversation(Conversation.ConversationType.setValue(type), id);
         info.setConversation(c);
         info.setDraft(CursorHelper.readString(cursor, COL_DRAFT));
-        info.setUpdateTime(CursorHelper.readLong(cursor, COL_TIMESTAMP));
+        info.setSortTime(CursorHelper.readLong(cursor, COL_TIMESTAMP));
         info.setLastReadMessageIndex(CursorHelper.readLong(cursor, COL_LAST_READ_MESSAGE_INDEX));
         info.setLastMessageIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
         boolean isTop = CursorHelper.readInt(cursor, COL_IS_TOP) != 0;
@@ -61,7 +61,7 @@ class ConversationSql {
         ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
         Object[] args = new Object[19];
 
-        args[0] = info.getUpdateTime();
+        args[0] = info.getSortTime();
         args[1] = info.getLastMessage().getMessageId();
         args[2] = info.getLastReadMessageIndex();
         args[3] = info.getLastMessageIndex();
@@ -92,7 +92,7 @@ class ConversationSql {
         Object[] args = new Object[19];
         args[0] = info.getConversation().getConversationType().getValue();
         args[1] = info.getConversation().getConversationId();
-        args[2] = info.getUpdateTime();
+        args[2] = info.getSortTime();
         args[3] = info.getLastMessage().getMessageId();
         args[4] = info.getLastReadMessageIndex();
         args[5] = info.getLastMessageIndex();
@@ -158,6 +158,10 @@ class ConversationSql {
         return String.format("UPDATE conversation_info SET last_read_message_index = %s WHERE conversation_type = %s AND conversation_id = '%s'", msgIndex, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
 
+    static String sqlClearTotalUnreadCount() {
+        return "UPDATE conversation_info SET last_read_message_index = last_message_index";
+    }
+
     static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(last_message_index - last_read_message_index) AS total_count FROM conversation_info";
 
     static String sqlSetMute(Conversation conversation, boolean isMute) {
@@ -205,10 +209,10 @@ class ConversationSql {
             + "AND conversation_id = ?";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY timestamp DESC";
     static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_message_index=?, last_message_type=?,"
-        + "last_message_client_uid=?, "
-        + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
-        + "last_message_sender=?, last_message_content=?, last_message_seq_no=? WHERE "
-        + "conversation_type = ? AND conversation_id = ?";
+            + "last_message_client_uid=?, "
+            + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
+            + "last_message_sender=?, last_message_content=?, last_message_seq_no=? WHERE "
+            + "conversation_type = ? AND conversation_id = ?";
     static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
         StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
         if (direction == JetIMConst.PullDirection.OLDER) {

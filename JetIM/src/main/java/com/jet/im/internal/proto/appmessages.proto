@@ -108,6 +108,7 @@ enum ChannelType {
     Group = 2;
     Chatroom = 3;
     System = 4;
+    Assistant = 5;
 }
 message Notify{
     NotifyType type = 1;
@@ -135,6 +136,24 @@ message DownMsgSet{
 message KvItem{
     string key=1;
     string value=2;
+}
+
+//group assistant
+message AddGrpAssistantReq{
+    string assistantId = 1;
+    repeated SimpleConversation targets = 2;
+}
+message SimpleConversation {
+    string targetId = 1;
+    ChannelType channelType = 2;
+    int64 msgTime = 3;
+    int64 msgSeq = 4;
+}
+message AssistantMsgResp{
+    string msgId = 1;
+    int64 msgTime = 2;
+    int64 msgSeq = 3;
+    repeated SimpleConversation convers = 4;
 }
 
 //history message
@@ -247,10 +266,31 @@ message MsgExtItem {
 }
 
 //conversation
+message QryGlobalConversReq{
+    int64 startTime = 1;
+    int32 count = 2;
+    int32 order = 3;
+    string targetId = 4;
+    ChannelType channelType = 5;
+}
+message QryGlobalConversResp{
+    repeated GlobalConver convers = 1;
+    bool isFinished = 2;
+}
+message GlobalConver{
+    string converId = 1;
+    string senderId = 2;
+    string targetId = 3;
+    ChannelType channelType = 4;
+    int64 updatedTime = 5;
+}
 message QryConversationsReq{
     int64 startTime = 1;
     int32 count = 2;
     int32 order = 3;
+    string userId = 4;
+    string targetId = 5;
+    ChannelType channelType = 6;
 }
 message QryConversationsResp{
     repeated Conversation conversations = 1;
@@ -260,7 +300,7 @@ message Conversation{
     string userId = 1;
     string targetId = 2;
     ChannelType channelType = 3;
-    int64 updateTime = 4;
+    int64 sortTime = 4;
     int64 unreadCount = 5;
     DownMsg msg = 6;
     int64 latestReadIndex = 7;
@@ -273,6 +313,10 @@ message Conversation{
     int64 syncTime = 14;
     int32 isDelete = 15;
     int64 latestUnreadIndex = 16;
+}
+
+message MentionInfos{
+    
 }
 
 message MentionMsg{
@@ -300,7 +344,7 @@ message SyncConversationsReq{
 }
 
 message QryTotalUnreadCountReq{
-
+    int64 time  = 1;
 }
 message QryTotalUnreadCountResp{
     int64 totalCount = 1;

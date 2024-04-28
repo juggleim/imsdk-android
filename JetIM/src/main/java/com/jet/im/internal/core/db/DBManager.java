@@ -192,6 +192,10 @@ public class DBManager {
         execSQL(ConversationSql.sqlClearUnreadCount(conversation, msgIndex));
     }
 
+    public void clearTotalUnreadCount() {
+        execSQL(ConversationSql.sqlClearTotalUnreadCount());
+    }
+
     public int getTotalUnreadCount() {
         Cursor cursor = rawQuery(ConversationSql.SQL_GET_TOTAL_UNREAD_COUNT, null);
         int count = 0;
@@ -362,6 +366,19 @@ public class DBManager {
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 result = CursorHelper.readString(cursor, MessageSql.COL_LOCAL_ATTRIBUTE);
+            }
+            cursor.close();
+        }
+        return result;
+    }
+
+    public long getNewestStatusSentMessageTimestamp() {
+        String sql = MessageSql.getNewestStatusSentMessageTimestamp();
+        Cursor cursor = rawQuery(sql, null);
+        long result = System.currentTimeMillis();
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                result = CursorHelper.readLong(cursor, "max_timestamp");
             }
             cursor.close();
         }

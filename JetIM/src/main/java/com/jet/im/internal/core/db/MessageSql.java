@@ -247,6 +247,10 @@ class MessageSql {
         return String.format("SELECT local_attribute FROM message WHERE id = '%s'", clientMsgNo);
     }
 
+    static String getNewestStatusSentMessageTimestamp() {
+        return String.format("SELECT MAX(timestamp) AS max_timestamp FROM message WHERE state = '%s'", Message.MessageState.SENT.getValue());
+    }
+
     static final String COL_CONVERSATION_TYPE = "conversation_type";
     static final String COL_CONVERSATION_ID = "conversation_id";
     static final String COL_MESSAGE_ID = "id";

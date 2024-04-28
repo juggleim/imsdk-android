@@ -17,12 +17,12 @@ public class ConversationInfo {
         mUnreadCount = unreadCount;
     }
 
-    public long getUpdateTime() {
-        return mUpdateTime;
+    public long getSortTime() {
+        return mSortTime;
     }
 
-    public void setUpdateTime(long updateTime) {
-        mUpdateTime = updateTime;
+    public void setSortTime(long sortTime) {
+        mSortTime = sortTime;
     }
 
     public Message getLastMessage() {
@@ -75,7 +75,7 @@ public class ConversationInfo {
 
     private Conversation mConversation;
     private int mUnreadCount;
-    private long mUpdateTime;
+    private long mSortTime;
     private Message mLastMessage;
     private boolean mIsTop;
     private long mTopTime;

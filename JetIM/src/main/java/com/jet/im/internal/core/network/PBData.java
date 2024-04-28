@@ -253,6 +253,23 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] clearTotalUnreadCountData(String userId, long time, int index) {
+        Appmessages.QryTotalUnreadCountReq req = Appmessages.QryTotalUnreadCountReq.newBuilder()
+                .setTime(time)
+                .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(CLEAR_TOTAL_UNREAD)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] syncMessagesData(long receiveTime, long sendTime, String userId, int index) {
         Appmessages.SyncMsgReq req = Appmessages.SyncMsgReq.newBuilder()
                 .setSyncTime(receiveTime)
@@ -722,7 +739,7 @@ class PBData {
         Conversation c = new Conversation(conversationTypeFromChannelType(conversation.getChannelType()), conversation.getTargetId());
         info.setConversation(c);
         info.setUnreadCount((int) conversation.getUnreadCount());
-        info.setUpdateTime(conversation.getUpdateTime());
+        info.setSortTime(conversation.getSortTime());
         info.setLastMessage(messageWithDownMsg(conversation.getMsg()));
         info.setLastReadMessageIndex(conversation.getLatestReadIndex());
         info.setLastMessageIndex(conversation.getLatestUnreadIndex());
@@ -855,6 +872,7 @@ class PBData {
     private static final String RECALL_MSG = "recall_msg";
     private static final String DEL_CONV = "del_convers";
     private static final String CLEAR_UNREAD = "clear_unread";
+    private static final String CLEAR_TOTAL_UNREAD = "clear_total_unread";
     private static final String QRY_READ_DETAIL = "qry_read_detail";
     private static final String UNDISTURB_CONVERS = "undisturb_convers";
     private static final String QRY_MERGED_MSGS = "qry_merged_msgs";
@@ -876,6 +894,7 @@ class PBData {
             put(RECALL_MSG, PBRcvObj.PBRcvType.recall);
             put(DEL_CONV, PBRcvObj.PBRcvType.simpleQryAck);
             put(CLEAR_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
+            put(CLEAR_TOTAL_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
             put(MARK_READ, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);

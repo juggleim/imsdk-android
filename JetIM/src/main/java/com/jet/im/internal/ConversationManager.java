@@ -135,6 +135,24 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void clearTotalUnreadCount() {
+        mCore.getDbManager().clearTotalUnreadCount();
+        noticeTotalUnreadCountChange();
+        long time = mCore.getDbManager().getNewestStatusSentMessageTimestamp();
+        mCore.getWebSocket().clearTotalUnreadCount(mCore.getUserId(), time, new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                LoggerUtils.i("clear total unread success");
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                LoggerUtils.i("clear total unread error, code is " + errorCode);
+            }
+        });
+    }
+
+    @Override
     public void addListener(String key, IConversationListener listener) {
         if (listener == null || TextUtils.isEmpty(key)) {
             return;
@@ -318,7 +336,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (info == null) {
             ConcreteConversationInfo addInfo = new ConcreteConversationInfo();
             addInfo.setConversation(message.getConversation());
-            addInfo.setUpdateTime(message.getTimestamp());
+            addInfo.setSortTime(message.getTimestamp());
             addInfo.setLastMessage(message);
             addInfo.setLastMessageIndex(message.getMsgIndex());
             addInfo.setLastReadMessageIndex(message.getMsgIndex() - 1);
