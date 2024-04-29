@@ -32,7 +32,7 @@ public class ConnectionManager implements IConnectionManager {
         if (!mCore.getDbManager().isOpen()) {
             if (!TextUtils.isEmpty(mCore.getUserId())) {
                 if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
-                    dbStatusNotice(JetIMCore.DbStatus.OPEN);
+                    dbStatusNotice(true);
                 }
             }
         }
@@ -59,9 +59,8 @@ public class ConnectionManager implements IConnectionManager {
     @Override
     public void disconnect(boolean receivePush) {
         LoggerUtils.i("user disconnect receivePush is " + receivePush);
+        closeDB();
         changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
-        mCore.getDbManager().closeDB();
-        dbStatusNotice(JetIMCore.DbStatus.CLOSED);
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().disconnect(receivePush);
         }
@@ -128,7 +127,7 @@ public class ConnectionManager implements IConnectionManager {
                         mCore.setUserId(userId);
                         if (!mCore.getDbManager().isOpen()) {
                             if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
-                                dbStatusNotice(JetIMCore.DbStatus.OPEN);
+                                dbStatusNotice(true);
                             } else {
                                 LoggerUtils.e("open db fail");
                             }
@@ -147,6 +146,7 @@ public class ConnectionManager implements IConnectionManager {
 
                 @Override
                 public void onDisconnect(int errorCode) {
+                    closeDB();
                     changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode);
                 }
 
@@ -272,17 +272,25 @@ public class ConnectionManager implements IConnectionManager {
 
     }
 
-    private void dbStatusNotice(int status) {
-        mCore.setDbStatus(status);
-        if (status == JetIMCore.DbStatus.OPEN) {
+    private void dbStatusNotice(boolean isOpen) {
+        if (isOpen) {
             mCore.getSyncTimeFromDB();
             for (Map.Entry<String, IConnectionStatusListener> entry :
                     mConnectionStatusListenerMap.entrySet()) {
                 entry.getValue().onDbOpen();
             }
+        } else {
+            for (Map.Entry<String, IConnectionStatusListener> entry :
+                    mConnectionStatusListenerMap.entrySet()) {
+                entry.getValue().onDbClose();
+            }
         }
     }
 
+    private void closeDB() {
+        mCore.getDbManager().closeDB();
+        dbStatusNotice(false);
+    }
 
     private final JetIMCore mCore;
     private final ConversationManager mConversationManager;

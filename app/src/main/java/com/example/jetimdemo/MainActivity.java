@@ -67,22 +67,7 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
-//                            JetIM.getInstance().getConversationManager().clearUnreadCount(c);
-                            List<ConversationInfo> conversations = JetIM.getInstance().getConversationManager().getConversationInfoList();
-
-                            List<Message> messages = JetIM.getInstance().getMessageManager().getMessages(c, 100, 0, JetIMConst.PullDirection.OLDER);
-                            JetIM.getInstance().getMessageManager().getMentionMessageList(c, 100, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesCallback() {
-                                @Override
-                                public void onSuccess(List<Message> messages) {
-                                    Log.i("lifei", "mention success");
-                                }
-
-                                @Override
-                                public void onError(int errorCode) {
-                                    Log.i("lifei", "mention error");
-                                }
-                            });
+                            sendMessages();
                         }
                     }, 1000);
 
@@ -447,6 +432,11 @@ public class MainActivity extends AppCompatActivity {
             public void onDbOpen() {
 
             }
+
+            @Override
+            public void onDbClose() {
+
+            }
         });
         JetIM.getInstance().getConnectionManager().connect(TOKEN5);
         JetIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
@@ -538,9 +528,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void sendMessages() throws InterruptedException {
+    private void sendMessages() {
         Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
-        TextMessage t = new TextMessage("sdfasdf");
+        TextMessage t = new TextMessage("111");
         t.setExtra("extra");
         ImageMessage i = new ImageMessage();
         i.setHeight(600);
@@ -590,14 +580,14 @@ public class MainActivity extends AppCompatActivity {
         };
         Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
         Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
 
     }
 

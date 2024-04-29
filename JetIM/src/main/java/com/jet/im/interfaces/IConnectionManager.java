@@ -18,6 +18,8 @@ public interface IConnectionManager {
         void onStatusChange(JetIMConst.ConnectionStatus status, int code);
 
         void onDbOpen();
+
+        void onDbClose();
     }
 }
 

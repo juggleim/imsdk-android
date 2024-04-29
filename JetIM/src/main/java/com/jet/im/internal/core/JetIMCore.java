@@ -123,14 +123,6 @@ public class JetIMCore {
         mConnectionStatus = connectionStatus;
     }
 
-    public int getDbStatus() {
-        return mDbStatus;
-    }
-
-    public void setDbStatus(int dbStatus) {
-        mDbStatus = dbStatus;
-    }
-
     public DBManager getDbManager() {
         return mDbManager;
     }
@@ -187,11 +179,6 @@ public class JetIMCore {
         public static final int WAITING_FOR_CONNECTING = 5;
     }
 
-    public static class DbStatus {
-        public static final int CLOSED = 0;
-        public static final int OPEN = 1;
-    }
-
     private JWebSocket mWebSocket;
     private String mNaviUrl;
     private List<String> mServers;
@@ -201,7 +188,6 @@ public class JetIMCore {
     private Context mContext;
     private int mConnectionStatus;
     private final DBManager mDbManager = new DBManager();
-    private int mDbStatus;
     private long mConversationSyncTime;
     private long mMessageSendSyncTime;
     private long mMessageReceiveTime;
