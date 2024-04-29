@@ -209,8 +209,13 @@ public class DBManager {
     }
 
     public void updateLastMessage(ConcreteMessage message) {
+        String sql = ConversationSql.SQL_UPDATE_LAST_MESSAGE;
+        if (Message.MessageDirection.RECEIVE == message.getDirection()) {
+            sql = sql + ConversationSql.SQL_LAST_MESSAGE_EQUALS_QUESTION;
+        }
+        sql = sql + ConversationSql.SQL_WHERE_CONVERSATION_IS;
         Object[] args = ConversationSql.argsWithUpdateLastMessage(message);
-        execSQL(ConversationSql.SQL_UPDATE_LAST_MESSAGE, args);
+        execSQL(sql, args);
     }
 
     public ConcreteMessage getMessageWithMessageId(String messageId) {
