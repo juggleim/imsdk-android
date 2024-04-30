@@ -85,6 +85,12 @@ class MessageSql {
         }
         cv.put(COL_SEQ_NO, seqNo);
         cv.put(COL_MESSAGE_INDEX, msgIndex);
+        if (message.getLocalAttribute() != null) {
+            cv.put(COL_LOCAL_ATTRIBUTE, message.getLocalAttribute());
+        }
+        if (message.getContent() != null && message.getContent().getMentionInfo() != null) {
+            cv.put(COL_MENTION_INFO, message.getContent().getMentionInfo().encodeToJson());
+        }
         if (message.getGroupMessageReadInfo() == null) {
             return cv;
         }
@@ -94,12 +100,6 @@ class MessageSql {
             memberCount = -1;
         }
         cv.put(COL_MEMBER_COUNT, memberCount);
-        if (message.getLocalAttribute() != null) {
-            cv.put(COL_LOCAL_ATTRIBUTE, message.getLocalAttribute());
-        }
-        if (message.getContent() != null && message.getContent().getMentionInfo() != null) {
-            cv.put(COL_MENTION_INFO, message.getContent().getMentionInfo().encodeToJson());
-        }
         return cv;
     }
 
