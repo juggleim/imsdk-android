@@ -91,15 +91,15 @@ class MessageSql {
         if (message.getContent() != null && message.getContent().getMentionInfo() != null) {
             cv.put(COL_MENTION_INFO, message.getContent().getMentionInfo().encodeToJson());
         }
-        if (message.getGroupMessageReadInfo() == null) {
-            return cv;
+        if (message.getGroupMessageReadInfo() != null) {
+            cv.put(COL_READ_COUNT, message.getGroupMessageReadInfo().getReadCount());
+            int memberCount = message.getGroupMessageReadInfo().getMemberCount();
+            if (memberCount == 0) {
+                memberCount = -1;
+            }
+            cv.put(COL_MEMBER_COUNT, memberCount);
         }
-        cv.put(COL_READ_COUNT, message.getGroupMessageReadInfo().getReadCount());
-        int memberCount = message.getGroupMessageReadInfo().getMemberCount();
-        if (memberCount == 0) {
-            memberCount = -1;
-        }
-        cv.put(COL_MEMBER_COUNT, memberCount);
+
         return cv;
     }
 
