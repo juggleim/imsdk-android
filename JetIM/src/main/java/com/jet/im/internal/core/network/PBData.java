@@ -390,6 +390,29 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] topConversationData(Conversation conversation,
+                               String userId,
+                               boolean isTop,
+                               int index) {
+        Appmessages.Conversation pbConversation = Appmessages.Conversation.newBuilder()
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setTargetId(conversation.getConversationId())
+                .setIsTop(isTop ? 1 : 0)
+                .build();
+        Appmessages.ConversationsReq req = Appmessages.ConversationsReq.newBuilder()
+                .addConversations(pbConversation)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(TOP_CONVERS)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] getMergedMessageList(String messageId,
                                 long timestamp,
                                 int count,
@@ -544,6 +567,9 @@ class PBData {
                         case PBRcvObj.PBRcvType.simpleQryAck:
                             obj = simpleQryAckWithImWebsocketMsg(msg);
                             break;
+                        case PBRcvObj.PBRcvType.timestampQryAck:
+                            obj = timestampQryAckWithImWebsocketMsg(msg);
+                            break;
                         default:
                             break;
                     }
@@ -650,6 +676,16 @@ class PBData {
         return obj;
     }
 
+    private PBRcvObj timestampQryAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.timestampQryAck);
+        Appmessages.TopConversResp resp = Appmessages.TopConversResp.parseFrom(msg.getQryAckMsgBody().getData());
+        PBRcvObj.TimestampQryAck a = new PBRcvObj.TimestampQryAck(msg.getQryAckMsgBody());
+        a.operationTime = resp.getOptTime();
+        obj.mTimestampQryAck = a;
+        return obj;
+    }
+
     private PBRcvObj qryReadDetailAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.QryReadDetailResp resp = Appmessages.QryReadDetailResp.parseFrom(msg.getQryAckMsgBody().getData());
@@ -745,6 +781,8 @@ class PBData {
         info.setLastMessageIndex(conversation.getLatestUnreadIndex());
         info.setSyncTime(conversation.getSyncTime());
         info.setMute(conversation.getUndisturbType() == 1);
+        info.setTop(conversation.getIsTop() == 1);
+        info.setTopTime(conversation.getTopUpdatedTime());
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
         info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
         if (conversation.hasLatestMentionMsg()) {
@@ -875,6 +913,7 @@ class PBData {
     private static final String CLEAR_TOTAL_UNREAD = "clear_total_unread";
     private static final String QRY_READ_DETAIL = "qry_read_detail";
     private static final String UNDISTURB_CONVERS = "undisturb_convers";
+    private static final String TOP_CONVERS = "top_convers";
     private static final String QRY_MERGED_MSGS = "qry_merged_msgs";
     private static final String REG_PUSH_TOKEN = "reg_push_token";
     private static final String QRY_MENTION_MSGS = "qry_mention_msgs";
@@ -899,6 +938,7 @@ class PBData {
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(TOP_CONVERS, PBRcvObj.PBRcvType.timestampQryAck);
             put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);

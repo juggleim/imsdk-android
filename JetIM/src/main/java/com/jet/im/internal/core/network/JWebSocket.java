@@ -75,7 +75,7 @@ public class JWebSocket extends WebSocketClient {
     public void recallMessage(String messageId,
                               Conversation conversation,
                               long timestamp,
-                              RecallMessageCallback callback) {
+                              WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, mCmdIndex++);
         mCmdCallbackMap.put(key, callback);
@@ -160,6 +160,13 @@ public class JWebSocket extends WebSocketClient {
     public void setMute(Conversation conversation, boolean isMute, String userId, WebSocketSimpleCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mCmdIndex++);
+        mCmdCallbackMap.put(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void setTop(Conversation conversation, boolean isTop, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.topConversationData(conversation, userId, isTop, mCmdIndex++);
         mCmdCallbackMap.put(key, callback);
         sendWhenOpen(bytes);
     }
@@ -273,9 +280,11 @@ public class JWebSocket extends WebSocketClient {
             case PBRcvObj.PBRcvType.simpleQryAck:
                 handleSimpleQryAck(obj.mSimpleQryAck);
                 break;
+            case PBRcvObj.PBRcvType.timestampQryAck:
+                handleTimestampAck(obj.mTimestampQryAck);
+                break;
             default:
                 break;
-
         }
     }
 
@@ -421,8 +430,8 @@ public class JWebSocket extends WebSocketClient {
     private void handleRecallMessage(PBRcvObj.PublishMsgAck ack) {
         LoggerUtils.d("handleRecallMessage, code is " + ack.code);
         IWebSocketCallback c = mCmdCallbackMap.remove(ack.index);
-        if (c instanceof RecallMessageCallback) {
-            RecallMessageCallback callback = (RecallMessageCallback) c;
+        if (c instanceof WebSocketTimestampCallback) {
+            WebSocketTimestampCallback callback = (WebSocketTimestampCallback) c;
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {
@@ -440,6 +449,19 @@ public class JWebSocket extends WebSocketClient {
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess();
+            }
+        }
+    }
+
+    private void handleTimestampAck(PBRcvObj.TimestampQryAck ack) {
+        LoggerUtils.d("handleTimestampAck, code is " + ack.code);
+        IWebSocketCallback c = mCmdCallbackMap.remove(ack.index);
+        if (c instanceof WebSocketTimestampCallback) {
+            WebSocketTimestampCallback callback = (WebSocketTimestampCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.operationTime);
             }
         }
     }

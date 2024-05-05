@@ -8,6 +8,7 @@ import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
+import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
@@ -75,10 +76,12 @@ public class ConversationManager implements IConversationManager, MessageManager
     public void setDraft(Conversation conversation, String draft) {
         mCore.getDbManager().setDraft(conversation, draft);
         ConversationInfo info = mCore.getDbManager().getConversationInfo(conversation);
-        List<ConversationInfo> l = new ArrayList<>();
-        l.add(info);
-        for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-            entry.getValue().onConversationInfoUpdate(l);
+        if (mListenerMap != null) {
+            List<ConversationInfo> l = new ArrayList<>();
+            l.add(info);
+            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                entry.getValue().onConversationInfoUpdate(l);
+            }
         }
     }
 
@@ -105,6 +108,35 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
         });
+    }
+
+    @Override
+    public void setTop(Conversation conversation, boolean isTop) {
+        mCore.getDbManager().setTop(conversation, isTop);
+        mCore.getWebSocket().setTop(conversation, isTop, mCore.getUserId(), new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                mCore.getDbManager().setTopTime(conversation, timestamp);
+                ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
+                if (conversationInfo != null && mListenerMap != null) {
+                    List<ConversationInfo> list = new ArrayList<>();
+                    list.add(conversationInfo);
+                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                        entry.getValue().onConversationInfoUpdate(list);
+                    }
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+
+            }
+        });
+    }
+
+    @Override
+    public List<ConversationInfo> getTopConversationInfoList(int count, long timestamp, JetIMConst.PullDirection direction) {
+        return mCore.getDbManager().getTopConversationInfoList(null, count, timestamp, direction);
     }
 
     @Override

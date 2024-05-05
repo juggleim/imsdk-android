@@ -67,7 +67,11 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-//                            sendMessages();
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
+                            JetIM.getInstance().getConversationManager().setTop(c, true);
+
+                            List<ConversationInfo> conversationInfoList = JetIM.getInstance().getConversationManager().getConversationInfoList();
+                            List<ConversationInfo> topList = JetIM.getInstance().getConversationManager().getTopConversationInfoList(100, 0, JetIMConst.PullDirection.OLDER);
                         }
                     }, 1000);
 

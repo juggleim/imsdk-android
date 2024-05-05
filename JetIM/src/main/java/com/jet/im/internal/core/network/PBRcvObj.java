@@ -73,6 +73,12 @@ class PBRcvObj {
         }
     }
 
+    static class TimestampQryAck extends QryAck {
+        long operationTime;
+        TimestampQryAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
 
     static class PublishMsgNtf {
         long syncTime;
@@ -98,6 +104,7 @@ class PBRcvObj {
         static final int recall = 11;
         static final int qryReadDetailAck = 12;
         static final int simpleQryAck = 13;
+        static final int timestampQryAck = 14;
     }
 
     public int getRcvType() {
@@ -117,6 +124,7 @@ class PBRcvObj {
     DisconnectMsg mDisconnectMsg;
     QryReadDetailAck mQryReadDetailAck;
     SimpleQryAck mSimpleQryAck;
+    TimestampQryAck mTimestampQryAck;
     private int mRcvType;
 }
 

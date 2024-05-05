@@ -158,6 +158,20 @@ public class DBManager {
         return list;
     }
 
+    public List<ConversationInfo> getTopConversationInfoList(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
+        if (timestamp == 0) {
+            timestamp = Long.MAX_VALUE;
+        }
+        String sql = ConversationSql.sqlGetTopConversationsBy(conversationTypes, count, timestamp, direction);
+        Cursor cursor = rawQuery(sql, null);
+        if (cursor == null) {
+            return new ArrayList<>();
+        }
+        List<ConversationInfo> list = conversationListFromCursor(cursor);
+        cursor.close();
+        return list;
+    }
+
     public ConcreteConversationInfo getConversationInfo(Conversation conversation) {
         String[] args = new String[]{conversation.getConversationId()};
         Cursor cursor = rawQuery(ConversationSql.sqlGetConversation(conversation.getConversationType().getValue()), args);
@@ -182,6 +196,14 @@ public class DBManager {
 
     public void setMute(Conversation conversation, boolean isMute) {
         execSQL(ConversationSql.sqlSetMute(conversation, isMute));
+    }
+
+    public void setTop(Conversation conversation, boolean isTop) {
+        execSQL(ConversationSql.sqlSetTop(conversation, isTop));
+    }
+
+    public void setTopTime(Conversation conversation, long topTime) {
+        execSQL(ConversationSql.sqlSetTopTime(conversation, topTime));
     }
 
     public void setMention(Conversation conversation, boolean isMention) {

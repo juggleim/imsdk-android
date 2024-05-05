@@ -37,6 +37,12 @@ public interface IConversationManager {
                  boolean isMute,
                  ISimpleCallback callback);
 
+    void setTop(Conversation conversation, boolean isTop);
+
+    List<ConversationInfo> getTopConversationInfoList(int count,
+                                                      long timestamp,
+                                                      JetIMConst.PullDirection direction);
+
     int getTotalUnreadCount();
 
     void clearUnreadCount(Conversation conversation);

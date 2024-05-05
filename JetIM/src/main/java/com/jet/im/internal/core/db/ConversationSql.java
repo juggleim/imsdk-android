@@ -177,6 +177,19 @@ class ConversationSql {
     static String sqlSetMute(Conversation conversation, boolean isMute) {
         return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute?1:0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
+
+    static String sqlSetTop(Conversation conversation, boolean isTop) {
+        if (isTop) {
+            return String.format("UPDATE conversation_info SET is_top = 1 WHERE conversation_type = %s AND conversation_id = '%s'", conversation.getConversationType().getValue(), conversation.getConversationId());
+        } else {
+            return String.format("UPDATE conversation_info SET is_top = 0, top_time = 0 WHERE conversation_type = %s AND conversation_id = '%s'", conversation.getConversationType().getValue(), conversation.getConversationId());
+        }
+    }
+
+    static String sqlSetTopTime(Conversation conversation, long time) {
+        return String.format("UPDATE conversation_info SET top_time = %s WHERE conversation_type = %s AND conversation_id = '%s'", time, conversation.getConversationType().getValue(), conversation.getConversationId());
+    }
+
     static String sqlSetMention(Conversation conversation, boolean isMention) {
         return String.format("UPDATE conversation_info SET has_mentioned = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMention?1:0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
@@ -217,7 +230,7 @@ class ConversationSql {
             + "last_message_has_read=?, last_message_timestamp=?, last_message_sender=?, "
             + "last_message_content=?, last_message_seq_no=? WHERE conversation_type = ? "
             + "AND conversation_id = ?";
-    static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY timestamp DESC";
+    static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY is_top DESC, timestamp DESC";
     static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_message_type=?,"
             + "last_message_client_uid=?, "
             + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
@@ -241,7 +254,28 @@ class ConversationSql {
             }
             sql.append(")");
         }
-        sql.append(" ORDER BY timestamp DESC").append(" LIMIT ").append(count);
+        sql.append(" ORDER BY is_top DESC, timestamp DESC").append(" LIMIT ").append(count);
+        return sql.toString();
+    }
+    static String sqlGetTopConversationsBy(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
+        sql.append(" is_top = 1 AND ");
+        if (direction == JetIMConst.PullDirection.OLDER) {
+            sql.append(" timestamp < ").append(timestamp);
+        } else {
+            sql.append(" timestamp > ").append(timestamp);
+        }
+        if (conversationTypes != null && conversationTypes.length > 0) {
+            sql.append(" AND conversation_type in (");
+            for (int i = 0; i < conversationTypes.length; i++) {
+                if (i > 0) {
+                    sql.append(", ");
+                }
+                sql.append(conversationTypes[i]);
+            }
+            sql.append(")");
+        }
+        sql.append(" ORDER BY top_time DESC").append(" LIMIT ").append(count);
         return sql.toString();
     }
     static final String COL_CONVERSATION_TYPE = "conversation_type";

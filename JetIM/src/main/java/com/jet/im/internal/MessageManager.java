@@ -9,9 +9,9 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.QryHisMsgCallback;
 import com.jet.im.internal.core.network.QryReadDetailCallback;
-import com.jet.im.internal.core.network.RecallMessageCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
+import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.model.messages.DeleteConvMessage;
 import com.jet.im.internal.model.messages.GroupReadNtfMessage;
@@ -309,7 +309,7 @@ public class MessageManager implements IMessageManager {
                 }
                 return;
             }
-            mCore.getWebSocket().recallMessage(messageId, m.getConversation(), m.getTimestamp(), new RecallMessageCallback(messageId) {
+            mCore.getWebSocket().recallMessage(messageId, m.getConversation(), m.getTimestamp(), new WebSocketTimestampCallback() {
                 @Override
                 public void onSuccess(long timestamp) {
                     if (mSyncProcessing) {
