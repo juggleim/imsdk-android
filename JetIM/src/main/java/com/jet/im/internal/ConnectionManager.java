@@ -163,6 +163,11 @@ public class ConnectionManager implements IConnectionManager {
                     }
                     changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
                 }
+
+                @Override
+                public void onTimeOut() {
+                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
+                }
             });
             mCore.getWebSocket().setPushChannel(mPushChannel);
             if (!TextUtils.isEmpty(mPushToken)) {
@@ -210,6 +215,7 @@ public class ConnectionManager implements IConnectionManager {
             if (status != JetIMCore.ConnectionStatusInternal.CONNECTED
                     && mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED) {
                 mHeartBeatManager.stop();
+                mCore.getWebSocket().stopHeartBeatTimeoutDetection();
             }
             JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
             switch (status) {

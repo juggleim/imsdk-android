@@ -33,6 +33,6 @@ public class HeartBeatManager {
 
     private final JetIMCore mCore;
     private Timer mPingTimer;
-    private static final int PING_INTERVAL = 30*1000;
+    public static final int PING_INTERVAL = 30 * 1000;
 
 }

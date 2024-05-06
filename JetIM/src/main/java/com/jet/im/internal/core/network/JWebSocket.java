@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.ConstInternal;
+import com.jet.im.internal.HeartBeatManager;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
@@ -21,6 +22,8 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JWebSocket extends WebSocketClient {
@@ -220,6 +223,8 @@ public class JWebSocket extends WebSocketClient {
         void onWebSocketFail();
 
         void onWebSocketClose();
+
+        void onTimeOut();
     }
 
     public interface IWebSocketMessageListener {
@@ -238,11 +243,13 @@ public class JWebSocket extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
+        updateLastMessageReceivedTime();
         LoggerUtils.i("JWebSocket, onMessage");
     }
 
     @Override
     public void onMessage(ByteBuffer bytes) {
+        updateLastMessageReceivedTime();
         PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
         LoggerUtils.i("JWebSocket, onMessage bytes, type is " + obj.getRcvType());
         switch (obj.getRcvType()) {
@@ -358,6 +365,7 @@ public class JWebSocket extends WebSocketClient {
         if (mConnectListener != null) {
             mConnectListener.onConnectComplete(ack.code, ack.userId);
         }
+        startHeartBeatTimeoutDetection();
     }
 
     private void handlePublishAckMsg(PBRcvObj.PublishMsgAck ack) {
@@ -502,6 +510,41 @@ public class JWebSocket extends WebSocketClient {
         });
     }
 
+    private void startHeartBeatTimeoutDetection() {
+        //停止之前的HeartBeatTimeoutDetection
+        stopHeartBeatTimeoutDetection();
+        //声明新的HeartBeatTimeoutDetection
+        mHeartBeatTimeoutDetection = new Timer();
+        mHeartBeatTimeoutDetection.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                LoggerUtils.d("check heartbeat timeout");
+                //获取当前系统时间
+                long curTime = System.currentTimeMillis();
+                //如果当前时系统时间和lastMessageReceivedTime的差值小于HEART_BEAT_TIMEOUT_DETECTION_MAX_IDLE_TIME，直接return
+                if (curTime - mLastMessageReceivedTime <= HEART_BEAT_TIMEOUT_DETECTION_MAX_IDLE_TIME) {
+                    return;
+                }
+                LoggerUtils.e("heartbeat has timeout, perform reconnection");
+                //如果当前时系统时间和lastMessageReceivedTime的差值大于HEART_BEAT_TIMEOUT_DETECTION_MAX_IDLE_TIME，认为心跳超时，执行timeout回调
+                if (mConnectListener != null) {
+                    mConnectListener.onTimeOut();
+                }
+            }
+        }, HEART_BEAT_TIMEOUT_DETECTION_INTERVAL, HEART_BEAT_TIMEOUT_DETECTION_INTERVAL);
+    }
+
+    public void stopHeartBeatTimeoutDetection() {
+        if (mHeartBeatTimeoutDetection != null) {
+            mHeartBeatTimeoutDetection.cancel();
+            mHeartBeatTimeoutDetection = null;
+        }
+    }
+
+    private void updateLastMessageReceivedTime() {
+        mLastMessageReceivedTime = System.currentTimeMillis();
+    }
+
     private String mAppKey;
     private String mToken;
     private PushChannel mPushChannel;
@@ -515,6 +558,8 @@ public class JWebSocket extends WebSocketClient {
     private final ConcurrentHashMap<Integer, IWebSocketCallback> mCmdCallbackMap;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
-
-
+    private Timer mHeartBeatTimeoutDetection;
+    private volatile long mLastMessageReceivedTime;
+    private static final long HEART_BEAT_TIMEOUT_DETECTION_INTERVAL = 10 * 1000;
+    private static final long HEART_BEAT_TIMEOUT_DETECTION_MAX_IDLE_TIME = HeartBeatManager.PING_INTERVAL * 3;
 }
