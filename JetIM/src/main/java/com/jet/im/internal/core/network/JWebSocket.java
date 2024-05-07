@@ -273,17 +273,17 @@ public class JWebSocket extends WebSocketClient {
             case PBRcvObj.PBRcvType.disconnectMsg:
                 handleDisconnectMsg(obj.mDisconnectMsg);
                 break;
-            case PBRcvObj.PBRcvType.recall:
-                handleRecallMessage(obj.mPublishMsgAck);
-                break;
             case PBRcvObj.PBRcvType.qryReadDetailAck:
                 handleQryReadDetailAck(obj.mQryReadDetailAck);
                 break;
             case PBRcvObj.PBRcvType.simpleQryAck:
                 handleSimpleQryAck(obj.mSimpleQryAck);
                 break;
-            case PBRcvObj.PBRcvType.timestampQryAck:
-                handleTimestampAck(obj.mTimestampQryAck);
+            case PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp:
+                handleSimpleQryAckWithTimeCallback(obj.mSimpleQryAck);
+                break;
+            case PBRcvObj.PBRcvType.conversationSetTopAck:
+                handleTimestampCallback(obj.mTimestampQryAck);
                 break;
             default:
                 break;
@@ -455,7 +455,20 @@ public class JWebSocket extends WebSocketClient {
         }
     }
 
-    private void handleTimestampAck(PBRcvObj.TimestampQryAck ack) {
+    private void handleSimpleQryAckWithTimeCallback(PBRcvObj.SimpleQryAck ack) {
+        LoggerUtils.d("handleSimpleQryAckWithTimeCallback, code is " + ack.code);
+        IWebSocketCallback c = mCmdCallbackMap.remove(ack.index);
+        if (c instanceof WebSocketTimestampCallback) {
+            WebSocketTimestampCallback callback = (WebSocketTimestampCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.timestamp);
+            }
+        }
+    }
+
+    private void handleTimestampCallback(PBRcvObj.TimestampQryAck ack) {
         LoggerUtils.d("handleTimestampAck, code is " + ack.code);
         IWebSocketCallback c = mCmdCallbackMap.remove(ack.index);
         if (c instanceof WebSocketTimestampCallback) {

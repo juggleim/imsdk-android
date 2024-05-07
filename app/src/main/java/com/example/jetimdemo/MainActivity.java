@@ -68,8 +68,10 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-//                            TextMessage text = new TextMessage("Android broadcast");
-//                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+                            TextMessage text = new TextMessage("Android broadcast");
+                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+                            JetIM.getInstance().getConversationManager().setTop(c1, true);
+
 //                            Conversation c2 = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
 //                            Conversation c3 = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
 //                            Conversation c4 = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
@@ -81,7 +83,17 @@ public class MainActivity extends AppCompatActivity {
 //                            JetIM.getInstance().getMessageManager().sendMessage(text, c1, new IMessageManager.ISendMessageCallback() {
 //                                @Override
 //                                public void onSuccess(Message message) {
+//                                    JetIM.getInstance().getMessageManager().recallMessage(message.getMessageId(), new IMessageManager.IRecallMessageCallback() {
+//                                        @Override
+//                                        public void onSuccess(Message message) {
 //
+//                                        }
+//
+//                                        @Override
+//                                        public void onError(int errorCode) {
+//
+//                                        }
+//                                    });
 //                                }
 //
 //                                @Override

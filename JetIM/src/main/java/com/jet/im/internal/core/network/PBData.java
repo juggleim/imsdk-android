@@ -190,7 +190,7 @@ class PBData {
                 .setMsgTime(timestamp)
                 .build();
 
-        Connect.PublishMsgBody publishMsg = Connect.PublishMsgBody.newBuilder()
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(RECALL_MSG)
                 .setTargetId(conversation.getConversationId())
@@ -199,7 +199,7 @@ class PBData {
 
         mMsgCmdMap.put(index, RECALL_MSG);
 
-        Connect.ImWebsocketMsg msg = createImWebsocketMsgWithPublishMsg(publishMsg);
+        Connect.ImWebsocketMsg msg = createImWebsocketMsgWithQueryMsg(body);
         return msg.toByteArray();
     }
 
@@ -573,9 +573,13 @@ class PBData {
                         case PBRcvObj.PBRcvType.simpleQryAck:
                             obj = simpleQryAckWithImWebsocketMsg(msg);
                             break;
-                        case PBRcvObj.PBRcvType.timestampQryAck:
-                            obj = timestampQryAckWithImWebsocketMsg(msg);
+                        case PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp:
+                            obj = simpleQryAckCallbackTimestampWithImWebsocketMsg(msg);
                             break;
+                        case PBRcvObj.PBRcvType.conversationSetTopAck:
+                            obj = conversationSetTopAckWithImWebsocketMsg(msg);
+                            break;
+
                         default:
                             break;
                     }
@@ -682,9 +686,16 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj timestampQryAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj simpleQryAckCallbackTimestampWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
-        obj.setRcvType(PBRcvObj.PBRcvType.timestampQryAck);
+        obj.setRcvType(PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(msg.getQryAckMsgBody());
+        return obj;
+    }
+
+    private PBRcvObj conversationSetTopAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.conversationSetTopAck);
         Appmessages.TopConversResp resp = Appmessages.TopConversResp.parseFrom(msg.getQryAckMsgBody().getData());
         PBRcvObj.TimestampQryAck a = new PBRcvObj.TimestampQryAck(msg.getQryAckMsgBody());
         a.operationTime = resp.getOptTime();
@@ -936,7 +947,7 @@ class PBData {
             put(P_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(G_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(C_MSG, PBRcvObj.PBRcvType.publishMsgAck);
-            put(RECALL_MSG, PBRcvObj.PBRcvType.recall);
+            put(RECALL_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(DEL_CONV, PBRcvObj.PBRcvType.simpleQryAck);
             put(CLEAR_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
             put(CLEAR_TOTAL_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
@@ -944,7 +955,7 @@ class PBData {
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
-            put(TOP_CONVERS, PBRcvObj.PBRcvType.timestampQryAck);
+            put(TOP_CONVERS, PBRcvObj.PBRcvType.conversationSetTopAck);
             put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);

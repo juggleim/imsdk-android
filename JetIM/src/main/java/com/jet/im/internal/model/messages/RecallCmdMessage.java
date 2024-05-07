@@ -36,16 +36,6 @@ public class RecallCmdMessage extends MessageContent {
             if (jsonObject.has(MSG_ID)) {
                 mOriginalMessageId = jsonObject.optString(MSG_ID);
             }
-            if (jsonObject.has(SENDER_ID)) {
-                mSenderId = jsonObject.optString(SENDER_ID);
-            }
-            if (jsonObject.has(RECEIVER_ID)) {
-                mReceiverId = jsonObject.optString(RECEIVER_ID);
-            }
-            if (jsonObject.has(CHANNEL_TYPE)) {
-                int type = jsonObject.optInt(CHANNEL_TYPE);
-                mConversationType = Conversation.ConversationType.setValue(type);
-            }
         } catch (JSONException e) {
             LoggerUtils.e("RecallCmdMessage decode JSONException " + e.getMessage());
         }
@@ -72,41 +62,11 @@ public class RecallCmdMessage extends MessageContent {
         mOriginalMessageTime = originalMessageTime;
     }
 
-    public String getSenderId() {
-        return mSenderId;
-    }
-
-    public void setSenderId(String senderId) {
-        mSenderId = senderId;
-    }
-
-    public String getReceiverId() {
-        return mReceiverId;
-    }
-
-    public void setReceiverId(String receiverId) {
-        mReceiverId = receiverId;
-    }
-
-    public Conversation.ConversationType getConversationType() {
-        return mConversationType;
-    }
-
-    public void setConversationType(Conversation.ConversationType conversationType) {
-        mConversationType = conversationType;
-    }
-
     public static final String CONTENT_TYPE = "jg:recall";
 
     private String mOriginalMessageId;
     private long mOriginalMessageTime;
-    private String mSenderId;
-    private String mReceiverId;//原消息的接收者 id，群聊时为 groupId
-    private Conversation.ConversationType mConversationType;
 
     private static final String MSG_TIME = "msg_time";
     private static final String MSG_ID = "msg_id";
-    private static final String SENDER_ID = "sender_id";
-    private static final String RECEIVER_ID = "receiver_id";
-    private static final String CHANNEL_TYPE = "channel_type";
 }

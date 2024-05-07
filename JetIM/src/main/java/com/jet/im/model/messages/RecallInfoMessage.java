@@ -60,6 +60,4 @@ public class RecallInfoMessage extends MessageContent {
 
     private static final String EXTRA = "extra";
 
-
-
 }

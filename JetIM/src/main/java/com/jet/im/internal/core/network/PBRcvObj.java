@@ -101,10 +101,10 @@ class PBRcvObj {
         static final int publishMsgNtf = 8;
         static final int pong = 9;
         static final int disconnectMsg = 10;
-        static final int recall = 11;
-        static final int qryReadDetailAck = 12;
-        static final int simpleQryAck = 13;
-        static final int timestampQryAck = 14;
+        static final int qryReadDetailAck = 11;
+        static final int simpleQryAck = 12;
+        static final int simpleQryAckCallbackTimestamp = 13;
+        static final int conversationSetTopAck = 14;
     }
 
     public int getRcvType() {
