@@ -211,11 +211,12 @@ public class ConnectionManager implements IConnectionManager {
             if (status == JetIMCore.ConnectionStatusInternal.CONNECTED
                     && mCore.getConnectionStatus() != JetIMCore.ConnectionStatusInternal.CONNECTED) {
                 mHeartBeatManager.start();
+                HeartbeatDetectionManager.getInstance().start(false);
             }
             if (status != JetIMCore.ConnectionStatusInternal.CONNECTED
                     && mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED) {
                 mHeartBeatManager.stop();
-                mCore.getWebSocket().stopHeartBeatTimeoutDetection();
+                HeartbeatDetectionManager.getInstance().stop();
             }
             JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
             switch (status) {
