@@ -117,11 +117,13 @@ class PBData {
         if (mergedMsgList != null && mergedMsgList.size() > 0) {
             flags |= MessageContent.MessageFlag.IS_MERGED.getValue();
             upMsgBuilder.setFlags(flags);
-            Appmessages.MergedMsgs.Builder mergedMsgsBuilder = Appmessages.MergedMsgs.newBuilder();
-            mergedMsgsBuilder.setChannelTypeValue(conversationType.getValue())
-                    .setUserId(userId)
-                    .setTargetId(conversationId);
 
+            int channelType = mergedMsgList.get(0).getConversation().getConversationType().getValue();
+            String targetId = mergedMsgList.get(0).getConversation().getConversationId();
+            Appmessages.MergedMsgs.Builder mergedMsgsBuilder = Appmessages.MergedMsgs.newBuilder();
+            mergedMsgsBuilder.setChannelTypeValue(channelType)
+                    .setUserId(userId)
+                    .setTargetId(targetId);
             for (ConcreteMessage msg : mergedMsgList) {
                 Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
                         .setMsgId(msg.getMessageId())
