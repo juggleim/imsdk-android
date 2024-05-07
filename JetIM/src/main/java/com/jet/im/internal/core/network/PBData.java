@@ -101,6 +101,7 @@ class PBData {
                            int flags,
                            String clientUid,
                            List<ConcreteMessage> mergedMsgList,
+                           boolean isBroadcast,
                            String userId,
                            int index,
                            Conversation.ConversationType conversationType,
@@ -114,7 +115,8 @@ class PBData {
                 .setClientUid(clientUid);
 
         if (mergedMsgList != null && mergedMsgList.size() > 0) {
-            upMsgBuilder.setFlags(flags | MessageContent.MessageFlag.IS_MERGED.getValue());
+            flags |= MessageContent.MessageFlag.IS_MERGED.getValue();
+            upMsgBuilder.setFlags(flags);
             Appmessages.MergedMsgs.Builder mergedMsgsBuilder = Appmessages.MergedMsgs.newBuilder();
             mergedMsgsBuilder.setChannelTypeValue(conversationType.getValue())
                     .setUserId(userId)
@@ -129,6 +131,10 @@ class PBData {
                 mergedMsgsBuilder.addMsgs(simpleMsg);
             }
             upMsgBuilder.setMergedMsgs(mergedMsgsBuilder.build());
+        }
+        if (isBroadcast) {
+            flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
+            upMsgBuilder.setFlags(flags);
         }
 
         if (mentionInfo != null) {

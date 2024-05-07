@@ -116,40 +116,42 @@ class ConversationSql {
         return args;
     }
 
-    static Object[] argsWithUpdateLastMessage(ConcreteMessage message) {
-        Object[] args;
-        if (Message.MessageDirection.RECEIVE == message.getDirection()) {
-            args = new Object[14];
-        } else {
-            args = new Object[13];
+    static Object[] argsWithUpdateLastMessage(ConcreteMessage message, boolean isUpdateSortTime) {
+        int count = 12;
+        if (isUpdateSortTime) {
+            count++;
         }
-        args[0] = message.getTimestamp();
+        if (Message.MessageDirection.RECEIVE == message.getDirection()) {
+            count++;
+        }
+        Object[] args = new Object[count];
+        int i = 0;
         if (TextUtils.isEmpty(message.getMessageId())) {
-            args[1] = "";
+            args[i++] = "";
         } else {
-            args[1] = message.getMessageId();
+            args[i++] = message.getMessageId();
         }
-        args[2] = message.getContentType();
-        args[3] = message.getClientUid();
-        args[4] = message.getDirection().getValue();
-        args[5] = message.getState().getValue();
-        args[6] = message.isHasRead();
-        args[7] = message.getTimestamp();
-        args[8] = message.getSenderUserId();
+        args[i++] = message.getContentType();
+        args[i++] = message.getClientUid();
+        args[i++] = message.getDirection().getValue();
+        args[i++] = message.getState().getValue();
+        args[i++] = message.isHasRead();
+        args[i++] = message.getTimestamp();
+        args[i++] = message.getSenderUserId();
         if (message.getContent() != null) {
-            args[9] = new String(message.getContent().encode());
+            args[i++] = new String(message.getContent().encode());
         } else {
-            args[9] = "";
+            args[i++] = "";
         }
-        args[10] = message.getSeqNo();
+        args[i++] = message.getSeqNo();
+        if (isUpdateSortTime) {
+            args[i++] = message.getTimestamp();
+        }
         if (Message.MessageDirection.RECEIVE == message.getDirection()) {
-            args[11] = message.getMsgIndex();
-            args[12] = message.getConversation().getConversationType().getValue();
-            args[13] = message.getConversation().getConversationId();
-        } else {
-            args[11] = message.getConversation().getConversationType().getValue();
-            args[12] = message.getConversation().getConversationId();
+            args[i++] = message.getMsgIndex();
         }
+        args[i++] = message.getConversation().getConversationType().getValue();
+        args[i] = message.getConversation().getConversationId();
         return args;
     }
     static String sqlGetConversation(int type) {
@@ -231,10 +233,11 @@ class ConversationSql {
             + "last_message_content=?, last_message_seq_no=? WHERE conversation_type = ? "
             + "AND conversation_id = ?";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY is_top DESC, timestamp DESC";
-    static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_message_type=?,"
+    static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET last_message_id=?, last_message_type=?,"
             + "last_message_client_uid=?, "
             + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
             + "last_message_sender=?, last_message_content=?, last_message_seq_no=?";
+    static final String SQL_TIMESTAMP_EQUALS_QUESTION = ", timestamp=?";
     static final String SQL_LAST_MESSAGE_EQUALS_QUESTION = ", last_message_index=?";
     static final String SQL_WHERE_CONVERSATION_IS = " WHERE conversation_type = ? AND conversation_id = ?";
     static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {

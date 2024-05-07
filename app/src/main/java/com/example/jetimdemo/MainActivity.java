@@ -38,6 +38,7 @@ import com.jet.im.push.PushChannel;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -67,11 +68,39 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
-                            JetIM.getInstance().getConversationManager().setTop(c, true);
+//                            TextMessage text = new TextMessage("Android broadcast");
+//                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+//                            Conversation c2 = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
+//                            Conversation c3 = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
+//                            Conversation c4 = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                            List<Conversation> conversations = new ArrayList<>();
+//                            conversations.add(c1);
+//                            conversations.add(c2);
+//                            conversations.add(c3);
+//                            conversations.add(c4);
+//                            JetIM.getInstance().getMessageManager().sendMessage(text, c1, new IMessageManager.ISendMessageCallback() {
+//                                @Override
+//                                public void onSuccess(Message message) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onError(Message message, int errorCode) {
+//
+//                                }
+//                            });
+//                            JetIM.getInstance().getMessageManager().broadcastMessage(text, conversations, new IMessageManager.IBroadcastMessageCallback() {
+//                                @Override
+//                                public void onProgress(Message message, int errorCode, int processCount, int totalCount) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onComplete() {
+//
+//                                }
+//                            });
 
-                            List<ConversationInfo> conversationInfoList = JetIM.getInstance().getConversationManager().getConversationInfoList();
-                            List<ConversationInfo> topList = JetIM.getInstance().getConversationManager().getTopConversationInfoList(100, 0, JetIMConst.PullDirection.OLDER);
                         }
                     }, 1000);
 

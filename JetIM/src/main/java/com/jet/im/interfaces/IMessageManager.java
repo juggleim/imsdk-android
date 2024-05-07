@@ -49,6 +49,11 @@ public interface IMessageManager {
         void onError(int errorCode);
     }
 
+    interface IBroadcastMessageCallback {
+        void onProgress(Message message, int errorCode, int processCount, int totalCount);
+        void onComplete();
+    }
+
     Message sendMessage(MessageContent content,
                         Conversation conversation,
                         ISendMessageCallback callback);
@@ -149,6 +154,10 @@ public interface IMessageManager {
     void setLocalAttribute(long clientMsgNo, String attribute);
 
     String getLocalAttribute(long clientMsgNo);
+
+    void broadcastMessage(MessageContent content,
+                          List<Conversation> conversations,
+                          IBroadcastMessageCallback callback);
 
     void setMessageState(long clientMsgNo, Message.MessageState state);
 

@@ -61,14 +61,9 @@ public class MessageManager implements IMessageManager {
 
     private final JetIMCore mCore;
 
-    @Override
-    public Message sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
-        List mergedMessages = null;
-        if (content instanceof MergeMessage) {
-            MergeMessage mergeMessage = (MergeMessage) content;
-            mergedMessages = mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
-        }
-
+    private ConcreteMessage createSendMessage(MessageContent content,
+                                              Conversation conversation,
+                                              boolean isBroadcast) {
         ConcreteMessage message = new ConcreteMessage();
         message.setContent(content);
         message.setConversation(conversation);
@@ -78,7 +73,19 @@ public class MessageManager implements IMessageManager {
         message.setSenderUserId(mCore.getUserId());
         message.setClientUid(createClientUid());
         message.setTimestamp(System.currentTimeMillis());
-
+        int flags = content.getFlags();
+        if (isBroadcast) {
+            flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
+        }
+        message.setFlags(flags);
+        return message;
+    }
+    private Message sendMessage(MessageContent content,
+                                Conversation conversation,
+                                List<ConcreteMessage> mergedMessages,
+                                boolean isBroadcast,
+                                ISendMessageCallback callback) {
+        ConcreteMessage message = createSendMessage(content, conversation, isBroadcast);
         List<ConcreteMessage> list = new ArrayList<>(1);
         list.add(message);
         mCore.getDbManager().insertMessages(list);
@@ -122,9 +129,19 @@ public class MessageManager implements IMessageManager {
             }
         };
         if (mCore.getWebSocket() != null) {
-            mCore.getWebSocket().sendIMMessage(content, conversation, message.getClientUid(), mergedMessages, mCore.getUserId(), messageCallback);
+            mCore.getWebSocket().sendIMMessage(content, conversation, message.getClientUid(), mergedMessages, isBroadcast, mCore.getUserId(), messageCallback);
         }
         return message;
+    }
+
+    @Override
+    public Message sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
+        List mergedMessages = null;
+        if (content instanceof MergeMessage) {
+            MergeMessage mergeMessage = (MergeMessage) content;
+            mergedMessages = mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
+        }
+        return sendMessage(content, conversation, mergedMessages, false, callback);
     }
 
     @Override
@@ -560,6 +577,67 @@ public class MessageManager implements IMessageManager {
     @Override
     public String getLocalAttribute(long clientMsgNo) {
         return mCore.getDbManager().getLocalAttribute(clientMsgNo);
+    }
+
+    @Override
+    public void broadcastMessage(MessageContent content, List<Conversation> conversations, IBroadcastMessageCallback callback) {
+        if (conversations.size() == 0) {
+            if (callback != null) {
+                callback.onComplete();
+            }
+            return;
+        }
+        List mergedMessages = null;
+        if (content instanceof MergeMessage) {
+            MergeMessage mergeMessage = (MergeMessage) content;
+            mergedMessages = mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
+        }
+        loopBroadcastMessage(content, conversations, mergedMessages, 0, conversations.size(), callback);
+    }
+
+    private void loopBroadcastMessage(MessageContent content,
+                                      List<Conversation> conversations,
+                                      List<ConcreteMessage> mergedMessages,
+                                      int processCount,
+                                      int totalCount,
+                                      IBroadcastMessageCallback callback) {
+        if (conversations.size() == 0) {
+            if (callback != null) {
+                callback.onComplete();
+            }
+            return;
+         }
+        sendMessage(content, conversations.get(0), mergedMessages, true, new ISendMessageCallback() {
+            @Override
+            public void onSuccess(Message message) {
+                broadcastCallbackAndLoopNext(message, JErrorCode.NONE, conversations, mergedMessages, processCount, totalCount, callback);
+            }
+
+            @Override
+            public void onError(Message message, int errorCode) {
+                broadcastCallbackAndLoopNext(message, errorCode, conversations, mergedMessages, processCount, totalCount, callback);
+            }
+        });
+    }
+
+    private void broadcastCallbackAndLoopNext(Message message,
+                                              int errorCode,
+                                              List<Conversation> conversations,
+                                              List<ConcreteMessage> mergedMessages,
+                                              int processCount,
+                                              int totalCount,
+                                              IBroadcastMessageCallback callback) {
+        if (callback != null) {
+            callback.onProgress(message, errorCode, processCount, totalCount);
+        }
+        if (conversations.size() <= 1) {
+            if (callback != null) {
+                callback.onComplete();
+            }
+        } else {
+            conversations.remove(0);
+            mCore.getSendHandler().postDelayed(() -> loopBroadcastMessage(message.getContent(), conversations, mergedMessages, processCount+1, totalCount, callback), 50);
+        }
     }
 
     @Override

@@ -12,7 +12,8 @@ public abstract class MessageContent {
         IS_SAVE(8),
         IS_MODIFIED(16),
         IS_MERGED(32),
-        IS_MUTE(64);
+        IS_MUTE(64),
+        IS_BROADCAST(128);
         public int getValue() {
             return mValue;
         }

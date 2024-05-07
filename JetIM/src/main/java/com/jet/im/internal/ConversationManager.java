@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
-import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
@@ -15,6 +14,7 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.Message;
+import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.utils.LoggerUtils;
@@ -235,23 +235,20 @@ public class ConversationManager implements IConversationManager, MessageManager
                     if (last.getSyncTime() > syncTime) {
                         syncTime = last.getSyncTime();
                     }
-                    mCore.getDbManager().insertConversations(conversationInfoList, new DBManager.IDbInsertConversationsCallback() {
-                        @Override
-                        public void onComplete(List<ConcreteConversationInfo> insertList, List<ConcreteConversationInfo> updateList) {
-                            if (insertList.size() > 0) {
-                                if (mListenerMap != null) {
-                                    List<ConversationInfo> l = new ArrayList<>(insertList);
-                                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                                        entry.getValue().onConversationInfoAdd(l);
-                                    }
+                    mCore.getDbManager().insertConversations(conversationInfoList, (insertList, updateList) -> {
+                        if (insertList.size() > 0) {
+                            if (mListenerMap != null) {
+                                List<ConversationInfo> l = new ArrayList<>(insertList);
+                                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                                    entry.getValue().onConversationInfoAdd(l);
                                 }
                             }
-                            if (updateList.size() > 0) {
-                                if (mListenerMap != null) {
-                                    List<ConversationInfo> l = new ArrayList<>(updateList);
-                                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                                        entry.getValue().onConversationInfoUpdate(l);
-                                    }
+                        }
+                        if (updateList.size() > 0) {
+                            if (mListenerMap != null) {
+                                List<ConversationInfo> l = new ArrayList<>(updateList);
+                                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                                    entry.getValue().onConversationInfoUpdate(l);
                                 }
                             }
                         }
@@ -363,12 +360,17 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
         }
+        boolean isBroadcast = (message.getFlags() & MessageContent.MessageFlag.IS_BROADCAST.getValue()) != 0;
 
         ConversationInfo info = getConversationInfo(message.getConversation());
         if (info == null) {
             ConcreteConversationInfo addInfo = new ConcreteConversationInfo();
             addInfo.setConversation(message.getConversation());
-            addInfo.setSortTime(message.getTimestamp());
+            if (isBroadcast && message.getDirection() == Message.MessageDirection.SEND) {
+                addInfo.setSortTime(0);
+            } else {
+                addInfo.setSortTime(message.getTimestamp());
+            }
             addInfo.setLastMessage(message);
             addInfo.setLastMessageIndex(message.getMsgIndex());
             addInfo.setLastReadMessageIndex(message.getMsgIndex() - 1);

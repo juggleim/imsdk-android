@@ -55,6 +55,7 @@ public class JWebSocket extends WebSocketClient {
                               Conversation conversation,
                               String clientUid,
                               List<ConcreteMessage> mergedMsgList,
+                              boolean isBroadcast,
                               String userId,
                               SendMessageCallback callback) {
         Integer key = mCmdIndex;
@@ -63,6 +64,7 @@ public class JWebSocket extends WebSocketClient {
                 content.getFlags(),
                 clientUid,
                 mergedMsgList,
+                isBroadcast,
                 userId,
                 mCmdIndex++,
                 conversation.getConversationType(),
