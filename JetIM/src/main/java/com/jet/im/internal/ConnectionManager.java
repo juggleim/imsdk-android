@@ -140,7 +140,6 @@ public class ConnectionManager implements IConnectionManager {
                         } else {
                             changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
                         }
-
                     }
                 }
 
@@ -152,21 +151,17 @@ public class ConnectionManager implements IConnectionManager {
 
                 @Override
                 public void onWebSocketFail() {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
+                    handleWebsocketFail();
                 }
 
                 @Override
                 public void onWebSocketClose() {
-                    if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.DISCONNECTED
-                            || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.FAILURE) {
-                        return;
-                    }
-                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
+                    handleWebsocketFail();
                 }
 
                 @Override
                 public void onTimeOut() {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
+                    handleWebsocketFail();
                 }
             });
             mCore.getWebSocket().setPushChannel(mPushChannel);
@@ -183,6 +178,14 @@ public class ConnectionManager implements IConnectionManager {
             }
             mCore.getWebSocket().reconnect();
         }
+    }
+
+    private void handleWebsocketFail() {
+        if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.DISCONNECTED
+                || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.FAILURE) {
+            return;
+        }
+        changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
     }
 
     private boolean checkConnectionFailure(int errorCode) {

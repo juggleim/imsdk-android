@@ -8,7 +8,7 @@ public abstract class JSimpleTimer {
 
     private Handler handler = null;
     private Runnable runnable = null;
-    private int interval = -1;
+    private final int interval;
 
     public JSimpleTimer(int interval) {
         this.interval = interval;
