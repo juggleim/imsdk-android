@@ -91,6 +91,9 @@ public class JetIM {
     public String getDeviceId(Context context) {
         return JUtility.getDeviceId(context);
     }
+    public String getCurrentUserId(){
+       return mCore.getUserId();
+    }
     private static class SingletonHolder {
         static final JetIM sInstance = new JetIM();
     }

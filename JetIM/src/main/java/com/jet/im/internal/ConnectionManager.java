@@ -251,6 +251,29 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         }
     }
 
+    public JetIMConst.ConnectionStatus getConnectionStatus() {
+        int status = mCore.getConnectionStatus();
+        JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
+        switch (status) {
+            case JetIMCore.ConnectionStatusInternal.CONNECTED:
+                outStatus = JetIMConst.ConnectionStatus.CONNECTED;
+                break;
+            case JetIMCore.ConnectionStatusInternal.DISCONNECTED:
+                outStatus = JetIMConst.ConnectionStatus.DISCONNECTED;
+                break;
+
+            case JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING:
+            case JetIMCore.ConnectionStatusInternal.CONNECTING:
+                outStatus = JetIMConst.ConnectionStatus.CONNECTING;
+                break;
+            case JetIMCore.ConnectionStatusInternal.FAILURE:
+                outStatus = JetIMConst.ConnectionStatus.FAILURE;
+            default:
+                break;
+        }
+        return outStatus;
+    }
+
     private void reconnect() {
         JLogger.i("CON-Reconnect", "reconnect");
         //todo 线程控制，间隔控制

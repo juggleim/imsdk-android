@@ -317,7 +317,7 @@ public class SendbirdUIKit {
         final com.sendbird.android.LogLevel logLevel = BuildConfig.DEBUG ? com.sendbird.android.LogLevel.VERBOSE : com.sendbird.android.LogLevel.WARN;
         // useCaching=true is required for UIKit
         final InitParams initParams = new InitParams(adapter.getAppId(), context, true, logLevel, isForeground);
-        sendbirdChatContract.init(initParams, initResultHandler);
+        sendbirdChatContract.init(context,initParams, initResultHandler);
         FileUtils.removeDeletableDir(context.getApplicationContext());
         UIKitPrefs.init(context.getApplicationContext());
         NotificationChannelManager.init(context.getApplicationContext());
