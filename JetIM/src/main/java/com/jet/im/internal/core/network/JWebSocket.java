@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.ConstInternal;
-import com.jet.im.internal.HeartbeatDetectionManager;
+import com.jet.im.internal.HeartbeatManager;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
@@ -38,6 +38,7 @@ public class JWebSocket extends WebSocketClient {
         mContext = context;
         mPbData = new PBData();
         mCmdCallbackMap = new ConcurrentHashMap<>();
+        mHeartbeatManager = new HeartbeatManager(this);
     }
 
     public void disconnect(Boolean receivePush) {
@@ -46,7 +47,6 @@ public class JWebSocket extends WebSocketClient {
 
     public void setConnectionListener(IWebSocketConnectListener listener) {
         mConnectListener = listener;
-        HeartbeatDetectionManager.getInstance().setConnectionListener(listener);
     }
 
     public void setMessageListener(IWebSocketMessageListener listener) {
@@ -209,6 +209,20 @@ public class JWebSocket extends WebSocketClient {
         sendWhenOpen(bytes);
     }
 
+    public void startHeartbeat() {
+        mHeartbeatManager.start(false);
+    }
+
+    public void stopHeartbeat() {
+        mHeartbeatManager.stop();
+    }
+
+    public void handleHeartbeatTimeout() {
+        if (mConnectListener != null) {
+            mConnectListener.onTimeOut();
+        }
+    }
+
     public void ping() {
         byte[] bytes = mPbData.pingData();
         sendWhenOpen(bytes);
@@ -242,13 +256,13 @@ public class JWebSocket extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-        HeartbeatDetectionManager.getInstance().updateLastMessageReceivedTime();
+        mHeartbeatManager.updateLastMessageReceivedTime();
         LoggerUtils.i("JWebSocket, onMessage");
     }
 
     @Override
     public void onMessage(ByteBuffer bytes) {
-        HeartbeatDetectionManager.getInstance().updateLastMessageReceivedTime();
+        mHeartbeatManager.updateLastMessageReceivedTime();
         PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
         LoggerUtils.i("JWebSocket, onMessage bytes, type is " + obj.getRcvType());
         switch (obj.getRcvType()) {
@@ -514,6 +528,7 @@ public class JWebSocket extends WebSocketClient {
     private String mPushToken;
     private final PBData mPbData;
     private final Context mContext;
+    private final HeartbeatManager mHeartbeatManager;
     private IWebSocketConnectListener mConnectListener;
     private IWebSocketMessageListener mMessageListener;
     private Integer mCmdIndex = 0;
