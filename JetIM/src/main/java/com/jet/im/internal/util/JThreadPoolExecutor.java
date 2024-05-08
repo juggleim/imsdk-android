@@ -22,36 +22,36 @@ public class JThreadPoolExecutor {
     private static final long KEEP_ALIVE_TIME = 30L;
     private static final int WAIT_COUNT = 128;
 
-    private static ThreadPoolExecutor pool = createThreadPoolExecutor();
+    private static ThreadPoolExecutor mPool = createThreadPoolExecutor();
 
     private static ThreadPoolExecutor createThreadPoolExecutor() {
-        if (pool == null) {
-            pool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_TIME, TimeUnit.SECONDS,
+        if (mPool == null) {
+            mPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE_TIME, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<Runnable>(WAIT_COUNT),
                     new CThreadFactory("JThreadPool", Thread.NORM_PRIORITY - 2),
                     new CHandlerException());
         }
-        return pool;
+        return mPool;
     }
 
     public static class CThreadFactory implements ThreadFactory {
-        private AtomicInteger counter = new AtomicInteger(1);
-        private String prefix = "";
-        private int priority = Thread.NORM_PRIORITY;
+        private AtomicInteger mCounter = new AtomicInteger(1);
+        private String mPrefix = "";
+        private int mPriority = Thread.NORM_PRIORITY;
 
         public CThreadFactory(String prefix, int priority) {
-            this.prefix = prefix;
-            this.priority = priority;
+            this.mPrefix = prefix;
+            this.mPriority = priority;
         }
 
         public CThreadFactory(String prefix) {
-            this.prefix = prefix;
+            this.mPrefix = prefix;
         }
 
         public Thread newThread(Runnable r) {
-            Thread executor = new Thread(r, prefix + " #" + counter.getAndIncrement());
+            Thread executor = new Thread(r, mPrefix + " #" + mCounter.getAndIncrement());
             executor.setDaemon(true);
-            executor.setPriority(priority);
+            executor.setPriority(mPriority);
             return executor;
         }
     }
@@ -62,40 +62,40 @@ public class JThreadPoolExecutor {
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             LoggerUtils.d(TAG + ", rejectedExecution:" + r);
             LoggerUtils.e(TAG + ", " + logAllThreadStackTrace());
-            if (!pool.isShutdown()) {
-                pool.shutdown();
-                pool = null;
+            if (!mPool.isShutdown()) {
+                mPool.shutdown();
+                mPool = null;
             }
 
-            pool = createThreadPoolExecutor();
+            mPool = createThreadPoolExecutor();
         }
     }
 
     public static void runInBackground(Runnable runnable) {
-        if (pool == null) {
+        if (mPool == null) {
             createThreadPoolExecutor();
         }
-        pool.execute(runnable);
+        mPool.execute(runnable);
     }
 
-    private static Thread mainThread;
-    private static Handler mainHandler;
+    private static final Thread mMainThread;
+    private static final Handler mMainHandler;
 
     static {
         Looper mainLooper = Looper.getMainLooper();
-        mainThread = mainLooper.getThread();
-        mainHandler = new Handler(mainLooper);
+        mMainThread = mainLooper.getThread();
+        mMainHandler = new Handler(mainLooper);
     }
 
     public static boolean isOnMainThread() {
-        return mainThread == Thread.currentThread();
+        return mMainThread == Thread.currentThread();
     }
 
     public static void runOnMainThread(Runnable r) {
         if (isOnMainThread()) {
             r.run();
         } else {
-            mainHandler.post(r);
+            mMainHandler.post(r);
         }
     }
 
@@ -103,7 +103,7 @@ public class JThreadPoolExecutor {
         if (delayMillis <= 0) {
             runOnMainThread(r);
         } else {
-            mainHandler.postDelayed(r, delayMillis);
+            mMainHandler.postDelayed(r, delayMillis);
         }
     }
 
@@ -115,7 +115,7 @@ public class JThreadPoolExecutor {
         } else {
             Runnable mainRunnable = () -> {
                 mapToMainHandler.remove(runnable);
-                pool.execute(runnable);
+                mPool.execute(runnable);
             };
 
             //该runnable仍在mapToMainHandler中，表示它并未被执行，需要将其先从mainHandler中移除
@@ -124,31 +124,31 @@ public class JThreadPoolExecutor {
             }
 
             mapToMainHandler.put(runnable, mainRunnable);
-            mainHandler.postDelayed(mainRunnable, delayMillis);
+            mMainHandler.postDelayed(mainRunnable, delayMillis);
         }
     }
 
     public static void removeCallbackOnMainThread(Runnable r) {
-        mainHandler.removeCallbacks(r);
+        mMainHandler.removeCallbacks(r);
     }
 
     public static void removeCallbackInBackground(Runnable runnable) {
         Runnable mainRunnable = mapToMainHandler.get(runnable);
         if (mainRunnable != null) {
-            mainHandler.removeCallbacks(mainRunnable);
-            pool.remove(mainRunnable);
+            mMainHandler.removeCallbacks(mainRunnable);
+            mPool.remove(mainRunnable);
         } else
-            pool.remove(runnable);
+            mPool.remove(runnable);
     }
 
     public static void logStatus() {
         StringBuilder sb = new StringBuilder();
         sb.append("getActiveCount=");
-        sb.append(pool.getActiveCount());
+        sb.append(mPool.getActiveCount());
         sb.append("\ngetTaskCount=");
-        sb.append(pool.getTaskCount());
+        sb.append(mPool.getTaskCount());
         sb.append("\ngetCompletedTaskCount=");
-        sb.append(pool.getCompletedTaskCount());
+        sb.append(mPool.getCompletedTaskCount());
         LoggerUtils.d(TAG + ", " + sb);
     }
 
