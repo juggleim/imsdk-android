@@ -19,7 +19,6 @@ import com.jet.im.kit.model.configurations.UIKitConfig
 import com.example.demo.common.consts.InitState
 import com.example.demo.common.consts.SampleType
 import com.example.demo.common.consts.StringSet
-import com.example.demo.common.fcm.MyFirebaseMessagingService
 import com.example.demo.common.preferences.PreferenceUtils
 
 private const val APP_ID = "FEA2129A-EA73-4EB9-9E0B-EC738E7EB768"
@@ -68,8 +67,6 @@ class BaseApplication : MultiDexApplication() {
 
             // set theme mode
             SendbirdUIKit.setDefaultThemeMode(PreferenceUtils.themeMode)
-            // register push notification
-            SendbirdPushHelper.registerPushHandler(MyFirebaseMessagingService())
             // set logger
             SendbirdUIKit.setLogLevel(SendbirdUIKit.LogLevel.ALL)
         }
