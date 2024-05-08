@@ -109,7 +109,6 @@ public class ConnectionManager implements IConnectionManager {
         this.mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.IDLE);
         this.mConversationManager = conversationManager;
         this.mMessageManager = messageManager;
-        this.mHeartBeatManager = new HeartBeatManager(core);
 
         HandlerThread thread = new HandlerThread("JET_NAVI");
         thread.start();
@@ -213,13 +212,11 @@ public class ConnectionManager implements IConnectionManager {
             }
             if (status == JetIMCore.ConnectionStatusInternal.CONNECTED
                     && mCore.getConnectionStatus() != JetIMCore.ConnectionStatusInternal.CONNECTED) {
-                mHeartBeatManager.start();
-                HeartbeatDetectionManager.getInstance().start(false);
+                mCore.getWebSocket().startHeartbeat();
             }
             if (status != JetIMCore.ConnectionStatusInternal.CONNECTED
                     && mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED) {
-                mHeartBeatManager.stop();
-                HeartbeatDetectionManager.getInstance().stop();
+                mCore.getWebSocket().stopHeartbeat();
             }
             JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
             switch (status) {
@@ -305,7 +302,6 @@ public class ConnectionManager implements IConnectionManager {
     private final JetIMCore mCore;
     private final ConversationManager mConversationManager;
     private final MessageManager mMessageManager;
-    private final HeartBeatManager mHeartBeatManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
     private PushChannel mPushChannel;
