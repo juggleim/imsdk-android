@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <HorizontalScrollView
+        android:id="@+id/svCategoryBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/sb_size_16"
+        android:paddingRight="@dimen/sb_size_16"
+        android:paddingTop="@dimen/sb_size_8"
+        android:paddingBottom="@dimen/sb_size_8"
+        android:scrollbarSize="@dimen/sb_size_0"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <RadioGroup
+            android:id="@+id/categoryMenuBox"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <com.jet.im.kit.internal.ui.widgets.PagerRecyclerView
+        android:id="@+id/rvMessageList"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_0"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/svCategoryBox"
+        app:reverseLayout="true" />
+
+    <com.jet.im.kit.internal.ui.widgets.RoundCornerLayout
+        android:id="@+id/vgTooltipBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginBottom="@dimen/sb_size_15"
+        android:layout_marginTop="@dimen/sb_size_15"
+        android:paddingTop="@dimen/sb_size_11"
+        android:paddingBottom="@dimen/sb_size_11"
+        android:paddingLeft="@dimen/sb_size_16"
+        android:paddingRight="@dimen/sb_size_16"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        >
+        <TextView
+            android:id="@+id/tooltip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:ellipsize="end"
+            android:singleLine="true"
+            />
+    </com.jet.im.kit.internal.ui.widgets.RoundCornerLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

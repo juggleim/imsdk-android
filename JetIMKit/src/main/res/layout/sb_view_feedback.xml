@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <FrameLayout
+        android:id="@+id/goodFeedbackLayout"
+        android:layout_width="@dimen/sb_size_42"
+        android:layout_height="@dimen/sb_size_36"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivGoodFeedback"
+            android:layout_width="@dimen/sb_size_24"
+            android:layout_height="@dimen/sb_size_24"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/badFeedbackLayout"
+        android:layout_width="@dimen/sb_size_42"
+        android:layout_height="@dimen/sb_size_36"
+        android:layout_marginStart="@dimen/sb_size_4"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/goodFeedbackLayout">
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivBadFeedback"
+            android:layout_width="@dimen/sb_size_24"
+            android:layout_height="@dimen/sb_size_24"
+            android:layout_gravity="center" />
+    </FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

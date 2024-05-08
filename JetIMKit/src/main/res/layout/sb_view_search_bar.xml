@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/searchBar"
+    android:orientation="horizontal"
+    android:minHeight="@dimen/sb_size_56"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:id="@+id/searchEditBox"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/sb_size_36"
+        android:orientation="horizontal"
+        android:layout_marginStart="@dimen/sb_size_16"
+        android:layout_marginEnd="@dimen/sb_size_8"
+        android:paddingLeft="@dimen/sb_size_10"
+        android:paddingRight="@dimen/sb_size_10"
+        android:background="@drawable/sb_shape_search_background"
+        android:gravity="center_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/tvSearch"
+        app:layout_constraintTop_toTopOf="parent">
+        <ImageView
+            android:id="@+id/ivSearchIcon"
+            android:layout_width="@dimen/sb_size_24"
+            android:layout_height="@dimen/sb_size_24"
+            android:importantForAccessibility="no"
+            />
+        <EditText
+            android:id="@+id/etInputText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="text"
+            android:layout_weight="1"
+            android:background="@null"
+            android:layout_marginStart="@dimen/sb_size_6"
+            android:layout_marginEnd="@dimen/sb_size_7"
+            android:hint="@string/sb_edittext_hint_default_description"
+            android:importantForAutofill="no"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/ivClear"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <requestFocus />
+        </EditText>
+
+        <ImageView
+            android:id="@id/ivClear"
+            android:visibility="gone"
+            android:layout_width="@dimen/sb_size_24"
+            android:layout_height="@dimen/sb_size_24"
+            android:layout_gravity="end|center_vertical"
+            android:contentDescription="@string/sb_view_search_bar_clear_button_description"
+            />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/sb_size_40"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:paddingRight="@dimen/sb_size_10"
+        android:paddingLeft="@dimen/sb_size_10"
+        android:layout_marginStart="@dimen/sb_size_8"
+        android:layout_marginEnd="@dimen/sb_size_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <ImageView
+        android:id="@+id/ivDivider"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_1"
+        android:background="@color/onlight_04"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:importantForAccessibility="no"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:lineSpacingExtra="@dimen/sb_text_size_4"
+        android:layout_marginStart="@dimen/sb_size_24"
+        android:layout_marginTop="@dimen/sb_size_24"
+        android:layout_marginBottom="@dimen/sb_size_4"
+        android:layout_marginEnd="@dimen/sb_size_8"
+        app:layout_goneMarginBottom="@dimen/sb_size_24"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/description"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/unreadCount"/>
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/sb_text_size_14"
+        android:fontFamily="sans-serif-medium"
+        android:textStyle="normal"
+        android:textColor="@color/onlight_02"
+        android:lineSpacingExtra="@dimen/sb_text_size_2"
+        android:layout_marginStart="@dimen/sb_size_24"
+        android:layout_marginTop="@dimen/sb_size_4"
+        android:layout_marginBottom="@dimen/sb_size_24"
+        android:layout_marginEnd="@dimen/sb_size_8"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/unreadCount"/>
+
+    <TextView
+        android:id="@+id/unreadCount"
+        android:background="@drawable/shape_badge_background"
+        android:textAppearance="@style/SendbirdCaption3OnDark01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/sb_size_4"
+        android:paddingBottom="@dimen/sb_size_4"
+        android:paddingLeft="@dimen/sb_size_6"
+        android:paddingRight="@dimen/sb_size_6"
+        android:includeFontPadding="false"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/chevron"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <ImageView
+        android:id="@+id/chevron"
+        android:layout_width="@dimen/sb_size_20"
+        android:layout_height="@dimen/sb_size_20"
+        android:src="@drawable/icon_chevron_right"
+        android:layout_marginEnd="@dimen/sb_size_16"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+</androidx.constraintlayout.widget.ConstraintLayout>

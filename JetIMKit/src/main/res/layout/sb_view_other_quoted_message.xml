@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/quoteReplyPanel"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+
+    <ImageView
+        android:id="@+id/ivQuoteReplyIcon"
+        android:layout_width="@dimen/sb_size_12"
+        android:layout_height="@dimen/sb_size_12"
+        android:layout_marginStart="@dimen/sb_size_12"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvQuoteReplyTitle"
+        app:layout_constraintBottom_toBottomOf="@id/tvQuoteReplyTitle"
+        />
+
+    <TextView
+        android:id="@+id/tvQuoteReplyTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="@dimen/sb_message_max_width"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:layout_marginStart="@dimen/sb_size_4"
+        android:layout_marginBottom="@dimen/sb_size_4"
+        android:paddingEnd="@dimen/sb_size_12"
+        android:paddingStart="@dimen/sb_size_0"
+        app:layout_constraintStart_toEndOf="@id/ivQuoteReplyIcon"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/barrier"
+        />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="quoteReplyMessagePanel, quoteReplyThumbnailPanel"
+        app:barrierDirection="top"/>
+
+    <LinearLayout
+        android:id="@+id/quoteReplyMessagePanel"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/sb_size_12"
+        android:paddingRight="@dimen/sb_size_12"
+        android:paddingTop="@dimen/sb_size_6"
+        android:paddingBottom="@dimen/sb_size_12"
+        android:gravity="center_vertical"
+        app:layout_constraintWidth_max="@dimen/sb_message_max_width"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvQuoteReplyTitle"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:id="@+id/ivQuoteReplyMessageIcon"
+            android:layout_width="@dimen/sb_size_14"
+            android:layout_height="@dimen/sb_size_14"
+            android:layout_marginEnd="@dimen/sb_size_4"
+            android:visibility="gone"
+            android:importantForAccessibility="no"
+            />
+
+        <TextView
+            android:id="@+id/tvQuoteReplyMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/quoteReplyThumbnailPanel"
+        android:layout_width="@dimen/sb_reply_thumbnail_width"
+        android:layout_height="@dimen/sb_reply_thumbnail_height"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvQuoteReplyTitle"
+        android:visibility="gone"
+        >
+
+        <com.jet.im.kit.internal.ui.widgets.RoundCornerView
+            android:id="@+id/ivQuoteReplyThumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:id="@+id/ivQuoteReplyThumbnailOverlay"
+            android:background="@drawable/sb_shape_quoted_message_thumbnail_overlay"
+            android:alpha="0.4"
+            android:scaleType="centerInside"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/sb_view_other_quoted_file_message_description"/>
+
+        <ImageView
+            android:id="@+id/ivQuoteReplyThumbnailIcon"
+            android:scaleType="centerInside"
+            android:layout_gravity="center"
+            android:layout_width="@dimen/sb_size_24"
+            android:layout_height="@dimen/sb_size_24"
+            android:importantForAccessibility="no"/>
+
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

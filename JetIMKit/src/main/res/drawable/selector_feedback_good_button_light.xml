@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <bitmap android:src="@drawable/icon_good" android:tint="@color/ondark_01"/>
+    </item>
+    <item android:state_enabled="false">
+        <bitmap android:src="@drawable/icon_good" android:tint="@color/onlight_04"/>
+    </item>
+    <item>
+        <bitmap android:src="@drawable/icon_good" android:tint="@color/onlight_02"/>
+    </item>
+</selector>

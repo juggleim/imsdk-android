@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-path name="pictures" path="Pictures/" />
+    <external-path name="storage/emulated" path="."/>
+    <root-path name="root" path="."/>
+</paths>

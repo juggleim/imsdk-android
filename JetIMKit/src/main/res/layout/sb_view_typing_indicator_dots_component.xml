@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/sb_shape_chat_bubble"
+    android:layout_width="@dimen/sb_size_60"
+    android:layout_height="@dimen/sb_size_34">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/ivLeftTypingDot"
+        android:layout_width="@dimen/sb_size_8"
+        android:layout_height="@dimen/sb_size_8"
+        android:layout_marginStart="12dp"
+        android:alpha="0"
+        android:src="@drawable/sb_shape_typing_indicator_dot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/ivCenterTypingDot"
+        android:layout_width="@dimen/sb_size_8"
+        android:layout_height="@dimen/sb_size_8"
+        android:alpha="0"
+        android:src="@drawable/sb_shape_typing_indicator_dot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ivRightTypingDot"
+        app:layout_constraintStart_toEndOf="@+id/ivLeftTypingDot"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/ivRightTypingDot"
+        android:layout_width="@dimen/sb_size_8"
+        android:layout_height="@dimen/sb_size_8"
+        android:layout_marginEnd="12dp"
+        android:alpha="0"
+        android:src="@drawable/sb_shape_typing_indicator_dot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+

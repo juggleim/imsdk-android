@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:id="@+id/parent"
+        android:orientation="vertical"
+        android:padding="@dimen/sb_size_24"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.jet.im.kit.internal.ui.channels.ChannelCoverView
+            android:id="@+id/profileView"
+            android:layout_marginTop="@dimen/sb_size_8"
+            android:layout_width="@dimen/sb_size_80"
+            android:layout_height="@dimen/sb_size_80"/>
+
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/sb_size_8"
+            android:ellipsize="end"
+            android:singleLine="true"/>
+
+        <Button
+            android:id="@+id/btCreateChannel"
+            android:layout_marginTop="@dimen/sb_size_16"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_48"
+            android:gravity="center"
+            android:text="@string/sb_text_message"/>
+
+        <ImageView
+            android:id="@+id/ivDivider"
+            android:layout_marginTop="@dimen/sb_size_25"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_1"
+            android:importantForAccessibility="no"/>
+
+        <TextView
+            android:id="@+id/tvTitleUserId"
+            android:layout_marginTop="@dimen/sb_size_24"
+            android:layout_gravity="start"
+            android:text="@string/sb_text_user_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/tvUserId"
+            android:layout_marginTop="@dimen/sb_size_4"
+            android:layout_gravity="start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+</ScrollView>

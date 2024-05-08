@@ -3,12 +3,13 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url 'https://jitpack.io' }
     }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven { url "https://repo.sendbird.com/public/maven" }
+        maven { url "https://jitpack.io" }
         maven {url 'https://developer.hihonor.com/repo'}
         maven { url 'https://developer.huawei.com/repo/' }
         google()
@@ -20,17 +21,7 @@ rootProject.name = "JetIMDemo"
 include ':app'
 include ':JetIM'
 include ':HWPlugin'
-include ':JGPlugin'
-include ':GooglePlugin'
-
 include ':XMPlugin'
-include ':XMPlugin_sdk'
-project(':XMPlugin_sdk').projectDir = new File('XMPlugin/sdk')
-
-include ':VIVOPlugin'
-include ':VIVOPlugin_sdk'
-project(':VIVOPlugin_sdk').projectDir = new File('VIVOPlugin/sdk')
-
-include ':OPPOPlugin'
-include ':OPPOPlugin_sdk'
-project(':OPPOPlugin_sdk').projectDir = new File('OPPOPlugin/sdk')
+include ':GooglePlugin'
+include ':JetIMKit'
+include ':demo'

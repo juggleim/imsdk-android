@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/root"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_56"
+        android:padding="@dimen/sb_size_8">
+
+        <ImageButton
+            android:id="@+id/leftButton"
+            android:layout_width="@dimen/sb_size_40"
+            android:layout_height="@dimen/sb_size_40"
+            android:padding="@dimen/sb_size_8"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            android:contentDescription="@string/sb_view_header_left_button_description"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/title"
+            />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/leftButton"
+            app:layout_constraintEnd_toStartOf="@id/rightButton"
+            android:layout_marginStart="@dimen/sb_size_20"
+            android:layout_marginEnd="@dimen/sb_size_8" />
+
+        <TextView
+            android:id="@+id/rightButton"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/sb_size_40"
+            android:padding="@dimen/sb_size_8"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/title"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/elevationView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_1"/>
+
+</LinearLayout>

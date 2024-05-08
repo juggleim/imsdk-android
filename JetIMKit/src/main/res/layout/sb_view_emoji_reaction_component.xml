@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:orientation="horizontal"
+    android:layout_width="@dimen/sb_size_53"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/sb_size_2"
+    android:paddingTop="@dimen/sb_size_5"
+    android:paddingBottom="@dimen/sb_size_5"
+    android:paddingLeft="@dimen/sb_size_8"
+    android:paddingRight="@dimen/sb_size_8"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/ivEmoji"
+        android:layout_width="@dimen/sb_size_20"
+        android:layout_height="@dimen/sb_size_20"
+        android:src="@drawable/icon_question"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/sb_emoji_default_description"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/empty"
+        />
+
+    <View
+        android:id="@+id/empty"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/ivEmoji"
+        app:layout_constraintEnd_toStartOf="@id/tvCount"/>
+
+    <TextView
+        android:id="@+id/tvCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="@dimen/sb_size_14"
+        android:gravity="center"
+        android:singleLine="true"
+        android:ellipsize="middle"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/empty"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
