@@ -3,7 +3,6 @@ package com.example.demo.common.extensions
 import android.content.Intent
 import android.os.Build
 import com.sendbird.android.SendbirdChat
-import com.sendbird.android.handler.ConnectHandler
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.providers.AdapterProviders
 import com.jet.im.kit.providers.FragmentProviders
@@ -11,6 +10,7 @@ import com.jet.im.kit.providers.ModuleProviders
 import com.jet.im.kit.providers.ViewModelProviders
 import com.example.demo.common.consts.StringSet
 import com.example.demo.common.preferences.PreferenceUtils
+import com.sendbird.android.handler.ConnectHandler
 import java.io.Serializable
 
 /**

@@ -1,5 +1,6 @@
 package com.jet.im.kit.internal.contracts
 
+import android.content.Context
 import com.sendbird.android.AppInfo
 import com.sendbird.android.ConnectionState
 import com.sendbird.android.handler.AuthenticationHandler
@@ -18,7 +19,7 @@ internal interface SendbirdChatContract {
     fun addConnectionHandler(identifier: String, handler: ConnectionHandler)
     fun removeChannelHandler(identifier: String): BaseChannelHandler?
     fun removeConnectionHandler(identifier: String): ConnectionHandler?
-    fun init(params: InitParams, handler: InitResultHandler)
+    fun init(context:Context, params: InitParams, handler: InitResultHandler)
     fun connect(userId: String, accessToken: String?, handler: ConnectHandler?)
     fun updateCurrentUserInfo(params: UserUpdateParams, handler: CompletionHandler?)
     fun addExtension(key: String, version: String)

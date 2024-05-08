@@ -64,6 +64,9 @@ public class JetIM {
         return mUserInfoManager;
     }
 
+    public String getCurrentUserId(){
+       return mCore.getUserId();
+    }
     private static class SingletonHolder {
         static final JetIM sInstance = new JetIM();
     }

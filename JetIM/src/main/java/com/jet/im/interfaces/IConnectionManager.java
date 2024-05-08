@@ -12,6 +12,7 @@ public interface IConnectionManager {
 
     void addConnectionStatusListener(String key, IConnectionStatusListener listener);
 
+    JetIMConst.ConnectionStatus getConnectionStatus();
     void removeConnectionStatusListener(String key);
 
     interface IConnectionStatusListener {
