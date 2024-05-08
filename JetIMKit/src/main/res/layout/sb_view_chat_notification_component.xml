@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/sb_size_12"
+    android:paddingRight="@dimen/sb_size_12"
+    android:paddingTop="@dimen/sb_size_8"
+    android:paddingBottom="@dimen/sb_size_8"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/ivProfileView"
+        android:layout_width="@dimen/sb_size_26"
+        android:layout_height="@dimen/sb_size_26"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/sb_channel_cover_description"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/contentPanel"
+        />
+
+    <TextView
+        android:id="@+id/tvLabel"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:singleLine="true"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="@+id/contentPanel"
+        app:layout_constraintEnd_toEndOf="@+id/contentPanel"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/tvSentAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:ellipsize="end"
+        android:singleLine="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/contentPanel"
+        app:layout_constraintBottom_toBottomOf="@id/contentPanel"
+        />
+
+    <com.jet.im.kit.internal.ui.widgets.RoundCornerLayout
+        android:id="@+id/contentPanel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_12"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        android:layout_marginTop="4dp"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintWidth_max="276dp"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/ivProfileView"
+        app:layout_constraintTop_toBottomOf="@id/tvLabel"
+        app:layout_constraintEnd_toStartOf="@id/tvSentAt"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

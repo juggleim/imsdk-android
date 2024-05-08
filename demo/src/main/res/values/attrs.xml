@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Widget">
+        <attr name="widget_entry_button" format="reference" />
+    </declare-styleable>
+
+
+    <declare-styleable name="EntryButton">
+        <attr name="title" format="string"/>
+        <attr name="background_color" format="reference" />
+        <attr name="title_text_appearance" format="reference"/>
+        <attr name="description_text_appearance" format="reference"/>
+        <attr name="icon_tint" format="reference|color"/>
+        <attr name="android:description" format="string"/>
+    </declare-styleable>
+</resources>

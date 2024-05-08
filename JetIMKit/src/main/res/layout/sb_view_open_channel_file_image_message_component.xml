@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/sb_size_12"
+    android:paddingTop="@dimen/sb_size_5"
+    android:paddingRight="@dimen/sb_size_12"
+    android:paddingBottom="@dimen/sb_size_5"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/ivProfileView"
+        android:layout_width="@dimen/sb_size_28"
+        android:layout_height="@dimen/sb_size_28"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/sb_sender_profile_description"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvNickname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_12"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:paddingBottom="@dimen/sb_size_2"
+        android:singleLine="true"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintEnd_toStartOf="@+id/tvSentAt"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toEndOf="@id/ivProfileView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvSentAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tvNickname"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentPanel"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_12"
+        android:layout_marginTop="@dimen/sb_size_4"
+        app:layout_constraintWidth_max="@dimen/sb_open_channel_max_message_width"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/ivProfileView"
+        app:layout_constraintTop_toBottomOf="@id/tvNickname"
+        app:layout_constraintEnd_toEndOf="@id/guideline" >
+
+        <com.jet.im.kit.internal.ui.widgets.RoundCornerView
+            android:id="@+id/ivThumbnail"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="@dimen/sb_size_0"
+            android:background="@drawable/sb_shape_image_message_background"
+            app:layout_constraintDimensionRatio="3:2"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <ImageView
+            android:id="@+id/ivThumbnailOverlay"
+            android:background="@drawable/selector_file_message_bubble"
+            android:scaleType="centerInside"
+            android:contentDescription="@string/sb_view_open_channel_file_image_message_description"
+            app:layout_constraintStart_toStartOf="@id/ivThumbnail"
+            app:layout_constraintEnd_toEndOf="@id/ivThumbnail"
+            app:layout_constraintTop_toTopOf="@id/ivThumbnail"
+            app:layout_constraintBottom_toBottomOf="@id/ivThumbnail"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="@dimen/sb_size_0"/>
+
+        <ImageView
+            android:id="@+id/ivThumbnailIcon"
+            android:background="@drawable/selector_file_message_bubble"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="@id/ivThumbnail"
+            app:layout_constraintEnd_toEndOf="@id/ivThumbnail"
+            app:layout_constraintTop_toTopOf="@id/ivThumbnail"
+            app:layout_constraintBottom_toBottomOf="@id/ivThumbnail"
+            android:layout_width="@dimen/sb_size_48"
+            android:layout_height="@dimen/sb_size_48"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.jet.im.kit.internal.ui.messages.MyMessageStatusView
+        android:id="@+id/ivStatus"
+        android:layout_width="@dimen/sb_size_16"
+        android:layout_height="@dimen/sb_size_16"
+        android:layout_marginTop="@dimen/sb_size_2"
+        android:layout_marginStart="@dimen/sb_size_40"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contentPanel" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

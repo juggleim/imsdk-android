@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/tvFormFieldTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvFormFieldTitleOptional"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_2"
+        android:text="@string/sb_forms_optional"
+        app:layout_constraintTop_toTopOf="@id/tvFormFieldTitle"
+        app:layout_constraintBottom_toBottomOf="@id/tvFormFieldTitle"
+        app:layout_constraintStart_toEndOf="@id/tvFormFieldTitle"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrierFormFieldTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvFormFieldTitle, tvFormFieldTitleOptional"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/barrierFormFieldTitle">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/unansweredLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/etFormField"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_36"
+                android:layout_marginTop="@dimen/sb_size_8"
+                android:paddingStart="@dimen/sb_size_12"
+                android:paddingEnd="@dimen/sb_size_12"
+                android:paddingTop="@dimen/sb_size_8"
+                android:paddingBottom="@dimen/sb_size_8"
+                android:maxLines="1"
+                android:inputType="text"
+                android:hint="@string/sb_edittext_hint_default_description"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="Autofill" />
+            <TextView
+                android:id="@+id/tvFormFieldError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/sb_size_4"
+                android:text="@string/sb_forms_invalid_form_field"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@id/etFormField"
+                app:layout_constraintTop_toBottomOf="@id/etFormField"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/answeredLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_36"
+            android:paddingStart="@dimen/sb_size_12"
+            android:paddingEnd="@dimen/sb_size_12"
+            android:layout_marginTop="@dimen/sb_size_8">
+            <TextView
+                android:id="@+id/tvAnswer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/iconDone"/>
+            <ImageView
+                android:id="@+id/iconDone"
+                android:layout_width="@dimen/sb_size_20"
+                android:layout_height="@dimen/sb_size_20"
+                android:src="@drawable/icon_done"
+                android:importantForAccessibility="no"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

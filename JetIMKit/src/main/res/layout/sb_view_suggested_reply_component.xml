@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/tvSuggestedReply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/sb_size_7"
+        android:paddingBottom="@dimen/sb_size_7"
+        android:paddingStart="@dimen/sb_size_12"
+        android:paddingEnd="@dimen/sb_size_12"
+        android:background="@drawable/sb_suggested_replies_button_light"
+        android:textSize="@dimen/sb_text_size_14"
+        android:textColor="@color/primary_300"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,19 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_centerInParent="true"
+        android:padding="@dimen/sb_size_10"
+        android:background="@drawable/sb_shape_dialog_rounded"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <com.jet.im.kit.internal.ui.widgets.ProgressView
+            android:id="@+id/rotateloading"
+            android:layout_width="@dimen/sb_size_60"
+            android:layout_height="@dimen/sb_size_60"/>
+    </FrameLayout>
+
+</RelativeLayout>

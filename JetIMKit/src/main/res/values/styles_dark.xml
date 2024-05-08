@@ -1,0 +1,1113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme.Dark">
+        <item name="colorPrimary">@color/primary_200</item>
+        <item name="colorPrimaryDark">@color/background_500</item>
+        <item name="colorAccent">@color/secondary_200</item>
+    </style>
+
+    <!-- THEME -->
+    <style name="AppTheme.Dark.Sendbird">
+        <item name="sb_module_banned_user_list">@style/Module.Dark.BannedUserList</item>
+        <item name="sb_module_channel_list">@style/Module.Dark.ChannelList</item>
+        <item name="sb_module_channel">@style/Module.Dark.Channel</item>
+        <item name="sb_module_channel_settings">@style/Module.Dark.ChannelSettings</item>
+        <item name="sb_module_create_channel">@style/Module.Dark.CreateChannel</item>
+        <item name="sb_module_invite_user">@style/Module.Dark.InviteUser</item>
+        <item name="sb_module_member_list">@style/Module.Dark.MemberList</item>
+        <item name="sb_module_message_search">@style/Module.Dark.MessageSearch</item>
+        <item name="sb_module_moderation">@style/Module.Dark.Moderation</item>
+        <item name="sb_module_muted_member_list">@style/Module.Dark.MutedMemberList</item>
+        <item name="sb_module_open_channel">@style/Module.Dark.OpenChannel</item>
+        <item name="sb_module_open_channel_settings">@style/Module.Dark.OpenChannelSettings</item>
+        <item name="sb_module_operator_list">@style/Module.Dark.OperatorList</item>
+        <item name="sb_module_participant_list">@style/Module.Dark.ParticipantsList</item>
+        <item name="sb_module_register_operator_list">@style/Module.Dark.RegisterOperator</item>
+        <item name="sb_module_channel_push_setting">@style/Module.Dark.ChannelPushSetting</item>
+        <item name="sb_module_open_channel_moderation">@style/Module.Dark.OpenChannelModeration</item>
+        <item name="sb_module_open_channel_register_operator">@style/Module.Dark.OpenChannelRegisterOperator</item>
+        <item name="sb_module_open_channel_operator_list">@style/Module.Dark.OpenChannelOperatorList</item>
+        <item name="sb_module_open_channel_muted_participant_list">@style/Module.Dark.OpenChannelMutedParticipantList</item>
+        <item name="sb_module_open_channel_banned_user_list">@style/Module.Dark.OpenChannelBannedUserList</item>
+        <item name="sb_module_create_open_channel">@style/Module.Dark.CreateOpenChannel</item>
+        <item name="sb_module_open_channel_list">@style/Module.Dark.OpenChannelList</item>
+        <item name="sb_module_message_thread">@style/Module.Dark.MessageThread</item>
+        <item name="sb_module_feed_notification_channel">@style/Module.Dark.FeedNotificationChannel</item>
+        <item name="sb_module_chat_notification_channel">@style/Module.Dark.ChatNotificationChannel</item>
+
+        <item name="sb_component_channel_message_input">@style/Component.Dark.ChannelMessageInput</item>
+        <item name="sb_component_channel_settings_info">@style/Component.Dark.ChannelSettingsInfo</item>
+        <item name="sb_component_channel_settings_menu">@style/Component.Dark.ChannelSettingsMenu</item>
+        <item name="sb_component_message_search_header">@style/Component.Dark.MessageSearchHeader</item>
+        <item name="sb_component_moderation_list">@style/Component.Dark.ModerationList</item>
+        <item name="sb_component_open_channel_message_input">@style/Component.Dark.OpenChannelMessageInput</item>
+        <item name="sb_component_open_channel_settings_info">@style/Component.Dark.OpenChannelSettingsInfo</item>
+        <item name="sb_component_open_channel_settings_menu">@style/Component.Dark.OpenChannelSettingsMenu</item>
+        <item name="sb_component_header">@style/Component.Dark.Header</item>
+        <item name="sb_component_state_header">@style/Component.Dark.Header.State</item>
+        <item name="sb_component_list">@style/Component.Dark.List</item>
+        <item name="sb_component_status">@style/Component.Dark.Status</item>
+        <item name="sb_component_channel_push_setting">@style/Component.Dark.ChannelPushSetting</item>
+        <item name="sb_component_channel_profile_input">@style/Component.Dark.ChannelProfileInput</item>
+    </style>
+
+    <!-- MODULES -->
+    <style name="Module.Dark"/>
+    <style name="Module.Dark.BannedUserList">
+        <item name="sb_component_header">@style/Component.Dark.Header.BannedUserList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.BannedUserList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.BannedUserList</item>
+    </style>
+    <style name="Module.Dark.ChannelList">
+        <item name="sb_component_header">@style/Component.Dark.Header.ChannelList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.ChannelList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.ChannelList</item>
+    </style>
+    <style name="Module.Dark.Channel">
+        <item name="sb_component_header">@style/Component.Dark.Header.Channel</item>
+        <item name="sb_component_list">@style/Component.Dark.List.Channel</item>
+        <item name="sb_component_channel_message_input">@style/Component.Dark.ChannelMessageInput</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.Channel</item>
+    </style>
+    <style name="Module.Dark.ChannelSettings">
+        <item name="sb_component_state_header">@style/Component.Dark.Header.State.ChannelSettings</item>
+        <item name="sb_component_channel_settings_info">@style/Component.Dark.ChannelSettingsInfo</item>
+        <item name="sb_component_channel_settings_menu">@style/Component.Dark.ChannelSettingsMenu</item>
+    </style>
+    <style name="Module.Dark.CreateChannel">
+        <item name="sb_component_state_header">@style/Component.Dark.Header.State.CreateChannel</item>
+        <item name="sb_component_list">@style/Component.Dark.List.CreateChannel</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.CreateChannel</item>
+    </style>
+    <style name="Module.Dark.InviteUser">
+        <item name="sb_component_state_header">@style/Component.Dark.Header.State.InviteUser</item>
+        <item name="sb_component_list">@style/Component.Dark.List.InviteUser</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.InviteUser</item>
+    </style>
+    <style name="Module.Dark.MemberList">
+        <item name="sb_component_header">@style/Component.Dark.Header.MemberList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.MemberList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.MemberList</item>
+    </style>
+    <style name="Module.Dark.MessageSearch">
+        <item name="sb_component_message_search_header">@style/Component.Dark.MessageSearchHeader</item>
+        <item name="sb_component_list">@style/Component.Dark.List.MessageSearch</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.MessageSearch</item>
+    </style>
+    <style name="Module.Dark.Moderation">
+        <item name="sb_component_header">@style/Component.Dark.Header.Moderation</item>
+        <item name="sb_component_moderation_list">@style/Component.Dark.ModerationList</item>
+    </style>
+    <style name="Module.Dark.MutedMemberList">
+        <item name="sb_component_header">@style/Component.Dark.Header.MutedMemberList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.MutedMemberList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.MutedMemberList</item>
+    </style>
+    <style name="Module.Dark.OpenChannel">
+        <item name="sb_component_header">@style/Component.Dark.Header.OpenChannel</item>
+        <item name="sb_component_list">@style/Component.Dark.List.OpenChannel</item>
+        <item name="sb_component_open_channel_message_input">@style/Component.Dark.OpenChannelMessageInput</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.OpenChannel</item>
+    </style>
+    <style name="Module.Dark.OpenChannelSettings">
+        <item name="sb_component_state_header">@style/Component.Dark.Header.State.OpenChannelSettings</item>
+        <item name="sb_component_open_channel_settings_info">@style/Component.Dark.OpenChannelSettingsInfo</item>
+        <item name="sb_component_open_channel_settings_menu">@style/Component.Dark.OpenChannelSettingsMenu</item>
+    </style>
+    <style name="Module.Dark.OperatorList">
+        <item name="sb_component_header">@style/Component.Dark.Header.OperatorList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.OperatorList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.OperatorList</item>
+    </style>
+    <style name="Module.Dark.ParticipantsList">
+        <item name="sb_component_header">@style/Component.Dark.Header.ParticipantsList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.ParticipantsList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.ParticipantsList</item>
+    </style>
+    <style name="Module.Dark.RegisterOperator">
+        <item name="sb_component_state_header">@style/Component.Dark.Header.State.RegisterOperator</item>
+        <item name="sb_component_list">@style/Component.Dark.List.RegisterOperator</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.RegisterOperator</item>
+    </style>
+    <style name="Module.Dark.ChannelPushSetting">
+        <item name="sb_component_header">@style/Component.Dark.Header.ChannelPushSetting</item>
+        <item name="sb_component_channel_push_setting">@style/Component.Dark.ChannelPushSetting</item>
+    </style>
+    <style name="Module.Dark.OpenChannelModeration">
+        <item name="sb_component_header">@style/Component.Dark.Header.OpenChannelModeration</item>
+        <item name="sb_component_moderation_list">@style/Component.Dark.OpenChannelModerationList</item>
+    </style>
+    <style name="Module.Dark.OpenChannelRegisterOperator">
+        <item name="sb_component_state_header">@style/Component.Dark.Header.State.OpenChannelRegisterOperator</item>
+        <item name="sb_component_list">@style/Component.Dark.List.OpenChannelRegisterOperator</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.OpenChannelRegisterOperator</item>
+    </style>
+    <style name="Module.Dark.OpenChannelOperatorList">
+        <item name="sb_component_header">@style/Component.Dark.Header.OpenChannelOperatorList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.OpenChannelOperatorList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.OpenChannelOperatorList</item>
+    </style>
+    <style name="Module.Dark.OpenChannelMutedParticipantList">
+        <item name="sb_component_header">@style/Component.Dark.Header.OpenChannelMutedParticipantList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.OpenChannelMutedParticipantList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.OpenChannelMutedParticipantList</item>
+    </style>
+    <style name="Module.Dark.OpenChannelBannedUserList">
+        <item name="sb_component_header">@style/Component.Dark.Header.OpenChannelBannedUserList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.OpenChannelBannedUserList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.OpenChannelBannedUserList</item>
+    </style>
+    <style name="Module.Dark.CreateOpenChannel">
+        <item name="sb_component_state_header">@style/Component.Dark.Header.State.CreateOpenChannel</item>
+        <item name="sb_component_channel_profile_input">@style/Component.Dark.ChannelProfileInput</item>
+    </style>
+    <style name="Module.Dark.OpenChannelList">
+        <item name="sb_component_header">@style/Component.Dark.Header.OpenChannelList</item>
+        <item name="sb_component_list">@style/Component.Dark.List.OpenChannelList</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.OpenChannelList</item>
+    </style>
+    <style name="Module.Dark.MessageThread">
+        <item name="sb_component_header">@style/Component.Dark.Header.MessageThread</item>
+        <item name="sb_component_list">@style/Component.Dark.List.MessageThread</item>
+        <item name="sb_component_channel_message_input">@style/Component.Dark.MessageThreadInput</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.MessageThread</item>
+    </style>
+    <style name="Module.Dark.FeedNotificationChannel">
+        <item name="sb_component_header">@style/Component.Dark.Header.FeedNotificationChannel</item>
+        <item name="sb_component_list">@style/Component.Dark.List.FeedNotificationChannel</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.FeedNotificationChannel</item>
+        <item name="sb_category_filter_background">@drawable/selector_category_filter_menu_dark</item>
+        <item name="sb_category_filter_text_color">@drawable/selector_category_filter_menu_text_color_dark</item>
+        <item name="sb_category_filter_text_appearance">@style/SendbirdCaption2OnDark01</item>
+    </style>
+    <style name="Module.Dark.ChatNotificationChannel">
+        <item name="sb_component_header">@style/Component.Dark.Header.ChatNotificationChannel</item>
+        <item name="sb_component_list">@style/Component.Dark.List.ChatNotificationChannel</item>
+        <item name="sb_component_status">@style/Component.Dark.Status.ChatNotificationChannel</item>
+    </style>
+
+    <style name="Component.Dark.ChannelProfileInput">
+        <item name="sb_channel_profile_input_background">@color/background_600</item>
+        <item name="sb_channel_profile_input_text_input_background">@drawable/sb_shape_edit_text_background_dark</item>
+        <item name="sb_channel_profile_input_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_channel_profile_input_hint_text">@string/text_input_channel_name_hint</item>
+        <item name="sb_channel_profile_input_hint_text_color">@color/ondark_03</item>
+        <item name="sb_channel_profile_input_clear_icon">@drawable/icon_remove</item>
+        <item name="sb_channel_profile_input_clear_icon_tint_color">@color/ondark_03</item>
+        <item name="sb_channel_profile_input_cursor_drawable">@drawable/sb_message_input_cursor_dark</item>
+        <item name="sb_channel_profile_input_media_select_icon_background">@drawable/sb_shape_circle_background_300</item>
+        <item name="sb_channel_profile_input_camera_icon">@drawable/icon_camera</item>
+        <item name="sb_channel_profile_input_camera_icon_tint">@color/onlight_01</item>
+    </style>
+
+    <style name="Component.Dark.Header.MessageThread">
+        <item name="sb_appbar_title">@string/sb_text_header_message_thread</item>
+        <item name="sb_appbar_description_appearance">@style/SendbirdCaption2Primary200</item>
+    </style>
+    <style name="Component.Dark.List.MessageThread">
+        <item name="sb_message_recyclerview_background">@color/background_600</item>
+        <item name="sb_message_recyclerview_banner_background">@drawable/sb_shape_channel_information_bg</item>
+        <item name="sb_message_recyclerview_banner_textappearance">@style/SendbirdCaption2OnLight01</item>
+
+        <item name="sb_widget_ogtag">@style/Widget.Sendbird.Dark.OgTag</item>
+        <item name="sb_widget_my_message">@style/Widget.Sendbird.Dark.Message.Me</item>
+        <item name="sb_widget_other_message">@style/Widget.Sendbird.Dark.Message.Other</item>
+        <item name="sb_widget_my_user_message">@style/Widget.Sendbird.Dark.Message.Me.User</item>
+        <item name="sb_widget_my_file_message">@style/Widget.Sendbird.Dark.Message.Me.File</item>
+        <item name="sb_widget_other_user_message">@style/Widget.Sendbird.Dark.Message.Other.User</item>
+        <item name="sb_widget_other_file_message">@style/Widget.Sendbird.Dark.Message.Other.File</item>
+        <item name="sb_widget_admin_message">@style/Widget.Sendbird.Dark.Message.Admin</item>
+        <item name="sb_widget_timeline_message">@style/Widget.Sendbird.Dark.Message.Timeline</item>
+        <item name="sb_widget_emoji_message">@style/Widget.Sendbird.Dark.Emoji</item>
+        <item name="sb_widget_parent_message_info">@style/Widget.Sendbird.Dark.ParentMessageInfo</item>
+        <item name="sb_widget_my_voice_message">@style/Widget.Sendbird.Dark.Message.Me.VoiceMessage</item>
+        <item name="sb_widget_other_voice_message">@style/Widget.Sendbird.Dark.Message.Other.VoiceMessage</item>
+        <item name="sb_widget_my_multiple_files_message">@style/Widget.Sendbird.Dark.Message.Me.MultipleFilesMessage</item>
+        <item name="sb_widget_other_multiple_files_message">@style/Widget.Sendbird.Dark.Message.Other.MultipleFilesMessage</item>
+    </style>
+    <style name="Component.Dark.MessageThreadInput">
+        <item name="sb_message_input_background">@color/background_600</item>
+        <item name="sb_message_input_text_background">@drawable/sb_message_input_text_background_dark</item>
+        <item name="sb_message_input_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_message_input_text_hint">@string/sb_text_channel_input_text_hint</item>
+        <item name="sb_message_input_text_hint_color">@drawable/selector_message_input_hint_text_color_dark</item>
+        <item name="sb_message_input_text_cursor_drawable">@drawable/sb_message_input_cursor_dark</item>
+
+        <item name="sb_message_input_left_button_icon">@drawable/icon_add</item>
+        <item name="sb_message_input_left_button_tint">@color/sb_selector_input_add_color_dark</item>
+        <item name="sb_message_input_left_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_message_input_right_button_icon">@drawable/icon_send</item>
+        <item name="sb_message_input_right_button_tint">@color/primary_200</item>
+        <item name="sb_message_input_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_message_input_voice_recorder_button_icon">@drawable/icon_voice_message_on</item>
+        <item name="sb_message_input_voice_recorder_button_tint">@color/sb_selector_input_voice_color_dark</item>
+        <item name="sb_message_input_voice_recorder_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_message_input_edit_save_button_text_appearance">@style/SendbirdButtonOnLight01</item>
+        <item name="sb_message_input_edit_save_button_text_color">@color/sb_button_contained_text_color_dark</item>
+        <item name="sb_message_input_edit_save_button_background">@drawable/sb_button_contained_background_dark</item>
+        <item name="sb_message_input_edit_cancel_button_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_message_input_edit_cancel_button_text_color">@color/sb_button_uncontained_text_color_dark</item>
+        <item name="sb_message_input_edit_cancel_button_background">@drawable/sb_button_uncontained_background_dark</item>
+
+        <!-- mention -->
+        <item name="sb_recycler_view_background">@drawable/sb_suggested_mention_list_background_dark</item>
+        <item name="sb_recycler_view_divide_line_color">@color/ondark_04</item>
+        <item name="sb_recycler_view_divide_line_height">@dimen/sb_size_1</item>
+        <item name="sb_recycler_view_divide_margin_left">@dimen/sb_size_52</item>
+        <item name="sb_recycler_view_divide_margin_right">0dp</item>
+        <item name="sb_widget_suggested_mention_preview">@style/Widget.Sendbird.Dark.SuggestedMentionPreview</item>
+        <item name="sb_widget_themeable_snackbar">@style/Widget.Sendbird.Dark.Snackbar</item>
+
+        <item name="sb_widget_voice_message_input_view">@style/Widget.Sendbird.Dark.VoiceMessageInputView</item>
+    </style>
+    <style name="Component.Dark.Status.MessageThread">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_message</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_channel_message_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_thread_list</item>
+    </style>
+    <style name="Component.Dark.Header.FeedNotificationChannel">
+        <item name="sb_appbar_title">@string/sb_text_header_channel_list</item>
+    </style>
+    <style name="Component.Dark.List.FeedNotificationChannel">
+        <item name="sb_widget_feed_notification">@style/Widget.Sendbird.Dark.Message.FeedNotificationChannel</item>
+        <item name="sb_notification_recyclerview_background">@color/background_600</item>
+        <item name="sb_notification_recyclerview_tooltip_background">@color/primary_200</item>
+        <item name="sb_notification_recyclerview_tooltip_text_appearance">@style/SendbirdBody2OnLight01</item>
+    </style>
+    <style name="Component.Dark.Status.FeedNotificationChannel">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_message</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_notification_channel_message_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_notification_channel_list_error</item>
+    </style>
+    <style name="Component.Dark.Header.ChatNotificationChannel">
+        <item name="sb_appbar_title">@string/sb_text_header_channel_list</item>
+    </style>
+    <style name="Component.Dark.List.ChatNotificationChannel">
+        <item name="sb_widget_chat_notification">@style/Widget.Sendbird.Dark.Message.ChatNotificationChannel</item>
+        <item name="sb_notification_recyclerview_background">@color/background_600</item>
+        <item name="sb_notification_recyclerview_tooltip_background">@color/primary_200</item>
+        <item name="sb_notification_recyclerview_tooltip_text_appearance">@style/SendbirdBody2OnLight01</item>
+    </style>
+    <style name="Component.Dark.Status.ChatNotificationChannel">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_message</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_notification_channel_message_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_notification_channel_list_error</item>
+    </style>
+
+    <!-- COMPONENTS -->
+    <style name="Component.Dark"/>
+    <style name="Component.Dark.List">
+        <item name="sb_recycler_view_background">@color/background_600</item>
+        <item name="sb_recycler_view_divide_line_color">@color/ondark_04</item>
+        <item name="sb_recycler_view_divide_line_height">@dimen/sb_size_1</item>
+        <item name="sb_recycler_view_divide_margin_left">0dp</item>
+        <item name="sb_recycler_view_divide_margin_right">0dp</item>
+    </style>
+    <style name="Component.Dark.Header">
+        <item name="sb_appbar_background">@color/background_500</item>
+        <item name="sb_appbar_title"/>
+        <item name="sb_appbar_title_appearance">@style/SendbirdH1OnDark01</item>
+        <item name="sb_appbar_left_button_icon">@drawable/icon_arrow_left</item>
+        <item name="sb_appbar_left_button_tint">@color/primary_200</item>
+        <item name="sb_appbar_left_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_appbar_divider_color">@android:color/transparent</item>
+    </style>
+    <style name="Component.Dark.Header.State">
+        <item name="sb_appbar_right_button_text"/>
+        <item name="sb_appbar_right_button_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_appbar_right_button_text_color">@color/sb_button_uncontained_text_color_dark</item>
+        <item name="sb_appbar_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+    <style name="Component.Dark.Status">
+        <item name="sb_status_frame_background">@color/background_600</item>
+        <item name="sb_status_frame_text_appearance">@style/SendbirdBody3OnDark03</item>
+        <item name="sb_status_frame_action_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_status_frame_action_background">@drawable/selector_button_retry_dark</item>
+        <item name="sb_status_frame_action_icon">@drawable/icon_refresh</item>
+        <item name="sb_status_frame_error_icon">@drawable/icon_error</item>
+        <item name="sb_status_frame_error_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_action_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+    </style>
+
+    <style name="Component.Dark.Header.BannedUserList">
+        <item name="sb_appbar_title">@string/sb_text_menu_banned_users</item>
+    </style>
+    <style name="Component.Dark.List.BannedUserList">
+        <item name="sb_widget_user_preview">@style/Widget.Sendbird.Dark.UserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.BannedUserList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_ban</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_empty_no_banned_users</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.ChannelList">
+        <item name="sb_appbar_title">@string/sb_text_header_channel_list</item>
+        <item name="sb_appbar_right_button_icon">@drawable/icon_create</item>
+        <item name="sb_appbar_right_button_tint">@color/primary_200</item>
+        <item name="sb_appbar_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_widget_select_channel_type">@style/Widget.Sendbird.Dark.SelectChannelTypeView</item>
+    </style>
+    <style name="Component.Dark.List.ChannelList">
+        <item name="sb_widget_channel_preview">@style/Widget.Sendbird.Dark.ChannelPreview</item>
+    </style>
+    <style name="Component.Dark.Status.ChannelList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_chat</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_channel_list_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_channel_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.Channel">
+        <item name="sb_appbar_description_appearance">@style/SendbirdCaption2OnDark03</item>
+        <item name="sb_appbar_right_button_icon">@drawable/icon_info</item>
+        <item name="sb_appbar_right_button_tint">@color/primary_200</item>
+        <item name="sb_appbar_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+    <style name="Component.Dark.List.Channel">
+        <item name="sb_message_recyclerview_background">@color/background_600</item>
+        <item name="sb_message_recyclerview_tooltip_background">@drawable/selector_tooltip_background_dark</item>
+        <item name="sb_message_recyclerview_tooltip_textappearance">@style/SendbirdCaption1Primary200</item>
+        <item name="sb_message_recyclerview_banner_background">@drawable/sb_shape_channel_information_bg</item>
+        <item name="sb_message_recyclerview_banner_textappearance">@style/SendbirdCaption2OnLight01</item>
+        <item name="sb_message_typing_indicator_textappearance">@style/SendbirdCaption1OnDark02</item>
+        <item name="sb_message_scroll_bottom_background">@drawable/selector_scroll_bottom_dark</item>
+        <item name="sb_message_scroll_bottom_icon">@drawable/icon_chevron_down</item>
+        <item name="sb_message_scroll_bottom_icon_tint">@color/primary_200</item>
+
+        <item name="sb_widget_ogtag">@style/Widget.Sendbird.Dark.OgTag</item>
+        <item name="sb_widget_my_message">@style/Widget.Sendbird.Dark.Message.Me</item>
+        <item name="sb_widget_other_message">@style/Widget.Sendbird.Dark.Message.Other</item>
+        <item name="sb_widget_my_user_message">@style/Widget.Sendbird.Dark.Message.Me.User</item>
+        <item name="sb_widget_my_file_message">@style/Widget.Sendbird.Dark.Message.Me.File</item>
+        <item name="sb_widget_other_user_message">@style/Widget.Sendbird.Dark.Message.Other.User</item>
+        <item name="sb_widget_other_file_message">@style/Widget.Sendbird.Dark.Message.Other.File</item>
+        <item name="sb_widget_admin_message">@style/Widget.Sendbird.Dark.Message.Admin</item>
+        <item name="sb_widget_timeline_message">@style/Widget.Sendbird.Dark.Message.Timeline</item>
+        <item name="sb_widget_emoji_message">@style/Widget.Sendbird.Dark.Emoji</item>
+        <item name="sb_widget_thread_info">@style/Widget.Sendbird.Dark.ThreadInfoView</item>
+        <item name="sb_widget_my_voice_message">@style/Widget.Sendbird.Dark.Message.Me.VoiceMessage</item>
+        <item name="sb_widget_other_voice_message">@style/Widget.Sendbird.Dark.Message.Other.VoiceMessage</item>
+        <item name="sb_widget_my_multiple_files_message">@style/Widget.Sendbird.Dark.Message.Me.MultipleFilesMessage</item>
+        <item name="sb_widget_other_multiple_files_message">@style/Widget.Sendbird.Dark.Message.Other.MultipleFilesMessage</item>
+        <item name="sb_widget_feedback">@style/Widget.Sendbird.Dark.Feedback</item>
+    </style>
+    <style name="Component.Dark.ChannelMessageInput">
+        <item name="sb_message_input_background">@color/background_600</item>
+        <item name="sb_message_input_text_background">@drawable/sb_message_input_text_background_dark</item>
+        <item name="sb_message_input_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_message_input_text_hint">@string/sb_text_channel_input_text_hint</item>
+        <item name="sb_message_input_text_hint_color">@drawable/selector_message_input_hint_text_color_dark</item>
+        <item name="sb_message_input_text_cursor_drawable">@drawable/sb_message_input_cursor_dark</item>
+
+        <item name="sb_message_input_left_button_icon">@drawable/icon_add</item>
+        <item name="sb_message_input_left_button_tint">@color/sb_selector_input_add_color_dark</item>
+        <item name="sb_message_input_left_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_message_input_right_button_icon">@drawable/icon_send</item>
+        <item name="sb_message_input_right_button_tint">@color/primary_200</item>
+        <item name="sb_message_input_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_message_input_voice_recorder_button_icon">@drawable/icon_voice_message_on</item>
+        <item name="sb_message_input_voice_recorder_button_tint">@color/sb_selector_input_voice_color_dark</item>
+        <item name="sb_message_input_voice_recorder_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_message_input_edit_save_button_text_appearance">@style/SendbirdButtonOnLight01</item>
+        <item name="sb_message_input_edit_save_button_text_color">@color/sb_button_contained_text_color_dark</item>
+        <item name="sb_message_input_edit_save_button_background">@drawable/sb_button_contained_background_dark</item>
+        <item name="sb_message_input_edit_cancel_button_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_message_input_edit_cancel_button_text_color">@color/sb_button_uncontained_text_color_dark</item>
+        <item name="sb_message_input_edit_cancel_button_background">@drawable/sb_button_uncontained_background_dark</item>
+
+        <item name="sb_message_input_quote_reply_title_text_appearance">@style/SendbirdCaption1OnDark01</item>
+        <item name="sb_message_input_quoted_message_text_appearance">@style/SendbirdCaption2OnDark03</item>
+        <item name="sb_message_input_quote_reply_right_icon">@drawable/icon_close</item>
+        <item name="sb_message_input_quote_reply_right_icon_tint">@color/ondark_02</item>
+        <item name="sb_message_input_quote_reply_right_icon_background">@drawable/sb_button_uncontained_background_dark</item>
+
+        <!-- mention -->
+        <item name="sb_recycler_view_background">@drawable/sb_suggested_mention_list_background_dark</item>
+        <item name="sb_recycler_view_divide_line_color">@color/ondark_04</item>
+        <item name="sb_recycler_view_divide_line_height">@dimen/sb_size_1</item>
+        <item name="sb_recycler_view_divide_margin_left">@dimen/sb_size_52</item>
+        <item name="sb_recycler_view_divide_margin_right">0dp</item>
+        <item name="sb_widget_suggested_mention_preview">@style/Widget.Sendbird.Dark.SuggestedMentionPreview</item>
+        <item name="sb_widget_themeable_snackbar">@style/Widget.Sendbird.Dark.Snackbar</item>
+
+        <item name="sb_widget_voice_message_input_view">@style/Widget.Sendbird.Dark.VoiceMessageInputView</item>
+    </style>
+    <style name="Component.Dark.Status.Channel">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_message</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_channel_message_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_channel</item>
+    </style>
+
+    <style name="Component.Dark.Header.State.ChannelSettings">
+        <item name="sb_appbar_title">@string/sb_text_header_channel_settings</item>
+        <item name="sb_appbar_right_button_text">@string/sb_text_button_edit</item>
+    </style>
+    <style name="Component.Dark.ChannelSettingsInfo">
+        <item name="sb_channel_settings_background">@color/background_600</item>
+        <item name="sb_channel_settings_name_appearance">@style/SendbirdSubtitle1OnDark01</item>
+        <item name="sb_channel_settings_description_appearance">@style/SendbirdSubtitle2OnDark02</item>
+    </style>
+    <style name="Component.Dark.ChannelSettingsMenu">
+        <item name="sb_menu_item_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_menu_item_name_appearance">@style/SendbirdSubtitle2OnDark01</item>
+        <item name="sb_menu_item_description_appearance">@style/SendbirdSubtitle2OnDark02</item>
+        <item name="sb_menu_item_icon_tint">@color/primary_200</item>
+    </style>
+
+    <style name="Component.Dark.Header.State.CreateChannel">
+        <item name="sb_appbar_title">@string/sb_text_header_create_channel</item>
+    </style>
+    <style name="Component.Dark.List.CreateChannel">
+        <item name="sb_widget_select_user_preview">@style/Widget.Sendbird.Dark.SelectUserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.CreateChannel">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_members</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_user_list_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.State.InviteUser">
+        <item name="sb_appbar_title">@string/sb_text_header_invite_member</item>
+    </style>
+    <style name="Component.Dark.List.InviteUser">
+        <item name="sb_widget_select_user_preview">@style/Widget.Sendbird.Dark.SelectUserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.InviteUser">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_members</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_user_list_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.MemberList">
+        <item name="sb_appbar_title">@string/sb_text_header_member_list</item>
+        <item name="sb_appbar_right_button_icon">@drawable/icon_plus</item>
+        <item name="sb_appbar_right_button_tint">@color/primary_200</item>
+        <item name="sb_appbar_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+    <style name="Component.Dark.List.MemberList">
+        <item name="sb_widget_user_preview">@style/Widget.Sendbird.Dark.UserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.MemberList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_members</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_user_list_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.State.CreateOpenChannel">
+        <item name="sb_appbar_title">@string/sb_text_header_create_channel</item>
+    </style>
+
+    <style name="Component.Dark.MessageSearchHeader">
+        <item name="sb_search_bar_background">@color/background_500</item>
+        <item name="sb_search_divider_color">@color/ondark_04</item>
+        <item name="sb_search_bar_text_input_background">@drawable/sb_shape_search_background_dark</item>
+        <item name="sb_search_bar_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_search_bar_hint_text">@string/sb_text_button_search</item>
+        <item name="sb_search_bar_hint_text_color">@color/ondark_03</item>
+        <item name="sb_search_bar_clear_icon">@drawable/icon_remove</item>
+        <item name="sb_search_bar_clear_icon_tint_color">@color/ondark_03</item>
+        <item name="sb_search_bar_search_text">@string/sb_text_button_search</item>
+        <item name="sb_search_bar_search_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_search_bar_search_text_color">@color/sb_button_uncontained_text_color_dark</item>
+        <item name="sb_search_bar_search_text_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_search_bar_cursor_drawable">@drawable/sb_message_input_cursor_dark</item>
+        <item name="sb_search_bar_search_icon">@drawable/icon_search</item>
+        <item name="sb_search_bar_search_icon_tint_color">@color/ondark_03</item>
+    </style>
+    <style name="Component.Dark.List.MessageSearch">
+        <item name="sb_widget_message_preview">@style/Widget.Sendbird.Dark.MessagePreview</item>
+    </style>
+    <style name="Component.Dark.Status.MessageSearch">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_search</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_search_result_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_search_failure</item>
+    </style>
+
+    <style name="Component.Dark.Header.Moderation">
+        <item name="sb_appbar_title">@string/sb_text_channel_settings_moderations</item>
+    </style>
+    <style name="Component.Dark.ModerationList">
+        <item name="sb_menu_item_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_menu_item_name_appearance">@style/SendbirdSubtitle2OnDark01</item>
+        <item name="sb_menu_item_icon_tint">@color/primary_200</item>
+    </style>
+
+    <style name="Component.Dark.Header.MutedMemberList">
+        <item name="sb_appbar_title">@string/sb_text_menu_muted_members</item>
+    </style>
+    <style name="Component.Dark.List.MutedMemberList">
+        <item name="sb_widget_user_preview">@style/Widget.Sendbird.Dark.UserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.MutedMemberList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_mute</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_empty_no_muted_member</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.OpenChannel">
+        <item name="sb_appbar_description_appearance">@style/SendbirdCaption2OnDark03</item>
+        <item name="sb_appbar_right_button_icon">@drawable/icon_members</item>
+        <item name="sb_appbar_right_button_tint">@color/primary_200</item>
+        <item name="sb_appbar_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+    <style name="Component.Dark.List.OpenChannel">
+        <item name="sb_message_recyclerview_background">@color/background_600</item>
+        <item name="sb_message_recyclerview_tooltip_background">@drawable/selector_tooltip_background_dark</item>
+        <item name="sb_message_recyclerview_tooltip_textappearance">@style/SendbirdCaption1Primary200</item>
+        <item name="sb_message_recyclerview_banner_background">@drawable/sb_shape_channel_information_bg</item>
+        <item name="sb_message_recyclerview_banner_textappearance">@style/SendbirdCaption2OnLight01</item>
+        <item name="sb_message_typing_indicator_textappearance">@style/SendbirdCaption1OnDark02</item>
+        <item name="sb_message_scroll_bottom_background">@drawable/selector_scroll_bottom_dark</item>
+        <item name="sb_message_scroll_bottom_icon">@drawable/icon_chevron_down</item>
+        <item name="sb_message_scroll_bottom_icon_tint">@color/primary_200</item>
+
+        <item name="sb_widget_ogtag">@style/Widget.Sendbird.Dark.OpenChannel.OgTag</item>
+        <item name="sb_widget_user_message">@style/Widget.Sendbird.Dark.OpenChannel.Message.User</item>
+        <item name="sb_widget_file_message">@style/Widget.Sendbird.Dark.OpenChannel.Message.File</item>
+        <item name="sb_widget_admin_message">@style/Widget.Sendbird.Dark.OpenChannel.Message.Admin</item>
+        <item name="sb_widget_timeline_message">@style/Widget.Sendbird.Dark.Message.Timeline</item>
+    </style>
+    <style name="Component.Dark.OpenChannelMessageInput">
+        <item name="sb_message_input_background">@color/background_600</item>
+        <item name="sb_message_input_text_background">@drawable/sb_message_input_text_background_dark</item>
+        <item name="sb_message_input_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_message_input_text_hint">@string/sb_text_channel_input_text_hint</item>
+        <item name="sb_message_input_text_hint_color">@drawable/selector_message_input_hint_text_color_dark</item>
+        <item name="sb_message_input_text_cursor_drawable">@drawable/sb_message_input_cursor_dark</item>
+
+        <item name="sb_message_input_left_button_icon">@drawable/icon_add</item>
+        <item name="sb_message_input_left_button_tint">@color/sb_selector_input_add_color_dark</item>
+        <item name="sb_message_input_left_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_message_input_right_button_icon">@drawable/icon_send</item>
+        <item name="sb_message_input_right_button_tint">@color/primary_200</item>
+        <item name="sb_message_input_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_message_input_edit_save_button_text_appearance">@style/SendbirdButtonOnLight01</item>
+        <item name="sb_message_input_edit_save_button_text_color">@color/sb_button_contained_text_color_dark</item>
+        <item name="sb_message_input_edit_save_button_background">@drawable/sb_button_contained_background_dark</item>
+        <item name="sb_message_input_edit_cancel_button_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_message_input_edit_cancel_button_text_color">@color/sb_button_uncontained_text_color_dark</item>
+        <item name="sb_message_input_edit_cancel_button_background">@drawable/sb_button_uncontained_background_dark</item>
+
+        <item name="sb_message_input_quote_reply_title_text_appearance">@style/SendbirdCaption1OnDark01</item>
+        <item name="sb_message_input_quoted_message_text_appearance">@style/SendbirdCaption2OnDark03</item>
+        <item name="sb_message_input_quote_reply_right_icon">@drawable/icon_close</item>
+        <item name="sb_message_input_quote_reply_right_icon_tint">@color/ondark_02</item>
+        <item name="sb_message_input_quote_reply_right_icon_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+    <style name="Component.Dark.Status.OpenChannel">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_message</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_channel_message_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_channel</item>
+    </style>
+
+    <style name="Component.Dark.Header.State.OpenChannelSettings">
+        <item name="sb_appbar_title">@string/sb_text_header_channel_settings</item>
+        <item name="sb_appbar_right_button_text">@string/sb_text_button_edit</item>
+    </style>
+    <style name="Component.Dark.OpenChannelSettingsInfo">
+        <item name="sb_channel_settings_background">@color/background_600</item>
+        <item name="sb_channel_settings_name_appearance">@style/SendbirdSubtitle1OnDark01</item>
+        <item name="sb_channel_settings_description_appearance">@style/SendbirdSubtitle2OnDark02</item>
+    </style>
+    <style name="Component.Dark.OpenChannelSettingsMenu">
+        <item name="sb_menu_item_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_menu_item_name_appearance">@style/SendbirdSubtitle2OnDark01</item>
+        <item name="sb_menu_item_description_appearance">@style/SendbirdSubtitle2OnDark02</item>
+        <item name="sb_menu_item_icon_tint">@color/primary_200</item>
+    </style>
+
+    <style name="Component.Dark.Header.OperatorList">
+        <item name="sb_appbar_title">@string/sb_text_menu_operators</item>
+        <item name="sb_appbar_right_button_icon">@drawable/icon_plus</item>
+        <item name="sb_appbar_right_button_tint">@color/primary_200</item>
+        <item name="sb_appbar_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+    <style name="Component.Dark.List.OperatorList">
+        <item name="sb_widget_user_preview">@style/Widget.Sendbird.Dark.UserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.OperatorList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_members</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_empty_no_operator_member</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.ParticipantsList">
+        <item name="sb_appbar_title">@string/sb_text_header_participants</item>
+    </style>
+    <style name="Component.Dark.List.ParticipantsList">
+        <item name="sb_widget_user_preview">@style/Widget.Sendbird.Dark.UserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.ParticipantsList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_members</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_participants_list_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.State.RegisterOperator">
+        <item name="sb_appbar_title">@string/sb_text_header_set_operators</item>
+    </style>
+    <style name="Component.Dark.List.RegisterOperator">
+        <item name="sb_widget_select_user_preview">@style/Widget.Sendbird.Dark.SelectUserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.RegisterOperator">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_members</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_user_list_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.ChannelPushSetting">
+        <item name="sb_appbar_title">@string/sb_text_channel_settings_notification</item>
+    </style>
+    <style name="Component.Dark.ChannelPushSetting">
+        <item name="sb_channel_push_settings_background">@color/background_600</item>
+        <item name="sb_channel_push_settings_option_item_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_channel_push_settings_title_appearance">@style/SendbirdSubtitle2OnDark01</item>
+        <item name="sb_channel_push_settings_description_appearance">@style/SendbirdBody3OnDark02</item>
+        <item name="sb_channel_push_option_item_divider_color">@color/ondark_04</item>
+        <item name="sb_channel_push_option_item_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_channel_switch_track_tint">@color/sb_switch_track_dark</item>
+        <item name="sb_channel_switch_thumb_tint">@color/sb_switch_thumb_dark</item>
+        <item name="sb_channel_radio_button_background">@drawable/selector_radio_button_dark</item>
+    </style>
+
+    <style name="Component.Dark.Header.OpenChannelModeration">
+        <item name="sb_appbar_title">@string/sb_text_channel_settings_moderations</item>
+    </style>
+    <style name="Component.Dark.OpenChannelModerationList">
+        <item name="sb_menu_item_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_menu_item_name_appearance">@style/SendbirdSubtitle2OnDark01</item>
+        <item name="sb_menu_item_icon_tint">@color/primary_200</item>
+    </style>
+
+    <style name="Component.Dark.Header.State.OpenChannelRegisterOperator">
+        <item name="sb_appbar_title">@string/sb_text_header_set_operators</item>
+    </style>
+    <style name="Component.Dark.List.OpenChannelRegisterOperator">
+        <item name="sb_widget_select_user_preview">@style/Widget.Sendbird.Dark.SelectUserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.OpenChannelRegisterOperator">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_members</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_user_list_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.OpenChannelOperatorList">
+        <item name="sb_appbar_title">@string/sb_text_menu_operators</item>
+        <item name="sb_appbar_right_button_icon">@drawable/icon_plus</item>
+        <item name="sb_appbar_right_button_tint">@color/primary_200</item>
+        <item name="sb_appbar_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+    <style name="Component.Dark.List.OpenChannelOperatorList">
+        <item name="sb_widget_user_preview">@style/Widget.Sendbird.Dark.UserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.OpenChannelOperatorList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_members</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_empty_no_operator_participant</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.OpenChannelMutedParticipantList">
+        <item name="sb_appbar_title">@string/sb_text_menu_muted_participants</item>
+    </style>
+    <style name="Component.Dark.List.OpenChannelMutedParticipantList">
+        <item name="sb_widget_user_preview">@style/Widget.Sendbird.Dark.UserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.OpenChannelMutedParticipantList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_mute</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_empty_no_muted_participant</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+
+    <style name="Component.Dark.Header.OpenChannelBannedUserList">
+        <item name="sb_appbar_title">@string/sb_text_menu_banned_users</item>
+    </style>
+    <style name="Component.Dark.List.OpenChannelBannedUserList">
+        <item name="sb_widget_user_preview">@style/Widget.Sendbird.Dark.UserPreview</item>
+    </style>
+    <style name="Component.Dark.Status.OpenChannelBannedUserList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_ban</item>
+        <item name="sb_status_frame_empty_icon_tint">@color/ondark_03</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_empty_no_banned_users</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_user_list</item>
+    </style>
+    <style name="Component.Dark.Header.OpenChannelList">
+        <item name="sb_appbar_title">@string/sb_text_header_channel_list</item>
+        <item name="sb_appbar_right_button_icon">@drawable/icon_create</item>
+        <item name="sb_appbar_right_button_tint">@color/primary_200</item>
+        <item name="sb_appbar_right_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_widget_select_channel_type">@style/Widget.Sendbird.Dark.SelectChannelTypeView</item>
+    </style>
+    <style name="Component.Dark.List.OpenChannelList">
+        <item name="sb_widget_open_channel_preview">@style/Widget.Sendbird.Dark.OpenChannelPreview</item>
+    </style>
+    <style name="Component.Dark.Status.OpenChannelList">
+        <item name="sb_status_frame_empty_icon">@drawable/icon_chat</item>
+        <item name="sb_status_frame_empty_text">@string/sb_text_channel_list_empty</item>
+        <item name="sb_status_frame_error_text">@string/sb_text_error_get_channel_list</item>
+    </style>
+
+    <!-- WIDGETS -->
+    <style name="Widget.Sendbird.Dark"/>
+
+    <style name="Widget.Sendbird.Dark.ChannelPreview">
+        <item name="sb_channel_preview_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_channel_preview_title_appearance">@style/SendbirdSubtitle1OnDark01</item>
+        <item name="sb_channel_preview_member_count_appearance">@style/SendbirdCaption1OnDark02</item>
+        <item name="sb_channel_preview_updated_at_appearance">@style/SendbirdCaption2OnDark02</item>
+        <item name="sb_channel_preview_unread_count_appearance">@style/SendbirdCaption1OnLight01</item>
+        <item name="sb_channel_preview_unread_mention_count_appearance">@style/SendbirdH2Primary200</item>
+        <item name="sb_channel_preview_last_message_appearance">@style/SendbirdBody3OnDark03</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.SelectUserPreview">
+        <item name="sb_select_user_preview_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_select_user_preview_nickname_appearance">@style/SendbirdSubtitle2OnDark01</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.UserPreview">
+        <item name="sb_member_preview_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_member_preview_nickname_appearance">@style/SendbirdSubtitle2OnDark01</item>
+        <item name="sb_member_preview_description_appearance">@style/SendbirdSubtitle2OnDark02</item>
+        <item name="sb_member_preview_action_menu_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.SuggestedMentionPreview">
+        <item name="sb_member_preview_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_member_preview_nickname_appearance">@style/SendbirdBody2OnDark01</item>
+        <item name="sb_member_preview_description_appearance">@style/SendbirdBody3OnDark02</item>
+        <item name="sb_mention_empty_nickname_appearance">@style/SendbirdBody2OnDark03</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Snackbar">
+        <item name="sb_snackbar_roof_line_color">@color/ondark_04</item>
+        <item name="sb_snackbar_background">@color/background_600</item>
+        <item name="sb_snackbar_text_appearance">@style/SendbirdBody3OnDark02</item>
+        <item name="sb_snackbar_icon">@drawable/icon_info</item>
+        <item name="sb_snackbar_icon_tint">@color/ondark_02</item>
+    </style>
+
+    <!-- Message -->
+    <style name="Widget.Sendbird.Dark.Message">
+        <item name="sb_message_time_text_appearance">@style/SendbirdCaption4OnDark03</item>
+        <item name="sb_message_sender_name_text_appearance">@style/SendbirdCaption1OnDark02</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.OgTag">
+        <item name="sb_message_ogtag_title_appearance">@style/SendbirdBody2OnDark01</item>
+        <item name="sb_message_ogtag_description_appearance">@style/SendbirdCaption2OnDark01</item>
+        <item name="sb_message_ogtag_url_appearance">@style/SendbirdCaption2OnDark02</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.FeedNotificationChannel">
+        <item name="sb_feed_notification_background">@color/background_500</item>
+        <item name="sb_feed_notification_radius">@dimen/sb_size_8</item>
+        <item name="sb_feed_notification_unread_indicator_color">@color/secondary_200</item>
+    </style>
+    <style name="Widget.Sendbird.Dark.Message.ChatNotificationChannel">
+        <item name="sb_chat_notification_background">@color/background_500</item>
+        <item name="sb_chat_notification_radius">@dimen/sb_size_8</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Me">
+        <item name="sb_quoted_message_me_title_icon">@drawable/icon_reply_filled</item>
+        <item name="sb_quoted_message_me_title_icon_tint">@color/ondark_03</item>
+        <item name="sb_quoted_message_me_title_text_appearance">@style/SendbirdCaption1OnDark03</item>
+        <item name="sb_quoted_message_me_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_quoted_message_me_background_tint">@color/background_500</item>
+        <item name="sb_quoted_message_me_file_icon_tint">@color/ondark_03</item>
+        <item name="sb_quoted_message_me_text_appearance">@style/SendbirdCaption2OnDark03</item>
+
+        <item name="sb_message_emoji_reaction_list_background">@drawable/sb_shape_chat_bubble_reactions_dark</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Other">
+        <item name="sb_quoted_message_other_title_icon">@drawable/icon_reply_filled</item>
+        <item name="sb_quoted_message_other_title_icon_tint">@color/ondark_03</item>
+        <item name="sb_quoted_message_other_title_text_appearance">@style/SendbirdCaption1OnDark03</item>
+        <item name="sb_quoted_message_other_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_quoted_message_other_background_tint">@color/background_500</item>
+        <item name="sb_quoted_message_other_file_icon_tint">@color/ondark_03</item>
+        <item name="sb_quoted_message_other_text_appearance">@style/SendbirdCaption2OnDark03</item>
+
+        <item name="sb_message_emoji_reaction_list_background">@drawable/sb_shape_chat_bubble_reactions_dark</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Me.User">
+        <item name="sb_message_me_text_appearance">@style/SendbirdBody3OnLight01</item>
+        <item name="sb_message_me_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_message_me_background_tint">@color/sb_message_me_tint_dark</item>
+
+        <item name="sb_message_me_ogtag_background">@drawable/sb_message_og_background</item>
+        <item name="sb_message_me_ogtag_background_tint">@color/sb_message_other_tint_dark</item>
+
+        <item name="sb_message_me_link_text_color">@color/onlight_01</item>
+        <item name="sb_message_me_clicked_link_background_color">@color/primary_300</item>
+
+        <item name="sb_message_my_edited_mark_text_appearance">@style/SendbirdBody3OnLight02</item>
+        <item name="sb_message_my_mentioned_text_appearance">@style/SendbirdMentionDarkMe</item>
+        <item name="sb_message_mentioned_current_user_text_background">@color/highlight</item>'
+        <item name="sb_message_mentioned_current_user_text_appearance">@style/MentionedCurrentUserMessage</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Other.User">
+        <item name="sb_message_other_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_message_other_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_message_other_background_tint">@color/sb_message_other_tint_dark</item>
+
+        <item name="sb_message_other_ogtag_background">@drawable/sb_message_og_background</item>
+        <item name="sb_message_other_ogtag_background_tint">@color/sb_message_other_tint_dark</item>
+
+        <item name="sb_message_other_link_text_color">@color/ondark_01</item>
+        <item name="sb_message_other_clicked_link_background_color">@color/primary_500</item>
+        <item name="sb_message_other_edited_mark_text_appearance">@style/SendbirdBody3OnDark02</item>
+        <item name="sb_message_other_mentioned_text_appearance">@style/SendbirdMentionDarkOther</item>
+        <item name="sb_message_mentioned_current_user_text_background">@color/highlight</item>
+        <item name="sb_message_mentioned_current_user_text_appearance">@style/MentionedCurrentUserMessage</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Me.File">
+        <item name="sb_message_me_text_appearance">@style/SendbirdBody3OnLight01</item>
+        <item name="sb_message_me_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_message_me_background_tint">@color/sb_message_me_tint_dark</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Other.File">
+        <item name="sb_message_other_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_message_other_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_message_other_background_tint">@color/sb_message_other_tint_dark</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Admin">
+        <item name="sb_admin_message_text_appearance">@style/SendbirdCaption2OnDark02</item>
+        <item name="sb_admin_message_background">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Timeline">
+        <item name="sb_message_timeline_text_appearance">@style/SendbirdCaption1OnDark02</item>
+        <item name="sb_message_timeline_background">@drawable/sb_shape_timeline_background</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Emoji">
+        <item name="sb_emoji_background">@drawable/sb_emoji_background_dark</item>
+        <item name="sb_emoji_more_button_src">@drawable/icon_emoji_more</item>
+        <item name="sb_emoji_more_button_src_tint">@color/ondark_03</item>
+        <item name="sb_emoji_reaction_background">@drawable/sb_emoji_reaction_background_dark</item>
+        <item name="sb_emoji_reaction_text_appearance">@style/SendbirdCaption4OnDark01</item>
+        <item name="sb_emoji_reaction_more_button_src">@drawable/icon_emoji_more</item>
+        <item name="sb_emoji_reaction_more_button_src_tint">@color/ondark_03</item>
+        <item name="sb_emoji_reaction_count_text_appearance">@style/SendbirdButtonOnDark03</item>
+        <item name="sb_emoji_reaction_count_tab_layout_background">@drawable/sb_tab_layout_border_background_dark</item>
+        <item name="sb_emoji_reaction_count_tab_indicator_color">@color/primary_200</item>
+        <item name="sb_emoji_failed_src">@drawable/icon_question</item>
+        <item name="sb_emoji_failed_src_tint">@color/ondark_03</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.SelectChannelTypeView">
+        <item name="sb_select_channel_type_background">@color/background_500</item>
+        <item name="sb_select_channel_type_menu_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_select_channel_type_menu_title_appearance">@style/SendbirdH1OnDark01</item>
+        <item name="sb_select_channel_type_menu_name_appearance">@style/SendbirdCaption2OnDark01</item>
+        <item name="sb_select_channel_type_menu_icon_tint">@color/primary_200</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.UserProfile">
+        <item name="sb_user_profile_background">@drawable/sb_shape_user_profile_background_dark</item>
+        <item name="sb_user_profile_user_name_text_appearance">@style/SendbirdCaption1OnDark01</item>
+        <item name="sb_user_profile_button_background">@drawable/selector_button_default_dark</item>
+        <item name="sb_user_profile_button_text_appearance">@style/SendbirdButtonOnDark01</item>
+        <item name="sb_user_profile_divider_color">@color/ondark_04</item>
+        <item name="sb_user_profile_information_title_text_appearance">@style/SendbirdBody2OnDark02</item>
+        <item name="sb_user_profile_information_text_appearance">@style/SendbirdBody3OnDark01</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.ToastView">
+        <item name="sb_toast_background">@drawable/sb_toast_background_dark</item>
+        <item name="sb_toast_text_appearance">@style/SendbirdBody3OnLight01</item>
+    </style>
+    <style name="Widget.Sendbird.Dark.OpenChannelPreview">
+        <item name="sb_open_channel_preview_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_open_channel_preview_cover_image_background">@drawable/sb_shape_circle_background_300</item>
+        <item name="sb_open_channel_preview_default_icon">@drawable/icon_channels</item>
+        <item name="sb_open_channel_preview_default_icon_tint">@color/onlight_01</item>
+        <item name="sb_open_channel_preview_title_appearance">@style/SendbirdSubtitle1OnDark01</item>
+        <item name="sb_open_channel_preview_participants_count_appearance">@style/SendbirdCaption2OnDark02</item>
+        <item name="sb_open_channel_preview_participants_icon">@drawable/icon_members</item>
+        <item name="sb_open_channel_preview_participants_icon_tint">@color/ondark_02</item>
+        <item name="sb_open_channel_preview_frozen_icon">@drawable/icon_freeze</item>
+        <item name="sb_open_channel_preview_frozen_icon_tint">@color/primary_200</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Feedback">
+        <item name="sb_feedback_good_background">@drawable/sb_feedback_background_dark</item>
+        <item name="sb_feedback_good_button">@drawable/selector_feedback_good_button_dark</item>
+        <item name="sb_feedback_bad_background">@drawable/sb_feedback_background_dark</item>
+        <item name="sb_feedback_bad_button">@drawable/selector_feedback_bad_button_dark</item>
+    </style>
+
+    <!-- DialogView -->
+    <style name="Widget.Sendbird.Dark.DialogView">
+        <item name="sb_dialog_view_background">@drawable/sb_rounded_rectangle_dark</item>
+        <item name="sb_dialog_view_background_bottom">@drawable/sb_top_rounded_rectangle_dark</item>
+        <item name="sb_dialog_view_background_anchor">@drawable/layer_dialog_anchor_background_dark</item>
+        <item name="sb_dialog_view_title_appearance">@style/SendbirdH1OnDark01</item>
+        <item name="sb_dialog_view_message_appearance">@style/SendbirdBody3OnDark02</item>
+        <item name="sb_dialog_view_list_item_appearance">@style/SendbirdSubtitle2OnDark01</item>
+        <item name="sb_dialog_view_list_item_text_color">@color/sb_selector_enabled_01_dark</item>
+        <item name="sb_dialog_view_list_item_background">@drawable/selector_rectangle_dark500</item>
+        <item name="sb_dialog_view_edit_text_appearance">@style/SendbirdSubtitle2OnDark01</item>
+        <item name="sb_dialog_view_edit_text_tint">@color/primary_200</item>
+        <item name="sb_dialog_view_edit_text_cursor_drawable">@drawable/sb_message_input_cursor_dark</item>
+        <item name="sb_dialog_view_edit_text_hint_color">@color/ondark_03</item>
+        <item name="sb_dialog_view_icon_tint">@color/sb_selector_enabled_primary_dark</item>
+
+        <item name="sb_dialog_view_positive_button_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_dialog_view_positive_button_text_color">@color/sb_button_uncontained_text_color_dark</item>
+        <item name="sb_dialog_view_positive_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_dialog_view_negative_button_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_dialog_view_negative_button_text_color">@color/sb_button_uncontained_text_color_dark</item>
+        <item name="sb_dialog_view_negative_button_background">@drawable/sb_button_uncontained_background_dark</item>
+        <item name="sb_dialog_view_neutral_button_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_dialog_view_neutral_button_text_color">@color/sb_button_uncontained_text_color_dark</item>
+        <item name="sb_dialog_view_neutral_button_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.MessagePreview">
+        <item name="sb_message_preview_background">@drawable/selector_rectangle_dark600</item>
+        <item name="sb_message_preview_username_text_appearance">@style/SendbirdSubtitle1OnDark01</item>
+        <item name="sb_message_preview_message_text_appearance">@style/SendbirdBody3OnDark03</item>
+        <item name="sb_message_preview_message_file_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_message_preview_sent_at_text_appearance">@style/SendbirdCaption2OnDark02</item>
+        <item name="sb_message_preview_divider_color">@color/ondark_04</item>
+        <item name="sb_message_preview_message_metaphor_background_color">@color/background_500</item>
+        <item name="sb_message_preview_message_metaphor_icon_tint_color">@color/primary_200</item>
+    </style>
+
+
+    <!-- OpenChannel -->
+    <style name="Widget.Sendbird.Dark.OpenChannel"/>
+
+    <style name="Widget.Sendbird.Dark.OpenChannel.OgTag">
+        <item name="sb_message_ogtag_title_appearance">@style/SendbirdBody2Primary200</item>
+        <item name="sb_message_ogtag_description_appearance">@style/SendbirdCaption2OnDark01</item>
+        <item name="sb_message_ogtag_url_appearance">@style/SendbirdCaption2OnDark02</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.OpenChannel.Message">
+        <item name="sb_message_time_text_appearance">@style/SendbirdCaption4OnDark03</item>
+        <item name="sb_message_sender_name_text_appearance">@style/SendbirdCaption1OnDark02</item>
+        <item name="sb_message_operator_name_text_appearance">@style/SendbirdCaption1Secondary200</item>
+    </style>
+    <style name="Widget.Sendbird.Dark.OpenChannel.Message.User">
+        <item name="sb_message_background">@drawable/selector_rectangle_dark500</item>
+        <item name="sb_message_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_message_ogtag_background">@drawable/selector_open_channel_message_bg_dark</item>
+        <item name="sb_message_link_text_color">@color/primary_200</item>
+        <item name="sb_message_edited_mark_text_appearance">@style/SendbirdBody3OnDark02</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.OpenChannel.Message.File">
+        <item name="sb_message_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_message_background">@drawable/selector_open_channel_message_bg_dark</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.OpenChannel.Message.Admin">
+        <item name="sb_admin_message_text_appearance">@style/SendbirdCaption2OnLight02</item>
+        <item name="sb_admin_message_background">@drawable/sb_shape_admin_message_background_dark</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.ThreadInfoView">
+        <item name="sb_thread_info_reply_count_text_appearance">@style/SendbirdCaption3Primary200</item>
+        <item name="sb_thread_info_more_icon">@drawable/icon_plus</item>
+        <item name="sb_thread_info_more_icon_tint">@color/ondark_01</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.ParentMessageInfo">
+        <item name="sb_recycler_view_background">@color/background_600</item>
+        <item name="sb_parent_message_info_nickname_appearance">@style/SendbirdH2OnDark01</item>
+        <item name="sb_parent_message_info_sent_at_appearance">@style/SendbirdCaption2OnDark03</item>
+        <item name="sb_parent_message_info_text_message_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_parent_message_info_more_icon">@drawable/icon_more</item>
+        <item name="sb_parent_message_info_more_icon_tint">@color/ondark_02</item>
+        <item name="sb_parent_message_info_file_message_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_parent_message_info_file_message_background_tint">@color/background_400</item>
+        <item name="sb_parent_message_info_file_name_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_parent_message_info_reply_count_appearance">@style/SendbirdBody3OnDark03</item>
+        <item name="sb_parent_message_info_divider_line_color">@color/ondark_04</item>
+        <item name="sb_parent_message_info_voice_message_progress_color">@color/ondark_03</item>
+        <item name="sb_parent_message_info_voice_message_progress_track_color">@color/sb_message_other_tint_dark</item>
+        <item name="sb_parent_message_info_voice_message_timeline_text_appearance">@style/SendbirdBody3OnDark01</item>
+        <item name="sb_widget_emoji_message">@style/Widget.Sendbird.Dark.Emoji</item>
+        <item name="sb_multiple_files_message_item_background_color">@color/background_500</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Me.VoiceMessage">
+        <item name="sb_message_me_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_message_me_background_tint">@color/sb_message_me_tint_dark</item>
+        <item name="sb_voice_message_progress_color">@color/ondark_03</item>
+        <item name="sb_voice_message_progress_track_color">@color/sb_message_me_tint_dark</item>
+        <item name="sb_voice_message_timeline_text_appearance">@style/SendbirdBody3OnLight01</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Other.VoiceMessage">
+        <item name="sb_message_other_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_message_other_background_tint">@color/sb_message_other_tint_dark</item>
+        <item name="sb_voice_message_progress_color">@color/ondark_03</item>
+        <item name="sb_voice_message_progress_track_color">@color/sb_message_other_tint_dark</item>
+        <item name="sb_voice_message_timeline_text_appearance">@style/SendbirdBody3OnDark01</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.VoiceMessageInputView">
+        <item name="sb_voice_message_input_background">@drawable/sb_top_rounded_rectangle_dark</item>
+        <item name="sb_voice_message_input_background_color">@color/background_600</item>
+        <item name="sb_voice_message_input_progress_color">@color/ondark_03</item>
+        <item name="sb_voice_message_input_progress_track_color">@color/sb_voice_message_recorder_progress_background_dark</item>
+        <item name="sb_voice_message_input_timeline_text_appearance">@style/SendbirdCaption1OnLight01</item>
+        <item name="sb_voice_message_input_timeline_text_color">@color/sb_voice_message_recorder_timeline_dark</item>
+        <item name="sb_voice_message_input_record_button_icon">@drawable/icon_recording</item>
+        <item name="sb_voice_message_input_record_button_tint">@color/error_200</item>
+        <item name="sb_voice_message_input_record_button_background">@drawable/sb_shape_oval_button</item>
+        <item name="sb_voice_message_input_record_button_background_tint">@color/sb_voice_message_recorder_oval_button_background_dark</item>
+        <item name="sb_voice_message_input_play_button_icon">@drawable/icon_play</item>
+        <item name="sb_voice_message_input_play_button_tint">@color/ondark_01</item>
+        <item name="sb_voice_message_input_play_button_background">@drawable/sb_shape_oval_button</item>
+        <item name="sb_voice_message_input_play_button_background_tint">@color/sb_voice_message_recorder_oval_button_background_dark</item>
+        <item name="sb_voice_message_input_pause_button_icon">@drawable/icon_pause</item>
+        <item name="sb_voice_message_input_pause_button_tint">@color/ondark_01</item>
+        <item name="sb_voice_message_input_pause_button_background">@drawable/sb_shape_oval_button</item>
+        <item name="sb_voice_message_input_pause_button_background_tint">@color/sb_voice_message_recorder_oval_button_background_dark</item>
+        <item name="sb_voice_message_input_stop_button_icon">@drawable/icon_stop</item>
+        <item name="sb_voice_message_input_stop_button_tint">@color/ondark_01</item>
+        <item name="sb_voice_message_input_stop_button_background">@drawable/sb_shape_oval_button</item>
+        <item name="sb_voice_message_input_stop_button_background_tint">@color/sb_voice_message_recorder_oval_button_background_dark</item>
+        <item name="sb_voice_message_input_send_button_icon">@drawable/icon_send</item>
+        <item name="sb_voice_message_input_send_button_tint">@color/sb_voice_message_recorder_send_icon_dark</item>
+        <item name="sb_voice_message_input_send_button_background">@drawable/sb_shape_oval_button</item>
+        <item name="sb_voice_message_input_send_button_background_tint">@color/sb_voice_message_recorder_send_background_dark</item>
+        <item name="sb_voice_message_input_cancel_button_text_appearance">@style/SendbirdButtonPrimary200</item>
+        <item name="sb_voice_message_input_cancel_button_text_color">@color/sb_button_uncontained_text_color_dark</item>
+        <item name="sb_voice_message_input_cancel_button_background">@drawable/sb_button_uncontained_background_dark</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Me.MultipleFilesMessage">
+        <item name="sb_message_me_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_message_me_background_tint">@color/sb_message_me_tint_dark</item>
+        <item name="sb_multiple_files_message_background_color">@color/background_400</item>
+        <item name="sb_multiple_files_message_item_background_color">@color/background_500</item>
+    </style>
+
+    <style name="Widget.Sendbird.Dark.Message.Other.MultipleFilesMessage">
+        <item name="sb_message_other_background">@drawable/sb_shape_chat_bubble</item>
+        <item name="sb_message_other_background_tint">@color/sb_message_other_tint_dark</item>
+        <item name="sb_multiple_files_message_background_color">@color/background_400</item>
+        <item name="sb_multiple_files_message_item_background_color">@color/background_500</item>
+    </style>
+</resources>

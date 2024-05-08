@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.jet.im.kit.internal.ui.widgets.ThemeableRecyclerView
+    android:id="@+id/rvEmojiList"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/sb_size_10"
+    android:scrollbars="vertical"
+    android:scrollbarStyle="outsideOverlay"
+    android:clipToPadding="false"
+    app:sb_recycler_view_background="@android:color/transparent"
+    app:spanCount="6"
+    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"/>

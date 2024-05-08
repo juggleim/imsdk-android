@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/background_50"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/sb_size_24"
+        android:paddingRight="@dimen/sb_size_24">
+
+        <ImageView
+            android:id="@+id/logoImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/sb_size_56"
+            android:background="@drawable/logo_notifications"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/sb_size_24"
+            android:layout_marginBottom="@dimen/sb_size_44"
+            android:textSize="@dimen/sb_text_size_24"
+            android:textStyle="bold"
+            android:textColor="@color/onlight_01"
+            android:text="@string/text_title_login_activity"
+            app:layout_constraintTop_toBottomOf="@id/logoImageView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/applicationId"
+            />
+
+        <TextView
+            android:id="@+id/notificationTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginTop="@dimen/sb_size_4"
+            android:textSize="@dimen/sb_text_size_16"
+            android:textStyle="bold"
+            android:textColor="@color/onlight_01"
+            android:text="@string/text_title_uikit_sample_app"
+            android:layout_marginBottom="@dimen/sb_size_32"
+            app:layout_constraintTop_toBottomOf="@id/logoImageView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/applicationId"
+            />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/titleBarrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="title, notificationTitle"/>
+
+        <EditText
+            android:id="@+id/applicationId"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/sb_size_56"
+            android:paddingLeft="@dimen/sb_size_16"
+            android:paddingRight="@dimen/sb_size_16"
+            android:paddingTop="@dimen/sb_size_4"
+            android:paddingBottom="@dimen/sb_size_4"
+            android:hint="@string/text_hint_application_id"
+            app:boxStrokeColor="@color/primary_300"
+            android:background="@drawable/selector_edittext_background_with_focusable"
+            app:hintTextColor="@color/primary_300"
+            app:boxBackgroundMode="outline"
+            app:layout_constraintTop_toBottomOf="@id/titleBarrier"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/saveButton"
+            />
+
+        <Button
+            android:id="@+id/saveButton"
+            android:text="@string/text_save"
+            android:layout_marginLeft="@dimen/sb_size_10"
+            android:background="@drawable/selector_button_primary_300"
+            android:textSize="@dimen/sb_text_size_14"
+            android:fontFamily="sans-serif"
+            android:textStyle="bold"
+            android:textColor="@color/ondark_01"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/sb_size_56"
+            android:textAllCaps="false"
+            app:layout_constraintTop_toTopOf="@id/applicationId"
+            app:layout_constraintStart_toEndOf="@id/applicationId"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/userIdLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_56"
+            android:gravity="center_vertical"
+            android:paddingLeft="@dimen/sb_size_16"
+            android:paddingRight="@dimen/sb_size_16"
+            android:layout_marginTop="@dimen/sb_size_24"
+            app:boxStrokeColor="@color/primary_300"
+            android:background="@drawable/selector_edittext_background_with_focusable"
+            app:hintTextColor="@color/primary_300"
+            app:boxBackgroundMode="outline"
+            app:layout_constraintTop_toBottomOf="@id/applicationId"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/nicknameLayout"
+            >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/userId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/shape_rect_transparent"
+                android:imeOptions="actionNext|flagNoExtractUi"
+                android:inputType="text"
+                android:hint="@string/text_hint_user_id"
+                android:maxLines="1"
+                android:textCursorDrawable="@drawable/shape_cursor_drawable"
+                android:textSize="@dimen/sb_text_size_16"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/nicknameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_56"
+            android:gravity="center_vertical"
+            android:paddingLeft="@dimen/sb_size_16"
+            android:paddingRight="@dimen/sb_size_16"
+            app:hintTextColor="@color/primary_300"
+            app:boxBackgroundMode="outline"
+            android:background="@drawable/selector_edittext_background_with_focusable"
+            android:layout_marginTop="@dimen/sb_size_24"
+            app:layout_constraintTop_toBottomOf="@id/userIdLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/useFeedOnly">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nickname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_rect_transparent"
+                android:maxLines="1"
+                android:textSize="@dimen/sb_text_size_16"
+                android:hint="@string/text_hint_nickname"
+                android:textCursorDrawable="@drawable/shape_cursor_drawable"
+                android:imeOptions="actionDone|flagNoExtractUi"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <CheckBox
+            android:id="@+id/useFeedOnly"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/text_use_feed_channel_only"
+            android:buttonTint="@color/primary_300"
+            android:paddingStart="@dimen/sb_size_8"
+            android:layout_marginTop="@dimen/sb_size_24"
+            app:layout_constraintTop_toBottomOf="@id/nicknameLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/signInButton"
+            style="@android:style/Widget.DeviceDefault.Light.CompoundButton.RadioButton"
+            />
+
+        <Button
+            android:id="@+id/signInButton"
+            app:layout_goneMarginTop="@dimen/sb_size_32"
+            android:layout_marginTop="@dimen/sb_size_24"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_text_size_48"
+            android:textSize="@dimen/sb_text_size_14"
+            android:fontFamily="sans-serif"
+            android:textStyle="bold"
+            android:textColor="@color/ondark_01"
+            android:lineSpacingExtra="@dimen/sb_text_size_2"
+            android:background="@drawable/selector_button_primary_300"
+            android:text="@string/text_sign_in"
+            app:layout_constraintTop_toBottomOf="@id/useFeedOnly"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/selectSampleLayout"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/selectSampleLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/sb_size_24"
+            android:padding="@dimen/sb_size_8"
+            app:layout_constraintTop_toBottomOf="@id/signInButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/versionInfo">
+
+            <ImageView
+                android:id="@+id/selectSampleIcon"
+                android:layout_width="@dimen/sb_size_18"
+                android:layout_height="@dimen/sb_size_18"
+                android:src="@drawable/icon_chevron_right"
+                android:tint="@color/selector_primary"
+                android:rotation="180"
+                android:layout_marginEnd="@dimen/sb_size_4"
+                app:layout_constraintTop_toTopOf="@id/selectSampleText"
+                app:layout_constraintBottom_toBottomOf="@id/selectSampleText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/selectSampleText"
+                />
+
+            <TextView
+                android:id="@+id/selectSampleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="@dimen/sb_text_size_14"
+                android:fontFamily="sans-serif"
+                android:textStyle="bold"
+                android:textColor="@color/selector_primary"
+                android:lineSpacingExtra="@dimen/sb_text_size_2"
+                android:text="@string/text_select_sample"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/selectSampleIcon"
+                app:layout_constraintEnd_toEndOf="parent"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/versionInfo"
+            android:layout_height="@dimen/sb_size_0"
+            android:layout_width="match_parent"
+            android:gravity="center|bottom"
+            android:textSize="@dimen/sb_text_size_12"
+            android:paddingTop="@dimen/sb_size_24"
+            android:layout_marginBottom="@dimen/sb_size_16"
+            android:textColor="@color/onlight_02"
+            app:layout_constraintHeight_min="@dimen/sb_size_36"
+            app:layout_constraintTop_toBottomOf="@id/selectSampleLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/logoBottom"
+            />
+
+        <ImageView
+            android:id="@+id/logoBottom"
+            android:layout_width="@dimen/sb_size_93"
+            android:layout_height="@dimen/sb_size_16"
+            android:layout_marginBottom="@dimen/sb_size_20"
+            android:background="@drawable/logo_sendbird_full"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

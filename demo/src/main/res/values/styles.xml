@@ -1,0 +1,53 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/primary_300</item>
+        <item name="colorPrimaryDark">@color/primary_500</item>
+        <item name="colorAccent">@color/secondary_300</item>
+        <item name="widget_entry_button">@style/Widget.EntryButton</item>
+    </style>
+    <style name="Widget" parent="android:Widget"/>
+    <style name="Widget.EntryButton">
+        <item name="background_color">@drawable/selector_home_channel_type_button</item>
+        <item name="title_text_appearance">@style/EntryButtonTitle</item>
+        <item name="description_text_appearance">@style/EntryButtonDescription</item>
+        <item name="icon_tint">@color/onlight_03</item>
+    </style>
+
+    <style name="AppTheme.Sendbird.Custom">
+        <item name="sb_module_channel">@style/Module.Channel.Custom</item>
+    </style>
+
+    <style name="Module.Channel.Custom">
+        <item name="sb_component_list">@style/Component.List.Channel.Custom</item>
+    </style>
+
+    <style name="Component.List.Channel.Custom">
+        <item name="sb_widget_other_user_message">@style/Widget.Sendbird.Message.Other.User.Custom</item>
+    </style>
+
+    <style name="Widget.Sendbird.Message.Other.User.Custom">
+        <item name="sb_message_other_text_appearance">@style/SendbirdBody3OnLight04.Custom</item>
+    </style>
+
+    <style name="SendbirdBody3OnLight04.Custom">
+        <item name="android:textColor">@color/primary_300</item>
+        <item name="android:textSize">@dimen/sb_size_32</item>
+    </style>
+
+    <style name="EntryButtonTitle">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/onlight_01</item>
+    </style>
+
+    <style name="EntryButtonDescription">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/onlight_02</item>
+    </style>
+</resources>

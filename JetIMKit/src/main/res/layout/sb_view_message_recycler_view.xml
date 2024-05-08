@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.jet.im.kit.internal.ui.widgets.PagerRecyclerView
+        android:id="@+id/rvMessageList"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_0"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:reverseLayout="true" />
+
+    <FrameLayout
+        android:id="@+id/vgTooltipBox"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_58"
+        android:visibility="gone"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ivScrollFirstIcon"
+        android:paddingStart="@dimen/sb_size_48"
+        android:paddingEnd="@dimen/sb_size_0">
+
+        <TextView
+            android:id="@+id/tvTooltipText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:paddingLeft="@dimen/sb_size_20"
+            android:paddingRight="@dimen/sb_size_20"
+            />
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/ivScrollFirstIcon"
+        android:layout_width="@dimen/sb_size_58"
+        android:layout_height="@dimen/sb_size_58"
+        android:padding="@dimen/sb_size_17"
+        android:visibility="gone"
+        android:contentDescription="@string/sb_view_message_recycler_view_scroll_to_bottom_description"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="@dimen/sb_size_16" />
+
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/tvTypingIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/sb_size_12"
+        android:paddingRight="@dimen/sb_size_12"
+        android:paddingBottom="@dimen/sb_size_5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/tvBanner"
+        android:visibility="gone"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/sb_size_8"
+        android:padding="@dimen/sb_size_6"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

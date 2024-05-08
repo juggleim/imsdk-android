@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/ivRoofLine"
+        android:background="@color/onlight_04"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_1"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <ImageView
+        android:id="@+id/ivIcon"
+        android:layout_marginTop="@dimen/sb_size_12"
+        android:layout_marginBottom="@dimen/sb_size_12"
+        android:layout_marginStart="@dimen/sb_size_16"
+        android:layout_marginEnd="@dimen/sb_size_0"
+        android:layout_width="@dimen/sb_size_20"
+        android:layout_height="@dimen/sb_size_20"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="@id/ivRoofLine"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/tvText"
+        android:layout_marginStart="@dimen/sb_size_4"
+        android:layout_marginEnd="@dimen/sb_size_16"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="@id/ivRoofLine"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/ivIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:lines="1"
+        android:ellipsize="end"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
