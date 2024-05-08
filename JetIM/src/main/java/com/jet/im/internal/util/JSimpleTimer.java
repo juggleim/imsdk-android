@@ -6,23 +6,23 @@ import com.jet.im.utils.LoggerUtils;
 
 public abstract class JSimpleTimer {
 
-    private Handler handler = null;
-    private Runnable runnable = null;
-    private final int interval;
+    private Handler mHandler = null;
+    private Runnable mRunnable = null;
+    private final int mInterval;
 
     public JSimpleTimer(int interval) {
-        this.interval = interval;
+        this.mInterval = interval;
     }
 
     public void init() {
-        handler = new Handler();
-        runnable = () -> {
+        mHandler = new Handler();
+        mRunnable = () -> {
             try {
                 doAction();
             } catch (Exception e) {
                 LoggerUtils.w(JSimpleTimer.class.getSimpleName() + ", " + e);
             }
-            handler.postDelayed(runnable, interval);
+            mHandler.postDelayed(mRunnable, mInterval);
         };
     }
 
@@ -31,7 +31,7 @@ public abstract class JSimpleTimer {
     public void start(boolean immediately) {
         stop();
         onStart();
-        handler.postDelayed(runnable, immediately ? 0 : interval);
+        mHandler.postDelayed(mRunnable, immediately ? 0 : mInterval);
     }
 
     protected void onStart() {
@@ -39,7 +39,7 @@ public abstract class JSimpleTimer {
     }
 
     public void stop() {
-        handler.removeCallbacks(runnable);
+        mHandler.removeCallbacks(mRunnable);
         onStop();
     }
 
