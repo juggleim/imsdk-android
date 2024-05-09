@@ -449,19 +449,6 @@ public class JWebSocket extends WebSocketClient {
         }
     }
 
-    private void handleRecallMessage(PBRcvObj.PublishMsgAck ack) {
-        LoggerUtils.d("handleRecallMessage, code is " + ack.code);
-        IWebSocketCallback c = mCmdCallbackMap.remove(ack.index);
-        if (c instanceof WebSocketTimestampCallback) {
-            WebSocketTimestampCallback callback = (WebSocketTimestampCallback) c;
-            if (ack.code != 0) {
-                callback.onError(ack.code);
-            } else {
-                callback.onSuccess(ack.timestamp);
-            }
-        }
-    }
-
     private void handleSimpleQryAck(PBRcvObj.SimpleQryAck ack) {
         LoggerUtils.d("handleSimpleQryAck, code is " + ack.code);
         IWebSocketCallback c = mCmdCallbackMap.remove(ack.index);
