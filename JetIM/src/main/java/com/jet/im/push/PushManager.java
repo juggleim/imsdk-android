@@ -35,6 +35,7 @@ public class PushManager implements IPush.Callback {
                 init("com.jet.im.push.hw.HWPush");
                 init("com.jet.im.push.xm.XMPush");
                 init("com.jet.im.push.google.GooglePush");
+                init("com.jet.im.push.vivo.VIVOPush");
                 List<IPush> pushList = getRegisterPush();
                 for (IPush item : pushList) {
                     item.getToken(context, config, PushManager.this);
