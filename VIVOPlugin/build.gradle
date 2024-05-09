@@ -43,5 +43,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation project(path: ':JetIM')
-    compileOnly files('libs/vivo_pushSDK_v4.0.4.0_504.aar')
+    implementation files('libs/vivo_pushSDK_v4.0.4.0_504.aar')
 }
