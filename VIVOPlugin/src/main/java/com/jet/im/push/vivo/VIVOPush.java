@@ -48,7 +48,6 @@ public class VIVOPush implements IPush {
                             }
                         }
                     });
-
                 }
             });
         } catch (Throwable e) {
@@ -59,6 +58,6 @@ public class VIVOPush implements IPush {
 
     @Override
     public PushChannel getType() {
-        return PushChannel.HUAWEI;
+        return PushChannel.VIVO;
     }
 }
