@@ -4,6 +4,7 @@ public class PushConfig {
     private XMConfig xmConfig;
     private HWConfig hwConfig;
     private VIVOConfig vivoConfig;
+    private OPPOConfig oppoConfig;
 
     public XMConfig getXMConfig() {
         return xmConfig;
@@ -21,12 +22,20 @@ public class PushConfig {
         this.vivoConfig = new VIVOConfig();
     }
 
+    public void setOPPOConfig(String appKey, String appSecret) {
+        this.oppoConfig = new OPPOConfig(appKey, appSecret);
+    }
+
     public HWConfig getHWConfig() {
         return hwConfig;
     }
 
     public VIVOConfig getVIVOConfig() {
         return vivoConfig;
+    }
+
+    public OPPOConfig getOPPOConfig() {
+        return oppoConfig;
     }
 
     public static class XMConfig {
@@ -60,6 +69,24 @@ public class PushConfig {
     }
 
     public static class VIVOConfig {
+    }
+
+    public static class OPPOConfig {
+        private final String appKey;
+        private final String appSecret;
+
+        public OPPOConfig(String appKey, String appSecret) {
+            this.appKey = appKey;
+            this.appSecret = appSecret;
+        }
+
+        public String getAppKey() {
+            return appKey;
+        }
+
+        public String getAppSecret() {
+            return appSecret;
+        }
     }
 }
 
