@@ -1,10 +1,10 @@
 package com.jet.im.push;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.jet.im.JetIM;
 import com.jet.im.internal.util.JUtility;
+import com.jet.im.utils.LoggerUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +34,8 @@ public class PushManager implements IPush.Callback {
             public void run() {
                 init("com.jet.im.push.hw.HWPush");
                 init("com.jet.im.push.xm.XMPush");
+                init("com.jet.im.push.vivo.VIVOPush");
+                init("com.jet.im.push.oppo.OPPOPush");
                 init("com.jet.im.push.google.GooglePush");
                 List<IPush> pushList = getRegisterPush();
                 for (IPush item : pushList) {
@@ -68,7 +70,7 @@ public class PushManager implements IPush.Callback {
             IPush push = (IPush) aClass.newInstance();
             iPushMap.put(push.getType(), push);
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            Log.d(TAG, "not register " + className);
+            LoggerUtils.d(TAG + ", not register " + className);
         }
     }
 
@@ -78,6 +80,7 @@ public class PushManager implements IPush.Callback {
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                LoggerUtils.d(TAG + ", on push token received, channel= " + type.getName() + ", token= " + token);
                 JetIM.getInstance().getConnectionManager().registerPushToken(type, token);
             }
         });
@@ -86,6 +89,7 @@ public class PushManager implements IPush.Callback {
     @Override
     public void onError(PushChannel type, int code, String msg) {
         //todo 处理 onError
+        LoggerUtils.d(TAG + ", on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
     }
 
     private static class SingletonHolder {

@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.jet.im.push.xm'
+    namespace 'com.jet.im.push.vivo'
     compileSdk 33
 
     defaultConfig {
@@ -12,6 +12,16 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        /*
+         *  "VIVO_APPKEY" : 厂商推送平台注册应用的 AppKey
+         *  "VIVO_APPID" : 厂商推送平台注册应用的 AppID
+         */
+//        manifestPlaceholders = [
+//                "VIVO_APPKEY": " ",
+//                "VIVO_APPID" : " ",
+//                "HONOR_APPID": " "
+//        ]
     }
 
     buildTypes {
@@ -34,5 +44,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation project(path: ':JetIM')
-    embed project(':XMPlugin_sdk')
+    embed project(':VIVOPlugin_sdk')
 }
