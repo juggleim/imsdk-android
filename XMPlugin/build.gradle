@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.library'
+    id 'com.kezong.fat-aar'
 }
 
 android {
@@ -33,5 +34,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation project(path: ':JetIM')
-    implementation files('libs/MiPush_SDK_Client_6_0_1-C_3rd.aar')
+    embed project(':XMPlugin_sdk')
 }

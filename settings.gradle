@@ -3,6 +3,7 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven { url 'https://jitpack.io' }
     }
 }
 dependencyResolutionManagement {
@@ -19,7 +20,16 @@ rootProject.name = "JetIMDemo"
 include ':app'
 include ':JetIM'
 include ':HWPlugin'
-include ':XMPlugin'
-include ':VIVOPlugin'
-include ':OPPOPlugin'
 include ':GooglePlugin'
+
+include ':XMPlugin'
+include ':XMPlugin_sdk'
+project(':XMPlugin_sdk').projectDir = new File('XMPlugin/sdk')
+
+include ':VIVOPlugin'
+include ':VIVOPlugin_sdk'
+project(':VIVOPlugin_sdk').projectDir = new File('VIVOPlugin/sdk')
+
+include ':OPPOPlugin'
+include ':OPPOPlugin_sdk'
+project(':OPPOPlugin_sdk').projectDir = new File('OPPOPlugin/sdk')
