@@ -174,7 +174,7 @@ class ConversationSql {
         return "UPDATE conversation_info SET last_read_message_index = last_message_index";
     }
 
-    static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(last_message_index - last_read_message_index) AS total_count FROM conversation_info";
+    static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index - last_read_message_index >= 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info";
 
     static String sqlSetMute(Conversation conversation, boolean isMute) {
         return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute?1:0, conversation.getConversationType().getValue(), conversation.getConversationId());
