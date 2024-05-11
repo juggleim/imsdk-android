@@ -35,7 +35,6 @@ public class WebSocketCommandManager {
     public WebSocketCommandManager(CommandTimeoutListener mCommandListener) {
         this.mCommandListener = mCommandListener;
         init();
-        start(false);
     }
 
     public boolean isInit() {
@@ -97,6 +96,7 @@ public class WebSocketCommandManager {
                 onCommandDetection(realTimeoutMessages);
             }
         };
+        mCommandDetectionTimer.init();
 
         mIsInit = true;
     }

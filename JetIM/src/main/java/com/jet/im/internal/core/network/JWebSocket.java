@@ -40,6 +40,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         mPbData = new PBData();
         mHeartbeatManager = new HeartbeatManager(this);
         mWebSocketCommandManager = new WebSocketCommandManager(this);
+        mWebSocketCommandManager.start(false);
     }
 
     public void disconnect(Boolean receivePush) {
