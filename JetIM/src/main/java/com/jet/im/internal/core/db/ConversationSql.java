@@ -9,6 +9,7 @@ import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.Message;
+import com.jet.im.model.MessageMentionInfo;
 
 import java.nio.charset.StandardCharsets;
 
@@ -51,6 +52,10 @@ class ConversationSql {
         if (content != null) {
             lastMessage.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), lastMessage.getContentType()));
         }
+        String mentionInfoStr = CursorHelper.readString(cursor, COL_LAST_MESSAGE_MENTION_INFO);
+        if (lastMessage.getContent() != null && mentionInfoStr != null) {
+            lastMessage.getContent().setMentionInfo(new MessageMentionInfo(mentionInfoStr));
+        }
         lastMessage.setSeqNo(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_SEQ_NO));
         lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
         info.setLastMessage(lastMessage);
@@ -59,7 +64,7 @@ class ConversationSql {
 
     static Object[] argsWithUpdateConcreteConversationInfo(ConcreteConversationInfo info) {
         ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
-        Object[] args = new Object[19];
+        Object[] args = new Object[20];
 
         args[0] = info.getSortTime();
         args[1] = info.getLastMessage().getMessageId();
@@ -81,15 +86,20 @@ class ConversationSql {
         } else {
             args[15] = "";
         }
-        args[16] = lastMessage.getSeqNo();
-        args[17] = info.getConversation().getConversationType().getValue();
-        args[18] = info.getConversation().getConversationId();
+        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
+            args[16] = lastMessage.getContent().getMentionInfo().encodeToJson();
+        } else {
+            args[16] = "";
+        }
+        args[17] = lastMessage.getSeqNo();
+        args[18] = info.getConversation().getConversationType().getValue();
+        args[19] = info.getConversation().getConversationId();
         return args;
     }
 
     static Object[] argsWithInsertConcreteConversationInfo(ConcreteConversationInfo info) {
-        ConcreteMessage lastMessage = (ConcreteMessage)info.getLastMessage();
-        Object[] args = new Object[19];
+        ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
+        Object[] args = new Object[20];
         args[0] = info.getConversation().getConversationType().getValue();
         args[1] = info.getConversation().getConversationId();
         args[2] = info.getSortTime();
@@ -112,12 +122,17 @@ class ConversationSql {
         } else {
             args[17] = "";
         }
-        args[18] = lastMessage.getSeqNo();
+        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
+            args[18] = lastMessage.getContent().getMentionInfo().encodeToJson();
+        } else {
+            args[18] = "";
+        }
+        args[19] = lastMessage.getSeqNo();
         return args;
     }
 
     static Object[] argsWithUpdateLastMessage(ConcreteMessage message, boolean isUpdateSortTime) {
-        int count = 12;
+        int count = 13;
         if (isUpdateSortTime) {
             count++;
         }
@@ -143,6 +158,11 @@ class ConversationSql {
         } else {
             args[i++] = "";
         }
+        if (message.getContent() != null && message.getContent().getMentionInfo() != null) {
+            args[i++] = message.getContent().getMentionInfo().encodeToJson();
+        } else {
+            args[i++] = "";
+        }
         args[i++] = message.getSeqNo();
         if (isUpdateSortTime) {
             args[i++] = message.getTimestamp();
@@ -154,6 +174,7 @@ class ConversationSql {
         args[i] = message.getConversation().getConversationId();
         return args;
     }
+
     static String sqlGetConversation(int type) {
         return String.format("SELECT * FROM conversation_info WHERE conversation_type = %s AND conversation_id = ?", type);
     }
@@ -177,7 +198,7 @@ class ConversationSql {
     static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index - last_read_message_index >= 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info";
 
     static String sqlSetMute(Conversation conversation, boolean isMute) {
-        return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute?1:0, conversation.getConversationType().getValue(), conversation.getConversationId());
+        return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
 
     static String sqlSetTop(Conversation conversation, boolean isTop) {
@@ -193,8 +214,9 @@ class ConversationSql {
     }
 
     static String sqlSetMention(Conversation conversation, boolean isMention) {
-        return String.format("UPDATE conversation_info SET has_mentioned = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMention?1:0, conversation.getConversationType().getValue(), conversation.getConversationId());
+        return String.format("UPDATE conversation_info SET has_mentioned = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMention ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
+
     static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS conversation_info ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             + "conversation_type SMALLINT,"
@@ -216,6 +238,7 @@ class ConversationSql {
             + "last_message_timestamp INTEGER,"
             + "last_message_sender VARCHAR (64),"
             + "last_message_content TEXT,"
+            + "last_message_mention_info TEXT,"
             + "last_message_seq_no INTEGER"
             + ")";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation ON conversation_info(conversation_type, conversation_id)";
@@ -223,23 +246,24 @@ class ConversationSql {
             + "(conversation_type, conversation_id, timestamp, last_message_id,"
             + "last_read_message_index, last_message_index, is_top, top_time, mute, has_mentioned,"
             + "last_message_type, last_message_client_uid, last_message_direction, last_message_state,"
-            + "last_message_has_read, last_message_timestamp, last_message_sender, last_message_content,"
+            + "last_message_has_read, last_message_timestamp, last_message_sender, last_message_content, last_message_mention_info,"
             + "last_message_seq_no)"
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     static final String SQL_UPDATE_CONVERSATION = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_read_message_index=?, "
             + "last_message_index=?, is_top=?, top_time=?, mute=?, has_mentioned=?, last_message_type=?,  "
             + "last_message_client_uid=?, last_message_direction=?, last_message_state=?, "
             + "last_message_has_read=?, last_message_timestamp=?, last_message_sender=?, "
-            + "last_message_content=?, last_message_seq_no=? WHERE conversation_type = ? "
+            + "last_message_content=?, last_message_mention_info=?, last_message_seq_no=? WHERE conversation_type = ? "
             + "AND conversation_id = ?";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY is_top DESC, timestamp DESC";
     static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET last_message_id=?, last_message_type=?,"
             + "last_message_client_uid=?, "
             + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
-            + "last_message_sender=?, last_message_content=?, last_message_seq_no=?";
+            + "last_message_sender=?, last_message_content=?, last_message_mention_info=?, last_message_seq_no=?";
     static final String SQL_TIMESTAMP_EQUALS_QUESTION = ", timestamp=?";
     static final String SQL_LAST_MESSAGE_EQUALS_QUESTION = ", last_message_index=?";
     static final String SQL_WHERE_CONVERSATION_IS = " WHERE conversation_type = ? AND conversation_id = ?";
+
     static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
         StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
         if (direction == JetIMConst.PullDirection.OLDER) {
@@ -260,6 +284,7 @@ class ConversationSql {
         sql.append(" ORDER BY is_top DESC, timestamp DESC").append(" LIMIT ").append(count);
         return sql.toString();
     }
+
     static String sqlGetTopConversationsBy(int[] conversationTypes, int count, long timestamp, JetIMConst.PullDirection direction) {
         StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
         sql.append(" is_top = 1 AND ");
@@ -281,6 +306,7 @@ class ConversationSql {
         sql.append(" ORDER BY top_time DESC").append(" LIMIT ").append(count);
         return sql.toString();
     }
+
     static final String COL_CONVERSATION_TYPE = "conversation_type";
     static final String COL_CONVERSATION_ID = "conversation_id";
     static final String COL_DRAFT = "draft";
@@ -301,6 +327,7 @@ class ConversationSql {
     static final String COL_LAST_MESSAGE_SENDER = "last_message_sender";
     static final String COL_LAST_MESSAGE_CONTENT = "last_message_content";
     static final String COL_LAST_MESSAGE_SEQ_NO = "last_message_seq_no";
+    static final String COL_LAST_MESSAGE_MENTION_INFO = "last_message_mention_info";
     static final String COL_TOTAL_COUNT = "total_count";
 
 }
