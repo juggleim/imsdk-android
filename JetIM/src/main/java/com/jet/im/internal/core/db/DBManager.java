@@ -210,6 +210,10 @@ public class DBManager {
         execSQL(ConversationSql.sqlSetMention(conversation, isMention));
     }
 
+    public void setMention(boolean isMention) {
+        execSQL(ConversationSql.sqlSetMention(isMention));
+    }
+
     public void clearUnreadCount(Conversation conversation, long msgIndex) {
         execSQL(ConversationSql.sqlClearUnreadCount(conversation, msgIndex));
     }

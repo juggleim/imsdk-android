@@ -3,8 +3,8 @@ package com.jet.im.internal;
 import android.text.TextUtils;
 
 import com.jet.im.JetIMConst;
-import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.interfaces.IConversationManager;
+import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
@@ -169,6 +169,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     @Override
     public void clearTotalUnreadCount() {
         mCore.getDbManager().clearTotalUnreadCount();
+        mCore.getDbManager().setMention(false);
         noticeTotalUnreadCountChange();
         long time = mCore.getDbManager().getNewestStatusSentMessageTimestamp();
         mCore.getWebSocket().clearTotalUnreadCount(mCore.getUserId(), time, new WebSocketSimpleCallback() {

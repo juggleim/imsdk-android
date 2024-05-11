@@ -217,6 +217,10 @@ class ConversationSql {
         return String.format("UPDATE conversation_info SET has_mentioned = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMention ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
 
+    static String sqlSetMention(boolean isMention) {
+        return String.format("UPDATE conversation_info SET has_mentioned = %s", isMention ? 1 : 0);
+    }
+
     static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS conversation_info ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             + "conversation_type SMALLINT,"
