@@ -169,7 +169,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     @Override
     public void clearTotalUnreadCount() {
         mCore.getDbManager().clearTotalUnreadCount();
-        mCore.getDbManager().setMention(false);
+        mCore.getDbManager().clearMentionStatus();
         noticeTotalUnreadCountChange();
         long time = mCore.getDbManager().getNewestStatusSentMessageTimestamp();
         mCore.getWebSocket().clearTotalUnreadCount(mCore.getUserId(), time, new WebSocketSimpleCallback() {
