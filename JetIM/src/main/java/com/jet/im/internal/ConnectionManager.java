@@ -60,6 +60,7 @@ public class ConnectionManager implements IConnectionManager {
     public void disconnect(boolean receivePush) {
         LoggerUtils.i("user disconnect receivePush is " + receivePush);
         closeDB();
+        stopReconnectTimer();
         changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().disconnect(receivePush);
@@ -254,6 +255,13 @@ public class ConnectionManager implements IConnectionManager {
         });
     }
 
+    private void stopReconnectTimer() {
+        if (mReconnectTimer != null) {
+            mReconnectTimer.cancel();
+            mReconnectTimer = null;
+        }
+    }
+
     private void reconnect() {
         LoggerUtils.i("reconnect");
         //todo 线程控制，间隔控制
@@ -264,16 +272,11 @@ public class ConnectionManager implements IConnectionManager {
         mReconnectTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (mReconnectTimer != null) {
-                    mReconnectTimer.cancel();
-                    mReconnectTimer = null;
-                }
+                stopReconnectTimer();
                 //todo 重连整理
-                if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED
-                        || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING) {
-                    return;
+                if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
+                    connect(mCore.getToken());
                 }
-                connect(mCore.getToken());
             }
         }, RECONNECT_INTERVAL);
 
