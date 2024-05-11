@@ -59,8 +59,6 @@ public class ConnectionManager implements IConnectionManager {
     @Override
     public void disconnect(boolean receivePush) {
         LoggerUtils.i("user disconnect receivePush is " + receivePush);
-        closeDB();
-        stopReconnectTimer();
         changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().disconnect(receivePush);
@@ -145,7 +143,6 @@ public class ConnectionManager implements IConnectionManager {
 
                 @Override
                 public void onDisconnect(int errorCode) {
-                    closeDB();
                     changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode);
                 }
 
@@ -225,6 +222,8 @@ public class ConnectionManager implements IConnectionManager {
                     outStatus = JetIMConst.ConnectionStatus.CONNECTED;
                     break;
                 case JetIMCore.ConnectionStatusInternal.DISCONNECTED:
+                    closeDB();
+                    stopReconnectTimer();
                     outStatus = JetIMConst.ConnectionStatus.DISCONNECTED;
                     break;
 
@@ -279,7 +278,6 @@ public class ConnectionManager implements IConnectionManager {
                 }
             }
         }, RECONNECT_INTERVAL);
-
     }
 
     private void dbStatusNotice(boolean isOpen) {
