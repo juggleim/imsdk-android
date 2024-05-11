@@ -465,7 +465,6 @@ class PBData {
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
-
     }
 
     byte[] getMentionMessages(Conversation conversation,
@@ -490,7 +489,6 @@ class PBData {
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
-
     }
 
     byte[] pingData() {
