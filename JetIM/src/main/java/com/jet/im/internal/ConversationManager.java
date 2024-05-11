@@ -392,6 +392,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 mCore.getDbManager().setMention(message.getConversation(), true);
                 info.setHasMentioned(true);
             }
+            info.setLastMessage(message);
             mCore.getDbManager().updateLastMessage(message);
             if (mListenerMap != null) {
                 List<ConversationInfo> result = new ArrayList<>();
