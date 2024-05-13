@@ -215,6 +215,7 @@ public class ConnectionManager implements IConnectionManager {
             if (status != JetIMCore.ConnectionStatusInternal.CONNECTED
                     && mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED) {
                 mCore.getWebSocket().stopHeartbeat();
+                mCore.getWebSocket().pushRemainCmdAndCallbackError();
             }
             JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
             switch (status) {
