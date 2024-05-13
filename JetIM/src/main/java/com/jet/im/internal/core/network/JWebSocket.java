@@ -226,7 +226,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         }
     }
 
-    public void pushRemainCmdAndCallbackError() {
+    public synchronized void pushRemainCmdAndCallbackError() {
         ArrayList<IWebSocketCallback> errorList = mWebSocketCommandManager.clearCommand();
         for (int i = 0; i < errorList.size(); i++) {
             onCommandError(errorList.get(i), JErrorCode.CONNECTION_UNAVAILABLE);
@@ -420,38 +420,42 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     private void handlePublishAckMsg(PBRcvObj.PublishMsgAck ack) {
         LoggerUtils.d("handlePublishAckMsg, msgId is " + ack.msgId + ", code is " + ack.code);
-        IWebSocketCallback callback = mWebSocketCommandManager.removeCommand(ack.index);
-        if (callback instanceof SendMessageCallback) {
-            SendMessageCallback sCallback = (SendMessageCallback) callback;
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof SendMessageCallback) {
+            SendMessageCallback callback = (SendMessageCallback) c;
             if (ack.code != 0) {
-                sCallback.onError(ack.code, sCallback.getClientMsgNo());
+                callback.onError(ack.code, callback.getClientMsgNo());
             } else {
-                sCallback.onSuccess(sCallback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.seqNo);
+                callback.onSuccess(callback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.seqNo);
             }
         }
     }
 
     private void handleQryHisMsgAck(PBRcvObj.QryHisMsgAck ack) {
         LoggerUtils.d("handleQryHisMsgAck");
-        IWebSocketCallback callback = mWebSocketCommandManager.removeCommand(ack.index);
-        if (callback instanceof QryHisMsgCallback) {
-            QryHisMsgCallback qCallback = (QryHisMsgCallback) callback;
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof QryHisMsgCallback) {
+            QryHisMsgCallback callback = (QryHisMsgCallback) c;
             if (ack.code != 0) {
-                qCallback.onError(ack.code);
+                callback.onError(ack.code);
             } else {
-                qCallback.onSuccess(ack.msgList, ack.isFinished);
+                callback.onSuccess(ack.msgList, ack.isFinished);
             }
         }
     }
 
     private void handleSyncConversationAck(PBRcvObj.SyncConvAck ack) {
-        IWebSocketCallback callback = mWebSocketCommandManager.removeCommand(ack.index);
-        if (callback instanceof SyncConversationsCallback) {
-            SyncConversationsCallback syncConversationsCallback = (SyncConversationsCallback) callback;
+        LoggerUtils.d("handleSyncConversationAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof SyncConversationsCallback) {
+            SyncConversationsCallback callback = (SyncConversationsCallback) c;
             if (ack.code != 0) {
-                syncConversationsCallback.onError(ack.code);
+                callback.onError(ack.code);
             } else {
-                syncConversationsCallback.onSuccess(ack.convList, ack.deletedConvList, ack.isFinished);
+                callback.onSuccess(ack.convList, ack.deletedConvList, ack.isFinished);
             }
         }
     }
@@ -490,6 +494,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     private void handleSimpleQryAck(PBRcvObj.SimpleQryAck ack) {
         LoggerUtils.d("handleSimpleQryAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
         if (c instanceof WebSocketSimpleCallback) {
             WebSocketSimpleCallback callback = (WebSocketSimpleCallback) c;
             if (ack.code != 0) {
@@ -503,6 +508,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     private void handleSimpleQryAckWithTimeCallback(PBRcvObj.SimpleQryAck ack) {
         LoggerUtils.d("handleSimpleQryAckWithTimeCallback, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
         if (c instanceof WebSocketTimestampCallback) {
             WebSocketTimestampCallback callback = (WebSocketTimestampCallback) c;
             if (ack.code != 0) {
@@ -516,6 +522,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     private void handleTimestampCallback(PBRcvObj.TimestampQryAck ack) {
         LoggerUtils.d("handleTimestampAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
         if (c instanceof WebSocketTimestampCallback) {
             WebSocketTimestampCallback callback = (WebSocketTimestampCallback) c;
             if (ack.code != 0) {
@@ -529,6 +536,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     private void handleQryReadDetailAck(PBRcvObj.QryReadDetailAck ack) {
         LoggerUtils.d("handleQryReadDetailAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
         if (c instanceof QryReadDetailCallback) {
             QryReadDetailCallback callback = (QryReadDetailCallback) c;
             if (ack.code != 0) {

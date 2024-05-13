@@ -58,11 +58,11 @@ public class WebSocketCommandManager {
 
     public void putCommand(Integer mCmdIndex, IWebSocketCallback callback) {
         if (mCmdIndex == null || callback == null) {
-            LoggerUtils.d(TAG + ", putCommand failed, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
+            LoggerUtils.e(TAG + ", putCommand failed, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
             return;
         }
         if (mCmdCallbackMap.get(mCmdIndex) != null) {
-            LoggerUtils.d(TAG + ", putCommand failed, the mCmdIndex is already added, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
+            LoggerUtils.e(TAG + ", putCommand failed, the mCmdIndex is already added, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
             return;
         }
         LoggerUtils.d(TAG + ", putCommand success, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
@@ -71,6 +71,9 @@ public class WebSocketCommandManager {
     }
 
     public IWebSocketCallback removeCommand(Integer mCmdIndex) {
+        if (mCmdIndex == null) {
+            return null;
+        }
         mCmdCallbackTimestampMap.remove(mCmdIndex);
         IWebSocketCallback removedCallback = mCmdCallbackMap.remove(mCmdIndex);
         LoggerUtils.d(TAG + ", removeCommand success, mCmdIndex= " + mCmdIndex + ", removedCallback= " + removedCallback);
@@ -78,10 +81,11 @@ public class WebSocketCommandManager {
     }
 
     public synchronized ArrayList<IWebSocketCallback> clearCommand() {
-        ArrayList<IWebSocketCallback> list = new ArrayList<>(mCmdCallbackMap.values());
+        ArrayList<IWebSocketCallback> commandList = new ArrayList<>(mCmdCallbackMap.values());
         this.mCmdCallbackMap.clear();
         this.mCmdCallbackTimestampMap.clear();
-        return list;
+        LoggerUtils.d(TAG + ", clearCommand success, the commandList.size= " + commandList.size());
+        return commandList;
     }
 
     public int size() {
@@ -110,20 +114,20 @@ public class WebSocketCommandManager {
             for (Integer key : mCmdCallbackMap.keySet()) {
                 final IWebSocketCallback callback = mCmdCallbackMap.get(key);
                 if (callback == null) {
-                    LoggerUtils.d(TAG + ", command detection executing, removeCommand because the callback is null, mCmdIndex= " + key);
+                    LoggerUtils.e(TAG + ", command detection executing, removeCommand because the callback is null, mCmdIndex= " + key);
                     removeCommand(key);
                 } else {
                     Long sendMessageTimestamp = mCmdCallbackTimestampMap.get(key);
                     long delta = System.currentTimeMillis() - (sendMessageTimestamp == null ? 0 : sendMessageTimestamp);
                     if (delta > COMMAND_TIME_OUT) {
-                        LoggerUtils.d(TAG + ", command detection executing, removeCommand because the command is timeout, mCmdIndex= " + key + ", callback= " + callback);
+                        LoggerUtils.e(TAG + ", command detection executing, removeCommand because the command is timeout, mCmdIndex= " + key + ", callback= " + callback);
                         timeoutMessages.add(callback);
                         removeCommand(key);
                     }
                 }
             }
         } catch (Exception e) {
-            LoggerUtils.d(TAG + ", command detection error, exception= " + e.getMessage());
+            LoggerUtils.e(TAG + ", command detection error, exception= " + e.getMessage());
         }
         return timeoutMessages;
     }
