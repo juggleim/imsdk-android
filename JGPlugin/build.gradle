@@ -35,18 +35,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
-    andResGuard {
-        whiteList = [
-                "R.xml.jpush*",
-                "R.drawable.jpush*",
-                "R.layout.jpush*",
-                "R.layout.push*",
-                "R.string.jg*",
-                "R.style.MyDialogStyle",
-                "R.style.JPushTheme"
-        ]
-    }
 }
 
 dependencies {

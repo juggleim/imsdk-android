@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.library'
-    id 'com.kezong.fat-aar'
 }
 
 android {
@@ -34,5 +33,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation project(path: ':JetIM')
-    embed project(':XMPlugin_sdk')
+    implementation project(':XMPlugin_sdk')
 }
