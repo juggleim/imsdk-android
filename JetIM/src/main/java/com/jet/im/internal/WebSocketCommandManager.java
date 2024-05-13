@@ -63,6 +63,7 @@ public class WebSocketCommandManager {
         }
         if (mCmdCallbackMap.get(mCmdIndex) != null) {
             LoggerUtils.d(TAG + ", putCommand failed, the mCmdIndex is already added, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
+            return;
         }
         LoggerUtils.d(TAG + ", putCommand success, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
         mCmdCallbackMap.put(mCmdIndex, callback);
@@ -76,9 +77,11 @@ public class WebSocketCommandManager {
         return removedCallback;
     }
 
-    public void clearCommand() {
+    public synchronized ArrayList<IWebSocketCallback> clearCommand() {
+        ArrayList<IWebSocketCallback> list = new ArrayList<>(mCmdCallbackMap.values());
         this.mCmdCallbackMap.clear();
         this.mCmdCallbackTimestampMap.clear();
+        return list;
     }
 
     public int size() {
@@ -91,9 +94,8 @@ public class WebSocketCommandManager {
         mCommandDetectionTimer = new JSimpleTimer(COMMAND_DETECTION_INTERVAL) {
             @Override
             protected void doAction() {
-                final ArrayList<IWebSocketCallback> timeoutMessages = new ArrayList<>();
-                ArrayList<IWebSocketCallback> realTimeoutMessages = doCommandDetection(timeoutMessages);
-                onCommandDetection(realTimeoutMessages);
+                ArrayList<IWebSocketCallback> realTimeoutMessages = doCommandDetection();
+                afterCommandDetection(realTimeoutMessages);
             }
         };
         mCommandDetectionTimer.init();
@@ -101,10 +103,10 @@ public class WebSocketCommandManager {
         mIsInit = true;
     }
 
-    private ArrayList<IWebSocketCallback> doCommandDetection(ArrayList<IWebSocketCallback> timeoutMessages) {
+    private ArrayList<IWebSocketCallback> doCommandDetection() {
+        LoggerUtils.d(TAG + ", command detection executing, the cmdCallbackMap.size= " + mCmdCallbackMap.size());
+        ArrayList<IWebSocketCallback> timeoutMessages = new ArrayList<>();
         try {
-            LoggerUtils.d(TAG + ", command detection executing, the cmdCallbackMap.size= " + mCmdCallbackMap.size());
-
             for (Integer key : mCmdCallbackMap.keySet()) {
                 final IWebSocketCallback callback = mCmdCallbackMap.get(key);
                 if (callback == null) {
@@ -120,13 +122,13 @@ public class WebSocketCommandManager {
                     }
                 }
             }
-        } catch (Exception eee) {
-            LoggerUtils.d(TAG + ", command detection error, exception= " + eee.getMessage());
+        } catch (Exception e) {
+            LoggerUtils.d(TAG + ", command detection error, exception= " + e.getMessage());
         }
         return timeoutMessages;
     }
 
-    private void onCommandDetection(ArrayList<IWebSocketCallback> timeoutMessages) {
+    private void afterCommandDetection(ArrayList<IWebSocketCallback> timeoutMessages) {
         if (timeoutMessages != null && timeoutMessages.size() > 0) {
             for (int i = 0; i < timeoutMessages.size(); i++) {
                 notifyCommandTimeout(timeoutMessages.get(i));

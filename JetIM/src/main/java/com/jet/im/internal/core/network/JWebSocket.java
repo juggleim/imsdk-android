@@ -23,6 +23,7 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JWebSocket extends WebSocketClient implements WebSocketCommandManager.CommandTimeoutListener {
@@ -225,6 +226,13 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         }
     }
 
+    public void pushRemainCmdAndCallbackError() {
+        ArrayList<IWebSocketCallback> errorList = mWebSocketCommandManager.clearCommand();
+        for (int i = 0; i < errorList.size(); i++) {
+            onCommandError(errorList.get(i), JErrorCode.CONNECTION_UNAVAILABLE);
+        }
+    }
+
     public void ping() {
         byte[] bytes = mPbData.pingData();
         sendWhenOpen(bytes);
@@ -232,25 +240,29 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     @Override
     public void onCommandTimeOut(IWebSocketCallback callback) {
+        onCommandError(callback, JErrorCode.OPERATION_TIMEOUT);
+    }
+
+    private void onCommandError(IWebSocketCallback callback, int errorCode) {
         if (callback == null) return;
         if (callback instanceof SendMessageCallback) {
             SendMessageCallback sCallback = (SendMessageCallback) callback;
-            sCallback.onError(JErrorCode.OPERATION_TIMEOUT, sCallback.getClientMsgNo());
+            sCallback.onError(errorCode, sCallback.getClientMsgNo());
         } else if (callback instanceof QryHisMsgCallback) {
             QryHisMsgCallback sCallback = (QryHisMsgCallback) callback;
-            sCallback.onError(JErrorCode.OPERATION_TIMEOUT);
+            sCallback.onError(errorCode);
         } else if (callback instanceof SyncConversationsCallback) {
             SyncConversationsCallback sCallback = (SyncConversationsCallback) callback;
-            sCallback.onError(JErrorCode.OPERATION_TIMEOUT);
+            sCallback.onError(errorCode);
         } else if (callback instanceof QryReadDetailCallback) {
             QryReadDetailCallback sCallback = (QryReadDetailCallback) callback;
-            sCallback.onError(JErrorCode.OPERATION_TIMEOUT);
+            sCallback.onError(errorCode);
         } else if (callback instanceof WebSocketSimpleCallback) {
             WebSocketSimpleCallback sCallback = (WebSocketSimpleCallback) callback;
-            sCallback.onError(JErrorCode.OPERATION_TIMEOUT);
+            sCallback.onError(errorCode);
         } else if (callback instanceof WebSocketTimestampCallback) {
             WebSocketTimestampCallback sCallback = (WebSocketTimestampCallback) callback;
-            sCallback.onError(JErrorCode.OPERATION_TIMEOUT);
+            sCallback.onError(errorCode);
         }
     }
 
