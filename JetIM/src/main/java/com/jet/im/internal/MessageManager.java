@@ -80,6 +80,7 @@ public class MessageManager implements IMessageManager {
         message.setFlags(flags);
         return message;
     }
+
     private Message sendMessage(MessageContent content,
                                 Conversation conversation,
                                 List<ConcreteMessage> mergedMessages,
@@ -308,8 +309,9 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void clearMessages(Conversation conversation) {
-        mCore.getDbManager().clearMessages(conversation);
+    public void clearMessages(Conversation conversation, long startTime) {
+        if (startTime <= 0) startTime = System.currentTimeMillis();
+        mCore.getDbManager().clearMessages(conversation, startTime);
     }
 
     @Override
@@ -606,7 +608,7 @@ public class MessageManager implements IMessageManager {
                 callback.onComplete();
             }
             return;
-         }
+        }
         sendMessage(content, conversations.get(0), mergedMessages, true, new ISendMessageCallback() {
             @Override
             public void onSuccess(Message message) {
@@ -636,7 +638,7 @@ public class MessageManager implements IMessageManager {
             }
         } else {
             conversations.remove(0);
-            mCore.getSendHandler().postDelayed(() -> loopBroadcastMessage(message.getContent(), conversations, mergedMessages, processCount+1, totalCount, callback), 50);
+            mCore.getSendHandler().postDelayed(() -> loopBroadcastMessage(message.getContent(), conversations, mergedMessages, processCount + 1, totalCount, callback), 50);
         }
     }
 

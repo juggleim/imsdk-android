@@ -511,8 +511,8 @@ public class DBManager {
         execSQL(sql, args);
     }
 
-    public void clearMessages(Conversation conversation) {
-        execSQL(MessageSql.sqlClearMessages(conversation));
+    public void clearMessages(Conversation conversation, long startTime) {
+        execSQL(MessageSql.sqlClearMessages(conversation, startTime));
     }
 
     public UserInfo getUserInfo(String userId) {

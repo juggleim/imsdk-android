@@ -51,6 +51,7 @@ public interface IMessageManager {
 
     interface IBroadcastMessageCallback {
         void onProgress(Message message, int errorCode, int processCount, int totalCount);
+
         void onComplete();
     }
 
@@ -114,7 +115,7 @@ public interface IMessageManager {
 
     void deleteMessageByMessageId(String messageId);
 
-    void clearMessages(Conversation conversation);
+    void clearMessages(Conversation conversation, long startTime);
 
     void recallMessage(String messageId, IRecallMessageCallback callback);
 
