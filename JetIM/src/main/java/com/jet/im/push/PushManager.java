@@ -36,6 +36,7 @@ public class PushManager implements IPush.Callback {
                 init("com.jet.im.push.xm.XMPush");
                 init("com.jet.im.push.vivo.VIVOPush");
                 init("com.jet.im.push.oppo.OPPOPush");
+                init("com.jet.im.push.jg.JGPush");
                 init("com.jet.im.push.google.GooglePush");
                 List<IPush> pushList = getRegisterPush();
                 for (IPush item : pushList) {
@@ -52,7 +53,7 @@ public class PushManager implements IPush.Callback {
         List<IPush> result = new ArrayList<>();
         String os = JUtility.getDeviceManufacturer().toLowerCase();
         for (Map.Entry<PushChannel, IPush> item : iPushMap.entrySet()) {
-            if (item.getKey() == PushChannel.GOOGLE) {
+            if (item.getKey() == PushChannel.JIGUANG || item.getKey() == PushChannel.GOOGLE) {
                 result.add(item.getValue());
                 continue;
             }
