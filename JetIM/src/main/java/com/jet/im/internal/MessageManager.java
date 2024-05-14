@@ -280,7 +280,18 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void deleteMessageByClientMsgNo(long clientMsgNo) {
+        //查询消息
+        List<Message> messages = getMessagesByClientMsgNos(new long[]{clientMsgNo});
+        if (messages.isEmpty()) return;
+        //删除消息
+        Message deleteMessage = messages.get(0);
         mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
+        //通知会话更新
+        if (mSendReceiveListener != null) {
+            Message lastedMessage = mCore.getDbManager().getLatestMessages(deleteMessage.getConversation());
+            mSendReceiveListener.onMessageRemoved(deleteMessage.getConversation(), (ConcreteMessage) deleteMessage, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
+        }
+        //todo 调用接口
     }
 
     @Override
@@ -305,13 +316,32 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void deleteMessageByMessageId(String messageId) {
+        //查询消息
+        List<String> idList = new ArrayList<>(1);
+        idList.add(messageId);
+        List<Message> messages = getMessagesByMessageIds(idList);
+        if (messages.isEmpty()) return;
+        //删除消息
+        Message deleteMessage = messages.get(0);
         mCore.getDbManager().deleteMessageByMessageId(messageId);
+        //通知会话更新
+        if (mSendReceiveListener != null) {
+            Message lastedMessage = mCore.getDbManager().getLatestMessages(deleteMessage.getConversation());
+            mSendReceiveListener.onMessageRemoved(deleteMessage.getConversation(), (ConcreteMessage) deleteMessage, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
+        }
+        //todo 调用接口
     }
 
     @Override
     public void clearMessages(Conversation conversation, long startTime) {
+        //清空消息
         if (startTime <= 0) startTime = System.currentTimeMillis();
         mCore.getDbManager().clearMessages(conversation, startTime);
+        //通知会话更新
+        if (mSendReceiveListener != null) {
+            Message lastedMessage = mCore.getDbManager().getLatestMessages(conversation);
+            mSendReceiveListener.onMessageRemoved(conversation, null, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
+        }
     }
 
     @Override
@@ -340,6 +370,11 @@ public class MessageManager implements IMessageManager {
                     RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
                     m.setContent(recallInfoMessage);
                     mCore.getDbManager().updateMessageContent(recallInfoMessage, m.getContentType(), messageId);
+                    //通知会话更新
+                    if (mSendReceiveListener != null) {
+                        Message lastedMessage = mCore.getDbManager().getLatestMessages(m.getConversation());
+                        mSendReceiveListener.onMessageRemoved(m.getConversation(), (ConcreteMessage) m, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
+                    }
                     if (callback != null) {
                         callback.onSuccess(m);
                     }
@@ -712,6 +747,8 @@ public class MessageManager implements IMessageManager {
         void onMessageSend(ConcreteMessage message);
 
         void onMessageReceive(ConcreteMessage message);
+
+        void onMessageRemoved(Conversation conversation, ConcreteMessage removedMessage, ConcreteMessage lastedMessage);
 
         void onConversationsDelete(List<Conversation> conversations);
     }

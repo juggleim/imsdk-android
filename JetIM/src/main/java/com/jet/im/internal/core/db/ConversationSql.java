@@ -32,14 +32,20 @@ class ConversationSql {
         info.setMute(isMute);
         boolean isMention = CursorHelper.readInt(cursor, COL_HAS_MENTION) != 0;
         info.setHasMentioned(isMention);
-        long lastMessageIndex = CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX);
-        int unreadCount = (int) (lastMessageIndex - info.getLastReadMessageIndex());
+        int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
         info.setUnreadCount(unreadCount);
+
+        String lastMessageId = CursorHelper.readString(cursor, COL_LAST_MESSAGE_ID);
+        String lastMessageClientUid = CursorHelper.readString(cursor, COL_LAST_MESSAGE_CLIENT_UID);
+        if (TextUtils.isEmpty(lastMessageId) && TextUtils.isEmpty(lastMessageClientUid)) {
+            info.setLastMessage(null);
+            return info;
+        }
         ConcreteMessage lastMessage = new ConcreteMessage();
         lastMessage.setConversation(c);
         lastMessage.setContentType(CursorHelper.readString(cursor, COL_LAST_MESSAGE_TYPE));
-        lastMessage.setMessageId(CursorHelper.readString(cursor, COL_LAST_MESSAGE_ID));
-        lastMessage.setClientUid(CursorHelper.readString(cursor, COL_LAST_MESSAGE_CLIENT_UID));
+        lastMessage.setMessageId(lastMessageId);
+        lastMessage.setClientUid(lastMessageClientUid);
         Message.MessageDirection direction = Message.MessageDirection.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_DIRECTION));
         lastMessage.setDirection(direction);
         Message.MessageState state = Message.MessageState.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_STATE));
@@ -262,6 +268,11 @@ class ConversationSql {
             + "last_message_client_uid=?, "
             + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
             + "last_message_sender=?, last_message_content=?, last_message_mention_info=?, last_message_seq_no=?";
+
+    static final String SQL_UPDATE_LAST_MESSAGE_NULL = "UPDATE conversation_info SET last_message_id=NULL, last_message_type=NULL,"
+            + "last_message_client_uid=NULL, "
+            + "last_message_direction=0, last_message_state=0, last_message_has_read=0, last_message_timestamp=0, "
+            + "last_message_sender=NULL, last_message_content=NULL, last_message_mention_info=NULL, last_message_seq_no=0, last_message_index=0, last_read_message_index=0";
     static final String SQL_TIMESTAMP_EQUALS_QUESTION = ", timestamp=?";
     static final String SQL_LAST_MESSAGE_EQUALS_QUESTION = ", last_message_index=?";
     static final String SQL_WHERE_CONVERSATION_IS = " WHERE conversation_type = ? AND conversation_id = ?";

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConversationManager implements IConversationManager, MessageManager.ISendReceiveListener {
@@ -323,6 +324,12 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void onMessageRemoved(Conversation conversation, ConcreteMessage removedMessage, ConcreteMessage lastedMessage) {
+        LoggerUtils.d("onMessageRemoved, conversation= " + conversation.getConversationId() + ", removedMessage= " + (removedMessage == null ? "null" : removedMessage.getContentType()) + ", lastedMessage= " + (lastedMessage == null ? "null" : lastedMessage.getContentType()));
+        updateConversationLastedMessage(conversation, removedMessage, lastedMessage);
+    }
+
+    @Override
     public void onConversationsDelete(List<Conversation> conversations) {
         List<ConversationInfo> results = new ArrayList<>();
         for (Conversation conversation : conversations) {
@@ -401,6 +408,41 @@ public class ConversationManager implements IConversationManager, MessageManager
                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
                     entry.getValue().onConversationInfoUpdate(result);
                 }
+            }
+        }
+    }
+
+    private void updateConversationLastedMessage(Conversation conversation, ConcreteMessage removedMessage, ConcreteMessage lastedMessage) {
+        if (conversation == null) return;
+        //查询会话
+        ConversationInfo info = getConversationInfo(conversation);
+        //会话不存在时不处理
+        if (info == null) return;
+        //会话原来的最新消息为空，且当前最新消息也为空，不处理
+        if (info.getLastMessage() == null && lastedMessage == null) return;
+        //会话原来的最新消息与且当前最新消息相同，不处理
+        if (info.getLastMessage() != null && removedMessage != null
+                && info.getLastMessage().getClientMsgNo() == removedMessage.getClientMsgNo()
+                && Objects.equals(info.getLastMessage().getContentType(), removedMessage.getContentType())
+        ) {
+            return;
+        }
+        //最新消息为空时将会话Mention置为false
+        if (lastedMessage == null) {
+            info.setUnreadCount(0);
+            info.setHasMentioned(false);
+            info.setLastMessage(null);
+            mCore.getDbManager().setMention(conversation, false);
+            mCore.getDbManager().clearLastMessage(conversation);
+        } else {
+            info.setLastMessage(lastedMessage);
+            mCore.getDbManager().updateLastMessage(lastedMessage);
+        }
+        if (mListenerMap != null) {
+            List<ConversationInfo> result = new ArrayList<>();
+            result.add(info);
+            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                entry.getValue().onConversationInfoUpdate(result);
             }
         }
     }

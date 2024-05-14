@@ -152,6 +152,12 @@ class MessageSql {
         return sql;
     }
 
+    static String sqlGetLatestMessagesInConversation(Conversation conversation) {
+        String sql = String.format("SELECT * FROM message WHERE conversation_type = '%s' AND conversation_id = '%s' AND is_deleted = 0", conversation.getConversationType().getValue(), conversation.getConversationId());
+        sql = sql + SQL_ORDER_BY_TIMESTAMP + SQL_DESC + SQL_LIMIT + 1;
+        return sql;
+    }
+
     static String sqlGetMessagesByMessageIds(int count) {
         return "SELECT * FROM message WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
     }

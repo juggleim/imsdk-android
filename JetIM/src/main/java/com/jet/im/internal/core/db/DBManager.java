@@ -252,6 +252,12 @@ public class DBManager {
         execSQL(sql, args);
     }
 
+    public void clearLastMessage(Conversation conversation) {
+        String sql = ConversationSql.SQL_UPDATE_LAST_MESSAGE_NULL + ConversationSql.SQL_WHERE_CONVERSATION_IS;
+        Object[] args = new Object[]{conversation.getConversationType().getValue(), conversation.getConversationId()};
+        execSQL(sql, args);
+    }
+
     public ConcreteMessage getMessageWithMessageId(String messageId) {
         ConcreteMessage message = null;
         if (TextUtils.isEmpty(messageId)) {
@@ -373,6 +379,20 @@ public class DBManager {
         }
         cursor.close();
         return result;
+    }
+
+    //获取会话中最新一条消息
+    public Message getLatestMessages(Conversation conversation) {
+        String sql = MessageSql.sqlGetLatestMessagesInConversation(conversation);
+        Cursor cursor = rawQuery(sql, null);
+        List<Message> list = new ArrayList<>();
+        if (cursor == null) {
+            return null;
+        }
+        addMessagesFromCursor(list, cursor);
+        cursor.close();
+        if (list.isEmpty()) return null;
+        return list.get(0);
     }
 
     public void updateLocalAttribute(String messageId, String attribute) {
