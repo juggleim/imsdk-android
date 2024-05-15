@@ -8,8 +8,8 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
-public class ClearHistoryMessage extends MessageContent {
-    public ClearHistoryMessage() {
+public class CleanMsgMessage extends MessageContent {
+    public CleanMsgMessage() {
         mContentType = CONTENT_TYPE;
     }
 
@@ -22,18 +22,18 @@ public class ClearHistoryMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("ClearHistoryMsgMessage decode data is null");
+            LoggerUtils.e("CleanMsgMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
-        LoggerUtils.i("ClearHistoryMsgMessage decode data= " + jsonStr);
+        LoggerUtils.d("ClearHistoryMsgMessage decode data= " + jsonStr);
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(CLEAN_TIME)) {
-                cleanTime = jsonObject.optLong(CLEAN_TIME);
+                mCleanTime = jsonObject.optLong(CLEAN_TIME);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("ClearHistoryMsgMessage decode JSONException " + e.getMessage());
+            LoggerUtils.e("CleanMsgMessage decode JSONException " + e.getMessage());
         }
     }
 
@@ -42,10 +42,10 @@ public class ClearHistoryMessage extends MessageContent {
         return MessageFlag.IS_CMD.getValue();
     }
 
-    private long cleanTime;
+    private long mCleanTime;
 
     public long getCleanTime() {
-        return cleanTime;
+        return mCleanTime;
     }
 
     public static final String CONTENT_TYPE = "jg:cleanmsg";
