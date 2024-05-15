@@ -491,6 +491,26 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] clearHistoryMessage(Conversation conversation, long time, int scope, int index) {
+        Appmessages.CleanHisMsgReq req = Appmessages.CleanHisMsgReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setCleanMsgTime(time)
+                .setCleanScope(scope)
+                .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(CLEAR_HIS_MSG)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -934,6 +954,7 @@ class PBData {
     private static final String QRY_MERGED_MSGS = "qry_merged_msgs";
     private static final String REG_PUSH_TOKEN = "reg_push_token";
     private static final String QRY_MENTION_MSGS = "qry_mention_msgs";
+    private static final String CLEAR_HIS_MSG = "clean_hismsg";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -959,6 +980,7 @@ class PBData {
             put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
+            put(CLEAR_HIS_MSG, PBRcvObj.PBRcvType.simpleQryAck);
         }
     };
 

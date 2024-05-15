@@ -212,6 +212,13 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         sendWhenOpen(bytes);
     }
 
+    public void clearHistoryMessage(Conversation conversation, long time, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.clearHistoryMessage(conversation, time, 0, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void startHeartbeat() {
         mHeartbeatManager.start(false);
     }

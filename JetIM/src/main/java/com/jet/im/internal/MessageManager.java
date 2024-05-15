@@ -13,6 +13,7 @@ import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.messages.ClearHistoryMessage;
 import com.jet.im.internal.model.messages.DeleteConvMessage;
 import com.jet.im.internal.model.messages.GroupReadNtfMessage;
 import com.jet.im.internal.model.messages.ReadNtfMessage;
@@ -57,6 +58,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(ReadNtfMessage.class);
         ContentTypeCenter.getInstance().registerContentType(GroupReadNtfMessage.class);
         ContentTypeCenter.getInstance().registerContentType(MergeMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(ClearHistoryMessage.class);
     }
 
     private final JetIMCore mCore;
@@ -336,12 +338,20 @@ public class MessageManager implements IMessageManager {
     public void clearMessages(Conversation conversation, long startTime) {
         //清空消息
         if (startTime <= 0) startTime = System.currentTimeMillis();
-        mCore.getDbManager().clearMessages(conversation, startTime);
-        //通知会话更新
-        if (mSendReceiveListener != null) {
-            Message lastedMessage = mCore.getDbManager().getLatestMessages(conversation);
-            mSendReceiveListener.onMessageRemoved(conversation, null, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
-        }
+        //清空消息并通知会话更新
+        handleClearHistoryMessageCmdMessage(conversation, startTime);
+        //调用接口
+        mCore.getWebSocket().clearHistoryMessage(conversation, startTime, new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                LoggerUtils.i("clear message success");
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                LoggerUtils.i("clear message error, code is " + errorCode);
+            }
+        });
     }
 
     @Override
@@ -903,6 +913,13 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
+            //clear history message
+            if (message.getContentType().equals(ClearHistoryMessage.CONTENT_TYPE)) {
+                ClearHistoryMessage clearHistoryMessage = (ClearHistoryMessage) message.getContent();
+                handleClearHistoryMessageCmdMessage(message.getConversation(), clearHistoryMessage.getCleanTime());
+                continue;
+            }
+
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
@@ -946,6 +963,17 @@ public class MessageManager implements IMessageManager {
             if (receiveTime > 0) {
                 mCore.setMessageReceiveTime(receiveTime);
             }
+        }
+    }
+
+    private void handleClearHistoryMessageCmdMessage(Conversation conversation, long startTime) {
+        if (startTime <= 0) startTime = System.currentTimeMillis();
+        //清空消息
+        mCore.getDbManager().clearMessages(conversation, startTime);
+        //通知会话更新
+        if (mSendReceiveListener != null) {
+            Message lastedMessage = mCore.getDbManager().getLatestMessages(conversation);
+            mSendReceiveListener.onMessageRemoved(conversation, null, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
         }
     }
 
