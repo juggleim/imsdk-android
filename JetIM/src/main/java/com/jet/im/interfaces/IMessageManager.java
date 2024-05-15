@@ -180,6 +180,10 @@ public interface IMessageManager {
         void onMessageReceive(Message message);
 
         void onMessageRecall(Message message);
+
+        void onMessageDelete(long clientMsgNo);
+
+        void onMessageClear(Conversation conversation, long timestamp);
     }
 
     interface IMessageSyncListener {
