@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.library'
-    id 'com.kezong.fat-aar'
 }
 
 android {
@@ -34,7 +33,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation project(path: ':JetIM')
-    embed project(':OPPOPlugin_sdk')
+    implementation project(':OPPOPlugin_sdk')
     //以下依赖都需要添加
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'commons-codec:commons-codec:1.6'

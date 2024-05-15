@@ -6,13 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum PushChannel {
-    HUAWEI(2,"HW", "huawei"),
-    XIAOMI(3,"MI", "xiaomi"),
-    GOOGLE(4,"FCM", "google"),
-    MEIZU(5,"MEIZU", "meizu"),
-    VIVO(6,"VIVO", "vivo"),
-    OPPO(7,"OPPO", "oppo|realme|oneplus"),
-    HONOR(8,"HONOR", "honor");
+    HUAWEI(2, "HW", "huawei"),
+    XIAOMI(3, "MI", "xiaomi"),
+    GOOGLE(4, "FCM", "google"),
+    MEIZU(5, "MEIZU", "meizu"),
+    VIVO(6, "VIVO", "vivo"),
+    OPPO(7, "OPPO", "oppo|realme|oneplus"),
+    HONOR(8, "HONOR", "honor"),
+    JIGUANG(9, "JIGUANG", "jiguang");
+
     private final String name;
     private String os;
     private int code;

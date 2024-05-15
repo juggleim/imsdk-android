@@ -20,6 +20,7 @@ rootProject.name = "JetIMDemo"
 include ':app'
 include ':JetIM'
 include ':HWPlugin'
+include ':JGPlugin'
 include ':GooglePlugin'
 
 include ':XMPlugin'
