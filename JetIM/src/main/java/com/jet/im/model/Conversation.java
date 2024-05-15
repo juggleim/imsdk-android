@@ -1,6 +1,21 @@
 package com.jet.im.model;
 
+import java.util.Objects;
+
 public class Conversation {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Conversation that = (Conversation) o;
+        return Objects.equals(mConversationId, that.mConversationId) && mConversationType == that.mConversationType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mConversationId, mConversationType);
+    }
+
     public Conversation(ConversationType type, String conversationId) {
         this.mConversationType = type;
         this.mConversationId = conversationId;

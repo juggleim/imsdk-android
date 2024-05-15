@@ -324,9 +324,8 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
-    public void onMessageRemoved(Conversation conversation, ConcreteMessage removedMessage, ConcreteMessage lastedMessage) {
-        LoggerUtils.d("onMessageRemoved, conversation= " + conversation.getConversationId() + ", removedMessage= " + (removedMessage == null ? "null" : removedMessage.getContentType()) + ", lastedMessage= " + (lastedMessage == null ? "null" : lastedMessage.getContentType()));
-        updateConversationLastedMessage(conversation, removedMessage, lastedMessage);
+    public void onMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage) {
+        updateConversationLastedMessage(conversation, removedMessages, lastedMessage);
     }
 
     @Override
@@ -412,7 +411,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
-    private void updateConversationLastedMessage(Conversation conversation, ConcreteMessage removedMessage, ConcreteMessage lastedMessage) {
+    private void updateConversationLastedMessage(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage) {
         if (conversation == null) return;
         //查询会话
         ConversationInfo info = getConversationInfo(conversation);
@@ -421,9 +420,9 @@ public class ConversationManager implements IConversationManager, MessageManager
         //会话原来的最新消息为空，且当前最新消息也为空，不处理
         if (info.getLastMessage() == null && lastedMessage == null) return;
         //会话原来的最新消息与且当前最新消息相同，不处理
-        if (info.getLastMessage() != null && removedMessage != null
-                && info.getLastMessage().getClientMsgNo() == removedMessage.getClientMsgNo()
-                && Objects.equals(info.getLastMessage().getContentType(), removedMessage.getContentType())
+        if (info.getLastMessage() != null && lastedMessage != null
+                && info.getLastMessage().getClientMsgNo() == lastedMessage.getClientMsgNo()
+                && Objects.equals(info.getLastMessage().getContentType(), lastedMessage.getContentType())
         ) {
             return;
         }

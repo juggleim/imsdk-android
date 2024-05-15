@@ -511,6 +511,31 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, int scope, int index) {
+        Appmessages.DelHisMsgsReq.Builder builder = Appmessages.DelHisMsgsReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setDelScope(scope);
+        for (ConcreteMessage msg : msgList) {
+            Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
+                    .setMsgId(msg.getMessageId())
+                    .setMsgTime(msg.getTimestamp())
+                    .build();
+            builder.addMsgs(simpleMsg);
+        }
+        Appmessages.DelHisMsgsReq req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(DELETE_MSG)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -955,6 +980,7 @@ class PBData {
     private static final String REG_PUSH_TOKEN = "reg_push_token";
     private static final String QRY_MENTION_MSGS = "qry_mention_msgs";
     private static final String CLEAR_HIS_MSG = "clean_hismsg";
+    private static final String DELETE_MSG = "del_msg";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -981,6 +1007,7 @@ class PBData {
             put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(CLEAR_HIS_MSG, PBRcvObj.PBRcvType.simpleQryAck);
+            put(DELETE_MSG, PBRcvObj.PBRcvType.simpleQryAck);
         }
     };
 

@@ -168,10 +168,11 @@ message AddHisMsgReq{
 }
 
 message DelHisMsgsReq{
-    string fromId = 1;
-    string targetId = 2;
-    ChannelType channelType = 3;
-    repeated SimpleMsg msgs = 4; 
+  string fromId = 1;
+  string targetId = 2;
+  ChannelType channelType = 3;
+  repeated SimpleMsg msgs = 4;
+  int32 delScope = 5;    //删除的范围，0:默认值，单向删除，只删除发起方一侧的消息；1：双向删除，影响消息收发双发
 }
 
 message QryMsgLatestIndexReq{
@@ -324,7 +325,7 @@ message Conversation{
 }
 
 message MentionInfos{
-    
+
 }
 
 message MentionMsg{

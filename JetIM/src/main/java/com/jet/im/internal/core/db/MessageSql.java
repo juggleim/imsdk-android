@@ -205,6 +205,10 @@ class MessageSql {
 
     static final String SQL_DELETE_MESSAGE = "UPDATE message SET is_deleted = 1 WHERE";
 
+    static String sqlDeleteMessages(int count) {
+        return "UPDATE message SET is_deleted = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
+    }
+
     static String sqlClearMessages(Conversation conversation, long startTime) {
         return String.format("UPDATE message SET is_deleted = 1 WHERE conversation_type = %s AND conversation_id = '%s' AND timestamp <= %s", conversation.getConversationType().getValue(), conversation.getConversationId(), startTime);
     }
