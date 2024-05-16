@@ -307,7 +307,7 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void deleteMessageByMessageId(String messageId, boolean isBidirectional) {
+    public void deleteMessageByMessageId(String messageId) {
         //查询消息
         List<String> idList = new ArrayList<>(1);
         idList.add(messageId);
@@ -321,7 +321,7 @@ public class MessageManager implements IMessageManager {
         //调用接口
         List<ConcreteMessage> deleteList = new ArrayList<>();
         deleteList.add(deleteMessage);
-        mCore.getWebSocket().deleteMessage(deleteMessage.getConversation(), deleteList, isBidirectional, new WebSocketSimpleCallback() {
+        mCore.getWebSocket().deleteMessage(deleteMessage.getConversation(), deleteList, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 LoggerUtils.i("delete message by messageId success");
@@ -335,7 +335,7 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void deleteMessageByClientMsgNo(long clientMsgNo, boolean isBidirectional) {
+    public void deleteMessageByClientMsgNo(long clientMsgNo) {
         //查询消息
         List<Message> messages = getMessagesByClientMsgNos(new long[]{clientMsgNo});
         if (messages.isEmpty()) return;
@@ -349,7 +349,7 @@ public class MessageManager implements IMessageManager {
         //调用接口
         List<ConcreteMessage> deleteList = new ArrayList<>();
         deleteList.add(deleteMessage);
-        mCore.getWebSocket().deleteMessage(deleteMessage.getConversation(), deleteList, isBidirectional, new WebSocketSimpleCallback() {
+        mCore.getWebSocket().deleteMessage(deleteMessage.getConversation(), deleteList, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 LoggerUtils.i("delete message by clientMsgNo success");

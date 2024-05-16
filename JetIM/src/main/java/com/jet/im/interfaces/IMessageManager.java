@@ -111,9 +111,9 @@ public interface IMessageManager {
             JetIMConst.PullDirection direction,
             List<String> contentTypes);
 
-    void deleteMessageByClientMsgNo(long clientMsgNo, boolean isBidirectional);
+    void deleteMessageByClientMsgNo(long clientMsgNo);
 
-    void deleteMessageByMessageId(String messageId, boolean isBidirectional);
+    void deleteMessageByMessageId(String messageId);
 
     void clearMessages(Conversation conversation, long startTime);
 

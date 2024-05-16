@@ -219,9 +219,9 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         sendWhenOpen(bytes);
     }
 
-    public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, boolean isBidirectional, WebSocketSimpleCallback callback) {
+    public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, WebSocketSimpleCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.deleteMessage(conversation, msgList, isBidirectional ? 1 : 0, mCmdIndex++);
+        byte[] bytes = mPbData.deleteMessage(conversation, msgList,  mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }
