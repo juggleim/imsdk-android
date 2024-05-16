@@ -384,7 +384,6 @@ class PBData {
                 .setUndisturbType(isMute ? 1 : 0)
                 .build();
         Appmessages.UndisturbConversReq req = Appmessages.UndisturbConversReq.newBuilder()
-                .setUserId(userId)
                 .addItems(item)
                 .build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
@@ -847,7 +846,7 @@ class PBData {
         info.setTopTime(conversation.getTopUpdatedTime());
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
         info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
-        if (conversation.hasLatestMentionMsg()) {
+        if (conversation.getMentions() != null && conversation.getMentions().getIsMentioned()) {
             info.setHasMentioned(true);
         }
         return info;
@@ -907,13 +906,13 @@ class PBData {
     private MessageMentionInfo.MentionType mentionTypeFromPbMentionType(Appmessages.MentionType pbMentionType) {
         MessageMentionInfo.MentionType type = MessageMentionInfo.MentionType.DEFAULT;
         switch (pbMentionType) {
-            case MentionAll:
+            case All:
                 type = MessageMentionInfo.MentionType.ALL;
                 break;
-            case MentionSomeone:
+            case Someone:
                 type = MessageMentionInfo.MentionType.SOMEONE;
                 break;
-            case MentionAllAndSomeone:
+            case AllAndSomeone:
                 type = MessageMentionInfo.MentionType.ALL_AND_SOMEONE;
                 break;
             default:
