@@ -183,7 +183,7 @@ public interface IMessageManager {
 
         void onMessageDelete(long clientMsgNo);
 
-        void onMessageClear(Conversation conversation, long timestamp);
+        void onMessageClear(Conversation conversation, long timestamp, String senderId);
     }
 
     interface IMessageSyncListener {

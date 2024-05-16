@@ -361,10 +361,11 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void clearMessages(Conversation conversation, long startTime) {
-        //清空消息
         if (startTime <= 0) startTime = System.currentTimeMillis();
-        //清空消息并通知会话更新
-        handleClearHistoryMessageCmdMessage(conversation, startTime);
+        //清空消息
+        mCore.getDbManager().clearMessages(conversation, startTime, null);
+        //通知会话更新
+        notifyMessageRemoved(conversation, null);
         //调用接口
         mCore.getWebSocket().clearHistoryMessage(conversation, startTime, new WebSocketSimpleCallback() {
             @Override
@@ -938,7 +939,7 @@ public class MessageManager implements IMessageManager {
             //clear history message
             if (message.getContentType().equals(CleanMsgMessage.CONTENT_TYPE)) {
                 CleanMsgMessage cleanMsgMessage = (CleanMsgMessage) message.getContent();
-                handleClearHistoryMessageCmdMessage(message.getConversation(), cleanMsgMessage.getCleanTime());
+                handleClearHistoryMessageCmdMessage(message.getConversation(), cleanMsgMessage.getCleanTime(), cleanMsgMessage.getSenderId());
                 continue;
             }
 
@@ -995,10 +996,16 @@ public class MessageManager implements IMessageManager {
         }
     }
 
-    private void handleClearHistoryMessageCmdMessage(Conversation conversation, long startTime) {
+    private void handleClearHistoryMessageCmdMessage(Conversation conversation, long startTime, String senderId) {
         if (startTime <= 0) startTime = System.currentTimeMillis();
         //清空消息
-        mCore.getDbManager().clearMessages(conversation, startTime);
+        mCore.getDbManager().clearMessages(conversation, startTime, senderId);
+        //通知消息回调
+        if (mListenerMap != null) {
+            for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                entry.getValue().onMessageClear(conversation, startTime, senderId);
+            }
+        }
         //通知会话更新
         notifyMessageRemoved(conversation, null);
     }
@@ -1009,7 +1016,15 @@ public class MessageManager implements IMessageManager {
         if (messages.isEmpty()) return;
         //删除消息
         mCore.getDbManager().deleteMessageByMessageId(msgIds);
-        //通知会话更新最新信息
+        //通知消息回调
+        if (mListenerMap != null) {
+            for (int i = 0; i < messages.size(); i++) {
+                for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                    entry.getValue().onMessageDelete(messages.get(i).getClientMsgNo());
+                }
+            }
+        }
+        //通知会话更新
         if (mSendReceiveListener != null) {
             //合并同一个会话中的被删除消息
             ArrayMap<Conversation, List<ConcreteMessage>> conversationMap = new ArrayMap<>();

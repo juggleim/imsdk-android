@@ -536,8 +536,8 @@ public class DBManager {
         execSQL(MessageSql.sqlDeleteMessages(messageIds.size()), args);
     }
 
-    public void clearMessages(Conversation conversation, long startTime) {
-        execSQL(MessageSql.sqlClearMessages(conversation, startTime));
+    public void clearMessages(Conversation conversation, long startTime, String senderId) {
+        execSQL(MessageSql.sqlClearMessages(conversation, startTime, senderId));
     }
 
     public UserInfo getUserInfo(String userId) {

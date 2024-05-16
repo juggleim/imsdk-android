@@ -32,6 +32,9 @@ public class CleanMsgMessage extends MessageContent {
             if (jsonObject.has(CLEAN_TIME)) {
                 mCleanTime = jsonObject.optLong(CLEAN_TIME);
             }
+            if (jsonObject.has(SENDER_ID)) {
+                mSenderId = jsonObject.optString(SENDER_ID);
+            }
         } catch (JSONException e) {
             LoggerUtils.e("CleanMsgMessage decode JSONException " + e.getMessage());
         }
@@ -43,11 +46,17 @@ public class CleanMsgMessage extends MessageContent {
     }
 
     private long mCleanTime;
+    private String mSenderId;
 
     public long getCleanTime() {
         return mCleanTime;
     }
 
+    public String getSenderId() {
+        return mSenderId;
+    }
+
     public static final String CONTENT_TYPE = "jg:cleanmsg";
     private static final String CLEAN_TIME = "clean_time";
+    private static final String SENDER_ID = "sender_id";
 }

@@ -2,6 +2,7 @@ package com.jet.im.internal.core.db;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.text.TextUtils;
 
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
@@ -209,10 +210,15 @@ class MessageSql {
         return "UPDATE message SET is_deleted = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
 
-    static String sqlClearMessages(Conversation conversation, long startTime) {
-        return String.format("UPDATE message SET is_deleted = 1 WHERE conversation_type = %s AND conversation_id = '%s' AND timestamp <= %s", conversation.getConversationType().getValue(), conversation.getConversationId(), startTime);
+    static String sqlClearMessages(Conversation conversation, long startTime, String senderId) {
+        String sql = String.format("UPDATE message SET is_deleted = 1 WHERE conversation_type = %s AND conversation_id = '%s' AND timestamp <= %s", conversation.getConversationType().getValue(), conversation.getConversationId(), startTime);
+        if (!TextUtils.isEmpty(senderId)) {
+            sql = sql + SQL_AND_SENDER_IS + senderId;
+        }
+        return sql;
     }
 
+    static final String SQL_AND_SENDER_IS = " AND sender = ";
     static final String SQL_CLIENT_MSG_NO_IS = " id = ";
     static final String SQL_MESSAGE_ID_IS = " message_uid = ?";
 
