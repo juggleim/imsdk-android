@@ -26,6 +26,7 @@ message RpcMessageWraper{
   map<string, string> extParams = 12;
   int32 terminalNum = 13;
   bool noSendbox = 14;
+  bool onlySendbox = 15;
 
   int32 resultCode = 21;
   int64 msgSendTime = 22;
@@ -62,14 +63,13 @@ message MergedMsgs{
 message MentionInfo {
   MentionType mentionType = 1;
   repeated UserInfo targetUsers = 2;
-  // repeated string targetIds = 2;
 }
 
 enum MentionType{
   MentionDefault = 0;
-  MentionAll = 1;
-  MentionSomeone = 2;
-  MentionAllAndSomeone = 3;
+  All = 1;
+  Someone = 2;
+  AllAndSomeone = 3;
 }
 
 message PushData{
@@ -109,7 +109,8 @@ enum ChannelType {
     Group = 2;
     Chatroom = 3;
     System = 4;
-    Assistant = 5;
+    GroupCast = 5;
+    BroadCast = 6;
 }
 message Notify{
   NotifyType type = 1;
@@ -168,18 +169,18 @@ message AddHisMsgReq{
 }
 
 message DelHisMsgsReq{
-  string fromId = 1;
-  string targetId = 2;
-  ChannelType channelType = 3;
-  repeated SimpleMsg msgs = 4;
-  int32 delScope = 5;    //删除的范围，0:默认值，单向删除，只删除发起方一侧的消息；1：双向删除，影响消息收发双发
+    // string fromId = 1;
+    string targetId = 2;
+    ChannelType channelType = 3;
+    repeated SimpleMsg msgs = 4; 
+    int32 delScope = 5;
 }
 
-message QryMsgLatestIndexReq{
+message QryMsgLatestSeqReq{
   string converId = 1;
   ChannelType channelType = 2;
 }
-message QryMsgLatestIndexResp{
+message QryMsgLatestSeqResp{
   string converId = 1;
   ChannelType ChannelType = 2;
   int64 msgSeqNo = 3;
@@ -226,13 +227,7 @@ message CleanHisMsgReq{
   ChannelType channelType = 2;
   int64 cleanMsgTime = 3;
   int32 cleanScope = 4;
-}
-
-message DestroyHisMsgReq{
-  string fromId = 1;
-  string targetId = 2;
-  ChannelType channelType = 3;
-  int64 destroyTime = 4;
+  string senderId = 5;
 }
 
 message SimpleMsg{
@@ -253,6 +248,7 @@ message ModifyMsgReq{
   int64 msgTime = 4;
   int64 msgSeqNo = 5;
   bytes msgContent = 6;
+  string msgType = 7;
 }
 
 message MergeMsgReq{
@@ -267,9 +263,9 @@ message QryMergedMsgsReq{
 }
 
 message MsgExtItem {
-  string msgId = 1;
-  string targetId = 2;
-  ChannelType channelType = 3;
+  string targetId = 1;
+  ChannelType channelType = 2;
+  string msgId = 3;
   string key = 4;
   string value = 5;
 }
@@ -297,7 +293,7 @@ message QryConversationsReq{
     int64 startTime = 1;
     int32 count = 2;
     int32 order = 3;
-    string userId = 4;
+    // string userId = 4;
     string targetId = 5;
     ChannelType channelType = 6;
 }
@@ -313,7 +309,7 @@ message Conversation{
     int64 unreadCount = 5;
     DownMsg msg = 6;
     int64 latestReadIndex = 7;
-    MentionMsg LatestMentionMsg = 8;
+    Mentions mentions = 8;
     int32 isTop = 9;
     int64 topUpdatedTime = 10;
     int32 undisturbType = 11;
@@ -324,14 +320,17 @@ message Conversation{
     int64 latestUnreadIndex = 16;
 }
 
-message MentionInfos{
-
+message Mentions{
+    bool isMentioned = 1;
+    int32 mentionMsgCount = 2;
+    repeated UserInfo senders = 3;
+    repeated MentionMsg mentionMsgs = 4;
 }
 
 message MentionMsg{
-    MentionType mentionType = 1;
-    UserInfo senderInfo = 2;
-    DownMsg msg = 3;
+    string senderId = 1;
+    string msgId = 2;
+    int64 msgTime = 3;
 }
 
 message QryMentionMsgsReq{
@@ -369,7 +368,7 @@ message ClearUnreadReq{
 }
 
 message UndisturbConversReq {
-  string userId = 1;
+  // string userId = 1;
   repeated UndisturbConverItem items = 2;
 }
 
@@ -574,6 +573,12 @@ message GroupMemberMuteReq{
   int32 isMute = 3;
 }
 
+message GroupMemberAllowReq{
+  string groupId = 1;
+  repeated string memberIds = 2;
+  int32 isAllow = 3;
+}
+
 message GroupMembersResp{
   repeated GroupMember items = 1;
   string offset = 2;
@@ -581,6 +586,7 @@ message GroupMembersResp{
 message GroupMember{
   string memberId = 1;
   int32 isMute = 2;
+  int32 isAllow = 3;
 }
 
 message QryGroupMembersReq{
