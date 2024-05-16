@@ -164,7 +164,7 @@ public class MessageManager implements IMessageManager {
             }
             return message;
         }
-        deleteMessageByClientMsgNo(message.getClientMsgNo(), false);
+        deleteMessageByClientMsgNo(message.getClientMsgNo());
         return sendMessage(message.getContent(), message.getConversation(), callback);
     }
 
