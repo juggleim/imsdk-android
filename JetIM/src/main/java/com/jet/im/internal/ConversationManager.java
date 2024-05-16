@@ -343,6 +343,31 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
+    @Override
+    public void onConversationsUnreadUpdate(List<ConcreteConversationInfo> conversations) {
+        if (conversations == null) return;
+        //更新会话未读数
+        List<ConversationInfo> infoList = new ArrayList<>();
+        for (int i = 0; i < conversations.size(); i++) {
+            ConcreteConversationInfo conversation = conversations.get(i);
+            mCore.getDbManager().clearUnreadCount(conversation.getConversation(), conversation.getLastReadMessageIndex());
+            mCore.getDbManager().setMention(conversation.getConversation(), false);
+
+            ConversationInfo info = mCore.getDbManager().getConversationInfo((conversation.getConversation()));
+            if (info != null) {
+                infoList.add(info);
+            }
+        }
+        //通知更新会话
+        if (mListenerMap != null) {
+            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                entry.getValue().onConversationInfoUpdate(infoList);
+            }
+        }
+        //通知更新总未读数
+        noticeTotalUnreadCountChange();
+    }
+
     interface ICompleteCallback {
         void onComplete();
     }
@@ -434,6 +459,8 @@ public class ConversationManager implements IConversationManager, MessageManager
             mCore.getDbManager().setMention(conversation, false);
             mCore.getDbManager().clearLastMessage(conversation);
         } else {
+            //todo 更新未读数
+            //todo 更新hasMention
             info.setLastMessage(lastedMessage);
             mCore.getDbManager().updateLastMessage(lastedMessage);
         }

@@ -13,8 +13,10 @@ import com.jet.im.internal.core.network.QryReadDetailCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
+import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.model.messages.CleanMsgMessage;
+import com.jet.im.internal.model.messages.ClearUnreadMessage;
 import com.jet.im.internal.model.messages.DeleteConvMessage;
 import com.jet.im.internal.model.messages.DeleteMsgMessage;
 import com.jet.im.internal.model.messages.GroupReadNtfMessage;
@@ -62,6 +64,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(MergeMessage.class);
         ContentTypeCenter.getInstance().registerContentType(CleanMsgMessage.class);
         ContentTypeCenter.getInstance().registerContentType(DeleteMsgMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(ClearUnreadMessage.class);
     }
 
     private final JetIMCore mCore;
@@ -784,6 +787,8 @@ public class MessageManager implements IMessageManager {
         void onMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage);
 
         void onConversationsDelete(List<Conversation> conversations);
+
+        void onConversationsUnreadUpdate(List<ConcreteConversationInfo> conversations);
     }
 
     public void setSendReceiveListener(ISendReceiveListener sendReceiveListener) {
@@ -950,6 +955,13 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
+            //clear unread message
+            if (message.getContentType().equals(ClearUnreadMessage.CONTENT_TYPE)) {
+                ClearUnreadMessage clearUnreadMessage = (ClearUnreadMessage) message.getContent();
+                handleClearUnreadMessageCmdMessage(clearUnreadMessage.getConversations());
+                continue;
+            }
+
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
@@ -1043,6 +1055,12 @@ public class MessageManager implements IMessageManager {
                 List<ConcreteMessage> removedList = conversationMap.get(conversation);
                 mSendReceiveListener.onMessageRemoved(conversation, removedList, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
             }
+        }
+    }
+
+    private void handleClearUnreadMessageCmdMessage(List<ConcreteConversationInfo> conversations) {
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onConversationsUnreadUpdate(conversations);
         }
     }
 
