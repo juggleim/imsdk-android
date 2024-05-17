@@ -411,7 +411,7 @@ public class MessageManager implements IMessageManager {
                 //清空消息
                 mCore.getDbManager().clearMessages(conversation, finalStartTime, null);
                 //通知会话更新
-                notifyMessageRemoved(conversation, null);
+                notifyMessageCleared(conversation, finalStartTime, null);
                 //执行回调
                 if (callback != null) {
                     callback.onSuccess();
@@ -832,6 +832,8 @@ public class MessageManager implements IMessageManager {
 
         void onMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage);
 
+        void onMessageCleared(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastedMessage);
+
         void onConversationsDelete(List<Conversation> conversations);
 
         void onConversationsUpdate(String updateType, List<ConcreteConversationInfo> conversations);
@@ -1080,7 +1082,7 @@ public class MessageManager implements IMessageManager {
             }
         }
         //通知会话更新
-        notifyMessageRemoved(conversation, null);
+        notifyMessageCleared(conversation, startTime, senderId);
     }
 
     private void handleDeleteMsgMessageCmdMessage(List<String> msgIds) {
@@ -1147,6 +1149,15 @@ public class MessageManager implements IMessageManager {
                 removedList.add(removedMessage);
             }
             mSendReceiveListener.onMessageRemoved(conversation, removedList, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
+        }
+    }
+
+    //通知会话更新最新信息
+    private void notifyMessageCleared(Conversation conversation, long startTime, String sendUserId) {
+        if (mSendReceiveListener != null) {
+            //获取当前会话最新一条消息
+            Message lastedMessage = mCore.getDbManager().getLatestMessages(conversation);
+            mSendReceiveListener.onMessageCleared(conversation, startTime, sendUserId, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
         }
     }
 
