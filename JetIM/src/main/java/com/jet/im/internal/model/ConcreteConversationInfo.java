@@ -4,6 +4,8 @@ import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.UserInfo;
 
+import java.util.List;
+
 public class ConcreteConversationInfo extends ConversationInfo {
     public long getLastReadMessageIndex() {
         return mLastReadMessageIndex;
@@ -45,9 +47,18 @@ public class ConcreteConversationInfo extends ConversationInfo {
         mTargetUserInfo = userInfo;
     }
 
+    public List<UserInfo> getMentionUserList() {
+        return mMentionUserList;
+    }
+
+    public void setMentionUserList(List<UserInfo> mentionUserList) {
+        this.mMentionUserList = mentionUserList;
+    }
+
     private long mLastReadMessageIndex;
     private long mLastMessageIndex;
     private long mSyncTime;
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;
+    private List<UserInfo> mMentionUserList;
 }

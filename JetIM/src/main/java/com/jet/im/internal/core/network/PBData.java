@@ -11,6 +11,7 @@ import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationMentionInfo;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
@@ -847,7 +848,30 @@ class PBData {
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
         info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
         if (conversation.getMentions() != null && conversation.getMentions().getIsMentioned()) {
-            info.setHasMentioned(true);
+            ConversationMentionInfo mentionInfo = new ConversationMentionInfo();
+            //解析@消息列表
+            if (conversation.getMentions().getMentionMsgsList() != null) {
+                List<ConversationMentionInfo.MentionMsg> mentionMsgList = new ArrayList<>();
+                for (Appmessages.MentionMsg pbMentionMsg : conversation.getMentions().getMentionMsgsList()) {
+                    ConversationMentionInfo.MentionMsg mentionMsg = mentionMsgWithPBMentionMsg(pbMentionMsg);
+                    if (mentionMsg != null) {
+                        mentionMsgList.add(mentionMsg);
+                    }
+                }
+                mentionInfo.setMentionMsgList(mentionMsgList);
+            }
+            info.setMentionInfo(mentionInfo);
+            //解析用户信息列表
+            if (conversation.getMentions().getSendersList() != null) {
+                List<UserInfo> mentionUserList = new ArrayList<>();
+                for (Appmessages.UserInfo pbUserInfo : conversation.getMentions().getSendersList()) {
+                    UserInfo user = userInfoWithPBUserInfo(pbUserInfo);
+                    if (user != null) {
+                        mentionUserList.add(user);
+                    }
+                }
+                info.setMentionUserList(mentionUserList);
+            }
         }
         return info;
     }
@@ -879,6 +903,17 @@ class PBData {
         result.setGroupId(pbGroupInfo.getGroupId());
         result.setGroupName(pbGroupInfo.getGroupName());
         result.setPortrait(pbGroupInfo.getGroupPortrait());
+        return result;
+    }
+
+    private ConversationMentionInfo.MentionMsg mentionMsgWithPBMentionMsg(Appmessages.MentionMsg pbMentionMsg) {
+        if (pbMentionMsg == null) {
+            return null;
+        }
+        ConversationMentionInfo.MentionMsg result = new ConversationMentionInfo.MentionMsg();
+        result.setSenderId(pbMentionMsg.getSenderId());
+        result.setMsgId(pbMentionMsg.getMsgId());
+        result.setMsgTime(pbMentionMsg.getMsgTime());
         return result;
     }
 

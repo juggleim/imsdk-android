@@ -206,12 +206,12 @@ public class DBManager {
         execSQL(ConversationSql.sqlSetTopTime(conversation, topTime));
     }
 
-    public void setMention(Conversation conversation, boolean isMention) {
-        execSQL(ConversationSql.sqlSetMention(conversation, isMention));
+    public void setMentionInfo(Conversation conversation, String mentionInfoJson) {
+        execSQL(ConversationSql.sqlSetMention(conversation, mentionInfoJson));
     }
 
-    public void clearMentionStatus() {
-        execSQL(ConversationSql.SQL_CLEAR_MENTION_STATUS);
+    public void clearMentionInfo() {
+        execSQL(ConversationSql.SQL_CLEAR_MENTION_INFO);
     }
 
     public void clearUnreadCount(Conversation conversation, long msgIndex) {

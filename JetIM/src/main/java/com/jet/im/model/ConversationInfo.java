@@ -65,12 +65,12 @@ public class ConversationInfo {
         mDraft = draft;
     }
 
-    public boolean hasMentioned() {
-        return mHasMentioned;
+    public ConversationMentionInfo getMentionInfo() {
+        return mMentionInfo;
     }
 
-    public void setHasMentioned(boolean hasMentioned) {
-        mHasMentioned = hasMentioned;
+    public void setMentionInfo(ConversationMentionInfo mentionInfo) {
+        this.mMentionInfo = mentionInfo;
     }
 
     private Conversation mConversation;
@@ -81,5 +81,5 @@ public class ConversationInfo {
     private long mTopTime;
     private boolean mMute;
     private String mDraft;
-    private boolean mHasMentioned;
+    private ConversationMentionInfo mMentionInfo;
 }

@@ -12,6 +12,7 @@ import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.ConversationMentionInfo;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
@@ -152,7 +153,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             return;
         }
         mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
-        mCore.getDbManager().setMention(conversation, false);
+        mCore.getDbManager().setMentionInfo(conversation, "");
         noticeTotalUnreadCountChange();
         mCore.getWebSocket().clearUnreadCount(conversation, mCore.getUserId(), info.getLastMessageIndex(), new WebSocketSimpleCallback() {
             @Override
@@ -170,7 +171,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     @Override
     public void clearTotalUnreadCount() {
         mCore.getDbManager().clearTotalUnreadCount();
-        mCore.getDbManager().clearMentionStatus();
+        mCore.getDbManager().clearMentionInfo();
         noticeTotalUnreadCountChange();
         long time = mCore.getDbManager().getNewestStatusSentMessageTimestamp();
         mCore.getWebSocket().clearTotalUnreadCount(mCore.getUserId(), time, new WebSocketSimpleCallback() {
@@ -351,7 +352,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         for (int i = 0; i < conversations.size(); i++) {
             ConcreteConversationInfo conversation = conversations.get(i);
             mCore.getDbManager().clearUnreadCount(conversation.getConversation(), conversation.getLastReadMessageIndex());
-            mCore.getDbManager().setMention(conversation.getConversation(), false);
+            mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
 
             ConversationInfo info = mCore.getDbManager().getConversationInfo((conversation.getConversation()));
             if (info != null) {
@@ -373,20 +374,34 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     private void addOrUpdateConversationIfNeed(ConcreteMessage message) {
-        boolean hasMention = false;
+        ConversationMentionInfo mentionInfo = null;
         //接收到的消息才处理 mention
         if (Message.MessageDirection.RECEIVE == message.getDirection()
                 && message.getContent() != null
                 && message.getContent().getMentionInfo() != null) {
             if (MessageMentionInfo.MentionType.ALL == message.getContent().getMentionInfo().getType()
                     || MessageMentionInfo.MentionType.ALL_AND_SOMEONE == message.getContent().getMentionInfo().getType()) {
-                hasMention = true;
+                List<ConversationMentionInfo.MentionMsg> mentionMsgs = new ArrayList<>();
+                ConversationMentionInfo.MentionMsg mentionMsg = new ConversationMentionInfo.MentionMsg();
+                mentionMsg.setSenderId(message.getSenderUserId());
+                mentionMsg.setMsgId(message.getMessageId());
+                mentionMsg.setMsgTime(message.getTimestamp());
+                mentionMsgs.add(mentionMsg);
+                mentionInfo = new ConversationMentionInfo();
+                mentionInfo.setMentionMsgList(mentionMsgs);
             } else if (MessageMentionInfo.MentionType.SOMEONE == message.getContent().getMentionInfo().getType()
                     && message.getContent().getMentionInfo().getTargetUsers() != null) {
                 for (UserInfo userInfo : message.getContent().getMentionInfo().getTargetUsers()) {
                     if (userInfo.getUserId() != null
                             && userInfo.getUserId().equals(mCore.getUserId())) {
-                        hasMention = true;
+                        List<ConversationMentionInfo.MentionMsg> mentionMsgs = new ArrayList<>();
+                        ConversationMentionInfo.MentionMsg mentionMsg = new ConversationMentionInfo.MentionMsg();
+                        mentionMsg.setSenderId(message.getSenderUserId());
+                        mentionMsg.setMsgId(message.getMessageId());
+                        mentionMsg.setMsgTime(message.getTimestamp());
+                        mentionMsgs.add(mentionMsg);
+                        mentionInfo = new ConversationMentionInfo();
+                        mentionInfo.setMentionMsgList(mentionMsgs);
                         break;
                     }
                 }
@@ -394,7 +409,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         boolean isBroadcast = (message.getFlags() & MessageContent.MessageFlag.IS_BROADCAST.getValue()) != 0;
 
-        ConversationInfo info = getConversationInfo(message.getConversation());
+        ConcreteConversationInfo info = (ConcreteConversationInfo) getConversationInfo(message.getConversation());
         if (info == null) {
             ConcreteConversationInfo addInfo = new ConcreteConversationInfo();
             addInfo.setConversation(message.getConversation());
@@ -407,8 +422,8 @@ public class ConversationManager implements IConversationManager, MessageManager
             addInfo.setLastMessageIndex(message.getMsgIndex());
             addInfo.setLastReadMessageIndex(message.getMsgIndex() - 1);
             addInfo.setUnreadCount(1);
-            if (hasMention) {
-                addInfo.setHasMentioned(true);
+            if (mentionInfo != null) {
+                addInfo.setMentionInfo(mentionInfo);
             }
             List<ConcreteConversationInfo> l = new ArrayList<>();
             l.add(addInfo);
@@ -420,10 +435,24 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
         } else {
-            if (hasMention) {
-                mCore.getDbManager().setMention(message.getConversation(), true);
-                info.setHasMentioned(true);
+            //更新Mention
+            if (mentionInfo != null && mentionInfo.getMentionMsgList() != null) {
+                if (info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null) {
+                    for (ConversationMentionInfo.MentionMsg mentionMsg : info.getMentionInfo().getMentionMsgList()) {
+                        if (!mentionInfo.getMentionMsgList().contains(mentionMsg)) {
+                            mentionInfo.getMentionMsgList().add(mentionMsg);
+                        }
+                    }
+                }
+                info.setMentionInfo(mentionInfo);
+                mCore.getDbManager().setMentionInfo(message.getConversation(), mentionInfo.encodeToJson());
             }
+            //更新未读数
+            info.setLastMessageIndex(message.getMsgIndex());
+            int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
+            info.setUnreadCount(unreadCount);
+            info.setSortTime(message.getTimestamp());
+            //更新最新消息
             info.setLastMessage(message);
             mCore.getDbManager().updateLastMessage(message);
             if (mListenerMap != null) {
@@ -439,7 +468,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     private void updateConversationLastedMessage(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage) {
         if (conversation == null) return;
         //查询会话
-        ConversationInfo info = getConversationInfo(conversation);
+        ConcreteConversationInfo info = (ConcreteConversationInfo) getConversationInfo(conversation);
         //会话不存在时不处理
         if (info == null) return;
         //会话原来的最新消息为空，且当前最新消息也为空，不处理
@@ -453,14 +482,36 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         //最新消息为空时将会话Mention置为false
         if (lastedMessage == null) {
+            info.setLastMessageIndex(0);
+            info.setLastReadMessageIndex(0);
+            info.setSortTime(0);
             info.setUnreadCount(0);
-            info.setHasMentioned(false);
             info.setLastMessage(null);
-            mCore.getDbManager().setMention(conversation, false);
+            info.setMentionInfo(null);
+            mCore.getDbManager().setMentionInfo(conversation, "");
             mCore.getDbManager().clearLastMessage(conversation);
         } else {
-            //todo 更新未读数
-            //todo 更新hasMention
+            //更新未读数
+            info.setLastMessageIndex(lastedMessage.getMsgIndex());
+            int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
+            info.setUnreadCount(unreadCount);
+            info.setSortTime(lastedMessage.getTimestamp());
+            //更新Mention
+            if (removedMessages != null
+                    && info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null && !info.getMentionInfo().getMentionMsgList().isEmpty()) {
+                for (ConcreteMessage removedMessage : removedMessages) {
+                    if (TextUtils.isEmpty(removedMessage.getMessageId())) continue;
+                    ConversationMentionInfo.MentionMsg temp = new ConversationMentionInfo.MentionMsg();
+                    temp.setMsgId(removedMessage.getMessageId());
+                    info.getMentionInfo().getMentionMsgList().remove(temp);
+                }
+                if (info.getMentionInfo().getMentionMsgList().isEmpty()) {
+                    info.setMentionInfo(null);
+                    mCore.getDbManager().setMentionInfo(conversation, "");
+                } else {
+                    mCore.getDbManager().setMentionInfo(conversation, info.getMentionInfo().encodeToJson());
+                }
+            }
             info.setLastMessage(lastedMessage);
             mCore.getDbManager().updateLastMessage(lastedMessage);
         }
@@ -492,6 +543,13 @@ public class ConversationManager implements IConversationManager, MessageManager
             }
             if (info.getTargetUserInfo() != null && !TextUtils.isEmpty(info.getTargetUserInfo().getUserId())) {
                 userInfoMap.put(info.getTargetUserInfo().getUserId(), info.getTargetUserInfo());
+            }
+            if (info.getMentionUserList() != null) {
+                for (UserInfo mentionUserInfo : info.getMentionUserList()) {
+                    if (!TextUtils.isEmpty(mentionUserInfo.getUserId())) {
+                        userInfoMap.put(mentionUserInfo.getUserId(), mentionUserInfo);
+                    }
+                }
             }
         }
         mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
