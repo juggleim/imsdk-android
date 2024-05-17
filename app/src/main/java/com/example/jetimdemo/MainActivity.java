@@ -1,22 +1,21 @@
 package com.example.jetimdemo;
 
 import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.jetimdemo.databinding.ActivityMainBinding;
+import com.google.android.material.snackbar.Snackbar;
 import com.jet.im.JetIM;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
@@ -27,18 +26,12 @@ import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
-import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.push.PushChannel;
 
-import android.view.Menu;
-import android.view.MenuItem;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -387,7 +380,6 @@ public class MainActivity extends AppCompatActivity {
 //                    JetIM.getInstance().getConversationManager().clearDraft(conversation);
 
 
-
                     //clear messages
 //                    List<Message> messages = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 0, JetIMConst.PullDirection.OLDER);
 //                    Log.e("lifei", "message count is " + messages.size());
@@ -513,7 +505,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("lifei", "onMessageReceive type is " + message.getContentType() + " message is " + message);
                 MessageContent c = message.getContent();
                 if (c instanceof TextMessage) {
-                    TextMessage t = (TextMessage)c;
+                    TextMessage t = (TextMessage) c;
                     Log.i("lifei", "text message, extra is " + t.getExtra());
                 } else if (c instanceof ImageMessage) {
                     ImageMessage i = (ImageMessage) c;
@@ -530,6 +522,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onMessageRecall(Message message) {
                 Log.d("lifei", "onMessageRecall, messageId is " + message.getMessageId());
+            }
+
+            @Override
+            public void onMessageDelete(long clientMsgNo) {
+                Log.d("zzb", "onMessageDelete, clientMsgNo is " + clientMsgNo);
+            }
+
+            @Override
+            public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
+                Log.d("zzb", "onMessageClear, conversation is " + conversation.getConversationId() + ", timestamp is " + timestamp + ", senderId is " + senderId);
             }
         });
         JetIM.getInstance().getConversationManager().addListener("main", new IConversationManager.IConversationListener() {
