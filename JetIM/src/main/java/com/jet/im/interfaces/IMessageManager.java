@@ -123,7 +123,7 @@ public interface IMessageManager {
 
     void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback);
 
-    void recallMessage(String messageId, IRecallMessageCallback callback);
+    void recallMessage(String messageId, Map<String, String> extras, IRecallMessageCallback callback);
 
     void getRemoteMessages(Conversation conversation,
                            int count,

@@ -429,7 +429,7 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void recallMessage(String messageId, IRecallMessageCallback callback) {
+    public void recallMessage(String messageId, Map<String, String> extras, IRecallMessageCallback callback) {
         List<String> idList = new ArrayList<>(1);
         idList.add(messageId);
         List<Message> messages = getMessagesByMessageIds(idList);
@@ -442,7 +442,7 @@ public class MessageManager implements IMessageManager {
                 }
                 return;
             }
-            mCore.getWebSocket().recallMessage(messageId, m.getConversation(), m.getTimestamp(), new WebSocketTimestampCallback() {
+            mCore.getWebSocket().recallMessage(messageId, m.getConversation(), m.getTimestamp(), extras, new WebSocketTimestampCallback() {
                 @Override
                 public void onSuccess(long timestamp) {
                     if (mSyncProcessing) {
@@ -452,6 +452,7 @@ public class MessageManager implements IMessageManager {
                     }
                     m.setContentType(RecallInfoMessage.CONTENT_TYPE);
                     RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
+                    recallInfoMessage.setExtra(extras);
                     m.setContent(recallInfoMessage);
                     mCore.getDbManager().updateMessageContent(recallInfoMessage, m.getContentType(), messageId);
                     //通知会话更新
@@ -908,8 +909,9 @@ public class MessageManager implements IMessageManager {
         return list;
     }
 
-    private Message handleRecallCmdMessage(String messageId) {
+    private Message handleRecallCmdMessage(String messageId, Map<String, String> extra) {
         RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
+        recallInfoMessage.setExtra(extra);
         mCore.getDbManager().updateMessageContent(recallInfoMessage, RecallInfoMessage.CONTENT_TYPE, messageId);
         List<String> ids = new ArrayList<>(1);
         ids.add(messageId);
@@ -938,7 +940,7 @@ public class MessageManager implements IMessageManager {
             //recall message
             if (message.getContentType().equals(RecallCmdMessage.CONTENT_TYPE)) {
                 RecallCmdMessage cmd = (RecallCmdMessage) message.getContent();
-                Message recallMessage = handleRecallCmdMessage(cmd.getOriginalMessageId());
+                Message recallMessage = handleRecallCmdMessage(cmd.getOriginalMessageId(), cmd.getExtra());
                 //recallMessage 为空表示被撤回的消息本地不存在，不需要回调
                 if (recallMessage != null) {
                     if (mListenerMap != null) {

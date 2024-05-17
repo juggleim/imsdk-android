@@ -25,6 +25,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class JWebSocket extends WebSocketClient implements WebSocketCommandManager.CommandTimeoutListener {
 
@@ -82,9 +83,10 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     public void recallMessage(String messageId,
                               Conversation conversation,
                               long timestamp,
+                              Map<String, String> extras,
                               WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, mCmdIndex++);
+        byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, extras, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }
@@ -221,7 +223,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, WebSocketSimpleCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.deleteMessage(conversation, msgList,  mCmdIndex++);
+        byte[] bytes = mPbData.deleteMessage(conversation, msgList, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }

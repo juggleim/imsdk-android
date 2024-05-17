@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import app_messages.Appmessages;
@@ -185,13 +186,23 @@ class PBData {
         return msg.toByteArray();
     }
 
-    byte[] recallMessageData(String messageId, Conversation conversation, long timestamp, int index) {
-        Appmessages.RecallMsgReq req = Appmessages.RecallMsgReq.newBuilder()
+    byte[] recallMessageData(String messageId, Conversation conversation, long timestamp, Map<String, String> extras, int index) {
+        Appmessages.RecallMsgReq.Builder builder = Appmessages.RecallMsgReq.newBuilder()
                 .setMsgId(messageId)
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
-                .setMsgTime(timestamp)
-                .build();
+                .setMsgTime(timestamp);
+        if (extras != null) {
+            for (Map.Entry<String, String> entry : extras.entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) continue;
+                Appmessages.KvItem kvItem = Appmessages.KvItem.newBuilder()
+                        .setKey(entry.getKey())
+                        .setValue(entry.getValue())
+                        .build();
+                builder.addExts(kvItem);
+            }
+        }
+        Appmessages.RecallMsgReq req = builder.build();
 
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
