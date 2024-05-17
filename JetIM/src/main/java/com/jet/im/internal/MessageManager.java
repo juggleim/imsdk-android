@@ -22,6 +22,8 @@ import com.jet.im.internal.model.messages.DeleteMsgMessage;
 import com.jet.im.internal.model.messages.GroupReadNtfMessage;
 import com.jet.im.internal.model.messages.ReadNtfMessage;
 import com.jet.im.internal.model.messages.RecallCmdMessage;
+import com.jet.im.internal.model.messages.TopConvMessage;
+import com.jet.im.internal.model.messages.UnDisturbConvMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
@@ -65,6 +67,8 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(CleanMsgMessage.class);
         ContentTypeCenter.getInstance().registerContentType(DeleteMsgMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ClearUnreadMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(TopConvMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(UnDisturbConvMessage.class);
     }
 
     private final JetIMCore mCore;
@@ -829,7 +833,7 @@ public class MessageManager implements IMessageManager {
 
         void onConversationsDelete(List<Conversation> conversations);
 
-        void onConversationsUnreadUpdate(List<ConcreteConversationInfo> conversations);
+        void onConversationsUpdate(String updateType, List<ConcreteConversationInfo> conversations);
     }
 
     public void setSendReceiveListener(ISendReceiveListener sendReceiveListener) {
@@ -1003,6 +1007,20 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
+            //top conversation
+            if (message.getContentType().equals(TopConvMessage.CONTENT_TYPE)) {
+                TopConvMessage topConvMessage = (TopConvMessage) message.getContent();
+                handleTopConversationCmdMessage(topConvMessage.getConversations());
+                continue;
+            }
+
+            //unDisturb conversation
+            if (message.getContentType().equals(UnDisturbConvMessage.CONTENT_TYPE)) {
+                UnDisturbConvMessage unDisturbConvMessage = (UnDisturbConvMessage) message.getContent();
+                handleUnDisturbConversationCmdMessage(unDisturbConvMessage.getConversations());
+                continue;
+            }
+
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
@@ -1101,7 +1119,19 @@ public class MessageManager implements IMessageManager {
 
     private void handleClearUnreadMessageCmdMessage(List<ConcreteConversationInfo> conversations) {
         if (mSendReceiveListener != null) {
-            mSendReceiveListener.onConversationsUnreadUpdate(conversations);
+            mSendReceiveListener.onConversationsUpdate(ClearUnreadMessage.CONTENT_TYPE, conversations);
+        }
+    }
+
+    private void handleTopConversationCmdMessage(List<ConcreteConversationInfo> conversations) {
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onConversationsUpdate(TopConvMessage.CONTENT_TYPE, conversations);
+        }
+    }
+
+    private void handleUnDisturbConversationCmdMessage(List<ConcreteConversationInfo> conversations) {
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onConversationsUpdate(UnDisturbConvMessage.CONTENT_TYPE, conversations);
         }
     }
 

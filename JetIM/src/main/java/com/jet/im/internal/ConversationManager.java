@@ -10,6 +10,9 @@ import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.messages.ClearUnreadMessage;
+import com.jet.im.internal.model.messages.TopConvMessage;
+import com.jet.im.internal.model.messages.UnDisturbConvMessage;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.ConversationMentionInfo;
@@ -357,28 +360,51 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
-    public void onConversationsUnreadUpdate(List<ConcreteConversationInfo> conversations) {
+    public void onConversationsUpdate(String updateType, List<ConcreteConversationInfo> conversations) {
+        if (updateType == null) return;
         if (conversations == null) return;
-        //更新会话未读数
+        //标记总未读数是否有变更
+        boolean totalUnreadCountHasChanged = false;
+        //声明一个列表来保存有更新的会话
         List<ConversationInfo> infoList = new ArrayList<>();
+        //遍历需要更新的会话列表
+        boolean hasUpdate; //标记当前会话是否有变更
         for (int i = 0; i < conversations.size(); i++) {
+            //标记当前会话是否有变更
+            hasUpdate = true;
             ConcreteConversationInfo conversation = conversations.get(i);
-            mCore.getDbManager().clearUnreadCount(conversation.getConversation(), conversation.getLastReadMessageIndex());
-            mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
-
-            ConversationInfo info = mCore.getDbManager().getConversationInfo((conversation.getConversation()));
-            if (info != null) {
-                infoList.add(info);
+            switch (updateType) {
+                case ClearUnreadMessage.CONTENT_TYPE:
+                    if (!totalUnreadCountHasChanged) totalUnreadCountHasChanged = true;
+                    mCore.getDbManager().clearUnreadCount(conversation.getConversation(), conversation.getLastReadMessageIndex());
+                    mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
+                    break;
+                case TopConvMessage.CONTENT_TYPE:
+                    mCore.getDbManager().setTop(conversation.getConversation(), conversation.isTop());
+                    mCore.getDbManager().setTopTime(conversation.getConversation(), conversation.getTopTime());
+                    break;
+                case UnDisturbConvMessage.CONTENT_TYPE:
+                    mCore.getDbManager().setMute(conversation.getConversation(), conversation.isMute());
+                    break;
+                default:
+                    hasUpdate = false;
+                    break;
+            }
+            if (hasUpdate) {
+                ConversationInfo info = mCore.getDbManager().getConversationInfo((conversation.getConversation()));
+                if (info != null) {
+                    infoList.add(info);
+                }
             }
         }
         //通知更新会话
-        if (mListenerMap != null) {
+        if (!infoList.isEmpty() && mListenerMap != null) {
             for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
                 entry.getValue().onConversationInfoUpdate(infoList);
             }
         }
         //通知更新总未读数
-        noticeTotalUnreadCountChange();
+        if (totalUnreadCountHasChanged) noticeTotalUnreadCountChange();
     }
 
     interface ICompleteCallback {
