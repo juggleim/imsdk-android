@@ -40,7 +40,8 @@ class ConversationSql {
 
         String lastMessageId = CursorHelper.readString(cursor, COL_LAST_MESSAGE_ID);
         String lastMessageClientUid = CursorHelper.readString(cursor, COL_LAST_MESSAGE_CLIENT_UID);
-        if (TextUtils.isEmpty(lastMessageId) && TextUtils.isEmpty(lastMessageClientUid)) {
+        long lastMessageClientMsgNo = CursorHelper.readLong(cursor, COL_LAST_MESSAGE_CLIENT_MSG_NO);
+        if (TextUtils.isEmpty(lastMessageId) && TextUtils.isEmpty(lastMessageClientUid) && lastMessageClientMsgNo <= 0) {
             info.setLastMessage(null);
             return info;
         }
@@ -49,6 +50,7 @@ class ConversationSql {
         lastMessage.setContentType(CursorHelper.readString(cursor, COL_LAST_MESSAGE_TYPE));
         lastMessage.setMessageId(lastMessageId);
         lastMessage.setClientUid(lastMessageClientUid);
+        lastMessage.setClientMsgNo(lastMessageClientMsgNo);
         Message.MessageDirection direction = Message.MessageDirection.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_DIRECTION));
         lastMessage.setDirection(direction);
         Message.MessageState state = Message.MessageState.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_STATE));
@@ -73,7 +75,7 @@ class ConversationSql {
 
     static Object[] argsWithUpdateConcreteConversationInfo(ConcreteConversationInfo info) {
         ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
-        Object[] args = new Object[20];
+        Object[] args = new Object[21];
 
         args[0] = info.getSortTime();
         args[1] = info.getLastMessage().getMessageId();
@@ -89,30 +91,31 @@ class ConversationSql {
         }
         args[8] = lastMessage.getContentType();
         args[9] = lastMessage.getClientUid();
-        args[10] = lastMessage.getDirection().getValue();
-        args[11] = lastMessage.getState().getValue();
-        args[12] = lastMessage.isHasRead();
-        args[13] = lastMessage.getTimestamp();
-        args[14] = lastMessage.getSenderUserId();
+        args[10] = lastMessage.getClientMsgNo();
+        args[11] = lastMessage.getDirection().getValue();
+        args[12] = lastMessage.getState().getValue();
+        args[13] = lastMessage.isHasRead();
+        args[14] = lastMessage.getTimestamp();
+        args[15] = lastMessage.getSenderUserId();
         if (lastMessage.getContent() != null) {
-            args[15] = new String(lastMessage.getContent().encode());
-        } else {
-            args[15] = "";
-        }
-        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
-            args[16] = lastMessage.getContent().getMentionInfo().encodeToJson();
+            args[16] = new String(lastMessage.getContent().encode());
         } else {
             args[16] = "";
         }
-        args[17] = lastMessage.getSeqNo();
-        args[18] = info.getConversation().getConversationType().getValue();
-        args[19] = info.getConversation().getConversationId();
+        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
+            args[17] = lastMessage.getContent().getMentionInfo().encodeToJson();
+        } else {
+            args[17] = "";
+        }
+        args[18] = lastMessage.getSeqNo();
+        args[19] = info.getConversation().getConversationType().getValue();
+        args[20] = info.getConversation().getConversationId();
         return args;
     }
 
     static Object[] argsWithInsertConcreteConversationInfo(ConcreteConversationInfo info) {
         ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
-        Object[] args = new Object[20];
+        Object[] args = new Object[21];
         args[0] = info.getConversation().getConversationType().getValue();
         args[1] = info.getConversation().getConversationId();
         args[2] = info.getSortTime();
@@ -129,27 +132,28 @@ class ConversationSql {
         }
         args[10] = lastMessage.getContentType();
         args[11] = lastMessage.getClientUid();
-        args[12] = lastMessage.getDirection().getValue();
-        args[13] = lastMessage.getState().getValue();
-        args[14] = lastMessage.isHasRead();
-        args[15] = lastMessage.getTimestamp();
-        args[16] = lastMessage.getSenderUserId();
+        args[12] = lastMessage.getClientMsgNo();
+        args[13] = lastMessage.getDirection().getValue();
+        args[14] = lastMessage.getState().getValue();
+        args[15] = lastMessage.isHasRead();
+        args[16] = lastMessage.getTimestamp();
+        args[17] = lastMessage.getSenderUserId();
         if (lastMessage.getContent() != null) {
-            args[17] = new String(lastMessage.getContent().encode());
-        } else {
-            args[17] = "";
-        }
-        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
-            args[18] = lastMessage.getContent().getMentionInfo().encodeToJson();
+            args[18] = new String(lastMessage.getContent().encode());
         } else {
             args[18] = "";
         }
-        args[19] = lastMessage.getSeqNo();
+        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
+            args[19] = lastMessage.getContent().getMentionInfo().encodeToJson();
+        } else {
+            args[19] = "";
+        }
+        args[20] = lastMessage.getSeqNo();
         return args;
     }
 
     static Object[] argsWithUpdateLastMessage(ConcreteMessage message, boolean isUpdateSortTime) {
-        int count = 13;
+        int count = 14;
         if (isUpdateSortTime) {
             count++;
         }
@@ -165,6 +169,7 @@ class ConversationSql {
         }
         args[i++] = message.getContentType();
         args[i++] = message.getClientUid();
+        args[i++] = message.getClientMsgNo();
         args[i++] = message.getDirection().getValue();
         args[i++] = message.getState().getValue();
         args[i++] = message.isHasRead();
@@ -251,6 +256,7 @@ class ConversationSql {
             + "mention_info VARCHAR (64),"
             + "last_message_type VARCHAR (64),"
             + "last_message_client_uid VARCHAR (64),"
+            + "last_message_client_msg_no INTEGER,"
             + "last_message_direction BOOLEAN,"
             + "last_message_state SMALLINT,"
             + "last_message_has_read BOOLEAN,"
@@ -264,24 +270,24 @@ class ConversationSql {
     static final String SQL_INSERT_CONVERSATION = "INSERT OR REPLACE INTO conversation_info"
             + "(conversation_type, conversation_id, timestamp, last_message_id,"
             + "last_read_message_index, last_message_index, is_top, top_time, mute, mention_info,"
-            + "last_message_type, last_message_client_uid, last_message_direction, last_message_state,"
+            + "last_message_type, last_message_client_uid, last_message_client_msg_no, last_message_direction, last_message_state,"
             + "last_message_has_read, last_message_timestamp, last_message_sender, last_message_content, last_message_mention_info,"
             + "last_message_seq_no)"
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     static final String SQL_UPDATE_CONVERSATION = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_read_message_index=?, "
             + "last_message_index=?, is_top=?, top_time=?, mute=?, mention_info=?, last_message_type=?,  "
-            + "last_message_client_uid=?, last_message_direction=?, last_message_state=?, "
+            + "last_message_client_uid=?, last_message_client_msg_no=?, last_message_direction=?, last_message_state=?, "
             + "last_message_has_read=?, last_message_timestamp=?, last_message_sender=?, "
             + "last_message_content=?, last_message_mention_info=?, last_message_seq_no=? WHERE conversation_type = ? "
             + "AND conversation_id = ?";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY is_top DESC, timestamp DESC";
     static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET last_message_id=?, last_message_type=?,"
-            + "last_message_client_uid=?, "
+            + "last_message_client_uid=?, last_message_client_msg_no=?, "
             + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
             + "last_message_sender=?, last_message_content=?, last_message_mention_info=?, last_message_seq_no=?";
 
     static final String SQL_UPDATE_LAST_MESSAGE_NULL = "UPDATE conversation_info SET last_message_id=NULL, last_message_type=NULL,"
-            + "last_message_client_uid=NULL, "
+            + "last_message_client_uid=NULL, last_message_client_msg_no=0, "
             + "last_message_direction=0, last_message_state=0, last_message_has_read=0, last_message_timestamp=0, "
             + "last_message_sender=NULL, last_message_content=NULL, last_message_mention_info=NULL, last_message_seq_no=0, last_message_index=0, last_read_message_index=0";
     static final String SQL_TIMESTAMP_EQUALS_QUESTION = ", timestamp=?";
@@ -344,6 +350,7 @@ class ConversationSql {
     static final String COL_MENTION_INFO = "mention_info";
     static final String COL_LAST_MESSAGE_TYPE = "last_message_type";
     static final String COL_LAST_MESSAGE_CLIENT_UID = "last_message_client_uid";
+    static final String COL_LAST_MESSAGE_CLIENT_MSG_NO = "last_message_client_msg_no";
     static final String COL_LAST_MESSAGE_DIRECTION = "last_message_direction";
     static final String COL_LAST_MESSAGE_STATE = "last_message_state";
     static final String COL_LAST_MESSAGE_HAS_READ = "last_message_has_read";
