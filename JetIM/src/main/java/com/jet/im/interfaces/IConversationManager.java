@@ -37,7 +37,7 @@ public interface IConversationManager {
                  boolean isMute,
                  ISimpleCallback callback);
 
-    void setTop(Conversation conversation, boolean isTop);
+    void setTop(Conversation conversation, boolean isTop, ISimpleCallback callback);
 
     List<ConversationInfo> getTopConversationInfoList(int count,
                                                       long timestamp,
@@ -45,9 +45,9 @@ public interface IConversationManager {
 
     int getTotalUnreadCount();
 
-    void clearUnreadCount(Conversation conversation);
+    void clearUnreadCount(Conversation conversation, ISimpleCallback callback);
 
-    void clearTotalUnreadCount();
+    void clearTotalUnreadCount(ISimpleCallback callback);
 
     void addListener(String key, IConversationListener listener);
 

@@ -113,25 +113,22 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
-    public void setTop(Conversation conversation, boolean isTop) {
-        mCore.getDbManager().setTop(conversation, isTop);
+    public void setTop(Conversation conversation, boolean isTop, ISimpleCallback callback) {
         mCore.getWebSocket().setTop(conversation, isTop, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
+                mCore.getDbManager().setTop(conversation, isTop);
                 mCore.getDbManager().setTopTime(conversation, timestamp);
-                ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
-                if (conversationInfo != null && mListenerMap != null) {
-                    List<ConversationInfo> list = new ArrayList<>();
-                    list.add(conversationInfo);
-                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                        entry.getValue().onConversationInfoUpdate(list);
-                    }
+                if (callback != null) {
+                    callback.onSuccess();
                 }
             }
 
             @Override
             public void onError(int errorCode) {
-
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
             }
         });
     }
@@ -147,42 +144,57 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
-    public void clearUnreadCount(Conversation conversation) {
+    public void clearUnreadCount(Conversation conversation, ISimpleCallback callback) {
         ConcreteConversationInfo info = mCore.getDbManager().getConversationInfo(conversation);
         if (info == null) {
+            if (callback != null) {
+                callback.onError(-1);
+            }
             return;
         }
-        mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
-        mCore.getDbManager().setMentionInfo(conversation, "");
-        noticeTotalUnreadCountChange();
         mCore.getWebSocket().clearUnreadCount(conversation, mCore.getUserId(), info.getLastMessageIndex(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 LoggerUtils.i("clear unread success");
+                mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
+                mCore.getDbManager().setMentionInfo(conversation, "");
+                noticeTotalUnreadCountChange();
+                if (callback != null) {
+                    callback.onSuccess();
+                }
             }
 
             @Override
             public void onError(int errorCode) {
                 LoggerUtils.i("clear unread error, code is " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
             }
         });
     }
 
     @Override
-    public void clearTotalUnreadCount() {
-        mCore.getDbManager().clearTotalUnreadCount();
-        mCore.getDbManager().clearMentionInfo();
-        noticeTotalUnreadCountChange();
-        long time = mCore.getDbManager().getNewestStatusSentMessageTimestamp();
+    public void clearTotalUnreadCount(ISimpleCallback callback) {
+        long time = Math.max(mCore.getMessageSendSyncTime(), mCore.getMessageReceiveTime());
         mCore.getWebSocket().clearTotalUnreadCount(mCore.getUserId(), time, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 LoggerUtils.i("clear total unread success");
+                mCore.getDbManager().clearTotalUnreadCount();
+                mCore.getDbManager().clearMentionInfo();
+                noticeTotalUnreadCountChange();
+                if (callback != null) {
+                    callback.onSuccess();
+                }
             }
 
             @Override
             public void onError(int errorCode) {
                 LoggerUtils.i("clear total unread error, code is " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
             }
         });
     }

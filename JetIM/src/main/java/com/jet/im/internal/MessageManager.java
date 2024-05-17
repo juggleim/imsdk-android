@@ -164,7 +164,7 @@ public class MessageManager implements IMessageManager {
             }
             return message;
         }
-        deleteMessageByClientMsgNo(message.getClientMsgNo());
+        deleteMessageByClientMsgNo(message.getClientMsgNo(), null);
         return sendMessage(message.getContent(), message.getConversation(), callback);
     }
 
@@ -307,17 +307,18 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void deleteMessageByMessageId(String messageId) {
+    public void deleteMessageByMessageId(String messageId, ISimpleCallback callback) {
         //查询消息
         List<String> idList = new ArrayList<>(1);
         idList.add(messageId);
         List<Message> messages = getMessagesByMessageIds(idList);
-        if (messages.isEmpty()) return;
-        //删除消息
-        ConcreteMessage deleteMessage = (ConcreteMessage) messages.get(0);
-        mCore.getDbManager().deleteMessageByMessageId(messageId);
-        //通知会话更新
-        notifyMessageRemoved(deleteMessage.getConversation(), deleteMessage);
+        if (messages.isEmpty()) {
+            if (callback != null) {
+                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+            }
+            return;
+        }
+        final ConcreteMessage deleteMessage = (ConcreteMessage) messages.get(0);
         //调用接口
         List<ConcreteMessage> deleteList = new ArrayList<>();
         deleteList.add(deleteMessage);
@@ -325,27 +326,48 @@ public class MessageManager implements IMessageManager {
             @Override
             public void onSuccess() {
                 LoggerUtils.i("delete message by messageId success");
+                //删除消息
+                mCore.getDbManager().deleteMessageByMessageId(messageId);
+                //通知会话更新
+                notifyMessageRemoved(deleteMessage.getConversation(), deleteMessage);
+                //执行回调
+                if (callback != null) {
+                    callback.onSuccess();
+                }
             }
 
             @Override
             public void onError(int errorCode) {
                 LoggerUtils.i("delete message by messageId error, code is " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
             }
         });
     }
 
     @Override
-    public void deleteMessageByClientMsgNo(long clientMsgNo) {
+    public void deleteMessageByClientMsgNo(long clientMsgNo, ISimpleCallback callback) {
         //查询消息
         List<Message> messages = getMessagesByClientMsgNos(new long[]{clientMsgNo});
-        if (messages.isEmpty()) return;
-        //删除消息
-        ConcreteMessage deleteMessage = (ConcreteMessage) messages.get(0);
-        mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
-        //通知会话更新
-        notifyMessageRemoved(deleteMessage.getConversation(), deleteMessage);
-        //没有消息Id，不需要调用接口
-        if (TextUtils.isEmpty(deleteMessage.getMessageId())) return;
+        if (messages.isEmpty()) {
+            if (callback != null) {
+                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+            }
+            return;
+        }
+        final ConcreteMessage deleteMessage = (ConcreteMessage) messages.get(0);
+        //没有消息Id，为本地保存的消息，不需要调用接口
+        if (TextUtils.isEmpty(deleteMessage.getMessageId())) {
+            //删除消息
+            mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
+            //通知会话更新
+            notifyMessageRemoved(deleteMessage.getConversation(), deleteMessage);
+            if (callback != null) {
+                callback.onSuccess();
+            }
+            return;
+        }
         //调用接口
         List<ConcreteMessage> deleteList = new ArrayList<>();
         deleteList.add(deleteMessage);
@@ -353,32 +375,51 @@ public class MessageManager implements IMessageManager {
             @Override
             public void onSuccess() {
                 LoggerUtils.i("delete message by clientMsgNo success");
+                //删除消息
+                mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
+                //通知会话更新
+                notifyMessageRemoved(deleteMessage.getConversation(), deleteMessage);
+                //执行回调
+                if (callback != null) {
+                    callback.onSuccess();
+                }
             }
 
             @Override
             public void onError(int errorCode) {
                 LoggerUtils.i("delete message by clientMsgNo error, code is " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
             }
         });
     }
 
     @Override
-    public void clearMessages(Conversation conversation, long startTime) {
+    public void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback) {
         if (startTime <= 0) startTime = System.currentTimeMillis();
-        //清空消息
-        mCore.getDbManager().clearMessages(conversation, startTime, null);
-        //通知会话更新
-        notifyMessageRemoved(conversation, null);
         //调用接口
-        mCore.getWebSocket().clearHistoryMessage(conversation, startTime, new WebSocketSimpleCallback() {
+        long finalStartTime = startTime;
+        mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 LoggerUtils.i("clear message success");
+                //清空消息
+                mCore.getDbManager().clearMessages(conversation, finalStartTime, null);
+                //通知会话更新
+                notifyMessageRemoved(conversation, null);
+                //执行回调
+                if (callback != null) {
+                    callback.onSuccess();
+                }
             }
 
             @Override
             public void onError(int errorCode) {
                 LoggerUtils.i("clear message error, code is " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
             }
         });
     }

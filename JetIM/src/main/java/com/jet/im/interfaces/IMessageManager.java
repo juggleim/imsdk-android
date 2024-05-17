@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 public interface IMessageManager {
+    interface ISimpleCallback {
+        void onSuccess();
+
+        void onError(int errorCode);
+    }
+
     interface ISendMessageCallback {
         void onSuccess(Message message);
 
@@ -111,11 +117,11 @@ public interface IMessageManager {
             JetIMConst.PullDirection direction,
             List<String> contentTypes);
 
-    void deleteMessageByClientMsgNo(long clientMsgNo);
+    void deleteMessageByClientMsgNo(long clientMsgNo, ISimpleCallback callback);
 
-    void deleteMessageByMessageId(String messageId);
+    void deleteMessageByMessageId(String messageId, ISimpleCallback callback);
 
-    void clearMessages(Conversation conversation, long startTime);
+    void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback);
 
     void recallMessage(String messageId, IRecallMessageCallback callback);
 
