@@ -248,7 +248,14 @@ public class DBManager {
             sql = sql + ConversationSql.SQL_LAST_MESSAGE_EQUALS_QUESTION;
         }
         sql = sql + ConversationSql.SQL_WHERE_CONVERSATION_IS;
-        Object[] args = ConversationSql.argsWithUpdateLastMessage(message, isUpdateSortTime);
+        Object[] args = ConversationSql.argsWithUpdateLastMessage(message, isUpdateSortTime, true);
+        execSQL(sql, args);
+    }
+
+    public void updateLastMessageWithoutIndex(ConcreteMessage message) {
+        String sql = ConversationSql.SQL_UPDATE_LAST_MESSAGE;
+        sql = sql + ConversationSql.SQL_WHERE_CONVERSATION_IS;
+        Object[] args = ConversationSql.argsWithUpdateLastMessage(message, false, false);
         execSQL(sql, args);
     }
 

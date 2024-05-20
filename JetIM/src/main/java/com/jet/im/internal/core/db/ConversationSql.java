@@ -152,12 +152,12 @@ class ConversationSql {
         return args;
     }
 
-    static Object[] argsWithUpdateLastMessage(ConcreteMessage message, boolean isUpdateSortTime) {
+    static Object[] argsWithUpdateLastMessage(ConcreteMessage message, boolean isUpdateSortTime, boolean isUpdateLastIndex) {
         int count = 14;
         if (isUpdateSortTime) {
             count++;
         }
-        if (Message.MessageDirection.RECEIVE == message.getDirection()) {
+        if (isUpdateLastIndex && Message.MessageDirection.RECEIVE == message.getDirection()) {
             count++;
         }
         Object[] args = new Object[count];
@@ -189,7 +189,7 @@ class ConversationSql {
         if (isUpdateSortTime) {
             args[i++] = message.getTimestamp();
         }
-        if (Message.MessageDirection.RECEIVE == message.getDirection()) {
+        if (isUpdateLastIndex && Message.MessageDirection.RECEIVE == message.getDirection()) {
             args[i++] = message.getMsgIndex();
         }
         args[i++] = message.getConversation().getConversationType().getValue();
@@ -291,7 +291,6 @@ class ConversationSql {
             + "last_message_client_uid=NULL, last_message_client_msg_no=0, last_message_seq_no=0,"
             + "last_message_direction=0, last_message_state=0, last_message_has_read=0, last_message_timestamp=0, "
             + "last_message_sender=NULL, last_message_content=NULL, last_message_mention_info=NULL, "
-            + "last_message_index=0, last_read_message_index=0, "
             + "mention_info=NULL";
     static final String SQL_TIMESTAMP_EQUALS_QUESTION = ", timestamp=?";
     static final String SQL_LAST_MESSAGE_EQUALS_QUESTION = ", last_message_index=?";

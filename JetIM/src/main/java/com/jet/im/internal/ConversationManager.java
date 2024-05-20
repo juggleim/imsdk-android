@@ -1,7 +1,6 @@
 package com.jet.im.internal;
 
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
@@ -530,29 +529,6 @@ public class ConversationManager implements IConversationManager, MessageManager
         ConcreteConversationInfo info = getConversationAfterCommonResolved(conversation, lastMessage);
         //判空
         if (info == null) return;
-        //处理未读数
-        ConversationUpdater unreadUpdater = () -> {
-            //判断是否需要更新会话
-            boolean hasUpdate = false;
-            //判断未读数是否发生变化
-            boolean hasUnreadCountUpdate = false;
-            //fixme 更新未读数
-            if (lastMessage.getMsgIndex() < info.getLastReadMessageIndex()) {
-                hasUpdate = true;
-                info.setLastReadMessageIndex(lastMessage.getMsgIndex());
-            }
-            int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
-            if (unreadCount != info.getUnreadCount()) {
-                hasUpdate = true;
-                hasUnreadCountUpdate = true;
-                info.setUnreadCount(unreadCount);
-            }
-            //返回结果
-            ArrayMap<String, Boolean> result = new ArrayMap<>();
-            result.put("hasUpdate", hasUpdate);
-            result.put("hasUnreadCountUpdate", hasUnreadCountUpdate);
-            return result;
-        };
         //处理Mention
         ConversationUpdater mentionUpdater = () -> {
             //判断是否需要更新会话
@@ -577,13 +553,10 @@ public class ConversationManager implements IConversationManager, MessageManager
                     }
                 }
             }
-            //返回结果
-            ArrayMap<String, Boolean> result = new ArrayMap<>();
-            result.put("hasUpdate", hasUpdate);
-            return result;
+            return hasUpdate;
         };
         //调用公共方法更新会话
-        updateConversationLastMessage(info, lastMessage, unreadUpdater, mentionUpdater);
+        updateConversationLastMessage(info, lastMessage, mentionUpdater);
     }
 
     private void updateConversationAfterClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastMessage) {
@@ -591,29 +564,6 @@ public class ConversationManager implements IConversationManager, MessageManager
         ConcreteConversationInfo info = getConversationAfterCommonResolved(conversation, lastMessage);
         //判空
         if (info == null) return;
-        //处理未读数
-        ConversationUpdater unreadUpdater = () -> {
-            //判断是否需要更新会话
-            boolean hasUpdate = false;
-            //判断未读数是否发生变化
-            boolean hasUnreadCountUpdate = false;
-            //fixme 更新未读数
-            if (lastMessage.getMsgIndex() < info.getLastReadMessageIndex()) {
-                hasUpdate = true;
-                info.setLastReadMessageIndex(lastMessage.getMsgIndex());
-            }
-            int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
-            if (unreadCount != info.getUnreadCount()) {
-                hasUpdate = true;
-                hasUnreadCountUpdate = true;
-                info.setUnreadCount(unreadCount);
-            }
-            //返回结果
-            ArrayMap<String, Boolean> result = new ArrayMap<>();
-            result.put("hasUpdate", hasUpdate);
-            result.put("hasUnreadCountUpdate", hasUnreadCountUpdate);
-            return result;
-        };
         //处理Mention
         ConversationUpdater mentionUpdater = () -> {
             //判断是否需要更新会话
@@ -644,12 +594,10 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
             //返回结果
-            ArrayMap<String, Boolean> result = new ArrayMap<>();
-            result.put("hasUpdate", hasUpdate);
-            return result;
+            return hasUpdate;
         };
         //调用公共方法更新会话
-        updateConversationLastMessage(info, lastMessage, unreadUpdater, mentionUpdater);
+        updateConversationLastMessage(info, lastMessage, mentionUpdater);
     }
 
     //查询会话，在执行完部分通用判断后返回该会话
@@ -677,11 +625,6 @@ public class ConversationManager implements IConversationManager, MessageManager
         info.setMentionInfo(null);
         //更新最新消息
         info.setLastMessage(null);
-        info.setSortTime(0);
-        //更新未读数
-        info.setUnreadCount(0);
-        info.setLastMessageIndex(0);
-        info.setLastReadMessageIndex(0);
         //执行回调
         if (mListenerMap != null) {
             List<ConversationInfo> result = new ArrayList<>();
@@ -690,41 +633,24 @@ public class ConversationManager implements IConversationManager, MessageManager
                 entry.getValue().onConversationInfoUpdate(result);
             }
         }
-        //更新总未读数
-        noticeTotalUnreadCountChange();
     }
 
     //更新会话的通用方法
-    private void updateConversationLastMessage(ConcreteConversationInfo info, ConcreteMessage lastMessage, ConversationUpdater unreadUpdater, ConversationUpdater mentionUpdater) {
+    private void updateConversationLastMessage(ConcreteConversationInfo info, ConcreteMessage lastMessage, ConversationUpdater mentionUpdater) {
         //判断会话最新消息是否有变化
         boolean isLastMessageUpdate = info.getLastMessage() == null
                 || info.getLastMessage().getClientMsgNo() != lastMessage.getClientMsgNo()
                 || !Objects.equals(info.getLastMessage().getContentType(), lastMessage.getContentType());
         //会话最新消息有变化，更新会话最新消息
         if (isLastMessageUpdate) {
-            mCore.getDbManager().updateLastMessage(lastMessage);
+            mCore.getDbManager().updateLastMessageWithoutIndex(lastMessage);
             info.setLastMessage(lastMessage);
-            info.setSortTime(lastMessage.getTimestamp());
-            info.setLastMessageIndex(lastMessage.getMsgIndex());
         }
         //判断是否需要更新会话
         boolean hasUpdate = isLastMessageUpdate;
-        //判断未读数是否发生变化
-        boolean hasUnreadCountUpdate = false;
-        //更新未读数
-        if (unreadUpdater != null) {
-            ArrayMap<String, Boolean> updateResult = unreadUpdater.update();
-            if (updateResult != null) {
-                hasUpdate = Boolean.TRUE.equals(updateResult.get("hasUpdate")) || hasUpdate;
-                hasUnreadCountUpdate = Boolean.TRUE.equals(updateResult.get("hasUnreadCountUpdate"));
-            }
-        }
         //更新Mention信息
         if (mentionUpdater != null) {
-            ArrayMap<String, Boolean> updateResult = mentionUpdater.update();
-            if (updateResult != null) {
-                hasUpdate = Boolean.TRUE.equals(updateResult.get("hasUpdate")) || hasUpdate;
-            }
+            hasUpdate = mentionUpdater.update() || hasUpdate;
         }
         //如果不需要更新会话，直接return
         if (!hasUpdate) return;
@@ -736,10 +662,6 @@ public class ConversationManager implements IConversationManager, MessageManager
                 entry.getValue().onConversationInfoUpdate(result);
             }
         }
-        //如果不需要更新总未读数，直接return
-        if (!hasUnreadCountUpdate) return;
-        //更新总未读数
-        noticeTotalUnreadCountChange();
     }
 
     private void updateSyncTime(long timestamp) {
@@ -794,6 +716,6 @@ public class ConversationManager implements IConversationManager, MessageManager
     private static final int CONVERSATION_SYNC_COUNT = 100;
 
     private interface ConversationUpdater {
-        ArrayMap<String, Boolean> update();
+        boolean update();
     }
 }
