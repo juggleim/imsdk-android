@@ -604,7 +604,7 @@ class PBData {
                     a.code = msg.getPubAckMsgBody().getCode();
                     a.msgId = msg.getPubAckMsgBody().getMsgId();
                     a.timestamp = msg.getPubAckMsgBody().getTimestamp();
-                    a.seqNo = msg.getPubAckMsgBody().getMsgIndex();
+                    a.seqNo = msg.getPubAckMsgBody().getMsgSeqNo();
                     obj.mPublishMsgAck = a;
                 }
                 break;
@@ -669,6 +669,7 @@ class PBData {
                     PBRcvObj.DisconnectMsg m = new PBRcvObj.DisconnectMsg();
                     m.code = msg.getDisconnectMsgBody().getCode();
                     m.timestamp = msg.getDisconnectMsgBody().getTimestamp();
+                    m.extra = msg.getDisconnectMsgBody().getExt();
                     obj.mDisconnectMsg = m;
                     break;
 

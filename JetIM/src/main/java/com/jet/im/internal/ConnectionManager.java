@@ -36,7 +36,7 @@ public class ConnectionManager implements IConnectionManager {
                 }
             }
         }
-        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE);
+        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
 
         mNaviHandler.post(() -> NaviManager.request(mCore.getNaviUrl(), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
             @Override
@@ -48,9 +48,9 @@ public class ConnectionManager implements IConnectionManager {
             @Override
             public void onError(int errorCode) {
                 if (errorCode == ConstInternal.ErrorCode.TOKEN_ILLEGAL) {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);
+                    changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
                 } else {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode);
+                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
                 }
             }
         }));
@@ -59,7 +59,7 @@ public class ConnectionManager implements IConnectionManager {
     @Override
     public void disconnect(boolean receivePush) {
         LoggerUtils.i("user disconnect receivePush is " + receivePush);
-        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
+        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE, "");
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().disconnect(receivePush);
         }
@@ -130,20 +130,20 @@ public class ConnectionManager implements IConnectionManager {
                                 LoggerUtils.e("open db fail");
                             }
                         }
-                        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE);
+                        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, "");
                         mConversationManager.syncConversations(mMessageManager::syncMessage);
                     } else {
                         if (checkConnectionFailure(errorCode)) {
-                            changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);
+                            changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
                         } else {
-                            changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
+                            changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, "");
                         }
                     }
                 }
 
                 @Override
-                public void onDisconnect(int errorCode) {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode);
+                public void onDisconnect(int errorCode, String extra) {
+                    changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode, extra);
                 }
 
                 @Override
@@ -182,7 +182,7 @@ public class ConnectionManager implements IConnectionManager {
                 || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.FAILURE) {
             return;
         }
-        changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
+        changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, "");
     }
 
     private boolean checkConnectionFailure(int errorCode) {
@@ -198,7 +198,7 @@ public class ConnectionManager implements IConnectionManager {
                 || errorCode == ConstInternal.ErrorCode.USER_LOG_OUT;
     }
 
-    private void changeStatus(int status, int errorCode) {
+    private void changeStatus(int status, int errorCode, String extra) {
         mCore.getSendHandler().post(() -> {
             LoggerUtils.i("connection status " + status);
             if (status == mCore.getConnectionStatus()) {
@@ -249,7 +249,7 @@ public class ConnectionManager implements IConnectionManager {
             if (mConnectionStatusListenerMap != null) {
                 for (Map.Entry<String, IConnectionStatusListener> entry :
                         mConnectionStatusListenerMap.entrySet()) {
-                    entry.getValue().onStatusChange(outStatus, errorCode);
+                    entry.getValue().onStatusChange(outStatus, errorCode, extra);
                 }
             }
         });

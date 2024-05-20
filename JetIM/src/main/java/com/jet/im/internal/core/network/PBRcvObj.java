@@ -87,6 +87,7 @@ class PBRcvObj {
     static class DisconnectMsg {
         int code;
         long timestamp;
+        String extra;
     }
 
     static class PBRcvType {

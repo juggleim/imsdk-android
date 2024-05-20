@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         JetIM.getInstance().getConnectionManager().addConnectionStatusListener("mainActivity", new IConnectionManager.IConnectionStatusListener() {
             @Override
-            public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
+            public void onStatusChange(JetIMConst.ConnectionStatus status, int code, String extra) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
                     Handler mainHandler = new Handler(Looper.getMainLooper());

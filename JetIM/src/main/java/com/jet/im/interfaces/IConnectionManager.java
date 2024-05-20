@@ -15,7 +15,7 @@ public interface IConnectionManager {
     void removeConnectionStatusListener(String key);
 
     interface IConnectionStatusListener {
-        void onStatusChange(JetIMConst.ConnectionStatus status, int code);
+        void onStatusChange(JetIMConst.ConnectionStatus status, int code, String extra);
 
         void onDbOpen();
 

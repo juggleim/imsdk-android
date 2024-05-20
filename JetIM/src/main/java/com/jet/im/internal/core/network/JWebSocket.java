@@ -285,7 +285,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     public interface IWebSocketConnectListener {
         void onConnectComplete(int errorCode, String userId);
 
-        void onDisconnect(int errorCode);
+        void onDisconnect(int errorCode, String extra);
 
         void onWebSocketFail();
 
@@ -503,7 +503,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     private void handleDisconnectMsg(PBRcvObj.DisconnectMsg msg) {
         if (mConnectListener != null) {
-            mConnectListener.onDisconnect(msg.code);
+            mConnectListener.onDisconnect(msg.code, msg.extra);
         }
     }
 
