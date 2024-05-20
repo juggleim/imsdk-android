@@ -105,6 +105,14 @@ public class ConversationManager implements IConversationManager, MessageManager
                 if (callback != null) {
                     callback.onSuccess();
                 }
+                ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
+                if (conversationInfo != null && mListenerMap != null) {
+                    List<ConversationInfo> list = new ArrayList<>();
+                    list.add(conversationInfo);
+                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                        entry.getValue().onConversationInfoUpdate(list);
+                    }
+                }
             }
 
             @Override
@@ -125,6 +133,14 @@ public class ConversationManager implements IConversationManager, MessageManager
                 mCore.getDbManager().setTopTime(conversation, timestamp);
                 if (callback != null) {
                     callback.onSuccess();
+                }
+                ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
+                if (conversationInfo != null && mListenerMap != null) {
+                    List<ConversationInfo> list = new ArrayList<>();
+                    list.add(conversationInfo);
+                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                        entry.getValue().onConversationInfoUpdate(list);
+                    }
                 }
             }
 
