@@ -1,7 +1,6 @@
 package com.jet.im.internal;
 
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
@@ -1000,7 +999,7 @@ public class MessageManager implements IMessageManager {
             //delete msg message
             if (message.getContentType().equals(DeleteMsgMessage.CONTENT_TYPE)) {
                 DeleteMsgMessage deleteMsgMessage = (DeleteMsgMessage) message.getContent();
-                handleDeleteMsgMessageCmdMessage(deleteMsgMessage.getMsgIdList());
+                handleDeleteMsgMessageCmdMessage(message.getConversation(), deleteMsgMessage.getMsgIdList());
                 continue;
             }
 
@@ -1085,9 +1084,9 @@ public class MessageManager implements IMessageManager {
         notifyMessageCleared(conversation, startTime, senderId);
     }
 
-    private void handleDeleteMsgMessageCmdMessage(List<String> msgIds) {
+    private void handleDeleteMsgMessageCmdMessage(Conversation conversation, List<String> msgIds) {
         //查询消息
-        List<Message> messages = getMessagesByMessageIds(msgIds);
+        List<ConcreteMessage> messages = mCore.getDbManager().getConcreteMessagesByMessageIds(msgIds);
         if (messages.isEmpty()) return;
         //删除消息
         mCore.getDbManager().deleteMessageByMessageId(msgIds);
@@ -1101,23 +1100,8 @@ public class MessageManager implements IMessageManager {
         }
         //通知会话更新
         if (mSendReceiveListener != null) {
-            //合并同一个会话中的被删除消息
-            ArrayMap<Conversation, List<ConcreteMessage>> conversationMap = new ArrayMap<>();
-            for (int i = 0; i < messages.size(); i++) {
-                Message deletedMessage = messages.get(i);
-                List<ConcreteMessage> removedList = conversationMap.get(deletedMessage.getConversation());
-                if (removedList == null) {
-                    removedList = new ArrayList<>();
-                    conversationMap.put(deletedMessage.getConversation(), removedList);
-                }
-                removedList.add((ConcreteMessage) deletedMessage);
-            }
-            //遍历会话通知会话更新最新信息
-            for (Conversation conversation : conversationMap.keySet()) {
-                Message lastMessage = mCore.getDbManager().getLastMessage(conversation);
-                List<ConcreteMessage> removedList = conversationMap.get(conversation);
-                mSendReceiveListener.onMessageRemove(conversation, removedList, lastMessage == null ? null : (ConcreteMessage) lastMessage);
-            }
+            Message lastMessage = mCore.getDbManager().getLastMessage(conversation);
+            mSendReceiveListener.onMessageRemove(conversation, messages, lastMessage == null ? null : (ConcreteMessage) lastMessage);
         }
     }
 

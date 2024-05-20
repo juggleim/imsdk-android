@@ -332,6 +332,31 @@ public class DBManager {
     }
 
     //被删除的消息也能查出来
+    public List<ConcreteMessage> getConcreteMessagesByMessageIds(List<String> messageIds) {
+        List<ConcreteMessage> result = new ArrayList<>();
+        if (messageIds.size() == 0) {
+            return result;
+        }
+        String sql = MessageSql.sqlGetMessagesByMessageIds(messageIds.size());
+        Cursor cursor = rawQuery(sql, messageIds.toArray(new String[0]));
+        if (cursor == null) {
+            return result;
+        }
+        addConcreteMessagesFromCursor(result, cursor);
+        cursor.close();
+        List<ConcreteMessage> messages = new ArrayList<>();
+        for (String messageId : messageIds) {
+            for (ConcreteMessage message : result) {
+                if (messageId.equals(message.getMessageId())) {
+                    messages.add(message);
+                    break;
+                }
+            }
+        }
+        return messages;
+    }
+
+    //被删除的消息也能查出来
     public List<Message> getMessagesByClientMsgNos(long[] clientMsgNos) {
         List<Message> result = new ArrayList<>();
         if (clientMsgNos.length == 0) {
@@ -629,6 +654,13 @@ public class DBManager {
     }
 
     private void addMessagesFromCursor(@NonNull List<Message> list, @NonNull Cursor cursor) {
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            ConcreteMessage message = MessageSql.messageWithCursor(cursor);
+            list.add(message);
+        }
+    }
+
+    private void addConcreteMessagesFromCursor(@NonNull List<ConcreteMessage> list, @NonNull Cursor cursor) {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             ConcreteMessage message = MessageSql.messageWithCursor(cursor);
             list.add(message);
