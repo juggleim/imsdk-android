@@ -1,6 +1,7 @@
 package com.jet.im.internal;
 
 import android.text.TextUtils;
+import android.util.ArrayMap;
 
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConversationManager;
@@ -341,12 +342,12 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void onMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage) {
-        updateConversationLastedMessageAfterRemove(conversation, removedMessages, lastedMessage);
+        updateConversationAfterRemove(conversation, removedMessages, lastedMessage);
     }
 
     @Override
     public void onMessageCleared(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastedMessage) {
-        updateConversationLastedMessageAfterClear(conversation, startTime, sendUserId, lastedMessage);
+        updateConversationAfterClear(conversation, startTime, sendUserId, lastedMessage);
     }
 
     @Override
@@ -505,6 +506,133 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
+    private void updateConversationAfterRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage) {
+        //查询会话
+        ConcreteConversationInfo info = getConversationAfterCommonResolved(conversation, lastedMessage);
+        //判空
+        if (info == null) return;
+        //处理未读数
+        ConversationUpdater unreadUpdater = () -> {
+            //判断是否需要更新会话
+            boolean hasUpdate = false;
+            //判断未读数是否发生变化
+            boolean hasUnreadCountUpdate = false;
+            //fixme 更新未读数
+            if (lastedMessage.getMsgIndex() < info.getLastReadMessageIndex()) {
+                hasUpdate = true;
+                info.setLastReadMessageIndex(lastedMessage.getMsgIndex());
+            }
+            int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
+            if (unreadCount != info.getUnreadCount()) {
+                hasUpdate = true;
+                hasUnreadCountUpdate = true;
+                info.setUnreadCount(unreadCount);
+            }
+            //返回结果
+            ArrayMap<String, Boolean> result = new ArrayMap<>();
+            result.put("hasUpdate", hasUpdate);
+            result.put("hasUnreadCountUpdate", hasUnreadCountUpdate);
+            return result;
+        };
+        //处理Mention
+        ConversationUpdater mentionUpdater = () -> {
+            //判断是否需要更新会话
+            boolean hasUpdate = false;
+            //更新Mention
+            if (removedMessages != null
+                    && info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null && !info.getMentionInfo().getMentionMsgList().isEmpty()) {
+                //遍历被移除消息列表进行过滤
+                for (ConcreteMessage removedMessage : removedMessages) {
+                    if (TextUtils.isEmpty(removedMessage.getMessageId())) continue;
+                    //通过消息ID过滤mentionMsg
+                    ConversationMentionInfo.MentionMsg temp = new ConversationMentionInfo.MentionMsg();
+                    temp.setMsgId(removedMessage.getMessageId());
+                    boolean removeSuccess = info.getMentionInfo().getMentionMsgList().remove(temp);
+                    if (removeSuccess && !hasUpdate) hasUpdate = true;
+                }
+                //保存更新后的Mention信息
+                if (hasUpdate) {
+                    mCore.getDbManager().setMentionInfo(conversation, info.getMentionInfo().getMentionMsgList().isEmpty() ? "" : info.getMentionInfo().encodeToJson());
+                    if (info.getMentionInfo().getMentionMsgList().isEmpty()) {
+                        info.setMentionInfo(null);
+                    }
+                }
+            }
+            //返回结果
+            ArrayMap<String, Boolean> result = new ArrayMap<>();
+            result.put("hasUpdate", hasUpdate);
+            return result;
+        };
+        //调用公共方法更新会话
+        updateConversationLastMessage(info, lastedMessage, unreadUpdater, mentionUpdater);
+    }
+
+    private void updateConversationAfterClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastedMessage) {
+        //查询会话
+        ConcreteConversationInfo info = getConversationAfterCommonResolved(conversation, lastedMessage);
+        //判空
+        if (info == null) return;
+        //处理未读数
+        ConversationUpdater unreadUpdater = () -> {
+            //判断是否需要更新会话
+            boolean hasUpdate = false;
+            //判断未读数是否发生变化
+            boolean hasUnreadCountUpdate = false;
+            //fixme 更新未读数
+            if (lastedMessage.getMsgIndex() < info.getLastReadMessageIndex()) {
+                hasUpdate = true;
+                info.setLastReadMessageIndex(lastedMessage.getMsgIndex());
+            }
+            int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
+            if (unreadCount != info.getUnreadCount()) {
+                hasUpdate = true;
+                hasUnreadCountUpdate = true;
+                info.setUnreadCount(unreadCount);
+            }
+            //返回结果
+            ArrayMap<String, Boolean> result = new ArrayMap<>();
+            result.put("hasUpdate", hasUpdate);
+            result.put("hasUnreadCountUpdate", hasUnreadCountUpdate);
+            return result;
+        };
+        //处理Mention
+        ConversationUpdater mentionUpdater = () -> {
+            //判断是否需要更新会话
+            boolean hasUpdate = false;
+            //更新Mention
+            if (info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null && !info.getMentionInfo().getMentionMsgList().isEmpty()) {
+                //遍历Mention列表进行过滤
+                for (int i = info.getMentionInfo().getMentionMsgList().size() - 1; i >= 0; i--) {
+                    ConversationMentionInfo.MentionMsg mentionMsg = info.getMentionInfo().getMentionMsgList().get(i);
+                    //通过消息发送者ID过滤mentionMsg
+                    if (!TextUtils.isEmpty(sendUserId) && sendUserId.equals(mentionMsg.getSenderId())) {
+                        if (!hasUpdate) hasUpdate = true;
+                        info.getMentionInfo().getMentionMsgList().remove(i);
+                        continue;
+                    }
+                    //通过消息时间过滤mentionMsg
+                    if (startTime > 0 && mentionMsg.getMsgTime() < startTime) {
+                        if (!hasUpdate) hasUpdate = true;
+                        info.getMentionInfo().getMentionMsgList().remove(i);
+                    }
+                }
+                //保存更新后的Mention信息
+                if (hasUpdate) {
+                    mCore.getDbManager().setMentionInfo(conversation, info.getMentionInfo().getMentionMsgList().isEmpty() ? "" : info.getMentionInfo().encodeToJson());
+                    if (info.getMentionInfo().getMentionMsgList().isEmpty()) {
+                        info.setMentionInfo(null);
+                    }
+                }
+            }
+            //返回结果
+            ArrayMap<String, Boolean> result = new ArrayMap<>();
+            result.put("hasUpdate", hasUpdate);
+            return result;
+        };
+        //调用公共方法更新会话
+        updateConversationLastMessage(info, lastedMessage, unreadUpdater, mentionUpdater);
+    }
+
     //查询会话，在执行完部分通用判断后返回该会话
     private ConcreteConversationInfo getConversationAfterCommonResolved(Conversation conversation, ConcreteMessage lastedMessage) {
         //判空
@@ -547,11 +675,8 @@ public class ConversationManager implements IConversationManager, MessageManager
         noticeTotalUnreadCountChange();
     }
 
-    private void updateConversationLastedMessageAfterRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage) {
-        //查询会话
-        ConcreteConversationInfo info = getConversationAfterCommonResolved(conversation, lastedMessage);
-        //判空
-        if (info == null) return;
+    //更新会话的通用方法
+    private void updateConversationLastMessage(ConcreteConversationInfo info, ConcreteMessage lastedMessage, ConversationUpdater unreadUpdater, ConversationUpdater mentionUpdater) {
         //判断会话最新消息是否有变化
         boolean isLastMessageUpdate = info.getLastMessage() == null
                 || info.getLastMessage().getClientMsgNo() != lastedMessage.getClientMsgNo()
@@ -567,113 +692,19 @@ public class ConversationManager implements IConversationManager, MessageManager
         boolean hasUpdate = isLastMessageUpdate;
         //判断未读数是否发生变化
         boolean hasUnreadCountUpdate = false;
-        //fixme 更新未读数
-        if (lastedMessage.getMsgIndex() < info.getLastReadMessageIndex()) {
-            hasUpdate = true;
-            info.setLastReadMessageIndex(lastedMessage.getMsgIndex());
-        }
-        int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
-        if (unreadCount != info.getUnreadCount()) {
-            hasUpdate = true;
-            hasUnreadCountUpdate = true;
-            info.setUnreadCount(unreadCount);
-        }
-        //更新Mention
-        if (removedMessages != null
-                && info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null && !info.getMentionInfo().getMentionMsgList().isEmpty()) {
-            //判断Mention是否发生变化
-            boolean hasMentionUpdate = false;
-            //遍历被移除消息列表进行过滤
-            for (ConcreteMessage removedMessage : removedMessages) {
-                if (TextUtils.isEmpty(removedMessage.getMessageId())) continue;
-                //通过消息ID过滤mentionMsg
-                ConversationMentionInfo.MentionMsg temp = new ConversationMentionInfo.MentionMsg();
-                temp.setMsgId(removedMessage.getMessageId());
-                boolean removeSuccess = info.getMentionInfo().getMentionMsgList().remove(temp);
-                if (removeSuccess && !hasMentionUpdate) hasMentionUpdate = true;
-            }
-            //保存更新后的Mention信息
-            if (hasMentionUpdate) {
-                mCore.getDbManager().setMentionInfo(conversation, info.getMentionInfo().getMentionMsgList().isEmpty() ? "" : info.getMentionInfo().encodeToJson());
-                if (info.getMentionInfo().getMentionMsgList().isEmpty()) {
-                    info.setMentionInfo(null);
-                }
-                hasUpdate = true;
+        //更新未读数
+        if (unreadUpdater != null) {
+            ArrayMap<String, Boolean> updateResult = unreadUpdater.update();
+            if (updateResult != null) {
+                hasUpdate = Boolean.TRUE.equals(updateResult.get("hasUpdate")) || hasUpdate;
+                hasUnreadCountUpdate = Boolean.TRUE.equals(updateResult.get("hasUnreadCountUpdate"));
             }
         }
-        //如果不需要更新会话，直接return
-        if (!hasUpdate) return;
-        //执行回调
-        if (mListenerMap != null) {
-            List<ConversationInfo> result = new ArrayList<>();
-            result.add(info);
-            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                entry.getValue().onConversationInfoUpdate(result);
-            }
-        }
-        //如果不需要更新总未读数，直接return
-        if (!hasUnreadCountUpdate) return;
-        //更新总未读数
-        noticeTotalUnreadCountChange();
-    }
-
-    private void updateConversationLastedMessageAfterClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastedMessage) {
-        //查询会话
-        ConcreteConversationInfo info = getConversationAfterCommonResolved(conversation, lastedMessage);
-        //判空
-        if (info == null) return;
-        //判断会话最新消息是否有变化
-        boolean isLastMessageUpdate = info.getLastMessage() == null
-                || info.getLastMessage().getClientMsgNo() != lastedMessage.getClientMsgNo()
-                || !Objects.equals(info.getLastMessage().getContentType(), lastedMessage.getContentType());
-        //会话最新消息有变化，更新会话最新消息
-        if (isLastMessageUpdate) {
-            mCore.getDbManager().updateLastMessage(lastedMessage);
-            info.setLastMessage(lastedMessage);
-            info.setSortTime(lastedMessage.getTimestamp());
-            info.setLastMessageIndex(lastedMessage.getMsgIndex());
-        }
-        //判断是否需要更新会话
-        boolean hasUpdate = isLastMessageUpdate;
-        //判断未读数是否发生变化
-        boolean hasUnreadCountUpdate = false;
-        //fixme 更新未读数
-        if (lastedMessage.getMsgIndex() < info.getLastReadMessageIndex()) {
-            hasUpdate = true;
-            info.setLastReadMessageIndex(lastedMessage.getMsgIndex());
-        }
-        int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
-        if (unreadCount != info.getUnreadCount()) {
-            hasUpdate = true;
-            hasUnreadCountUpdate = true;
-            info.setUnreadCount(unreadCount);
-        }
-        //更新Mention
-        if (info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null && !info.getMentionInfo().getMentionMsgList().isEmpty()) {
-            //判断Mention是否发生变化
-            boolean hasMentionUpdate = false;
-            //遍历Mention列表进行过滤
-            for (int i = info.getMentionInfo().getMentionMsgList().size() - 1; i >= 0; i--) {
-                ConversationMentionInfo.MentionMsg mentionMsg = info.getMentionInfo().getMentionMsgList().get(i);
-                //通过消息发送者ID过滤mentionMsg
-                if (!TextUtils.isEmpty(sendUserId) && sendUserId.equals(mentionMsg.getSenderId())) {
-                    if (!hasMentionUpdate) hasMentionUpdate = true;
-                    info.getMentionInfo().getMentionMsgList().remove(i);
-                    continue;
-                }
-                //通过消息时间过滤mentionMsg
-                if (startTime > 0 && mentionMsg.getMsgTime() < startTime) {
-                    if (!hasMentionUpdate) hasMentionUpdate = true;
-                    info.getMentionInfo().getMentionMsgList().remove(i);
-                }
-            }
-            //保存更新后的Mention信息
-            if (hasMentionUpdate) {
-                mCore.getDbManager().setMentionInfo(conversation, info.getMentionInfo().getMentionMsgList().isEmpty() ? "" : info.getMentionInfo().encodeToJson());
-                if (info.getMentionInfo().getMentionMsgList().isEmpty()) {
-                    info.setMentionInfo(null);
-                }
-                hasUpdate = true;
+        //更新Mention信息
+        if (mentionUpdater != null) {
+            ArrayMap<String, Boolean> updateResult = mentionUpdater.update();
+            if (updateResult != null) {
+                hasUpdate = Boolean.TRUE.equals(updateResult.get("hasUpdate")) || hasUpdate;
             }
         }
         //如果不需要更新会话，直接return
@@ -742,4 +773,8 @@ public class ConversationManager implements IConversationManager, MessageManager
     private boolean mSyncProcessing;
     private long mCachedSyncTime;
     private static final int CONVERSATION_SYNC_COUNT = 100;
+
+    private interface ConversationUpdater {
+        ArrayMap<String, Boolean> update();
+    }
 }
