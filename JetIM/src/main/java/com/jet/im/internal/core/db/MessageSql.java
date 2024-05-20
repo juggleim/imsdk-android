@@ -213,12 +213,11 @@ class MessageSql {
     static String sqlClearMessages(Conversation conversation, long startTime, String senderId) {
         String sql = String.format("UPDATE message SET is_deleted = 1 WHERE conversation_type = %s AND conversation_id = '%s' AND timestamp <= %s", conversation.getConversationType().getValue(), conversation.getConversationId(), startTime);
         if (!TextUtils.isEmpty(senderId)) {
-            sql = sql + SQL_AND_SENDER_IS + senderId;
+            sql = sql + String.format(" AND sender = '%s'" + senderId);
         }
         return sql;
     }
 
-    static final String SQL_AND_SENDER_IS = " AND sender = ";
     static final String SQL_CLIENT_MSG_NO_IS = " id = ";
     static final String SQL_MESSAGE_ID_IS = " message_uid = ?";
 

@@ -830,9 +830,9 @@ public class MessageManager implements IMessageManager {
 
         void onMessageReceive(ConcreteMessage message);
 
-        void onMessageRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage);
+        void onMessageRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastMessage);
 
-        void onMessageClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastedMessage);
+        void onMessageClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastMessage);
 
         void onConversationsDelete(List<Conversation> conversations);
 

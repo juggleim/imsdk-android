@@ -253,7 +253,7 @@ public class DBManager {
     }
 
     public void clearLastMessage(Conversation conversation) {
-        String sql = ConversationSql.SQL_UPDATE_LAST_MESSAGE_NULL + ConversationSql.SQL_WHERE_CONVERSATION_IS;
+        String sql = ConversationSql.SQL_CLEAR_LAST_MESSAGE + ConversationSql.SQL_WHERE_CONVERSATION_IS;
         Object[] args = new Object[]{conversation.getConversationType().getValue(), conversation.getConversationId()};
         execSQL(sql, args);
     }

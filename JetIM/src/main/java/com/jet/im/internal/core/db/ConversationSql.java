@@ -286,10 +286,13 @@ class ConversationSql {
             + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
             + "last_message_sender=?, last_message_content=?, last_message_mention_info=?, last_message_seq_no=?";
 
-    static final String SQL_UPDATE_LAST_MESSAGE_NULL = "UPDATE conversation_info SET last_message_id=NULL, last_message_type=NULL,"
-            + "last_message_client_uid=NULL, last_message_client_msg_no=0, "
+    static final String SQL_CLEAR_LAST_MESSAGE = "UPDATE conversation_info SET "
+            + "last_message_id=NULL, last_message_type=NULL,"
+            + "last_message_client_uid=NULL, last_message_client_msg_no=0, last_message_seq_no=0,"
             + "last_message_direction=0, last_message_state=0, last_message_has_read=0, last_message_timestamp=0, "
-            + "last_message_sender=NULL, last_message_content=NULL, last_message_mention_info=NULL, last_message_seq_no=0, last_message_index=0, last_read_message_index=0";
+            + "last_message_sender=NULL, last_message_content=NULL, last_message_mention_info=NULL, "
+            + "last_message_index=0, last_read_message_index=0, "
+            + "mention_info=NULL";
     static final String SQL_TIMESTAMP_EQUALS_QUESTION = ", timestamp=?";
     static final String SQL_LAST_MESSAGE_EQUALS_QUESTION = ", last_message_index=?";
     static final String SQL_WHERE_CONVERSATION_IS = " WHERE conversation_type = ? AND conversation_id = ?";
