@@ -381,9 +381,9 @@ public class DBManager {
         return result;
     }
 
-    //获取会话中最新一条消息
-    public Message getLatestMessages(Conversation conversation) {
-        String sql = MessageSql.sqlGetLatestMessagesInConversation(conversation);
+    //从消息表中获取会话中最新一条消息
+    public Message getLastMessage(Conversation conversation) {
+        String sql = MessageSql.sqlGetLastMessageInConversation(conversation);
         Cursor cursor = rawQuery(sql, null);
         List<Message> list = new ArrayList<>();
         if (cursor == null) {
@@ -425,19 +425,6 @@ public class DBManager {
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 result = CursorHelper.readString(cursor, MessageSql.COL_LOCAL_ATTRIBUTE);
-            }
-            cursor.close();
-        }
-        return result;
-    }
-
-    public long getNewestStatusSentMessageTimestamp() {
-        String sql = MessageSql.getNewestStatusSentMessageTimestamp();
-        Cursor cursor = rawQuery(sql, null);
-        long result = System.currentTimeMillis();
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                result = CursorHelper.readLong(cursor, "max_timestamp");
             }
             cursor.close();
         }

@@ -168,7 +168,7 @@ public class MessageManager implements IMessageManager {
             }
             return message;
         }
-        deleteMessageByClientMsgNo(message.getClientMsgNo(), null);
+        mCore.getDbManager().deleteMessageByClientMsgNo(message.getClientMsgNo());
         return sendMessage(message.getContent(), message.getConversation(), callback);
     }
 
@@ -830,9 +830,9 @@ public class MessageManager implements IMessageManager {
 
         void onMessageReceive(ConcreteMessage message);
 
-        void onMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage);
+        void onMessageRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage);
 
-        void onMessageCleared(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastedMessage);
+        void onMessageClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastedMessage);
 
         void onConversationsDelete(List<Conversation> conversations);
 
@@ -1114,9 +1114,9 @@ public class MessageManager implements IMessageManager {
             }
             //遍历会话通知会话更新最新信息
             for (Conversation conversation : conversationMap.keySet()) {
-                Message lastedMessage = mCore.getDbManager().getLatestMessages(conversation);
+                Message lastMessage = mCore.getDbManager().getLastMessage(conversation);
                 List<ConcreteMessage> removedList = conversationMap.get(conversation);
-                mSendReceiveListener.onMessageRemoved(conversation, removedList, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
+                mSendReceiveListener.onMessageRemove(conversation, removedList, lastMessage == null ? null : (ConcreteMessage) lastMessage);
             }
         }
     }
@@ -1142,13 +1142,13 @@ public class MessageManager implements IMessageManager {
     //通知会话更新最新信息
     private void notifyMessageRemoved(Conversation conversation, ConcreteMessage removedMessage) {
         if (mSendReceiveListener != null) {
-            //获取当前会话最新一条消息
-            Message lastedMessage = mCore.getDbManager().getLatestMessages(conversation);
+            //从消息表中获取当前会话最新一条消息
+            Message lastMessage = mCore.getDbManager().getLastMessage(conversation);
             List<ConcreteMessage> removedList = new ArrayList<>();
             if (removedMessage != null) {
                 removedList.add(removedMessage);
             }
-            mSendReceiveListener.onMessageRemoved(conversation, removedList, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
+            mSendReceiveListener.onMessageRemove(conversation, removedList, lastMessage == null ? null : (ConcreteMessage) lastMessage);
         }
     }
 
@@ -1156,8 +1156,8 @@ public class MessageManager implements IMessageManager {
     private void notifyMessageCleared(Conversation conversation, long startTime, String sendUserId) {
         if (mSendReceiveListener != null) {
             //获取当前会话最新一条消息
-            Message lastedMessage = mCore.getDbManager().getLatestMessages(conversation);
-            mSendReceiveListener.onMessageCleared(conversation, startTime, sendUserId, lastedMessage == null ? null : (ConcreteMessage) lastedMessage);
+            Message lastMessage = mCore.getDbManager().getLastMessage(conversation);
+            mSendReceiveListener.onMessageClear(conversation, startTime, sendUserId, lastMessage == null ? null : (ConcreteMessage) lastMessage);
         }
     }
 

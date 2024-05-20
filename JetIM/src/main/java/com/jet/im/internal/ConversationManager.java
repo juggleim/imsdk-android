@@ -2,6 +2,7 @@ package com.jet.im.internal;
 
 import android.text.TextUtils;
 
+import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.JetIMCore;
@@ -151,7 +152,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         ConcreteConversationInfo info = mCore.getDbManager().getConversationInfo(conversation);
         if (info == null) {
             if (callback != null) {
-                callback.onError(-1);
+                callback.onError(JErrorCode.INVALID_PARAM);
             }
             return;
         }
@@ -340,14 +341,14 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
-    public void onMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage) {
-        updateConversationLastedMessageAfterRemove(conversation, removedMessages, lastedMessage);
+    public void onMessageRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastMessage) {
+        updateConversationLastMessageAfterRemove(conversation, removedMessages, lastMessage);
         noticeTotalUnreadCountChange();
     }
 
     @Override
-    public void onMessageCleared(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastedMessage) {
-        updateConversationLastedMessageAfterClear(conversation, startTime, sendUserId, lastedMessage);
+    public void onMessageClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastMessage) {
+        updateConversationLastedMessageAfterClear(conversation, startTime, sendUserId, lastMessage);
         noticeTotalUnreadCountChange();
     }
 
@@ -440,14 +441,14 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         ConversationMentionInfo mentionInfo = null;
         if (hasMention) {
-            List<ConversationMentionInfo.MentionMsg> mentionMsgs = new ArrayList<>();
+            List<ConversationMentionInfo.MentionMsg> mentionMessages = new ArrayList<>();
             ConversationMentionInfo.MentionMsg mentionMsg = new ConversationMentionInfo.MentionMsg();
             mentionMsg.setSenderId(message.getSenderUserId());
             mentionMsg.setMsgId(message.getMessageId());
             mentionMsg.setMsgTime(message.getTimestamp());
-            mentionMsgs.add(mentionMsg);
+            mentionMessages.add(mentionMsg);
             mentionInfo = new ConversationMentionInfo();
-            mentionInfo.setMentionMsgList(mentionMsgs);
+            mentionInfo.setMentionMsgList(mentionMessages);
         }
         boolean isBroadcast = (message.getFlags() & MessageContent.MessageFlag.IS_BROADCAST.getValue()) != 0;
 
@@ -490,9 +491,11 @@ public class ConversationManager implements IConversationManager, MessageManager
                 mCore.getDbManager().setMentionInfo(message.getConversation(), mentionInfo.encodeToJson());
             }
             //更新未读数
-            info.setLastMessageIndex(message.getMsgIndex());
-            int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
-            info.setUnreadCount(unreadCount);
+            if (message.getMsgIndex() > 0) {
+                info.setLastMessageIndex(message.getMsgIndex());
+                int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
+                info.setUnreadCount(unreadCount);
+            }
             info.setSortTime(message.getTimestamp());
             //更新最新消息
             info.setLastMessage(message);
@@ -507,23 +510,23 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
-    private ConcreteConversationInfo getUpdateConversationAfterPreResolved(Conversation conversation, ConcreteMessage lastedMessage) {
+    private ConcreteConversationInfo getUpdateConversationAfterPreResolved(Conversation conversation, ConcreteMessage lastMessage) {
         if (conversation == null) return null;
         //查询会话
         ConcreteConversationInfo info = (ConcreteConversationInfo) getConversationInfo(conversation);
         //会话不存在时不处理
         if (info == null) return null;
         //会话原来的最新消息为空，且当前最新消息也为空，不处理
-        if (info.getLastMessage() == null && lastedMessage == null) return null;
+        if (info.getLastMessage() == null && lastMessage == null) return null;
         //会话原来的最新消息与且当前最新消息相同，不处理
-        if (info.getLastMessage() != null && lastedMessage != null
-                && info.getLastMessage().getClientMsgNo() == lastedMessage.getClientMsgNo()
-                && Objects.equals(info.getLastMessage().getContentType(), lastedMessage.getContentType())
+        if (info.getLastMessage() != null && lastMessage != null
+                && info.getLastMessage().getClientMsgNo() == lastMessage.getClientMsgNo()
+                && Objects.equals(info.getLastMessage().getContentType(), lastMessage.getContentType())
         ) {
             return null;
         }
         //如果最后一条消息不为空，返回会话
-        if (lastedMessage != null) {
+        if (lastMessage != null) {
             return info;
         }
         //如果最后一条消息为空，直接更新会话并执行回调
@@ -549,19 +552,18 @@ public class ConversationManager implements IConversationManager, MessageManager
         return null;
     }
 
-    private void updateConversationLastedMessageAfterRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastedMessage) {
+    private void updateConversationLastMessageAfterRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastMessage) {
         //查询会话
-        ConcreteConversationInfo info = getUpdateConversationAfterPreResolved(conversation, lastedMessage);
+        ConcreteConversationInfo info = getUpdateConversationAfterPreResolved(conversation, lastMessage);
         if (info == null) return;
         //走到这一步，lastedMessage必定不为空
         //fixme 更新未读数
-        info.setLastMessageIndex(lastedMessage.getMsgIndex());
+        info.setLastMessageIndex(lastMessage.getMsgIndex());
         int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
         info.setUnreadCount(unreadCount);
         //更新最新消息
-        info.setLastMessage(lastedMessage);
-        info.setSortTime(lastedMessage.getTimestamp());
-        mCore.getDbManager().updateLastMessage(lastedMessage);
+        info.setLastMessage(lastMessage);
+        mCore.getDbManager().updateLastMessage(lastMessage);
         //更新Mention
         if (removedMessages != null
                 && info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null && !info.getMentionInfo().getMentionMsgList().isEmpty()) {
@@ -587,19 +589,18 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
-    private void updateConversationLastedMessageAfterClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastedMessage) {
+    private void updateConversationLastedMessageAfterClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastMessage) {
         //查询会话
-        ConcreteConversationInfo info = getUpdateConversationAfterPreResolved(conversation, lastedMessage);
+        ConcreteConversationInfo info = getUpdateConversationAfterPreResolved(conversation, lastMessage);
         if (info == null) return;
         //走到这一步，lastedMessage必定不为空
         //fixme 更新未读数
-        info.setLastMessageIndex(lastedMessage.getMsgIndex());
+        info.setLastMessageIndex(lastMessage.getMsgIndex());
         int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
         info.setUnreadCount(unreadCount);
         //更新最新消息
-        info.setLastMessage(lastedMessage);
-        info.setSortTime(lastedMessage.getTimestamp());
-        mCore.getDbManager().updateLastMessage(lastedMessage);
+        info.setLastMessage(lastMessage);
+        mCore.getDbManager().updateLastMessage(lastMessage);
         //fixme 更新Mention
         info.setMentionInfo(null);
         mCore.getDbManager().setMentionInfo(conversation, "");

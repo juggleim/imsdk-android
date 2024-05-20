@@ -153,7 +153,7 @@ class MessageSql {
         return sql;
     }
 
-    static String sqlGetLatestMessagesInConversation(Conversation conversation) {
+    static String sqlGetLastMessageInConversation(Conversation conversation) {
         String sql = String.format("SELECT * FROM message WHERE conversation_type = '%s' AND conversation_id = '%s' AND is_deleted = 0", conversation.getConversationType().getValue(), conversation.getConversationId());
         sql = sql + SQL_ORDER_BY_TIMESTAMP + SQL_DESC + SQL_LIMIT + 1;
         return sql;
@@ -261,10 +261,6 @@ class MessageSql {
 
     static String sqlGetLocalAttribute(long clientMsgNo) {
         return String.format("SELECT local_attribute FROM message WHERE id = '%s'", clientMsgNo);
-    }
-
-    static String getNewestStatusSentMessageTimestamp() {
-        return String.format("SELECT MAX(timestamp) AS max_timestamp FROM message WHERE state = '%s'", Message.MessageState.SENT.getValue());
     }
 
     static final String COL_CONVERSATION_TYPE = "conversation_type";

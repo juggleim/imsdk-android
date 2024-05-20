@@ -189,6 +189,7 @@ public interface IMessageManager {
 
         void onMessageDelete(long clientMsgNo);
 
+        //当 senderId 有值时，表示只清空这个用户发送的消息
         void onMessageClear(Conversation conversation, long timestamp, String senderId);
     }
 
