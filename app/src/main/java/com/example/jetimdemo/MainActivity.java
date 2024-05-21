@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                             JetIM.getInstance().getConversationManager().setTop(c1, true, new IConversationManager.ISimpleCallback() {
                                 @Override
                                 public void onSuccess() {
-                                    Log.d("zzb", "setTop success" );
+                                    Log.d("zzb", "setTop success");
                                 }
 
                                 @Override
@@ -535,8 +535,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onMessageDelete(long clientMsgNo) {
-                Log.d("zzb", "onMessageDelete, clientMsgNo is " + clientMsgNo);
+            public void onMessageDelete(Conversation conversation, List<Long> clientMsgNos) {
+                Log.d("zzb", "onMessageDelete, conversation is " + conversation.getConversationId() + ", clientMsgNo is " + clientMsgNos);
             }
 
             @Override

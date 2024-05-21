@@ -206,8 +206,12 @@ class MessageSql {
 
     static final String SQL_DELETE_MESSAGE = "UPDATE message SET is_deleted = 1 WHERE";
 
-    static String sqlDeleteMessages(int count) {
+    static String sqlDeleteMessagesByMessageId(int count) {
         return "UPDATE message SET is_deleted = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
+    }
+
+    static String sqlDeleteMessagesByClientMsgNo(int count) {
+        return "UPDATE message SET is_deleted = 1 WHERE id in " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
 
     static String sqlClearMessages(Conversation conversation, long startTime, String senderId) {

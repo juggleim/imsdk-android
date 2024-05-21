@@ -117,9 +117,9 @@ public interface IMessageManager {
             JetIMConst.PullDirection direction,
             List<String> contentTypes);
 
-    void deleteMessageByClientMsgNo(long clientMsgNo, ISimpleCallback callback);
+    void deleteMessageByMessageId(Conversation conversation, List<String> messageIds, ISimpleCallback callback);
 
-    void deleteMessageByMessageId(String messageId, ISimpleCallback callback);
+    void deleteMessageByClientMsgNo(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback);
 
     void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback);
 
@@ -187,7 +187,7 @@ public interface IMessageManager {
 
         void onMessageRecall(Message message);
 
-        void onMessageDelete(long clientMsgNo);
+        void onMessageDelete(Conversation conversation, List<Long> clientMsgNos);
 
         //当 senderId 有值时，表示只清空这个用户发送的消息
         void onMessageClear(Conversation conversation, long timestamp, String senderId);

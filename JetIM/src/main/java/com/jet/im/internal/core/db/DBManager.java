@@ -544,6 +544,11 @@ public class DBManager {
         execSQL(sql);
     }
 
+    public void deleteMessageByClientMsgNo(List<Long> clientMsgNos) {
+        Long[] args = clientMsgNos.toArray(new Long[0]);
+        execSQL(MessageSql.sqlDeleteMessagesByClientMsgNo(clientMsgNos.size()), args);
+    }
+
     public void deleteMessageByMessageId(String messageId) {
         Object[] args = new Object[]{messageId};
         String sql = MessageSql.SQL_DELETE_MESSAGE + MessageSql.SQL_MESSAGE_ID_IS;
@@ -552,7 +557,7 @@ public class DBManager {
 
     public void deleteMessageByMessageId(List<String> messageIds) {
         String[] args = messageIds.toArray(new String[0]);
-        execSQL(MessageSql.sqlDeleteMessages(messageIds.size()), args);
+        execSQL(MessageSql.sqlDeleteMessagesByMessageId(messageIds.size()), args);
     }
 
     public void clearMessages(Conversation conversation, long startTime, String senderId) {

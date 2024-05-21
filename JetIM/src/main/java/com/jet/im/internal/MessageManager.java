@@ -310,29 +310,42 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void deleteMessageByMessageId(String messageId, ISimpleCallback callback) {
-        //查询消息
-        List<String> idList = new ArrayList<>(1);
-        idList.add(messageId);
-        List<Message> messages = getMessagesByMessageIds(idList);
-        if (messages.isEmpty()) {
+    public void deleteMessageByMessageId(Conversation conversation, List<String> messageIds, ISimpleCallback callback) {
+        //判空
+        if (conversation == null || messageIds == null || messageIds.isEmpty()) {
             if (callback != null) {
                 callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
             }
             return;
         }
-        final ConcreteMessage deleteMessage = (ConcreteMessage) messages.get(0);
-        //调用接口
+        //查询消息
+        List<Message> messages = getMessagesByMessageIds(messageIds);
+        //按conversation过滤
+        List<String> deleteIdList = new ArrayList<>();
         List<ConcreteMessage> deleteList = new ArrayList<>();
-        deleteList.add(deleteMessage);
-        mCore.getWebSocket().deleteMessage(deleteMessage.getConversation(), deleteList, new WebSocketSimpleCallback() {
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            Message temp = messages.get(i);
+            if (temp.getConversation().equals(conversation)) {
+                deleteIdList.add(temp.getMessageId());
+                deleteList.add((ConcreteMessage) temp);
+            }
+        }
+        //判空
+        if (deleteList.isEmpty()) {
+            if (callback != null) {
+                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+            }
+            return;
+        }
+        //调用接口
+        mCore.getWebSocket().deleteMessage(conversation, deleteList, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 JLogger.i("delete message by messageId success");
                 //删除消息
-                mCore.getDbManager().deleteMessageByMessageId(messageId);
+                mCore.getDbManager().deleteMessageByMessageId(deleteIdList);
                 //通知会话更新
-                notifyMessageRemoved(deleteMessage.getConversation(), deleteMessage);
+                notifyMessageRemoved(conversation, deleteList);
                 //执行回调
                 if (callback != null) {
                     callback.onSuccess();
@@ -350,38 +363,63 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void deleteMessageByClientMsgNo(long clientMsgNo, ISimpleCallback callback) {
-        //查询消息
-        List<Message> messages = getMessagesByClientMsgNos(new long[]{clientMsgNo});
-        if (messages.isEmpty()) {
+    public void deleteMessageByClientMsgNo(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback) {
+        //判空
+        if (conversation == null || clientMsgNos == null || clientMsgNos.isEmpty()) {
             if (callback != null) {
                 callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
             }
             return;
         }
-        final ConcreteMessage deleteMessage = (ConcreteMessage) messages.get(0);
-        //没有消息Id，为本地保存的消息，不需要调用接口
-        if (TextUtils.isEmpty(deleteMessage.getMessageId())) {
+        //查询消息
+        long[] clientMsgNoArray = new long[clientMsgNos.size()];
+        for (int i = 0; i < clientMsgNos.size(); i++) {
+            clientMsgNoArray[i] = clientMsgNos.get(i);
+        }
+        List<Message> messages = getMessagesByClientMsgNos(clientMsgNoArray);
+        //按conversation过滤，分为本地处理列表及接口处理列表
+        List<Long> deleteClientMsgNoList = new ArrayList<>();
+        List<ConcreteMessage> deleteLocalList = new ArrayList<>();
+        List<ConcreteMessage> deleteRemoteList = new ArrayList<>();
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            Message temp = messages.get(i);
+            if (!temp.getConversation().equals(conversation)) continue;
+
+            deleteClientMsgNoList.add(temp.getClientMsgNo());
+            if (TextUtils.isEmpty(temp.getMessageId())) {
+                deleteLocalList.add((ConcreteMessage) temp);
+            } else {
+                deleteRemoteList.add((ConcreteMessage) temp);
+            }
+        }
+        //判空
+        if (deleteClientMsgNoList.isEmpty()) {
+            if (callback != null) {
+                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+            }
+            return;
+        }
+        //所有消息均为仅本地保存的消息，不需要调用接口
+        if (deleteRemoteList.isEmpty()) {
             //删除消息
-            mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
+            mCore.getDbManager().deleteMessageByClientMsgNo(deleteClientMsgNoList);
             //通知会话更新
-            notifyMessageRemoved(deleteMessage.getConversation(), deleteMessage);
+            notifyMessageRemoved(conversation, deleteLocalList);
             if (callback != null) {
                 callback.onSuccess();
             }
             return;
         }
         //调用接口
-        List<ConcreteMessage> deleteList = new ArrayList<>();
-        deleteList.add(deleteMessage);
-        mCore.getWebSocket().deleteMessage(deleteMessage.getConversation(), deleteList, new WebSocketSimpleCallback() {
+        mCore.getWebSocket().deleteMessage(conversation, deleteRemoteList, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 JLogger.i("delete message by clientMsgNo success");
                 //删除消息
-                mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
+                mCore.getDbManager().deleteMessageByClientMsgNo(deleteClientMsgNoList);
                 //通知会话更新
-                notifyMessageRemoved(deleteMessage.getConversation(), deleteMessage);
+                deleteLocalList.addAll(deleteRemoteList);
+                notifyMessageRemoved(conversation, deleteLocalList);
                 //执行回调
                 if (callback != null) {
                     callback.onSuccess();
@@ -455,7 +493,9 @@ public class MessageManager implements IMessageManager {
                     m.setContent(recallInfoMessage);
                     mCore.getDbManager().updateMessageContent(recallInfoMessage, m.getContentType(), messageId);
                     //通知会话更新
-                    notifyMessageRemoved(m.getConversation(), (ConcreteMessage) m);
+                    List<ConcreteMessage> messageList = new ArrayList<>();
+                    messageList.add((ConcreteMessage) m);
+                    notifyMessageRemoved(m.getConversation(), messageList);
                     if (callback != null) {
                         callback.onSuccess(m);
                     }
@@ -1092,17 +1132,16 @@ public class MessageManager implements IMessageManager {
         mCore.getDbManager().deleteMessageByMessageId(msgIds);
         //通知消息回调
         if (mListenerMap != null) {
+            List<Long> messageClientMsgNos = new ArrayList<>();
             for (int i = 0; i < messages.size(); i++) {
-                for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
-                    entry.getValue().onMessageDelete(messages.get(i).getClientMsgNo());
-                }
+                messageClientMsgNos.add(messages.get(i).getClientMsgNo());
+            }
+            for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                entry.getValue().onMessageDelete(conversation, messageClientMsgNos);
             }
         }
         //通知会话更新
-        if (mSendReceiveListener != null) {
-            Message lastMessage = mCore.getDbManager().getLastMessage(conversation);
-            mSendReceiveListener.onMessageRemove(conversation, messages, lastMessage == null ? null : (ConcreteMessage) lastMessage);
-        }
+        notifyMessageRemoved(conversation, messages);
     }
 
     private void handleClearUnreadMessageCmdMessage(List<ConcreteConversationInfo> conversations) {
@@ -1124,15 +1163,11 @@ public class MessageManager implements IMessageManager {
     }
 
     //通知会话更新最新信息
-    private void notifyMessageRemoved(Conversation conversation, ConcreteMessage removedMessage) {
+    private void notifyMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages) {
         if (mSendReceiveListener != null) {
             //从消息表中获取当前会话最新一条消息
             Message lastMessage = mCore.getDbManager().getLastMessage(conversation);
-            List<ConcreteMessage> removedList = new ArrayList<>();
-            if (removedMessage != null) {
-                removedList.add(removedMessage);
-            }
-            mSendReceiveListener.onMessageRemove(conversation, removedList, lastMessage == null ? null : (ConcreteMessage) lastMessage);
+            mSendReceiveListener.onMessageRemove(conversation, removedMessages, lastMessage == null ? null : (ConcreteMessage) lastMessage);
         }
     }
 
