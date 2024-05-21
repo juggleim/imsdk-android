@@ -117,9 +117,9 @@ public interface IMessageManager {
             JetIMConst.PullDirection direction,
             List<String> contentTypes);
 
-    void deleteMessageByMessageId(Conversation conversation, List<String> messageIds, ISimpleCallback callback);
+    void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, ISimpleCallback callback);
 
-    void deleteMessageByClientMsgNo(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback);
+    void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback);
 
     void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback);
 

@@ -310,7 +310,7 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void deleteMessageByMessageId(Conversation conversation, List<String> messageIds, ISimpleCallback callback) {
+    public void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, ISimpleCallback callback) {
         //判空
         if (conversation == null || messageIds == null || messageIds.isEmpty()) {
             if (callback != null) {
@@ -343,7 +343,7 @@ public class MessageManager implements IMessageManager {
             public void onSuccess() {
                 JLogger.i("delete message by messageId success");
                 //删除消息
-                mCore.getDbManager().deleteMessageByMessageId(deleteIdList);
+                mCore.getDbManager().deleteMessagesByMessageIds(deleteIdList);
                 //通知会话更新
                 notifyMessageRemoved(conversation, deleteList);
                 //执行回调
@@ -363,7 +363,7 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void deleteMessageByClientMsgNo(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback) {
+    public void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback) {
         //判空
         if (conversation == null || clientMsgNos == null || clientMsgNos.isEmpty()) {
             if (callback != null) {
@@ -1129,7 +1129,7 @@ public class MessageManager implements IMessageManager {
         List<ConcreteMessage> messages = mCore.getDbManager().getConcreteMessagesByMessageIds(msgIds);
         if (messages.isEmpty()) return;
         //删除消息
-        mCore.getDbManager().deleteMessageByMessageId(msgIds);
+        mCore.getDbManager().deleteMessagesByMessageIds(msgIds);
         //通知消息回调
         if (mListenerMap != null) {
             List<Long> messageClientMsgNos = new ArrayList<>();
