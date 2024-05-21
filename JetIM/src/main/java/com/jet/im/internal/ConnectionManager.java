@@ -10,7 +10,7 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.push.PushChannel;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import java.net.URI;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.jet.im.model;
 
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;

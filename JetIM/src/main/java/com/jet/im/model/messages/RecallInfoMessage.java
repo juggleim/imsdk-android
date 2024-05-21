@@ -1,7 +1,7 @@
 package com.jet.im.model.messages;
 
 import com.jet.im.model.MessageContent;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;

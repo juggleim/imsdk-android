@@ -1,4 +1,4 @@
-package com.jet.im.utils;
+package com.jet.im.internal.util;
 
 import android.util.Log;
 

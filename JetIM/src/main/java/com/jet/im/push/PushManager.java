@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.jet.im.JetIM;
 import com.jet.im.internal.util.JUtility;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

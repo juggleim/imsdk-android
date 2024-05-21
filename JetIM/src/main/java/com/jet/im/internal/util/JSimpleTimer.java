@@ -2,8 +2,6 @@ package com.jet.im.internal.util;
 
 import android.os.Handler;
 
-import com.jet.im.utils.LoggerUtils;
-
 public abstract class JSimpleTimer {
 
     private Handler mHandler = null;

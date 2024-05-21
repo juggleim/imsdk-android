@@ -3,8 +3,6 @@ package com.jet.im.internal.util;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.jet.im.utils.LoggerUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;

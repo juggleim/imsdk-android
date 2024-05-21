@@ -2,7 +2,7 @@ package com.jet.im.internal;
 
 import android.text.TextUtils;
 
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;

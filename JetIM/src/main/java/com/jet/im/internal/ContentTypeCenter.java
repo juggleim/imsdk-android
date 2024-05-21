@@ -3,7 +3,7 @@ package com.jet.im.internal;
 import android.text.TextUtils;
 
 import com.jet.im.model.MessageContent;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

@@ -1,11 +1,9 @@
 package com.jet.im.model.messages;
 
-import android.text.TextUtils;
-
 import com.jet.im.model.MergeMessagePreviewUnit;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;

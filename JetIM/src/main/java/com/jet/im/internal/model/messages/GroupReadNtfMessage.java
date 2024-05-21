@@ -2,7 +2,7 @@ package com.jet.im.internal.model.messages;
 
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.MessageContent;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;

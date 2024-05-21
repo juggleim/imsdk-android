@@ -2,7 +2,7 @@ package com.jet.im.internal;
 
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.util.JSimpleTimer;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import java.util.concurrent.atomic.AtomicLong;
 

@@ -19,7 +19,7 @@ import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.push.PushChannel;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

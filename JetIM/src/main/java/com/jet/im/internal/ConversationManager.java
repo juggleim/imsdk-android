@@ -22,7 +22,7 @@ import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

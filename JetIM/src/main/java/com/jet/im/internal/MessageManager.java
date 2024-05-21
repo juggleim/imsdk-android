@@ -36,7 +36,7 @@ import com.jet.im.model.messages.RecallInfoMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;

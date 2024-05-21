@@ -14,7 +14,7 @@ import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.LoggerUtils;
 
 public class JetIM {
 
