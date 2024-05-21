@@ -2,7 +2,7 @@ package com.jet.im.internal.model.messages;
 
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.MessageContent;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +26,7 @@ public class GroupReadNtfMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("GroupReadNtfMessage decode data is null");
+            JLogger.e("GroupReadNtfMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -64,7 +64,7 @@ public class GroupReadNtfMessage extends MessageContent {
                 mMessages = messages;
             }
         } catch (JSONException e) {
-            LoggerUtils.e("GroupReadNtfMessage decode JSONException " + e.getMessage());
+            JLogger.e("GroupReadNtfMessage decode JSONException " + e.getMessage());
         }
     }
 

@@ -1,6 +1,6 @@
 package com.jet.im.model;
 
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -69,7 +69,7 @@ public class ConversationMentionInfo {
                 jsonObject.putOpt(MENTION_MSG_LIST, jsonMentionMsgs);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("ConcreteConversationMention encodeToJson JSONException " + e.getMessage());
+            JLogger.e("ConcreteConversationMention encodeToJson JSONException " + e.getMessage());
         }
         return jsonObject.toString();
     }
@@ -94,7 +94,7 @@ public class ConversationMentionInfo {
                 mMentionMsgList = mentionMsgs;
             }
         } catch (JSONException e) {
-            LoggerUtils.e("ConcreteConversationMention decode JSONException " + e.getMessage());
+            JLogger.e("ConcreteConversationMention decode JSONException " + e.getMessage());
         }
     }
 

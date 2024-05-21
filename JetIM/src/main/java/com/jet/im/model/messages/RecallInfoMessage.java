@@ -1,7 +1,7 @@
 package com.jet.im.model.messages;
 
 import com.jet.im.model.MessageContent;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +26,7 @@ public class RecallInfoMessage extends MessageContent {
                 }
             }
         } catch (JSONException e) {
-            LoggerUtils.e("RecallInfoMessage JSONException " + e.getMessage());
+            JLogger.e("RecallInfoMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -34,7 +34,7 @@ public class RecallInfoMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("RecallInfoMessage decode data is null");
+            JLogger.e("RecallInfoMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -42,7 +42,7 @@ public class RecallInfoMessage extends MessageContent {
             JSONObject jsonObject = new JSONObject(jsonStr);
             decodeExt(jsonObject);
         } catch (JSONException e) {
-            LoggerUtils.e("RecallInfoMessage decode JSONException " + e.getMessage());
+            JLogger.e("RecallInfoMessage decode JSONException " + e.getMessage());
         }
     }
 
@@ -56,7 +56,7 @@ public class RecallInfoMessage extends MessageContent {
                 String value = jsonObject.getString(key);
                 mExtra.put(key, value);
             } catch (JSONException e) {
-                LoggerUtils.e("RecallInfoMessage decodeExt JSONException " + e.getMessage());
+                JLogger.e("RecallInfoMessage decodeExt JSONException " + e.getMessage());
             }
         }
     }

@@ -10,7 +10,7 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.push.PushChannel;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import java.net.URI;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager implements IConnectionManager {
     @Override
     public void connect(String token) {
-        LoggerUtils.i("connect, token is " + token);
+        JLogger.i("connect, token is " + token);
         //todo 校验，是否有连接
 
         if (!mCore.getToken().equals(token)) {
@@ -58,7 +58,7 @@ public class ConnectionManager implements IConnectionManager {
 
     @Override
     public void disconnect(boolean receivePush) {
-        LoggerUtils.i("user disconnect receivePush is " + receivePush);
+        JLogger.i("user disconnect receivePush is " + receivePush);
         changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE, "");
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().disconnect(receivePush);
@@ -75,12 +75,12 @@ public class ConnectionManager implements IConnectionManager {
         mCore.getWebSocket().registerPushToken(channel, token, mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                LoggerUtils.i("register push token success");
+                JLogger.i("register push token success");
             }
 
             @Override
             public void onError(int errorCode) {
-                LoggerUtils.e("register push token error, code is " + errorCode);
+                JLogger.e("register push token error, code is " + errorCode);
             }
         });
     }
@@ -127,7 +127,7 @@ public class ConnectionManager implements IConnectionManager {
                             if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
                                 dbStatusNotice(true);
                             } else {
-                                LoggerUtils.e("open db fail");
+                                JLogger.e("open db fail");
                             }
                         }
                         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, "");
@@ -200,7 +200,7 @@ public class ConnectionManager implements IConnectionManager {
 
     private void changeStatus(int status, int errorCode, String extra) {
         mCore.getSendHandler().post(() -> {
-            LoggerUtils.i("connection status " + status);
+            JLogger.i("connection status " + status);
             if (status == mCore.getConnectionStatus()) {
                 return;
             }
@@ -263,7 +263,7 @@ public class ConnectionManager implements IConnectionManager {
     }
 
     private void reconnect() {
-        LoggerUtils.i("reconnect");
+        JLogger.i("reconnect");
         //todo 线程控制，间隔控制
         if (mReconnectTimer != null) {
             return;

@@ -2,7 +2,7 @@ package com.jet.im.internal;
 
 import android.text.TextUtils;
 
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -73,7 +73,7 @@ public class NaviManager {
                 callback.onSuccess(userId, serverList);
             }
         } catch (IOException | JSONException e) {
-            LoggerUtils.e("get navi exception, e is " + e.getMessage());
+            JLogger.e("get navi exception, e is " + e.getMessage());
             if (callback != null) {
                 callback.onError(ConstInternal.ErrorCode.NAVI_FAILURE);
             }

@@ -14,7 +14,7 @@ import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 public class JetIM {
 
@@ -33,7 +33,7 @@ public class JetIM {
         if (TextUtils.isEmpty(appKey)) {
             throw new IllegalArgumentException("app key is empty");
         }
-        LoggerUtils.i("init, appKey is " + appKey);
+        JLogger.i("init, appKey is " + appKey);
         mCore.setContext(context);
         PushManager.getInstance().init(context, initConfig.getPushConfig());
         if (appKey.equals(mCore.getAppKey())) {

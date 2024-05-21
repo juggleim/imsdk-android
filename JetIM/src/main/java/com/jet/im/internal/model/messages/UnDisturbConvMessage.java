@@ -3,7 +3,7 @@ package com.jet.im.internal.model.messages;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,11 +27,11 @@ public class UnDisturbConvMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("UnDisturbConvMessage decode data is null");
+            JLogger.e("UnDisturbConvMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
-        LoggerUtils.d("UnDisturbConvMessage decode data= " + jsonStr);
+        JLogger.d("UnDisturbConvMessage decode data= " + jsonStr);
 
         List<ConcreteConversationInfo> conversations = new ArrayList<>();
         try {
@@ -59,7 +59,7 @@ public class UnDisturbConvMessage extends MessageContent {
             }
             mConversations = conversations;
         } catch (JSONException e) {
-            LoggerUtils.e("UnDisturbConvMessage decode JSONException " + e.getMessage());
+            JLogger.e("UnDisturbConvMessage decode JSONException " + e.getMessage());
         }
     }
 

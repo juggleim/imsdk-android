@@ -1,6 +1,6 @@
 package com.jet.im.model;
 
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,7 +52,7 @@ public class MessageMentionInfo {
                 jsonObject.putOpt(TARGET_USERS, jsonUsers);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("MessageMentionInfo encodeToJson JSONException " + e.getMessage());
+            JLogger.e("MessageMentionInfo encodeToJson JSONException " + e.getMessage());
         }
         return jsonObject.toString();
     }
@@ -78,7 +78,7 @@ public class MessageMentionInfo {
                 mTargetUsers = users;
             }
         } catch (JSONException e) {
-            LoggerUtils.e("MessageMentionInfo decode JSONException " + e.getMessage());
+            JLogger.e("MessageMentionInfo decode JSONException " + e.getMessage());
         }
     }
 

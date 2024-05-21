@@ -2,7 +2,7 @@ package com.jet.im.internal;
 
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.util.JSimpleTimer;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -73,20 +73,20 @@ public class HeartbeatManager {
     }
 
     private void doHeartbeat() {
-        LoggerUtils.d(TAG + ", send ping...");
+        JLogger.d(TAG + ", send ping...");
         if (mJWebsocket != null) {
             mJWebsocket.ping();
         }
     }
 
     private void doHeartbeatDetection() {
-        LoggerUtils.d(TAG + ", heartbeat detecting...");
+        JLogger.d(TAG + ", heartbeat detecting...");
         if (mLastMessageReceivedTime.longValue() != 0) {
             //获取当前系统时间
             long now = System.currentTimeMillis();
             //如果当前时系统时间和lastMessageReceivedTime的差值大于HEARTBEAT_DETECTION_TIME_OUT，认为心跳超时，执行timeout回调
             if (now - mLastMessageReceivedTime.longValue() >= HEARTBEAT_DETECTION_TIME_OUT) {
-                LoggerUtils.e("heartbeat has timeout, perform reconnection...");
+                JLogger.e("heartbeat has timeout, perform reconnection...");
                 notifyHeartbeatTimeout();
             }
         }

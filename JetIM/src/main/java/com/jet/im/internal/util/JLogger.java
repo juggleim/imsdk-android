@@ -2,7 +2,7 @@ package com.jet.im.internal.util;
 
 import android.util.Log;
 
-public class LoggerUtils {
+public class JLogger {
     public static void e(String msg) {
         Log.e(TAG, msg);
     }

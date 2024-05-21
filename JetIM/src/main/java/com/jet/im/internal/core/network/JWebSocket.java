@@ -16,7 +16,7 @@ import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
 import com.jet.im.push.PushChannel;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -304,21 +304,21 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        LoggerUtils.i("JWebSocket, onOpen");
+        JLogger.i("JWebSocket, onOpen");
         sendConnectMsg();
     }
 
     @Override
     public void onMessage(String message) {
         mHeartbeatManager.updateLastMessageReceivedTime();
-        LoggerUtils.i("JWebSocket, onMessage");
+        JLogger.i("JWebSocket, onMessage");
     }
 
     @Override
     public void onMessage(ByteBuffer bytes) {
         mHeartbeatManager.updateLastMessageReceivedTime();
         PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
-        LoggerUtils.i("JWebSocket, onMessage bytes, type is " + obj.getRcvType());
+        JLogger.i("JWebSocket, onMessage bytes, type is " + obj.getRcvType());
         switch (obj.getRcvType()) {
             case PBRcvObj.PBRcvType.connectAck:
                 handleConnectAckMsg(obj.mConnectAck);
@@ -366,7 +366,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        LoggerUtils.i("JWebSocket, onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
+        JLogger.i("JWebSocket, onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
         if (remote && mConnectListener != null) {
             mConnectListener.onWebSocketClose();
         }
@@ -374,7 +374,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     @Override
     public void onError(Exception ex) {
-        LoggerUtils.i("JWebSocket, onError, msg is " + ex.getMessage());
+        JLogger.i("JWebSocket, onError, msg is " + ex.getMessage());
         if (mConnectListener != null) {
             mConnectListener.onWebSocketFail();
         }
@@ -428,14 +428,14 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleConnectAckMsg(@NonNull PBRcvObj.ConnectAck ack) {
-        LoggerUtils.i("connect userId is " + ack.userId);
+        JLogger.i("connect userId is " + ack.userId);
         if (mConnectListener != null) {
             mConnectListener.onConnectComplete(ack.code, ack.userId);
         }
     }
 
     private void handlePublishAckMsg(PBRcvObj.PublishMsgAck ack) {
-        LoggerUtils.d("handlePublishAckMsg, msgId is " + ack.msgId + ", code is " + ack.code);
+        JLogger.d("handlePublishAckMsg, msgId is " + ack.msgId + ", code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof SendMessageCallback) {
@@ -449,7 +449,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleQryHisMsgAck(PBRcvObj.QryHisMsgAck ack) {
-        LoggerUtils.d("handleQryHisMsgAck");
+        JLogger.d("handleQryHisMsgAck");
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof QryHisMsgCallback) {
@@ -463,7 +463,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleSyncConversationAck(PBRcvObj.SyncConvAck ack) {
-        LoggerUtils.d("handleSyncConversationAck");
+        JLogger.d("handleSyncConversationAck");
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof SyncConversationsCallback) {
@@ -498,7 +498,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handlePong() {
-        LoggerUtils.d("pong, mMsgCallbackMap count is " + mWebSocketCommandManager.size());
+        JLogger.d("pong, mMsgCallbackMap count is " + mWebSocketCommandManager.size());
     }
 
     private void handleDisconnectMsg(PBRcvObj.DisconnectMsg msg) {
@@ -508,7 +508,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleSimpleQryAck(PBRcvObj.SimpleQryAck ack) {
-        LoggerUtils.d("handleSimpleQryAck, code is " + ack.code);
+        JLogger.d("handleSimpleQryAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof WebSocketSimpleCallback) {
@@ -522,7 +522,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleSimpleQryAckWithTimeCallback(PBRcvObj.SimpleQryAck ack) {
-        LoggerUtils.d("handleSimpleQryAckWithTimeCallback, code is " + ack.code);
+        JLogger.d("handleSimpleQryAckWithTimeCallback, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof WebSocketTimestampCallback) {
@@ -536,7 +536,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleTimestampCallback(PBRcvObj.TimestampQryAck ack) {
-        LoggerUtils.d("handleTimestampAck, code is " + ack.code);
+        JLogger.d("handleTimestampAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof WebSocketTimestampCallback) {
@@ -550,7 +550,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleQryReadDetailAck(PBRcvObj.QryReadDetailAck ack) {
-        LoggerUtils.d("handleQryReadDetailAck, code is " + ack.code);
+        JLogger.d("handleQryReadDetailAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof QryReadDetailCallback) {

@@ -3,7 +3,7 @@ package com.jet.im.model.messages;
 import android.text.TextUtils;
 
 import com.jet.im.model.MessageContent;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +27,7 @@ public class VoiceMessage extends MessageContent {
                 jsonObject.put(EXTRA, mExtra);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("VoiceMessage JSONException " + e.getMessage());
+            JLogger.e("VoiceMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -35,7 +35,7 @@ public class VoiceMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("VoiceMessage decode data is null");
+            JLogger.e("VoiceMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -52,7 +52,7 @@ public class VoiceMessage extends MessageContent {
                 mExtra = jsonObject.optString(EXTRA);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("VoiceMessage decode JSONException " + e.getMessage());
+            JLogger.e("VoiceMessage decode JSONException " + e.getMessage());
         }
     }
 

@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.jet.im.JetIM;
 import com.jet.im.internal.util.JUtility;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,7 +71,7 @@ public class PushManager implements IPush.Callback {
             IPush push = (IPush) aClass.newInstance();
             iPushMap.put(push.getType(), push);
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            LoggerUtils.d(TAG + ", not register " + className);
+            JLogger.d(TAG + ", not register " + className);
         }
     }
 
@@ -81,7 +81,7 @@ public class PushManager implements IPush.Callback {
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                LoggerUtils.d(TAG + ", on push token received, channel= " + type.getName() + ", token= " + token);
+                JLogger.d(TAG + ", on push token received, channel= " + type.getName() + ", token= " + token);
                 JetIM.getInstance().getConnectionManager().registerPushToken(type, token);
             }
         });
@@ -90,7 +90,7 @@ public class PushManager implements IPush.Callback {
     @Override
     public void onError(PushChannel type, int code, String msg) {
         //todo 处理 onError
-        LoggerUtils.d(TAG + ", on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
+        JLogger.d(TAG + ", on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
     }
 
     private static class SingletonHolder {

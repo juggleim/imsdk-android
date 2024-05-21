@@ -36,7 +36,7 @@ import com.jet.im.model.messages.RecallInfoMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -328,7 +328,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().deleteMessage(deleteMessage.getConversation(), deleteList, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                LoggerUtils.i("delete message by messageId success");
+                JLogger.i("delete message by messageId success");
                 //删除消息
                 mCore.getDbManager().deleteMessageByMessageId(messageId);
                 //通知会话更新
@@ -341,7 +341,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                LoggerUtils.i("delete message by messageId error, code is " + errorCode);
+                JLogger.i("delete message by messageId error, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -377,7 +377,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().deleteMessage(deleteMessage.getConversation(), deleteList, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                LoggerUtils.i("delete message by clientMsgNo success");
+                JLogger.i("delete message by clientMsgNo success");
                 //删除消息
                 mCore.getDbManager().deleteMessageByClientMsgNo(clientMsgNo);
                 //通知会话更新
@@ -390,7 +390,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                LoggerUtils.i("delete message by clientMsgNo error, code is " + errorCode);
+                JLogger.i("delete message by clientMsgNo error, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -406,7 +406,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                LoggerUtils.i("clear message success");
+                JLogger.i("clear message success");
                 //清空消息
                 mCore.getDbManager().clearMessages(conversation, finalStartTime, null);
                 //通知会话更新
@@ -419,7 +419,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                LoggerUtils.i("clear message error, code is " + errorCode);
+                JLogger.i("clear message error, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -887,7 +887,7 @@ public class MessageManager implements IMessageManager {
 
                     @Override
                     public void onSyncNotify(long syncTime) {
-                        LoggerUtils.d("onSyncNotify, syncTime is " + syncTime + ", receiveSyncTime is " + mCore.getMessageReceiveTime());
+                        JLogger.d("onSyncNotify, syncTime is " + syncTime + ", receiveSyncTime is " + mCore.getMessageReceiveTime());
                         if (syncTime > mCore.getMessageReceiveTime()) {
                             mSyncProcessing = true;
                             sync();

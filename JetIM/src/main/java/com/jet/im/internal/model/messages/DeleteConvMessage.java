@@ -2,7 +2,7 @@ package com.jet.im.internal.model.messages;
 
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +26,7 @@ public class DeleteConvMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("DeleteConvMessage decode data is null");
+            JLogger.e("DeleteConvMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -52,7 +52,7 @@ public class DeleteConvMessage extends MessageContent {
             }
             mConversations = conversations;
         } catch (JSONException e) {
-            LoggerUtils.e("DeleteConvMessage decode JSONException " + e.getMessage());
+            JLogger.e("DeleteConvMessage decode JSONException " + e.getMessage());
         }
     }
 

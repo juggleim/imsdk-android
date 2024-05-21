@@ -1,7 +1,7 @@
 package com.jet.im.internal.model.messages;
 
 import com.jet.im.model.MessageContent;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,11 +22,11 @@ public class CleanMsgMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("CleanMsgMessage decode data is null");
+            JLogger.e("CleanMsgMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
-        LoggerUtils.d("ClearHistoryMsgMessage decode data= " + jsonStr);
+        JLogger.d("ClearHistoryMsgMessage decode data= " + jsonStr);
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(CLEAN_TIME)) {
@@ -36,7 +36,7 @@ public class CleanMsgMessage extends MessageContent {
                 mSenderId = jsonObject.optString(SENDER_ID);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("CleanMsgMessage decode JSONException " + e.getMessage());
+            JLogger.e("CleanMsgMessage decode JSONException " + e.getMessage());
         }
     }
 

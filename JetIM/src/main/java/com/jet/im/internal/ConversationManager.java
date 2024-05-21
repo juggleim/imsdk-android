@@ -22,7 +22,7 @@ import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,12 +68,12 @@ public class ConversationManager implements IConversationManager, MessageManager
         mCore.getWebSocket().deleteConversationInfo(conversation, mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                LoggerUtils.i("delete conversation success");
+                JLogger.i("delete conversation success");
             }
 
             @Override
             public void onError(int errorCode) {
-                LoggerUtils.i("delete conversation fail, code is " + errorCode);
+                JLogger.i("delete conversation fail, code is " + errorCode);
             }
         });
     }
@@ -175,7 +175,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         mCore.getWebSocket().clearUnreadCount(conversation, mCore.getUserId(), info.getLastMessageIndex(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                LoggerUtils.i("clear unread success");
+                JLogger.i("clear unread success");
                 mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
                 mCore.getDbManager().setMentionInfo(conversation, "");
                 noticeTotalUnreadCountChange();
@@ -186,7 +186,7 @@ public class ConversationManager implements IConversationManager, MessageManager
 
             @Override
             public void onError(int errorCode) {
-                LoggerUtils.i("clear unread error, code is " + errorCode);
+                JLogger.i("clear unread error, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -200,7 +200,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         mCore.getWebSocket().clearTotalUnreadCount(mCore.getUserId(), time, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                LoggerUtils.i("clear total unread success");
+                JLogger.i("clear total unread success");
                 mCore.getDbManager().clearTotalUnreadCount();
                 mCore.getDbManager().clearMentionInfo();
                 noticeTotalUnreadCountChange();
@@ -211,7 +211,7 @@ public class ConversationManager implements IConversationManager, MessageManager
 
             @Override
             public void onError(int errorCode) {
-                LoggerUtils.i("clear total unread error, code is " + errorCode);
+                JLogger.i("clear total unread error, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -330,7 +330,7 @@ public class ConversationManager implements IConversationManager, MessageManager
 
             @Override
             public void onError(int errorCode) {
-                LoggerUtils.e("sync conversation fail, code is " + errorCode);
+                JLogger.e("sync conversation fail, code is " + errorCode);
                 if (callback != null) {
                     callback.onComplete();
                 }

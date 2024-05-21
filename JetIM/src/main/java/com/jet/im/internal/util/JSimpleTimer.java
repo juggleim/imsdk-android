@@ -18,7 +18,7 @@ public abstract class JSimpleTimer {
             try {
                 doAction();
             } catch (Exception e) {
-                LoggerUtils.w(JSimpleTimer.class.getSimpleName() + ", " + e);
+                JLogger.w(JSimpleTimer.class.getSimpleName() + ", " + e);
             }
             mHandler.postDelayed(mRunnable, mInterval);
         };

@@ -18,7 +18,7 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ import java.util.Map;
 public class DBManager {
     public boolean openIMDB(Context context, String appKey, String userId) {
         String path = getOrCreateDbPath(context, appKey, userId);
-        LoggerUtils.d("open db, path is " + path);
+        JLogger.d("open db, path is " + path);
         closeDB();
         if (!TextUtils.isEmpty(path)) {
             mDBHelper = new DBHelper(context, path);
@@ -646,7 +646,7 @@ public class DBManager {
         file = new File(path);
         if (!file.exists()) {
             if (!file.mkdirs()) {
-                LoggerUtils.e("create db path fail");
+                JLogger.e("create db path fail");
             }
         }
         path = String.format("%s/%s", path, DB_NAME);

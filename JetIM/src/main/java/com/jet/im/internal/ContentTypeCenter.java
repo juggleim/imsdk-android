@@ -3,7 +3,7 @@ package com.jet.im.internal;
 import android.text.TextUtils;
 
 import com.jet.im.model.MessageContent;
-import com.jet.im.internal.util.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -24,13 +24,13 @@ public class ContentTypeCenter {
             MessageContent content = constructor.newInstance();
             String type = content.getContentType();
             if (TextUtils.isEmpty(type)) {
-                LoggerUtils.e("registerContentType type is empty when class is " + cls);
+                JLogger.e("registerContentType type is empty when class is " + cls);
                 return;
             }
             mContentTypeMap.put(type, cls);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException |
                  InstantiationException e) {
-            LoggerUtils.e("registerContentType exception, msg is " + e.getMessage());
+            JLogger.e("registerContentType exception, msg is " + e.getMessage());
         }
     }
 
@@ -46,7 +46,7 @@ public class ContentTypeCenter {
             content.decode(data);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException |
                  InstantiationException e) {
-            LoggerUtils.e("getMessageContent exception, msg is " + e.getMessage());
+            JLogger.e("getMessageContent exception, msg is " + e.getMessage());
         }
         return content;
     }
@@ -62,7 +62,7 @@ public class ContentTypeCenter {
             return content.getFlags();
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException |
                  InstantiationException e) {
-            LoggerUtils.e("flagsWithType exception, msg is " + e.getMessage());
+            JLogger.e("flagsWithType exception, msg is " + e.getMessage());
         }
         return -1;
     }
