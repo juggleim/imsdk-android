@@ -25,7 +25,7 @@ public class JetIM {
     }
 
     public void init(Context context, String appKey) {
-        init(context, appKey, new InitConfig());
+        init(context, appKey, new InitConfig.Builder().build());
     }
 
     public void init(Context context, String appKey, InitConfig initConfig) {
@@ -35,16 +35,22 @@ public class JetIM {
         if (TextUtils.isEmpty(appKey)) {
             throw new IllegalArgumentException("app key is empty");
         }
+        if (initConfig == null) {
+            throw new IllegalArgumentException("initConfig is null");
+        }
+        if (initConfig.getJLogConfig() == null) {
+            initConfig.setJLogConfig(new JLogConfig.Builder(context).build());
+        }
+        if (initConfig.getPushConfig() == null) {
+            initConfig.setPushConfig(new PushConfig.Builder().build());
+        }
         //保存context
         mCore.setContext(context);
         //初始化日志
-        if (initConfig.getJLogConfig() == null) {
-            initConfig.setJLogConfig(new JLogConfig(context));
-        }
         JLogManager.getInstance().setLogConfig(initConfig.getJLogConfig());
         //初始化push
         PushManager.getInstance().init(context, initConfig.getPushConfig());
-        //初始化appkey
+        //初始化appKey
         JLogger.i("init, appKey is " + appKey);
         if (appKey.equals(mCore.getAppKey())) {
             return;
@@ -96,22 +102,49 @@ public class JetIM {
 
     public static class InitConfig {
         private JLogConfig mJLogConfig;
-        private PushConfig mPushConfig = new PushConfig();
+        private PushConfig mPushConfig;
 
-        public PushConfig getPushConfig() {
-            return mPushConfig;
+        public InitConfig(Builder builder) {
+            this.mJLogConfig = builder.mJLogConfig;
+            this.mPushConfig = builder.mPushConfig;
+        }
+
+        public void setJLogConfig(JLogConfig jLogConfig) {
+            this.mJLogConfig = jLogConfig;
         }
 
         public void setPushConfig(PushConfig pushConfig) {
             this.mPushConfig = pushConfig;
         }
 
+        public PushConfig getPushConfig() {
+            return mPushConfig;
+        }
+
         public JLogConfig getJLogConfig() {
             return mJLogConfig;
         }
 
-        public void setJLogConfig(JLogConfig jLogConfig) {
-            this.mJLogConfig = jLogConfig;
+        public static class Builder {
+            private JLogConfig mJLogConfig;
+            private PushConfig mPushConfig;
+
+            public Builder() {
+            }
+
+            public Builder setJLogConfig(JLogConfig mJLogConfig) {
+                this.mJLogConfig = mJLogConfig;
+                return this;
+            }
+
+            public Builder setPushConfig(PushConfig mPushConfig) {
+                this.mPushConfig = mPushConfig;
+                return this;
+            }
+
+            public InitConfig build() {
+                return new InitConfig(this);
+            }
         }
     }
 }

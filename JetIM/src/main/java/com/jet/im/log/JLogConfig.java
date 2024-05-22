@@ -13,10 +13,6 @@ public class JLogConfig {
     private long mExpiredTime;
     private boolean mIsDebugMode;
 
-    public JLogConfig(Context mContext) {
-        this.mContext = mContext;
-    }
-
     public JLogConfig(Builder builder) {
         this.mContext = builder.mContext;
         this.mLogLevel = builder.mLogLevel;

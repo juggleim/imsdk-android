@@ -7,24 +7,32 @@ public class PushConfig {
     private OPPOConfig oppoConfig;
     private JGConfig jgConfig;
 
-    public void setXMConfig(String appId, String appKey) {
-        this.xmConfig = new XMConfig(appId, appKey);
+    public PushConfig(Builder builder) {
+        this.xmConfig = builder.xmConfig;
+        this.hwConfig = builder.hwConfig;
+        this.vivoConfig = builder.vivoConfig;
+        this.oppoConfig = builder.oppoConfig;
+        this.jgConfig = builder.jgConfig;
     }
 
-    public void setHWConfig(String appId) {
-        this.hwConfig = new HWConfig(appId);
+    public void setXmConfig(XMConfig xmConfig) {
+        this.xmConfig = xmConfig;
     }
 
-    public void setVIVOConfig() {
-        this.vivoConfig = new VIVOConfig();
+    public void setHwConfig(HWConfig hwConfig) {
+        this.hwConfig = hwConfig;
     }
 
-    public void setOPPOConfig(String appKey, String appSecret) {
-        this.oppoConfig = new OPPOConfig(appKey, appSecret);
+    public void setVivoConfig(VIVOConfig vivoConfig) {
+        this.vivoConfig = vivoConfig;
     }
 
-    public void setJGConfig() {
-        this.jgConfig = new JGConfig();
+    public void setOppoConfig(OPPOConfig oppoConfig) {
+        this.oppoConfig = oppoConfig;
+    }
+
+    public void setJgConfig(JGConfig jgConfig) {
+        this.jgConfig = jgConfig;
     }
 
     public XMConfig getXMConfig() {
@@ -99,6 +107,46 @@ public class PushConfig {
 
         public String getAppSecret() {
             return appSecret;
+        }
+    }
+
+    public static class Builder {
+        private XMConfig xmConfig;
+        private HWConfig hwConfig;
+        private VIVOConfig vivoConfig;
+        private OPPOConfig oppoConfig;
+        private JGConfig jgConfig;
+
+        public Builder() {
+        }
+
+        public Builder setXmConfig(String appId, String appKey) {
+            this.xmConfig = new XMConfig(appId, appKey);
+            return this;
+        }
+
+        public Builder setHwConfig(String appId) {
+            this.hwConfig = new HWConfig(appId);
+            return this;
+        }
+
+        public Builder setVivoConfig() {
+            this.vivoConfig = new VIVOConfig();
+            return this;
+        }
+
+        public Builder setOppoConfig(String appKey, String appSecret) {
+            this.oppoConfig = new OPPOConfig(appKey, appSecret);
+            return this;
+        }
+
+        public Builder setJgConfig() {
+            this.jgConfig = new JGConfig();
+            return this;
+        }
+
+        public PushConfig build() {
+            return new PushConfig(this);
         }
     }
 }

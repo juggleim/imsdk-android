@@ -32,8 +32,11 @@ public class JLogManager implements IJLog {
 
     @Override
     public void setLogConfig(JLogConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException("log config is null");
+        }
         if (config.getContext() == null) {
-            throw new IllegalArgumentException("context is null");
+            throw new IllegalArgumentException("log config context is null");
         }
         if (config.getLogLevel() == null) {
             config.setLogLevel(JLogLevel.JLogLevelInfo);
