@@ -217,7 +217,7 @@ class MessageSql {
     static String sqlClearMessages(Conversation conversation, long startTime, String senderId) {
         String sql = String.format("UPDATE message SET is_deleted = 1 WHERE conversation_type = %s AND conversation_id = '%s' AND timestamp <= %s", conversation.getConversationType().getValue(), conversation.getConversationId(), startTime);
         if (!TextUtils.isEmpty(senderId)) {
-            sql = sql + String.format(" AND sender = '%s'" + senderId);
+            sql = sql + String.format(" AND sender = '%s'", senderId);
         }
         return sql;
     }
