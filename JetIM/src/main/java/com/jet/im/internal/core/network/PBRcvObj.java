@@ -13,6 +13,8 @@ class PBRcvObj {
     static class ConnectAck {
         int code;
         String userId;
+        String session;
+        String extra;
     }
 
     static class PublishMsgAck {

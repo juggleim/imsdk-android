@@ -120,7 +120,7 @@ public class ConnectionManager implements IConnectionManager {
             mCore.setWebSocket(new JWebSocket(mCore.getAppKey(), token, uri, mCore.getContext()));
             mCore.getWebSocket().setConnectionListener(new JWebSocket.IWebSocketConnectListener() {
                 @Override
-                public void onConnectComplete(int errorCode, String userId) {
+                public void onConnectComplete(int errorCode, String userId, String session, String extra) {
                     if (errorCode == ConstInternal.ErrorCode.NONE) {
                         mCore.setUserId(userId);
                         if (!mCore.getDbManager().isOpen()) {
@@ -130,13 +130,13 @@ public class ConnectionManager implements IConnectionManager {
                                 JLogger.e("open db fail");
                             }
                         }
-                        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, "");
+                        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
                         mConversationManager.syncConversations(mMessageManager::syncMessage);
                     } else {
                         if (checkConnectionFailure(errorCode)) {
-                            changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
+                            changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, extra);
                         } else {
-                            changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, "");
+                            changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, extra);
                         }
                     }
                 }

@@ -283,7 +283,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     public interface IWebSocketConnectListener {
-        void onConnectComplete(int errorCode, String userId);
+        void onConnectComplete(int errorCode, String userId, String session, String extra);
 
         void onDisconnect(int errorCode, String extra);
 
@@ -430,7 +430,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     private void handleConnectAckMsg(@NonNull PBRcvObj.ConnectAck ack) {
         JLogger.i("connect userId is " + ack.userId);
         if (mConnectListener != null) {
-            mConnectListener.onConnectComplete(ack.code, ack.userId);
+            mConnectListener.onConnectComplete(ack.code, ack.userId, ack.session, ack.extra);
         }
     }
 

@@ -590,6 +590,8 @@ class PBData {
                     PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
                     ack.code = msg.getConnectAckMsgBody().getCode();
                     ack.userId = msg.getConnectAckMsgBody().getUserId();
+                    ack.session = msg.getConnectAckMsgBody().getSession();
+                    ack.extra = msg.getConnectAckMsgBody().getExt();
                     obj.mConnectAck = ack;
                     break;
 
