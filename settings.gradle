@@ -22,6 +22,7 @@ include ':JetIM'
 include ':HWPlugin'
 include ':JGPlugin'
 include ':GooglePlugin'
+include ':JLogPlugin'
 
 include ':XMPlugin'
 include ':XMPlugin_sdk'
