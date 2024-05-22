@@ -2,7 +2,7 @@ package com.jet.im.model;
 
 public abstract class MessageContent {
     public enum MessageFlag {
-        IS_NONE(0),
+        NONE(0),
         // 是否命令消息
         IS_CMD(1),
         // 是否计未读数
