@@ -15,6 +15,8 @@ JetIM/build
 .externalNativeBuild
 .cxx
 local.properties
-XMPlugin/sdk/build/.transforms/513cf2db1a9e4333fa00e7710298c2ba/results.bin
-XMPlugin/sdk/build/.transforms/b308376e1672ffcc1c20db1d78024b05/results.bin
-XMPlugin/sdk/build/.transforms/b308376e1672ffcc1c20db1d78024b05/transformed/MiPush_SDK_Client_6_0_1-C_3rd-api.jar
+OPPOPlugin/sdk/build
+XMPlugin/sdk/build
+VIVOPlugin/sdk/build
+
+
