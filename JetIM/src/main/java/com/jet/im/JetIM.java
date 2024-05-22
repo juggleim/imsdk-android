@@ -12,9 +12,11 @@ import com.jet.im.internal.ConversationManager;
 import com.jet.im.internal.MessageManager;
 import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
+import com.jet.im.internal.util.JLogger;
+import com.jet.im.log.JLogConfig;
+import com.jet.im.log.JLogManager;
 import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
-import com.jet.im.internal.util.JLogger;
 
 public class JetIM {
 
@@ -33,9 +35,17 @@ public class JetIM {
         if (TextUtils.isEmpty(appKey)) {
             throw new IllegalArgumentException("app key is empty");
         }
-        JLogger.i("init, appKey is " + appKey);
+        //保存context
         mCore.setContext(context);
+        //初始化日志
+        if (initConfig.getJLogConfig() == null) {
+            initConfig.setJLogConfig(new JLogConfig(context));
+        }
+        JLogManager.getInstance().setLogConfig(initConfig.getJLogConfig());
+        //初始化push
         PushManager.getInstance().init(context, initConfig.getPushConfig());
+        //初始化appkey
+        JLogger.i("init, appKey is " + appKey);
         if (appKey.equals(mCore.getAppKey())) {
             return;
         }
@@ -85,14 +95,23 @@ public class JetIM {
     private final JetIMCore mCore;
 
     public static class InitConfig {
-        private PushConfig pushConfig=new PushConfig();
+        private JLogConfig mJLogConfig;
+        private PushConfig mPushConfig = new PushConfig();
 
         public PushConfig getPushConfig() {
-            return pushConfig;
+            return mPushConfig;
         }
 
         public void setPushConfig(PushConfig pushConfig) {
-            this.pushConfig = pushConfig;
+            this.mPushConfig = pushConfig;
+        }
+
+        public JLogConfig getJLogConfig() {
+            return mJLogConfig;
+        }
+
+        public void setJLogConfig(JLogConfig jLogConfig) {
+            this.mJLogConfig = jLogConfig;
         }
     }
 }
