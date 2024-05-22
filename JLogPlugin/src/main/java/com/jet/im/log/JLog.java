@@ -18,16 +18,20 @@ public class JLog implements IJLog {
 
     @Override
     public void removeExpiredLogs() {
+        if (mJLogConfig == null || mJLogConfig.getContext() == null) return;
 
     }
 
     @Override
     public void uploadLog(long startTime, long endTime, Callback callback) {
-
+        if (mJLogConfig == null || mJLogConfig.getContext() == null) return;
     }
 
     @Override
     public void write(JLogLevel level, String tag, String... keys) {
-        Log.v("JLog", "level= " + level.getCode() + ", tag= " + tag + ", keys= " + Arrays.toString(keys));
+        if (mJLogConfig == null || mJLogConfig.getLogLevel() == null) return;
+        if (level == null || level.getCode() > mJLogConfig.getLogLevel().getCode()) return;
+
+        Log.v("JLog", "level= " + level.getName() + ", tag= " + tag + ", keys= " + Arrays.toString(keys));
     }
 }
