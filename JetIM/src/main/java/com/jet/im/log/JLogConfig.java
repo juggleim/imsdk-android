@@ -87,8 +87,9 @@ public class JLogConfig {
             return this;
         }
 
-        public void setIsDebugMode(boolean isDebugMode) {
+        public Builder setIsDebugMode(boolean isDebugMode) {
             this.mIsDebugMode = isDebugMode;
+            return this;
         }
 
         public JLogConfig build() {
