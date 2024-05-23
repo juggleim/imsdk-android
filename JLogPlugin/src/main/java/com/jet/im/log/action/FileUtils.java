@@ -111,6 +111,10 @@ class FileUtils {
             String zipFileName = startLogFileName + "-" + endLogFileName + Constants.ZIP_FILE_SUFFIX;
             //创建压缩文件路径
             File zipFile = new File(path, zipFileName);
+            //如果文件已存在，则删除原文件
+            if (zipFile.exists()) {
+                zipFile.delete();
+            }
             //创建ZipOutputStream
             try (FileOutputStream fos = new FileOutputStream(zipFile);
                  BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -124,9 +128,12 @@ class FileUtils {
                 File[] logFiles = logFolder.listFiles();
                 if (logFiles != null) {
                     for (File logFile : logFiles) {
-                        long logFileTime = logFile.lastModified();
-                        if (logFileTime >= startTime && logFileTime <= endTime) {
-                            //创建 ZipEntry
+                        //检查是否是日志文件，如果不是则跳过
+                        if (!logFile.getName().endsWith(Constants.LOG_FILE_SUFFIX)) continue;
+                        //获取日志文件名称并转换为时间戳
+                        long logFileTime = getTimestampFromFileName(logFile.getName());
+                        if (logFileTime > 0 && logFileTime >= startTime && logFileTime <= endTime) {
+                            //创建ZipEntry
                             ZipEntry zipEntry = new ZipEntry(logFile.getName());
                             zos.putNextEntry(zipEntry);
                             //将文件内容写入压缩包
@@ -138,7 +145,7 @@ class FileUtils {
                                     zos.write(buffer, 0, bytesRead);
                                 }
                             }
-                            //关闭当前 ZipEntry
+                            //关闭当前ZipEntry
                             zos.closeEntry();
                         }
                     }
@@ -150,5 +157,27 @@ class FileUtils {
             e.printStackTrace();
             return null;
         }
+    }
+
+    //将日志文件名转换为时间戳
+    static long getTimestampFromFileName(String fileName) {
+        String fileNameNoExtend = getFileNameNoExtend(fileName);
+        try {
+            return Long.parseLong(fileNameNoExtend);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    //获取不带扩展名的文件名
+    static String getFileNameNoExtend(String filename) {
+        if ((filename != null) && (filename.length() > 0)) {
+            int dot = filename.lastIndexOf('.');
+            if (dot > -1) {
+                return filename.substring(0, dot);
+            }
+        }
+        return filename;
     }
 }
