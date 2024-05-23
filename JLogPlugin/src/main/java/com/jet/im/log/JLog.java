@@ -37,7 +37,7 @@ public class JLog implements IJLog {
     @Override
     public void write(JLogLevel level, String tag, String... keys) {
         if (mActionManager == null) return;
-        if (level == null || level.getCode() > mActionManager.getJLogConfig().getLogLevel().getCode())
+        if (level == null || level.getCode() > mActionManager.getJLogConfig().getLogWriteLevel().getCode())
             return;
         if (keys == null || keys.length == 0) return;
 

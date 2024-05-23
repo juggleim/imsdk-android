@@ -41,7 +41,7 @@ public class ActionManager {
 
     private void init() {
         if (mActionThread == null) {
-            mActionThread = new ActionThread(jLogConfig.getLogFileDir(), jLogConfig.getExpiredTime(), mActionCacheQueue);
+            mActionThread = new ActionThread(jLogConfig.getLogFileDir(), jLogConfig.getExpiredTime(), jLogConfig.getLogFileCreateInterval(), mActionCacheQueue);
             mActionThread.setName("logger-thread");
             mActionThread.start();
         }

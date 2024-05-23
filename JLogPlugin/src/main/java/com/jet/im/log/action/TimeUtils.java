@@ -9,9 +9,9 @@ import java.util.Calendar;
 class TimeUtils {
 
     //判断当前时间是否位于指定的小时范围内
-    static boolean isSameHour(long currentHour) {
+    static boolean needCreateLogFile(long currentHour, long createInterval) {
         long currentTime = System.currentTimeMillis();
-        return currentHour < currentTime && currentHour + Constants.HOUR > currentTime;
+        return currentHour < currentTime && currentHour + createInterval > currentTime;
     }
 
     //获取当前时间所在的整小时时间戳

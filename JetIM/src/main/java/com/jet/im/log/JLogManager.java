@@ -9,7 +9,8 @@ import java.io.File;
 
 public class JLogManager implements IJLog {
     private static final String TAG = "JLogManager";
-    private static final int DEFAULT_EXPIRED_TIME = 7 * 24 * 60 * 60 * 1000;
+    private static final long DEFAULT_EXPIRED_TIME = 7 * 24 * 60 * 60 * 1000;//默认日志过期时间，7天
+    private static final long DEFAULT_LOG_FILE_CREATE_INTERVAL = 60 * 60 * 1000;//默认新日志文件创建间隔，1小时
     private static final String DEFAULT_LOG_FILE_DIR = "jet_im/jlog";
 
     private IJLog mInternalJLog;
@@ -38,11 +39,17 @@ public class JLogManager implements IJLog {
         if (config.getContext() == null) {
             throw new IllegalArgumentException("log config context is null");
         }
-        if (config.getLogLevel() == null) {
-            config.setLogLevel(JLogLevel.JLogLevelInfo);
+        if (config.getLogPrintLevel() == null) {
+            config.setLogPrintLevel(JLogLevel.JLogLevelDebug);
+        }
+        if (config.getLogWriteLevel() == null) {
+            config.setLogWriteLevel(JLogLevel.JLogLevelInfo);
         }
         if (config.getExpiredTime() <= 0) {
             config.setExpiredTime(DEFAULT_EXPIRED_TIME);
+        }
+        if (config.getLogFileCreateInterval() <= 0) {
+            config.setLogFileCreateInterval(DEFAULT_LOG_FILE_CREATE_INTERVAL);
         }
         if (TextUtils.isEmpty(config.getLogFileDir())) {
             config.setLogFileDir(getDefaultJLogDir(config.getContext()));
@@ -80,6 +87,10 @@ public class JLogManager implements IJLog {
 
     public boolean isDebugModel() {
         return mJLogConfig != null && mJLogConfig.isDebugMode();
+    }
+
+    public boolean canPrintConsole(JLogLevel printLevel) {
+        return isDebugModel() && printLevel.getCode() <= mJLogConfig.getLogPrintLevel().getCode();
     }
 
     private String getDefaultJLogDir(Context context) {

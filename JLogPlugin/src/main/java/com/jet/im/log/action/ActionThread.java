@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadFactory;
  */
 class ActionThread extends Thread {
     private final Object sync = new Object();
-    private final Object sendSync = new Object();
+    private final Object uploadSync = new Object();
     private volatile boolean mIsRun = true;
     private volatile boolean mIsWorking;
 
@@ -22,21 +22,25 @@ class ActionThread extends Thread {
     //上次检查sdcard的时间
     private long mLastCheckSDCardTime;
     //日志保存目录
-    private String mPath;
+    private final String mPath;
     //日志过期时间
-    private long mExpiredTime;
-    //日志上传结果StatusCode
+    private final long mExpiredTime;
+    //新日志文件创建间隔
+    private final long mLogFileCreateInterval;
+    //上传结果StatusCode
     private int mUploadStatusCode;
     //action缓存队列
-    private ConcurrentLinkedQueue<IAction> mActionCacheQueue;
-    //发送缓存队列
-    private ConcurrentLinkedQueue<IAction> mUploadActionCacheQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<IAction> mActionCacheQueue;
+    //上传缓存队列
+    private final ConcurrentLinkedQueue<IAction> mUploadActionCacheQueue = new ConcurrentLinkedQueue<>();
+    //上传线程池
     private ExecutorService mSingleThreadExecutor;
 
-    ActionThread(String path, long expiredTime, ConcurrentLinkedQueue<IAction> cacheLogQueue) {
+    ActionThread(String path, long expiredTime, long logFileCreateInterval, ConcurrentLinkedQueue<IAction> cacheLogQueue) {
         this.mActionCacheQueue = cacheLogQueue;
         this.mPath = path;
         this.mExpiredTime = expiredTime;
+        this.mLogFileCreateInterval = logFileCreateInterval;
     }
 
     void notifyRun() {
@@ -93,8 +97,7 @@ class ActionThread extends Thread {
             case ActionTypeEnum.TYPE_UPLOAD:
                 UploadAction uploadAction = (UploadAction) action;
                 if (uploadAction.mUploadRunnable != null) {
-                    // 是否正在发送
-                    synchronized (sendSync) {
+                    synchronized (uploadSync) {
                         if (mUploadStatusCode == UploadRunnable.SENDING) {
                             mUploadActionCacheQueue.add(uploadAction);
                         } else {
@@ -113,8 +116,8 @@ class ActionThread extends Thread {
 
     //写日志
     private void doWriteLog2File(WriteAction action) {
-        //判断当前时间是否位于指定的小时范围内
-        if (!TimeUtils.isSameHour(mCurrentHour)) {
+        //判断是否需要创建新的日志文件
+        if (!TimeUtils.needCreateLogFile(mCurrentHour, mLogFileCreateInterval)) {
             //清除过期的日志文件
             long tempCurrentHour = TimeUtils.getCurrentHour();
             long deleteTime = tempCurrentHour - mExpiredTime;
@@ -150,7 +153,7 @@ class ActionThread extends Thread {
         action.mUploadRunnable.setCallBackListener(new UploadRunnable.OnUploadCallBackListener() {
             @Override
             public void onCallBack(int statusCode) {
-                synchronized (sendSync) {
+                synchronized (uploadSync) {
                     mUploadStatusCode = statusCode;
                     if (statusCode == UploadRunnable.FINISH) {
                         mActionCacheQueue.addAll(mUploadActionCacheQueue);

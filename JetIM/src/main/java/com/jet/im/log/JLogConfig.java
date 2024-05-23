@@ -8,16 +8,20 @@ import android.content.Context;
  */
 public class JLogConfig {
     private Context mContext;
-    private JLogLevel mLogLevel;
+    private JLogLevel mLogPrintLevel;
+    private JLogLevel mLogWriteLevel;
     private String mLogFileDir;
     private long mExpiredTime;
+    private long mLogFileCreateInterval;
     private boolean mIsDebugMode;
 
     public JLogConfig(Builder builder) {
         this.mContext = builder.mContext;
-        this.mLogLevel = builder.mLogLevel;
+        this.mLogPrintLevel = builder.mLogPrintLevel;
+        this.mLogWriteLevel = builder.mLogWriteLevel;
         this.mLogFileDir = builder.mLogFileDir;
         this.mExpiredTime = builder.mExpiredTime;
+        this.mLogFileCreateInterval = builder.mLogFileCreateInterval;
         this.mIsDebugMode = builder.mIsDebugMode;
     }
 
@@ -29,12 +33,20 @@ public class JLogConfig {
         this.mContext = context;
     }
 
-    public JLogLevel getLogLevel() {
-        return mLogLevel;
+    public JLogLevel getLogPrintLevel() {
+        return mLogPrintLevel;
     }
 
-    public void setLogLevel(JLogLevel logLevel) {
-        this.mLogLevel = logLevel;
+    public void setLogPrintLevel(JLogLevel logPrintLevel) {
+        this.mLogPrintLevel = logPrintLevel;
+    }
+
+    public JLogLevel getLogWriteLevel() {
+        return mLogWriteLevel;
+    }
+
+    public void setLogWriteLevel(JLogLevel logWriteLevel) {
+        this.mLogWriteLevel = logWriteLevel;
     }
 
     public String getLogFileDir() {
@@ -53,6 +65,14 @@ public class JLogConfig {
         this.mExpiredTime = expiredTime;
     }
 
+    public long getLogFileCreateInterval() {
+        return mLogFileCreateInterval;
+    }
+
+    public void setLogFileCreateInterval(long logFileCreateInterval) {
+        this.mLogFileCreateInterval = logFileCreateInterval;
+    }
+
     public boolean isDebugMode() {
         return mIsDebugMode;
     }
@@ -63,17 +83,24 @@ public class JLogConfig {
 
     public static class Builder {
         private Context mContext;
-        private JLogLevel mLogLevel;
+        private JLogLevel mLogPrintLevel;
+        private JLogLevel mLogWriteLevel;
         private String mLogFileDir;
         private long mExpiredTime;
+        private long mLogFileCreateInterval;
         private boolean mIsDebugMode;
 
         public Builder(Context context) {
             this.mContext = context;
         }
 
-        public Builder setLogLevel(JLogLevel logLevel) {
-            this.mLogLevel = logLevel;
+        public Builder setLogPrintLevel(JLogLevel logLevel) {
+            this.mLogPrintLevel = logLevel;
+            return this;
+        }
+
+        public Builder setLogWriteLevel(JLogLevel logLevel) {
+            this.mLogWriteLevel = logLevel;
             return this;
         }
 
@@ -84,6 +111,11 @@ public class JLogConfig {
 
         public Builder setExpiredInterval(long expiredTime) {
             this.mExpiredTime = expiredTime;
+            return this;
+        }
+
+        public Builder setLogFileCreateInterval(long logFileCreateInterval) {
+            this.mLogFileCreateInterval = logFileCreateInterval;
             return this;
         }
 
