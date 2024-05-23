@@ -1,7 +1,5 @@
 package com.jet.im.log.action;
 
-import android.util.Log;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,9 +19,11 @@ class UploadDefaultRunnable extends UploadRunnable {
     public void doRealUpload(File logFile) {
         doRealUploadByAction(logFile, mRequestHeaders, mUploadUrl);
         finish();
-        if (logFile != null) {
-            logFile.delete();
-        }
+
+        //todo 测试中，上传完成后暂时不删除文件
+//        if (logFile != null) {
+//            logFile.delete();
+//        }
     }
 
     public void setUploadUrl(String uploadUrl) {
@@ -39,7 +39,6 @@ class UploadDefaultRunnable extends UploadRunnable {
 
     private void doRealUploadByAction(File logFile, Map<String, String> mRequestHeaders, String mUploadUrl) {
         try {
-            Log.e("doRealUploadByAction", logFile.getAbsolutePath());
             FileInputStream fileStream = new FileInputStream(logFile);
             doPostRequest(mUploadUrl, fileStream, mRequestHeaders);
         } catch (FileNotFoundException e) {
@@ -49,7 +48,7 @@ class UploadDefaultRunnable extends UploadRunnable {
 
     private void doPostRequest(String mUploadUrl, FileInputStream fileStream, Map<String, String> mRequestHeaders) {
         try {
-            //todo 上传日志
+            //todo 上传日志接口未对接，使用sleep模拟网络请求
             Thread.sleep(1000);
             if (mUploadAction.mCallback != null) {
                 mUploadAction.mCallback.onSuccess();
