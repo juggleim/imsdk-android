@@ -1,6 +1,6 @@
 package com.jet.im.log;
 
-import android.util.Log;
+import com.jet.im.log.action.ActionManager;
 
 import java.util.Arrays;
 
@@ -9,29 +9,38 @@ import java.util.Arrays;
  * @create 2024-05-22 17:01
  */
 public class JLog implements IJLog {
-    private JLogConfig mJLogConfig;
+    private ActionManager mActionManager;
 
     @Override
     public void setLogConfig(JLogConfig config) {
-        this.mJLogConfig = config;
+        if (mActionManager == null) {
+            mActionManager = ActionManager.instance(config);
+        } else {
+            mActionManager.setJLogConfig(config);
+        }
     }
 
     @Override
     public void removeExpiredLogs() {
-        if (mJLogConfig == null || mJLogConfig.getContext() == null) return;
+        if (mActionManager == null) return;
 
+        mActionManager.addRemoveAction();
     }
 
     @Override
     public void uploadLog(long startTime, long endTime, Callback callback) {
-        if (mJLogConfig == null || mJLogConfig.getContext() == null) return;
+        if (mActionManager == null) return;
+
+        mActionManager.addUploadAction(startTime, endTime, callback);
     }
 
     @Override
     public void write(JLogLevel level, String tag, String... keys) {
-        if (mJLogConfig == null || mJLogConfig.getLogLevel() == null) return;
-        if (level == null || level.getCode() > mJLogConfig.getLogLevel().getCode()) return;
+        if (mActionManager == null) return;
+        if (level == null || level.getCode() > mActionManager.getJLogConfig().getLogLevel().getCode())
+            return;
+        if (keys == null || keys.length == 0) return;
 
-        Log.v("JLog", "level= " + level.getName() + ", tag= " + tag + ", keys= " + Arrays.toString(keys));
+        mActionManager.addWriteAction(level, tag, Arrays.asList(keys));
     }
 }
