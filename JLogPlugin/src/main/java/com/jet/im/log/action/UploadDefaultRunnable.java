@@ -41,8 +41,9 @@ class UploadDefaultRunnable extends UploadRunnable {
         try {
             FileInputStream fileStream = new FileInputStream(logFile);
             doPostRequest(mUploadUrl, fileStream, mRequestHeaders);
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            notifyUploadActionCallbackFail(-1, "doRealUploadByAction failed, e= " + e.getMessage());
         }
     }
 
@@ -50,15 +51,10 @@ class UploadDefaultRunnable extends UploadRunnable {
         try {
             //todo 上传日志接口未对接，使用sleep模拟网络请求
             Thread.sleep(1000);
-            if (mUploadAction.mCallback != null) {
-                mUploadAction.mCallback.onSuccess();
-            }
-            return;
+            notifyUploadActionCallbackSuccess();
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        if (mUploadAction.mCallback != null) {
-            mUploadAction.mCallback.onError(-1, "doPostRequest failed");
+            notifyUploadActionCallbackFail(-1, "doPostRequest failed, e= " + e.getMessage());
         }
     }
 }

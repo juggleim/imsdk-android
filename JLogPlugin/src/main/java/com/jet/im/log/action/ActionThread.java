@@ -185,6 +185,11 @@ class ActionThread extends Thread {
 
     //发送日志前的预处理操作
     private boolean prepareUploadLogFile(UploadAction action) {
+        //如果需要上传的endTime小于过期时间，直接不处理
+        if (action.mEndTime < TimeUtils.getCurrentHour() - mExpiredTime) {
+            action.mUploadLocalPath = "";
+            return false;
+        }
         String zipLogFiles = FileUtils.zipUploadLogFiles(mPath, action.mStartTime, action.mEndTime);
         if (TextUtils.isEmpty(zipLogFiles)) {
             action.mUploadLocalPath = "";

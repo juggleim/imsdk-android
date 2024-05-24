@@ -1,5 +1,7 @@
 package com.jet.im.log.action;
 
+import android.text.TextUtils;
+
 import java.io.File;
 
 /**
@@ -19,6 +21,10 @@ abstract class UploadRunnable implements Runnable {
             finish();
             return;
         }
+        if (TextUtils.isEmpty(mUploadAction.mUploadLocalPath)) {
+            finish();
+            return;
+        }
         File file = new File(mUploadAction.mUploadLocalPath);
         doRealUpload(file);
     }
@@ -34,6 +40,17 @@ abstract class UploadRunnable implements Runnable {
     protected void finish() {
         if (mCallBackListener != null) {
             mCallBackListener.onCallBack(FINISH);
+        }
+    }
+
+    protected void notifyUploadActionCallbackSuccess() {
+        if (mUploadAction.mCallback != null) {
+            mUploadAction.mCallback.onSuccess();
+        }
+    }
+    protected void notifyUploadActionCallbackFail(int code, String msg) {
+        if (mUploadAction.mCallback != null) {
+            mUploadAction.mCallback.onError(code, msg);
         }
     }
 

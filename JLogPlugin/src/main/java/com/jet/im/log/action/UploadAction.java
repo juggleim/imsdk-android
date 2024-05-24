@@ -23,7 +23,7 @@ class UploadAction implements IAction {
     @Override
     public boolean isValid() {
         if (mUploadRunnable == null) return false;
-        if (mStartTime <= 0 || mEndTime <= 0) return false;
+        if (mStartTime < 0 || mEndTime <= 0) return false;
         return true;
     }
 
