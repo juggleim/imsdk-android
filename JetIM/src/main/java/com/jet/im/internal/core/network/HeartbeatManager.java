@@ -1,6 +1,5 @@
-package com.jet.im.internal;
+package com.jet.im.internal.core.network;
 
-import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.util.JSimpleTimer;
 import com.jet.im.internal.util.JLogger;
 

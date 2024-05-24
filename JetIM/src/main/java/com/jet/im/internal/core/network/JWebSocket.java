@@ -9,8 +9,6 @@ import androidx.annotation.NonNull;
 import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.ConstInternal;
-import com.jet.im.internal.HeartbeatManager;
-import com.jet.im.internal.WebSocketCommandManager;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
