@@ -38,11 +38,13 @@ public class ConnectionManager implements IConnectionManager {
         }
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
 
-        mNaviHandler.post(() -> NaviManager.request(mCore.getNaviUrls().get(0), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
+        NaviTask.request(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
             @Override
             public void onSuccess(String userId, List<String> servers) {
-                mCore.setServers(servers);
-                connectWebSocket(token);
+                mCore.getSendHandler().post(() -> {
+                    mCore.setServers(servers);
+                    connectWebSocket(token);
+                });
             }
 
             @Override
@@ -53,7 +55,7 @@ public class ConnectionManager implements IConnectionManager {
                     changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
                 }
             }
-        }));
+        });
     }
 
     @Override
@@ -108,10 +110,6 @@ public class ConnectionManager implements IConnectionManager {
         this.mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.IDLE);
         this.mConversationManager = conversationManager;
         this.mMessageManager = messageManager;
-
-        HandlerThread thread = new HandlerThread("JET_NAVI");
-        thread.start();
-        this.mNaviHandler = new Handler(thread.getLooper());
     }
 
     private void connectWebSocket(String token) {
@@ -308,6 +306,5 @@ public class ConnectionManager implements IConnectionManager {
     private Timer mReconnectTimer;
     private PushChannel mPushChannel;
     private String mPushToken;
-    private final Handler mNaviHandler;
     private static final int RECONNECT_INTERVAL = 5 * 1000;
 }
