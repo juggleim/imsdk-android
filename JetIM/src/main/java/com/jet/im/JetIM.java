@@ -16,6 +16,8 @@ import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
 import com.jet.im.internal.util.JLogger;
 
+import java.util.List;
+
 public class JetIM {
 
     public static JetIM getInstance() {
@@ -44,8 +46,8 @@ public class JetIM {
         mCore.setToken("");
     }
 
-    public void setServer(String serverUrl) {
-        mCore.setNaviUrl(serverUrl);
+    public void setServer(List<String> serverUrls) {
+        mCore.setNaviUrl(serverUrls);
     }
 
     public IConnectionManager getConnectionManager() {

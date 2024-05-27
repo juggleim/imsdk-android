@@ -38,7 +38,7 @@ public class ConnectionManager implements IConnectionManager {
         }
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
 
-        mNaviHandler.post(() -> NaviManager.request(mCore.getNaviUrl(), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
+        mNaviHandler.post(() -> NaviManager.request(mCore.getNaviUrls().get(0), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
             @Override
             public void onSuccess(String userId, List<String> servers) {
                 mCore.setServers(servers);
