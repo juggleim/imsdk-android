@@ -32,15 +32,16 @@ public class JetIMCore {
         this.mWebSocket = ws;
     }
 
-    public String getNaviUrl() {
-        if (mNaviUrl == null) {
-            mNaviUrl = ConstInternal.NAVI_URL;
+    public List<String> getNaviUrls() {
+        if (mNaviUrls == null) {
+            mNaviUrls = new ArrayList<>();
+            mNaviUrls.add(ConstInternal.NAVI_URL);
         }
-        return mNaviUrl;
+        return mNaviUrls;
     }
 
-    public void setNaviUrl(@NonNull String naviUrl) {
-        this.mNaviUrl = naviUrl;
+    public void setNaviUrl(@NonNull List<String> naviUrls) {
+        this.mNaviUrls = naviUrls;
     }
 
     public List<String> getServers() {
@@ -180,7 +181,7 @@ public class JetIMCore {
     }
 
     private JWebSocket mWebSocket;
-    private String mNaviUrl;
+    private List<String> mNaviUrls;
     private List<String> mServers;
     private String mAppKey;
     private String mToken;
