@@ -661,9 +661,9 @@ message ChatAtts{
   bool isFinished = 4;
 }
 
-// file
 message QryFileCredReq{
   FileType fileType = 1;
+  string ext = 2; //文件后缀名（jpg,txt,png,pdf...）
 }
 enum FileType {
   DefaultFileType = 0;
@@ -672,21 +672,30 @@ enum FileType {
   Video = 3;
   File = 4;
 }
+
 message QryFileCredResp{
   OssType ossType = 1;
   oneof ossOf{
-    QiniuCredResp qiniuCred = 11;
+    QiNiuCredResp qiNiuCred = 11;
+    PreSignResp preSignResp = 12; //oss, aws, minio都采用预签名上传
   }
 }
 enum OssType{
   DefaultOss = 0;
-  Qiniu = 1;
+  QiNiu = 1;
+  S3 = 2;
+  Minio = 3;
+  Oss = 4;
 }
-message QiniuCredResp{
+
+message QiNiuCredResp{
   string domain = 1;
   string token = 2;
 }
 
+message PreSignResp {
+  string url = 1;
+}
 
 message OnlineOfflineMsg {
   OnlineType type = 1;
