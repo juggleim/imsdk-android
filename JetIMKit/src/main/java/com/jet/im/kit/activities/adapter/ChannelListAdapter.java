@@ -13,40 +13,35 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.recyclerview.widget.DiffUtil;
 
-import com.sendbird.android.channel.GroupChannel;
-import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.message.FileMessage;
-import com.sendbird.android.message.UserMessage;
-import com.sendbird.android.user.User;
 import com.jet.im.kit.R;
-import com.jet.im.kit.activities.adapter.ChannelDiffCallback;
 import com.jet.im.kit.activities.viewholder.BaseViewHolder;
 import com.jet.im.kit.databinding.SbViewChannelPreviewBinding;
 import com.jet.im.kit.interfaces.MessageDisplayDataProvider;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.interfaces.OnItemLongClickListener;
-import com.jet.im.kit.internal.singleton.MessageDisplayDataManager;
 import com.jet.im.kit.model.ChannelListUIParams;
 import com.jet.im.kit.model.configurations.UIKitConfig;
-import com.jet.im.kit.utils.ChannelUtils;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.Message;
+import com.sendbird.android.channel.GroupChannel;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * ChannelListAdapter provides a binding from a {@link GroupChannel} type data set to views that are displayed within a RecyclerView.
  */
-public class ChannelListAdapter extends BaseAdapter<GroupChannel, BaseViewHolder<GroupChannel>> {
+public class ChannelListAdapter extends BaseAdapter<ConversationInfo, BaseViewHolder<ConversationInfo>> {
     @NonNull
-    private final List<GroupChannel> channelList = new ArrayList<>();
+    private final List<ConversationInfo> channelList = new ArrayList<>();
     @NonNull
     private List<ChannelInfo> cachedChannelList = new ArrayList<>();
     @Nullable
-    private OnItemClickListener<GroupChannel> listener;
+    private OnItemClickListener<ConversationInfo> listener;
     @Nullable
-    private OnItemLongClickListener<GroupChannel> longClickListener;
+    private OnItemLongClickListener<ConversationInfo> longClickListener;
     @Nullable
     private MessageDisplayDataProvider messageDisplayDataProvider;
     @NonNull
@@ -64,31 +59,30 @@ public class ChannelListAdapter extends BaseAdapter<GroupChannel, BaseViewHolder
      *
      * @param listener The listener performing when the {@link ChannelPreviewHolder} is clicked.
      */
-    public ChannelListAdapter(@Nullable OnItemClickListener<GroupChannel> listener) {
+    public ChannelListAdapter(@Nullable OnItemClickListener<ConversationInfo> listener) {
         this(listener, new ChannelListUIParams());
     }
 
-    public ChannelListAdapter(@Nullable OnItemClickListener<GroupChannel> listener, @NonNull ChannelListUIParams params) {
+    public ChannelListAdapter(@Nullable OnItemClickListener<ConversationInfo> listener, @NonNull ChannelListUIParams params) {
         setOnItemClickListener(listener);
         setOnItemLongClickListener(longClickListener);
         this.params = params;
     }
 
     /**
-     * Called when RecyclerView needs a new {@link BaseViewHolder<GroupChannel>} of the given type to represent
+     * Called when RecyclerView needs a new {@link BaseViewHolder<ConversationInfo>} of the given type to represent
      * an item.
      *
-     * @param parent The ViewGroup into which the new View will be added after it is bound to
-     *               an adapter position.
+     * @param parent   The ViewGroup into which the new View will be added after it is bound to
+     *                 an adapter position.
      * @param viewType The view type of the new View.
-     *
-     * @return A new {@link BaseViewHolder<GroupChannel>} that holds a View of the given view type.
+     * @return A new {@link BaseViewHolder<ConversationInfo>} that holds a View of the given view type.
      * @see #getItemViewType(int)
      * @see #onBindViewHolder(BaseViewHolder, int)
      */
     @NonNull
     @Override
-    public BaseViewHolder<GroupChannel> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public BaseViewHolder<ConversationInfo> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final TypedValue values = new TypedValue();
         parent.getContext().getTheme().resolveAttribute(R.attr.sb_component_list, values, true);
         final Context contextWrapper = new ContextThemeWrapper(parent.getContext(), values.resourceId);
@@ -100,13 +94,13 @@ public class ChannelListAdapter extends BaseAdapter<GroupChannel, BaseViewHolder
      * update the contents of the {@link BaseViewHolder#itemView} to reflect the item at the given
      * position.
      *
-     * @param holder The {@link BaseViewHolder<GroupChannel>} which should be updated to represent
-     *               the contents of the item at the given position in the data set.
+     * @param holder   The {@link BaseViewHolder<ConversationInfo>} which should be updated to represent
+     *                 the contents of the item at the given position in the data set.
      * @param position The position of the item within the adapter's data set.
      */
     @Override
-    public void onBindViewHolder(@NonNull BaseViewHolder<GroupChannel> holder, int position) {
-        final GroupChannel channel = getItem(position);
+    public void onBindViewHolder(@NonNull BaseViewHolder<ConversationInfo> holder, int position) {
+        final ConversationInfo channel = getItem(position);
         holder.bind(channel);
 
         holder.itemView.setOnClickListener(v -> {
@@ -130,18 +124,18 @@ public class ChannelListAdapter extends BaseAdapter<GroupChannel, BaseViewHolder
      *
      * @param listener The callback that will run
      */
-    public void setOnItemClickListener(@Nullable OnItemClickListener<GroupChannel> listener) {
+    public void setOnItemClickListener(@Nullable OnItemClickListener<ConversationInfo> listener) {
         this.listener = listener;
     }
 
     /**
      * Returns a callback to be invoked when the {@link BaseViewHolder#itemView} is clicked.
      *
-     * @return {@code OnItemClickListener<GroupChannel>} to be invoked when the {@link BaseViewHolder#itemView} is clicked.
+     * @return {@code OnItemClickListener<ConversationInfo>} to be invoked when the {@link BaseViewHolder#itemView} is clicked.
      * since 3.0.0
      */
     @Nullable
-    public OnItemClickListener<GroupChannel> getOnItemClickListener() {
+    public OnItemClickListener<ConversationInfo> getOnItemClickListener() {
         return listener;
     }
 
@@ -150,18 +144,18 @@ public class ChannelListAdapter extends BaseAdapter<GroupChannel, BaseViewHolder
      *
      * @param listener The callback that will run
      */
-    public void setOnItemLongClickListener(@Nullable OnItemLongClickListener<GroupChannel> listener) {
+    public void setOnItemLongClickListener(@Nullable OnItemLongClickListener<ConversationInfo> listener) {
         this.longClickListener = listener;
     }
 
     /**
      * Returns a callback to be invoked when the {@link BaseViewHolder#itemView} is clicked and held.
      *
-     * @return {@code OnItemLongClickListener<GroupChannel>} to be invoked when the {@link BaseViewHolder#itemView} is clicked and held.
+     * @return {@code OnItemLongClickListener<ConversationInfo>} to be invoked when the {@link BaseViewHolder#itemView} is clicked and held.
      * since 3.0.0
      */
     @Nullable
-    public OnItemLongClickListener<GroupChannel> getOnItemLongClickListener() {
+    public OnItemLongClickListener<ConversationInfo> getOnItemLongClickListener() {
         return longClickListener;
     }
 
@@ -176,25 +170,25 @@ public class ChannelListAdapter extends BaseAdapter<GroupChannel, BaseViewHolder
     }
 
     /**
-     * Returns the {@link List<GroupChannel>} in the data set held by the adapter.
+     * Returns the {@link List<ConversationInfo>} in the data set held by the adapter.
      *
-     * @return The {@link List<GroupChannel>} in this adapter.
+     * @return The {@link List<ConversationInfo>} in this adapter.
      */
     @Override
     @NonNull
-    public List<GroupChannel> getItems() {
+    public List<ConversationInfo> getItems() {
         return Collections.unmodifiableList(channelList);
     }
 
     /**
-     * Returns the {@link GroupChannel} in the data set held by the adapter.
+     * Returns the {@link ConversationInfo} in the data set held by the adapter.
      *
      * @param position The position of the item within the adapter's data set.
-     * @return The {@link GroupChannel} to retrieve the position of in this adapter.
+     * @return The {@link ConversationInfo} to retrieve the position of in this adapter.
      */
     @NonNull
     @Override
-    public GroupChannel getItem(int position) {
+    public ConversationInfo getItem(int position) {
         return channelList.get(position);
     }
 
@@ -209,25 +203,25 @@ public class ChannelListAdapter extends BaseAdapter<GroupChannel, BaseViewHolder
     }
 
     /**
-     * Sets the {@link List<GroupChannel>} to be displayed.
+     * Sets the {@link List<ConversationInfo>} to be displayed.
      *
      * @param channelList list to be displayed
      */
-    public void setItems(@NonNull List<GroupChannel> channelList) {
+    public void setItems(@NonNull List<ConversationInfo> channelList) {
         if (messageDisplayDataProvider == null || messageDisplayDataProvider.shouldRunOnUIThread()) {
-            if (messageDisplayDataProvider != null)
-                MessageDisplayDataManager.checkAndGenerateDisplayDataFromChannelList(channelList, messageDisplayDataProvider);
+//            if (messageDisplayDataProvider != null)
+//                MessageDisplayDataManager.checkAndGenerateDisplayDataFromChannelList(channelList, messageDisplayDataProvider);
             notifyChannelListChanged(channelList);
             return;
         }
 
         messageDisplayDataProvider.threadPool().submit(() -> {
-            MessageDisplayDataManager.checkAndGenerateDisplayDataFromChannelList(channelList, messageDisplayDataProvider);
+//            MessageDisplayDataManager.checkAndGenerateDisplayDataFromChannelList(channelList, messageDisplayDataProvider);
             notifyChannelListChanged(channelList);
         });
     }
 
-    private void notifyChannelListChanged(@NonNull List<GroupChannel> channelList) {
+    private void notifyChannelListChanged(@NonNull List<ConversationInfo> channelList) {
         final List<ChannelInfo> newChannelInfo = ChannelInfo.toChannelInfoList(channelList, new ChannelListUIParams());
         final ChannelDiffCallback diffCallback = new ChannelDiffCallback(this.cachedChannelList, newChannelInfo);
         final DiffUtil.DiffResult diffResult = calculateDiff(diffCallback);
@@ -244,7 +238,7 @@ public class ChannelListAdapter extends BaseAdapter<GroupChannel, BaseViewHolder
         return DiffUtil.calculateDiff(diffCallback);
     }
 
-    private static class ChannelPreviewHolder extends BaseViewHolder<GroupChannel> {
+    private static class ChannelPreviewHolder extends BaseViewHolder<ConversationInfo> {
         @NonNull
         private final SbViewChannelPreviewBinding binding;
 
@@ -257,221 +251,118 @@ public class ChannelListAdapter extends BaseAdapter<GroupChannel, BaseViewHolder
         }
 
         @Override
-        public void bind(@NonNull GroupChannel channel) {
+        public void bind(@NonNull ConversationInfo channel) {
             binding.channelPreview.drawChannel(channel);
         }
     }
 
     static class ChannelInfo {
-        @NonNull
-        private final String channelUrl;
-        private final long createdAt;
-        private final int memberCount;
-        @Nullable
-        private final BaseMessage lastMessage;
-        @NonNull
-        private final String channelName;
-        @Nullable
-        private final String coverImageUrl;
-        private final int coverImageHash;
-        @Nullable
-        private final GroupChannel.PushTriggerOption pushTriggerOption;
-        private final int unreadMessageCount;
-        private final int unreadMentionCount;
-        private final boolean isFrozen;
-        @NonNull
-        private List<User> typingMembers = new ArrayList<>();
-        private int unReadMemberCount;
-        private int unDeliveredMemberCount;
-        @NonNull
+        private final Conversation.ConversationType conversationType;
+        private final String conversationId;
         private final ChannelListUIParams params;
+        private final int unreadCount;
+        private final long updateTime;
+        @Nullable
+        private final Message lastMessage;
+        private final boolean isTop;
+        private final long topTime;
+        private final boolean mute;
+        private final String draft;
 
-        ChannelInfo(@NonNull GroupChannel channel, @NonNull ChannelListUIParams params) {
-            this.channelUrl = channel.getUrl();
-            this.createdAt = channel.getCreatedAt();
-            this.memberCount = channel.getMemberCount();
-            this.lastMessage = channel.getLastMessage();
-            this.channelName = channel.getName();
-            this.coverImageUrl = channel.getCoverUrl();
-            this.pushTriggerOption = channel.getMyPushTriggerOption();
-            this.unreadMessageCount = channel.getUnreadMessageCount();
-            this.unreadMentionCount = channel.getUnreadMentionCount();
-            this.coverImageHash = toUrlsHash(channel);
-            this.isFrozen = channel.isFrozen();
+        ChannelInfo(@NonNull ConversationInfo channel, @NonNull ChannelListUIParams params) {
             this.params = params;
-            if (params.getEnableTypingIndicator()) {
-                this.typingMembers = channel.getTypingUsers();
-            }
-            if (params.getEnableMessageReceiptStatus()) {
-                if (channel.getLastMessage() != null) {
-                    this.unReadMemberCount = channel.getUnreadMemberCount(channel.getLastMessage());
-                    this.unDeliveredMemberCount = channel.getUndeliveredMemberCount(channel.getLastMessage());
-                }
-            }
+            conversationType = channel.getConversation().getConversationType();
+            conversationId = channel.getConversation().getConversationId();
+            unreadCount = channel.getUnreadCount();
+            updateTime = channel.getUpdateTime();
+            lastMessage = channel.getLastMessage();
+            isTop = channel.isTop();
+            topTime = channel.getTopTime();
+            mute = channel.isMute();
+            draft = channel.getDraft();
         }
 
-        @NonNull
-        String getChannelUrl() {
-            return channelUrl;
+        public Conversation.ConversationType getConversationType() {
+            return conversationType;
         }
 
-        long getCreatedAt() {
-            return createdAt;
+        public String getConversationId() {
+            return conversationId;
         }
 
-        int getMemberCount() {
-            return memberCount;
+        public ChannelListUIParams getParams() {
+            return params;
+        }
+
+        public int getUnreadCount() {
+            return unreadCount;
+        }
+
+        public long getUpdateTime() {
+            return updateTime;
         }
 
         @Nullable
-        BaseMessage getLastMessage() {
+        public Message getLastMessage() {
             return lastMessage;
         }
 
-        @Nullable
-        GroupChannel.PushTriggerOption getPushTriggerOption() {
-            return pushTriggerOption;
+        public boolean isTop() {
+            return isTop;
         }
 
-        int getUnreadMessageCount() {
-            return unreadMessageCount;
+        public long getTopTime() {
+            return topTime;
         }
 
-        int getUnreadMentionCount() {
-            return unreadMentionCount;
+        public boolean isMute() {
+            return mute;
         }
 
-        @NonNull
-        String getChannelName() {
-            return channelName;
-        }
-
-        @Nullable
-        String getCoverImageUrl() {
-            return coverImageUrl;
-        }
-
-        int getCoverImageHash() {
-            return coverImageHash;
-        }
-
-        boolean isFrozen() {
-            return isFrozen;
-        }
-
-        int getUnDeliveredMemberCount() {
-            return unDeliveredMemberCount;
-        }
-
-        int getUnReadMemberCount() {
-            return unReadMemberCount;
+        public String getDraft() {
+            return draft;
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            ChannelInfo that = (ChannelInfo) o;
-
-            if (createdAt != that.createdAt) return false;
-            if (memberCount != that.memberCount) return false;
-            if (coverImageHash != that.coverImageHash) return false;
-            if (unreadMessageCount != that.unreadMessageCount) return false;
-            if (unreadMentionCount != that.unreadMentionCount) return false;
-            if (isFrozen != that.isFrozen) return false;
-
-            if (params.getEnableMessageReceiptStatus()) {
-                if (unReadMemberCount != that.unReadMemberCount) return false;
-                if (unDeliveredMemberCount != that.unDeliveredMemberCount) return false;
-            }
-            if (!channelUrl.equals(that.channelUrl)) return false;
-            if (!Objects.equals(lastMessage, that.lastMessage))
-                return false;
-            if (!channelName.equals(that.channelName)) return false;
-            if (!Objects.equals(coverImageUrl, that.coverImageUrl))
-                return false;
-            if (pushTriggerOption != that.pushTriggerOption) return false;
-
-            if (lastMessage != null && that.getLastMessage() != null) {
-                if (lastMessage instanceof UserMessage) {
-                    if (!lastMessage.getMessage().equals(that.getLastMessage().getMessage())) {
-                        return false;
-                    }
-                } else if (lastMessage instanceof FileMessage) {
-                    if (!((FileMessage) lastMessage).getName().equals(((FileMessage) that.getLastMessage()).getName())) {
-                        return false;
-                    }
-                }
-            }
-            if (params.getEnableTypingIndicator()) {
-                return typingMembers.equals(that.typingMembers);
-            }
-            return true;
+        public boolean equals(@Nullable Object obj) {
+            return super.equals(obj);
+            //todo 判断相等
         }
 
         @Override
         public int hashCode() {
-            int result = channelUrl.hashCode();
-            result = 31 * result + (int) (createdAt ^ (createdAt >>> 32));
-            result = 31 * result + memberCount;
-            result = 31 * result + (lastMessage != null ? lastMessage.hashCode() : 0);
-            result = 31 * result + channelName.hashCode();
-            result = 31 * result + (coverImageUrl != null ? coverImageUrl.hashCode() : 0);
-            result = 31 * result + coverImageHash;
-            result = 31 * result + (pushTriggerOption != null ? pushTriggerOption.hashCode() : 0);
-            result = 31 * result + unreadMessageCount;
-            result = 31 * result + unreadMentionCount;
-            result = 31 * result + (isFrozen ? 1 : 0);
-
-            if (params.getEnableTypingIndicator()) {
-                result = 31 * result + typingMembers.hashCode();
-            }
-
-            if (params.getEnableMessageReceiptStatus()) {
-                result = 31 * result + unReadMemberCount;
-                result = 31 * result + unDeliveredMemberCount;
-            }
-            return result;
+            return super.hashCode();
+            //todo 区别新旧
+//            int result = channelUrl.hashCode();
+//            result = 31 * result + (int) (createdAt ^ (createdAt >>> 32));
+//            result = 31 * result + memberCount;
+//            result = 31 * result + (lastMessage != null ? lastMessage.hashCode() : 0);
+//            result = 31 * result + channelName.hashCode();
+//            result = 31 * result + (coverImageUrl != null ? coverImageUrl.hashCode() : 0);
+//            result = 31 * result + coverImageHash;
+//            result = 31 * result + (pushTriggerOption != null ? pushTriggerOption.hashCode() : 0);
+//            result = 31 * result + unreadMessageCount;
+//            result = 31 * result + unreadMentionCount;
+//            result = 31 * result + (isFrozen ? 1 : 0);
+//
+//            if (params.getEnableTypingIndicator()) {
+//                result = 31 * result + typingMembers.hashCode();
+//            }
+//
+//            if (params.getEnableMessageReceiptStatus()) {
+//                result = 31 * result + unReadMemberCount;
+//                result = 31 * result + unDeliveredMemberCount;
+//            }
+//            return result;
         }
 
         @NonNull
-        @Override
-        public String toString() {
-            return "ChannelInfo{" +
-                "channelUrl='" + channelUrl + '\'' +
-                ", createdAt=" + createdAt +
-                ", memberCount=" + memberCount +
-                ", lastMessage=" + lastMessage +
-                ", channelName='" + channelName + '\'' +
-                ", coverImageUrl='" + coverImageUrl + '\'' +
-                ", coverImageHash=" + coverImageHash +
-                ", pushTriggerOption=" + pushTriggerOption +
-                ", unreadMessageCount=" + unreadMessageCount +
-                ", unreadMentionCount=" + unreadMentionCount +
-                ", isFrozen=" + isFrozen +
-                ", typingMembers=" + typingMembers +
-                ", unReadMemberCount=" + unReadMemberCount +
-                ", unDeliveredMemberCount=" + unDeliveredMemberCount +
-                '}';
-        }
-
-        @NonNull
-        static List<ChannelInfo> toChannelInfoList(@NonNull List<GroupChannel> channelList, @NonNull ChannelListUIParams params) {
+        static List<ChannelInfo> toChannelInfoList(@NonNull List<ConversationInfo> channelList, @NonNull ChannelListUIParams params) {
             List<ChannelInfo> results = new ArrayList<>();
-            for (GroupChannel channel : channelList) {
+            for (ConversationInfo channel : channelList) {
                 results.add(new ChannelInfo(channel, params));
             }
             return results;
-        }
-
-        static int toUrlsHash(@NonNull GroupChannel channel) {
-            List<String> urls = ChannelUtils.makeProfileUrlsFromChannel(channel);
-            StringBuilder imageUrlSum = new StringBuilder();
-            for (String url : urls) {
-                imageUrlSum.append(url);
-            }
-            return imageUrlSum.toString().hashCode();
         }
     }
 }

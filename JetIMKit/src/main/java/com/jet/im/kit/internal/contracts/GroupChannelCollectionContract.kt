@@ -1,13 +1,13 @@
 package com.jet.im.kit.internal.contracts
 
-import com.sendbird.android.channel.GroupChannel
-import com.sendbird.android.handler.GroupChannelCollectionHandler
-import com.sendbird.android.handler.GroupChannelsCallbackHandler
+import com.jet.im.interfaces.IConversationManager
+import com.jet.im.kit.cust.handler.ConversationCallbackHandler
+import com.jet.im.model.ConversationInfo
 
 internal interface GroupChannelCollectionContract {
-    fun setGroupChannelCollectionHandler(handler: GroupChannelCollectionHandler?)
-    fun loadMore(handler: GroupChannelsCallbackHandler)
-    fun getChannelList(): List<GroupChannel>
+    fun setConversationCollectionHandler(handler: IConversationManager.IConversationListener)
+    fun loadMore(handler: ConversationCallbackHandler)
+    fun getChannelList(): List<ConversationInfo>
     fun getHasMore(): Boolean
     fun dispose()
 }

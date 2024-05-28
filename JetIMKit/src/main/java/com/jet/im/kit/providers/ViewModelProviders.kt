@@ -28,14 +28,6 @@ object ViewModelProviders {
     @JvmStatic
     lateinit var channel: ChannelViewModelProvider
 
-    /**
-     * Returns the OpenChannelViewModel provider.
-     *
-     * @return The [OpenChannelViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannel: OpenChannelViewModelProvider
 
     /**
      * Returns the CreateChannelViewModel provider.
@@ -47,15 +39,6 @@ object ViewModelProviders {
     lateinit var createChannel: CreateChannelViewModelProvider
 
     /**
-     * Returns the CreateOpenChannelViewModel provider.
-     *
-     * @return The [CreateOpenChannelViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var createOpenChannel: CreateOpenChannelViewModelProvider
-
-    /**
      * Returns the ChannelSettingsViewModel provider.
      *
      * @return The [ChannelSettingsViewModelProvider].
@@ -63,15 +46,6 @@ object ViewModelProviders {
      */
     @JvmStatic
     lateinit var channelSettings: ChannelSettingsViewModelProvider
-
-    /**
-     * Returns the OpenChannelSettingsViewModel provider.
-     *
-     * @return The [OpenChannelSettingsViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelSettings: OpenChannelSettingsViewModelProvider
 
     /**
      * Returns the InviteUserViewModel provider.
@@ -92,15 +66,6 @@ object ViewModelProviders {
     lateinit var registerOperator: RegisterOperatorViewModelProvider
 
     /**
-     * Returns the OpenChannelRegisterOperatorViewModel provider.
-     *
-     * @return The [OpenChannelRegisterOperatorViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelRegisterOperator: OpenChannelRegisterOperatorViewModelProvider
-
-    /**
      * Returns the ModerationViewModel provider.
      *
      * @return The [ModerationViewModelProvider].
@@ -108,15 +73,6 @@ object ViewModelProviders {
      */
     @JvmStatic
     lateinit var moderation: ModerationViewModelProvider
-
-    /**
-     * Returns the OpenChannelModerationViewModel provider.
-     *
-     * @return The [OpenChannelModerationViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelModeration: OpenChannelModerationViewModelProvider
 
     /**
      * Returns the MemberListViewModel provider.
@@ -137,15 +93,6 @@ object ViewModelProviders {
     lateinit var bannedUserList: BannedUserListViewModelProvider
 
     /**
-     * Returns the OpenChannelBannedUserListViewModel provider.
-     *
-     * @return The [OpenChannelBannedUserListViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelBannedUserList: OpenChannelBannedUserListViewModelProvider
-
-    /**
      * Returns the MutedMemberListViewModel provider.
      *
      * @return The [MutedMemberListViewModelProvider].
@@ -155,15 +102,6 @@ object ViewModelProviders {
     lateinit var mutedMemberList: MutedMemberListViewModelProvider
 
     /**
-     * Returns the OpenChannelMutedParticipantListViewModel provider.
-     *
-     * @return The [OpenChannelMutedParticipantListViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelMutedParticipantList: OpenChannelMutedParticipantListViewModelProvider
-
-    /**
      * Returns the OperatorListViewModel provider.
      *
      * @return The [OperatorListViewModelProvider].
@@ -171,15 +109,6 @@ object ViewModelProviders {
      */
     @JvmStatic
     lateinit var operatorList: OperatorListViewModelProvider
-
-    /**
-     * Returns the OpenChannelOperatorListViewModel provider.
-     *
-     * @return The [OpenChannelOperatorListViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelOperatorList: OpenChannelOperatorListViewModelProvider
 
     /**
      * Returns the MessageSearchViewModel provider.
@@ -200,15 +129,6 @@ object ViewModelProviders {
     lateinit var messageThread: MessageThreadViewModelProvider
 
     /**
-     * Returns the ParticipantViewModel provider.
-     *
-     * @return The [ParticipantViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var participantList: ParticipantViewModelProvider
-
-    /**
      * Returns the ChannelPushSettingViewModel provider.
      *
      * @return The [ChannelPushSettingViewModelProvider].
@@ -216,15 +136,6 @@ object ViewModelProviders {
      */
     @JvmStatic
     lateinit var channelPushSetting: ChannelPushSettingViewModelProvider
-
-    /**
-     * Returns the OpenChannelListViewModel provider.
-     *
-     * @return The [OpenChannelListViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelList: OpenChannelListViewModelProvider
 
     /**
      * Returns the FeedNotificationChannelViewModel provider.
@@ -262,13 +173,6 @@ object ViewModelProviders {
             )[channelUrl, ChannelViewModel::class.java]
         }
 
-        this.openChannel = OpenChannelViewModelProvider { owner, channelUrl, params ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl, params)
-            )[channelUrl, OpenChannelViewModel::class.java]
-        }
-
         this.createChannel = CreateChannelViewModelProvider { owner, pagedQueryHandler ->
             ViewModelProvider(
                 owner,
@@ -276,25 +180,11 @@ object ViewModelProviders {
             )[CreateChannelViewModel::class.java]
         }
 
-        this.createOpenChannel = CreateOpenChannelViewModelProvider { owner ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory()
-            )[CreateOpenChannelViewModel::class.java]
-        }
-
         this.channelSettings = ChannelSettingsViewModelProvider { owner, channelUrl ->
             ViewModelProvider(
                 owner,
                 ViewModelFactory(channelUrl)
             )[channelUrl, ChannelSettingsViewModel::class.java]
-        }
-
-        this.openChannelSettings = OpenChannelSettingsViewModelProvider { owner, channelUrl ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl)
-            )[channelUrl, OpenChannelSettingsViewModel::class.java]
         }
 
         this.inviteUser = InviteUserViewModelProvider { owner, channelUrl, pagedQueryHandler ->
@@ -311,26 +201,11 @@ object ViewModelProviders {
             )[RegisterOperatorViewModel::class.java]
         }
 
-        this.openChannelRegisterOperator =
-            OpenChannelRegisterOperatorViewModelProvider { owner, channelUrl, pagedQueryHandler ->
-                ViewModelProvider(
-                    owner,
-                    ViewModelFactory(channelUrl, pagedQueryHandler)
-                )[OpenChannelRegisterOperatorViewModel::class.java]
-            }
-
         this.moderation = ModerationViewModelProvider { owner, channelUrl ->
             ViewModelProvider(
                 owner,
                 ViewModelFactory(channelUrl)
             )[channelUrl, ModerationViewModel::class.java]
-        }
-
-        this.openChannelModeration = OpenChannelModerationViewModelProvider { owner, channelUrl ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl)
-            )[channelUrl, OpenChannelModerationViewModel::class.java]
         }
 
         this.memberList = MemberListViewModelProvider { owner, channelUrl ->
@@ -347,13 +222,6 @@ object ViewModelProviders {
             )[channelUrl, BannedUserListViewModel::class.java]
         }
 
-        this.openChannelBannedUserList = OpenChannelBannedUserListViewModelProvider { owner, channelUrl ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl)
-            )[channelUrl, OpenChannelBannedUserListViewModel::class.java]
-        }
-
         this.mutedMemberList = MutedMemberListViewModelProvider { owner, channelUrl ->
             ViewModelProvider(
                 owner,
@@ -361,26 +229,11 @@ object ViewModelProviders {
             )[channelUrl, MutedMemberListViewModel::class.java]
         }
 
-        this.openChannelMutedParticipantList =
-            OpenChannelMutedParticipantListViewModelProvider { owner, channelUrl, pagedQueryHandler ->
-                ViewModelProvider(
-                    owner,
-                    ViewModelFactory(channelUrl, pagedQueryHandler)
-                )[channelUrl, OpenChannelMutedParticipantListViewModel::class.java]
-            }
-
         this.operatorList = OperatorListViewModelProvider { owner, channelUrl, channelType, pagedQueryHandler ->
             ViewModelProvider(
                 owner,
                 ViewModelFactory(channelUrl, channelType, pagedQueryHandler)
             )[channelUrl, OperatorListViewModel::class.java]
-        }
-
-        this.openChannelOperatorList = OpenChannelOperatorListViewModelProvider { owner, channelUrl, pagedQueryHandler ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl, pagedQueryHandler)
-            )[channelUrl, OpenChannelOperatorListViewModel::class.java]
         }
 
         this.messageSearch = MessageSearchViewModelProvider { owner, channelUrl, query ->
@@ -397,25 +250,11 @@ object ViewModelProviders {
             )[channelUrl, MessageThreadViewModel::class.java]
         }
 
-        this.participantList = ParticipantViewModelProvider { owner, channelUrl, pagedQueryHandler ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl, pagedQueryHandler)
-            )[channelUrl, ParticipantViewModel::class.java]
-        }
-
         this.channelPushSetting = ChannelPushSettingViewModelProvider { owner, channelUrl ->
             ViewModelProvider(
                 owner,
                 ViewModelFactory(channelUrl)
             )[channelUrl, ChannelPushSettingViewModel::class.java]
-        }
-
-        this.openChannelList = OpenChannelListViewModelProvider { owner, params ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(params)
-            )[OpenChannelListViewModel::class.java]
         }
 
         this.feedNotificationChannel = FeedNotificationChannelViewModelProvider { owner, channelUrl, params ->

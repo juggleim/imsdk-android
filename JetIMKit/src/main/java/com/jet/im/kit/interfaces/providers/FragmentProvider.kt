@@ -41,16 +41,6 @@ fun interface ChannelFragmentProvider {
  * @see [FragmentProviders.openChannel]
  * @since 3.9.0
  */
-fun interface OpenChannelFragmentProvider {
-    /**
-     * Returns the OpenChannelFragment.
-     *
-     * @return The [OpenChannelFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): OpenChannelFragment
-}
-
 /**
  * Interface definition to be invoked when CreateChannelFragment is created.
  * @see [FragmentProviders.createChannel]
@@ -64,21 +54,6 @@ fun interface CreateChannelFragmentProvider {
      * @since 3.9.0
      */
     fun provide(channelType: CreatableChannelType, args: Bundle): CreateChannelFragment
-}
-
-/**
- * Interface definition to be invoked when CreateOpenChannelFragment is created.
- * @see [FragmentProviders.createOpenChannel]
- * @since 3.9.0
- */
-fun interface CreateOpenChannelFragmentProvider {
-    /**
-     * Returns the CreateOpenChannelFragment.
-     *
-     * @return The [CreateOpenChannelFragment].
-     * @since 3.9.0
-     */
-    fun provide(args: Bundle): CreateOpenChannelFragment
 }
 
 /**
@@ -101,16 +76,6 @@ fun interface ChannelSettingsFragmentProvider {
  * @see [FragmentProviders.openChannelSettings]
  * @since 3.9.0
  */
-fun interface OpenChannelSettingsFragmentProvider {
-    /**
-     * Returns the OpenChannelSettingsFragment.
-     *
-     * @return The [OpenChannelSettingsFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): OpenChannelSettingsFragment
-}
-
 /**
  * Interface definition to be invoked when InviteUserFragment is created.
  * @see [FragmentProviders.inviteUser]
@@ -146,15 +111,6 @@ fun interface RegisterOperatorFragmentProvider {
  * @see [FragmentProviders.openChannelRegisterOperator]
  * @since 3.9.0
  */
-fun interface OpenChannelRegisterOperatorFragmentProvider {
-    /**
-     * Returns the OpenChannelRegisterOperatorFragment.
-     *
-     * @return The [OpenChannelRegisterOperatorFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): OpenChannelRegisterOperatorFragment
-}
 
 /**
  * Interface definition to be invoked when ModerationFragment is created.
@@ -171,20 +127,7 @@ fun interface ModerationFragmentProvider {
     fun provide(channelUrl: String, args: Bundle): ModerationFragment
 }
 
-/**
- * Interface definition to be invoked when OpenChannelModerationFragment is created.
- * @see [FragmentProviders.openChannelModeration]
- * @since 3.9.0
- */
-fun interface OpenChannelModerationFragmentProvider {
-    /**
-     * Returns the OpenChannelModerationFragment.
-     *
-     * @return The [OpenChannelModerationFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): OpenChannelModerationFragment
-}
+
 
 /**
  * Interface definition to be invoked when MemberListFragment is created.
@@ -216,20 +159,6 @@ fun interface BannedUserListFragmentProvider {
     fun provide(channelUrl: String, args: Bundle): BannedUserListFragment
 }
 
-/**
- * Interface definition to be invoked when OpenChannelBannedUserListFragment is created.
- * @see [FragmentProviders.openChannelBannedUserList]
- * @since 3.9.0
- */
-fun interface OpenChannelBannedUserListFragmentProvider {
-    /**
-     * Returns the OpenChannelBannedUserListFragment.
-     *
-     * @return The [OpenChannelBannedUserListFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): OpenChannelBannedUserListFragment
-}
 
 /**
  * Interface definition to be invoked when MutedMemberListFragment is created.
@@ -246,20 +175,6 @@ fun interface MutedMemberListFragmentProvider {
     fun provide(channelUrl: String, args: Bundle): MutedMemberListFragment
 }
 
-/**
- * Interface definition to be invoked when OpenChannelMutedParticipantListFragment is created.
- * @see [FragmentProviders.openChannelMutedParticipantList]
- * @since 3.9.0
- */
-fun interface OpenChannelMutedParticipantListFragmentProvider {
-    /**
-     * Returns the OpenChannelMutedParticipantListFragment.
-     *
-     * @return The [OpenChannelMutedParticipantListFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): OpenChannelMutedParticipantListFragment
-}
 
 /**
  * Interface definition to be invoked when OperatorListFragment is created.
@@ -276,20 +191,6 @@ fun interface OperatorListFragmentProvider {
     fun provide(channelUrl: String, args: Bundle): OperatorListFragment
 }
 
-/**
- * Interface definition to be invoked when OpenChannelOperatorListFragment is created.
- * @see [FragmentProviders.openChannelOperatorList]
- * @since 3.9.0
- */
-fun interface OpenChannelOperatorListFragmentProvider {
-    /**
-     * Returns the OpenChannelOperatorListFragment.
-     *
-     * @return The [OpenChannelOperatorListFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): OpenChannelOperatorListFragment
-}
 
 /**
  * Interface definition to be invoked when MessageSearchFragment is created.
@@ -307,21 +208,6 @@ fun interface MessageSearchFragmentProvider {
 }
 
 /**
- * Interface definition to be invoked when ParticipantListFragment is created.
- * @see [FragmentProviders.participantList]
- * @since 3.9.0
- */
-fun interface ParticipantListFragmentProvider {
-    /**
-     * Returns the ParticipantListFragment.
-     *
-     * @return The [ParticipantListFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): ParticipantListFragment
-}
-
-/**
  * Interface definition to be invoked when ChannelPushSettingFragment is created.
  * @see [FragmentProviders.channelPushSetting]
  * @since 3.9.0
@@ -336,20 +222,6 @@ fun interface ChannelPushSettingFragmentProvider {
     fun provide(channelUrl: String, args: Bundle): ChannelPushSettingFragment
 }
 
-/**
- * Interface definition to be invoked when OpenChannelListFragment is created.
- * @see [FragmentProviders.openChannelList]
- * @since 3.9.0
- */
-fun interface OpenChannelListFragmentProvider {
-    /**
-     * Returns the OpenChannelListFragment.
-     *
-     * @return The [OpenChannelListFragment].
-     * @since 3.9.0
-     */
-    fun provide(args: Bundle): OpenChannelListFragment
-}
 
 /**
  * Interface definition to be invoked when MessageThreadFragment is created.

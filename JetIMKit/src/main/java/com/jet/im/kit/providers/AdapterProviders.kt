@@ -82,51 +82,6 @@ object AdapterProviders {
     lateinit var mutedMemberList: MutedMemberListAdapterProvider
 
     /**
-     * Returns the OpenChannelBannedUserListAdapter provider.
-     *
-     * @return The [OpenChannelBannedUserListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelBannedUserList: OpenChannelBannedUserListAdapterProvider
-
-    /**
-     * Returns the OpenChannelListAdapter provider.
-     *
-     * @return The [OpenChannelListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelList: OpenChannelListAdapterProvider
-
-    /**
-     * Returns the OpenChannelMessageListAdapter provider.
-     *
-     * @return The [OpenChannelMessageListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelMessageList: OpenChannelMessageListAdapterProvider
-
-    /**
-     * Returns the OpenChannelMutedParticipantListAdapter provider.
-     *
-     * @return The [OpenChannelMutedParticipantListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelMutedParticipantList: OpenChannelMutedParticipantListAdapterProvider
-
-    /**
-     * Returns the OpenChannelRegisterOperatorListAdapter provider.
-     *
-     * @return The [OpenChannelRegisterOperatorListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelRegisterOperatorList: OpenChannelRegisterOperatorListAdapterProvider
-
-    /**
      * Returns the OperatorListAdapter provider.
      *
      * @return The [OperatorListAdapterProvider].
@@ -187,22 +142,6 @@ object AdapterProviders {
         this.messageSearch = MessageSearchAdapterProvider { MessageSearchAdapter() }
 
         this.mutedMemberList = MutedMemberListAdapterProvider { MutedMemberListAdapter() }
-
-        this.openChannelBannedUserList = OpenChannelBannedUserListAdapterProvider {
-            OpenChannelBannedUserListAdapter()
-        }
-
-        this.openChannelList = OpenChannelListAdapterProvider { OpenChannelListAdapter() }
-
-        this.openChannelMessageList = OpenChannelMessageListAdapterProvider { messageListUIParams ->
-            OpenChannelMessageListAdapter(null, messageListUIParams)
-        }
-
-        this.openChannelMutedParticipantList = OpenChannelMutedParticipantListAdapterProvider { OpenChannelMutedParticipantListAdapter() }
-
-        this.openChannelRegisterOperatorList = OpenChannelRegisterOperatorListAdapterProvider { channel ->
-            OpenChannelRegisterOperatorListAdapter(channel)
-        }
 
         this.operatorList = OperatorListAdapterProvider { OperatorListAdapter() }
 

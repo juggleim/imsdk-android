@@ -12,6 +12,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.jet.im.model.ConversationInfo;
 import com.sendbird.android.channel.GroupChannel;
 import com.jet.im.kit.R;
 import com.jet.im.kit.activities.adapter.ChannelListAdapter;
@@ -44,9 +45,9 @@ public class ChannelListComponent {
     private PagerRecyclerView pagerRecyclerView;
 
     @Nullable
-    private OnItemClickListener<GroupChannel> itemClickListener;
+    private OnItemClickListener<ConversationInfo> itemClickListener;
     @Nullable
-    private OnItemLongClickListener<GroupChannel> itemLongClickListener;
+    private OnItemLongClickListener<ConversationInfo> itemLongClickListener;
 
     /**
      * Constructor
@@ -165,7 +166,7 @@ public class ChannelListComponent {
      * @param listener The callback that will run
      * since 3.0.0
      */
-    public void setOnItemClickListener(@Nullable OnItemClickListener<GroupChannel> listener) {
+    public void setOnItemClickListener(@Nullable OnItemClickListener<ConversationInfo> listener) {
         this.itemClickListener = listener;
     }
 
@@ -175,7 +176,7 @@ public class ChannelListComponent {
      * @param listener The callback that will run
      * since 3.0.0
      */
-    public void setOnItemLongClickListener(@Nullable OnItemLongClickListener<GroupChannel> listener) {
+    public void setOnItemLongClickListener(@Nullable OnItemLongClickListener<ConversationInfo> listener) {
         this.itemLongClickListener = listener;
     }
 
@@ -185,7 +186,7 @@ public class ChannelListComponent {
      * @param pagedDataLoader The paged data loader to be applied to this list component
      * since 3.0.0
      */
-    public void setPagedDataLoader(@NonNull OnPagedDataLoader<List<GroupChannel>> pagedDataLoader) {
+    public void setPagedDataLoader(@NonNull OnPagedDataLoader<List<ConversationInfo>> pagedDataLoader) {
         if (pagerRecyclerView != null) pagerRecyclerView.setPager(pagedDataLoader);
     }
 
@@ -195,7 +196,7 @@ public class ChannelListComponent {
      * @param channelList The list of channels to be displayed on this component
      * since 3.0.0
      */
-    public void notifyDataSetChanged(@NonNull List<GroupChannel> channelList) {
+    public void notifyDataSetChanged(@NonNull List<ConversationInfo> channelList) {
         Logger.d("++ ChannelListComponent::notifyDataSetChanged()");
         adapter.setItems(channelList);
     }
@@ -208,7 +209,7 @@ public class ChannelListComponent {
      * @param channel  The channel that the clicked item displays
      * since 3.0.0
      */
-    protected void onItemClicked(@NonNull View view, int position, @NonNull GroupChannel channel) {
+    protected void onItemClicked(@NonNull View view, int position, @NonNull ConversationInfo channel) {
         if (itemClickListener != null) itemClickListener.onItemClick(view, position, channel);
     }
 
@@ -220,7 +221,7 @@ public class ChannelListComponent {
      * @param channel  The channel that the long-clicked item displays
      * since 3.0.0
      */
-    protected void onItemLongClicked(@NonNull View view, int position, @NonNull GroupChannel channel) {
+    protected void onItemLongClicked(@NonNull View view, int position, @NonNull ConversationInfo channel) {
         if (itemLongClickListener != null)
             itemLongClickListener.onItemLongClick(view, position, channel);
     }
