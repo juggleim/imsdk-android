@@ -7,21 +7,15 @@ import com.jet.im.model.Message;
  * @create 2024-05-27 17:04
  */
 public interface IMessageUploadProvider {
-    void uploadMessage(Message message, ProgressCallback progressBlock, SuccessCallback successBlock, ErrorCallback errorBlock, CancelCallback cancelBlock);
+    void uploadMessage(Message message, UploadCallback uploadCallback);
 
-    interface ProgressCallback {
+    interface UploadCallback {
         void onProgress(int progress);
-    }
 
-    interface SuccessCallback {
         void onSuccess(Message message);
-    }
 
-    interface ErrorCallback {
         void onError();
-    }
 
-    interface CancelCallback {
         void onCancel();
     }
 }
