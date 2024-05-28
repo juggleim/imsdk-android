@@ -15,7 +15,6 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.jetimdemo.databinding.ActivityMainBinding;
-import com.google.android.material.snackbar.Snackbar;
 import com.jet.im.JetIM;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
@@ -32,6 +31,7 @@ import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -578,9 +578,7 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.fab)
-                        .setAction("Action", null).show();
+                sendMediaMessage();
             }
         });
     }
@@ -646,6 +644,38 @@ public class MainActivity extends AppCompatActivity {
 //        Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
 
+    }
+
+    private void sendMediaMessage() {
+        String filePath = getFilesDir().getAbsolutePath() + File.separator + "xhup.png";
+        Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+        FileMessage f = new FileMessage();
+        f.setName("xhup.png");
+        f.setLocalPath(filePath);
+        f.setSize(116 * 1024);
+        f.setType("png");
+        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(f, c, new IMessageManager.ISendMediaMessageCallback() {
+            @Override
+            public void onProgress(int progress, Message message) {
+                Log.i("sendMediaMessage", "onProgress, clientMsgNo is " + message.getClientMsgNo() + ", progress is " + progress);
+            }
+
+            @Override
+            public void onSuccess(Message message) {
+                Log.i("sendMediaMessage", "onSuccess, clientMsgNo is " + message.getClientMsgNo() + ", messageId is " + message.getMessageId());
+            }
+
+            @Override
+            public void onError(Message message, int errorCode) {
+                Log.i("sendMediaMessage", "onError, clientMsgNo is " + message.getClientMsgNo() + ", errorCode is " + errorCode);
+            }
+
+            @Override
+            public void onCancel(Message message) {
+                Log.i("sendMediaMessage", "onCancel, clientMsgNo is " + message.getClientMsgNo());
+            }
+        });
+        Log.i("sendMediaMessage", "after send, clientMsgNo is " + m.getClientMsgNo());
     }
 
     @Override
