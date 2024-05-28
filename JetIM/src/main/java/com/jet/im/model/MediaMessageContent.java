@@ -1,5 +1,7 @@
 package com.jet.im.model;
 
+import com.jet.im.model.upload.UploadFileType;
+
 public abstract class MediaMessageContent extends MessageContent {
     private String mLocalPath;
     private String mUrl;
@@ -19,4 +21,6 @@ public abstract class MediaMessageContent extends MessageContent {
     public void setUrl(String url) {
         this.mUrl = url;
     }
+
+    public abstract UploadFileType getUploadFileType();
 }

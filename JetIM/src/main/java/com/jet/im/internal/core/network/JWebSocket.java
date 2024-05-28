@@ -10,11 +10,12 @@ import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
 import com.jet.im.push.PushChannel;
-import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.upload.UploadFileType;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -226,6 +227,13 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         sendWhenOpen(bytes);
     }
 
+    public void getUploadFileCred(String userId, UploadFileType fileType, String ext, QryUploadFileCredCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getUploadFileCred(userId, fileType, ext, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void startHeartbeat() {
         mHeartbeatManager.start(false);
     }
@@ -276,6 +284,9 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
             sCallback.onError(errorCode);
         } else if (callback instanceof WebSocketTimestampCallback) {
             WebSocketTimestampCallback sCallback = (WebSocketTimestampCallback) callback;
+            sCallback.onError(errorCode);
+        } else if (callback instanceof QryUploadFileCredCallback) {
+            QryUploadFileCredCallback sCallback = (QryUploadFileCredCallback) callback;
             sCallback.onError(errorCode);
         }
     }
@@ -356,6 +367,9 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
                 break;
             case PBRcvObj.PBRcvType.conversationSetTopAck:
                 handleTimestampCallback(obj.mTimestampQryAck);
+                break;
+            case PBRcvObj.PBRcvType.qryFileCredAck:
+                handleUploadFileCredCallback(obj.mQryFileCredAck);
                 break;
             default:
                 break;
@@ -557,6 +571,20 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.readMembers, ack.unreadMembers);
+            }
+        }
+    }
+
+    private void handleUploadFileCredCallback(PBRcvObj.QryFileCredAck ack) {
+        JLogger.d("handleUploadFileCredCallback, code is " + ack.code);
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof QryUploadFileCredCallback) {
+            QryUploadFileCredCallback callback = (QryUploadFileCredCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.ossType, ack.qiNiuCred, ack.preSignCred);
             }
         }
     }

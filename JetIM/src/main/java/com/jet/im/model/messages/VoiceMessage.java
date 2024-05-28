@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.MediaMessageContent;
+import com.jet.im.model.upload.UploadFileType;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,6 +60,11 @@ public class VoiceMessage extends MediaMessageContent {
     @Override
     public String conversationDigest() {
         return DIGEST;
+    }
+
+    @Override
+    public UploadFileType getUploadFileType() {
+        return UploadFileType.AUDIO;
     }
 
     public String getUrl() {

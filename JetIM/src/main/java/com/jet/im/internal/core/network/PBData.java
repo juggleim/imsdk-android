@@ -10,6 +10,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationMentionInfo;
 import com.jet.im.model.GroupInfo;
@@ -19,7 +20,10 @@ import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.push.PushChannel;
-import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.upload.UploadFileType;
+import com.jet.im.model.upload.UploadOssType;
+import com.jet.im.model.upload.UploadPreSignCred;
+import com.jet.im.model.upload.UploadQiNiuCred;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -547,6 +551,23 @@ class PBData {
         return m.toByteArray();
     }
 
+    public byte[] getUploadFileCred(String userId, UploadFileType fileType, String ext, Integer index) {
+        Appmessages.QryFileCredReq req = Appmessages.QryFileCredReq.newBuilder()
+                .setFileTypeValue(fileType.getValue())
+                .setExt(ext == null ? "" : ext)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_FILE_CRED)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -637,7 +658,9 @@ class PBData {
                         case PBRcvObj.PBRcvType.conversationSetTopAck:
                             obj = conversationSetTopAckWithImWebsocketMsg(msg);
                             break;
-
+                        case PBRcvObj.PBRcvType.qryFileCredAck:
+                            obj = qryFileCredAckWithImWebsocketMsg(msg);
+                            break;
                         default:
                             break;
                     }
@@ -780,6 +803,27 @@ class PBData {
         a.readMembers = readMembers;
         a.unreadMembers = unreadMembers;
         obj.mQryReadDetailAck = a;
+        return obj;
+    }
+
+    private PBRcvObj qryFileCredAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.qryFileCredAck);
+        Appmessages.QryFileCredResp resp = Appmessages.QryFileCredResp.parseFrom(msg.getQryAckMsgBody().getData());
+        PBRcvObj.QryFileCredAck a = new PBRcvObj.QryFileCredAck(msg.getQryAckMsgBody());
+        a.ossType = UploadOssType.setValue(resp.getOssType().getNumber());
+        if (resp.getQiNiuCred() != null) {
+            UploadQiNiuCred qiNiuCred = new UploadQiNiuCred();
+            qiNiuCred.setDomain(resp.getQiNiuCred().getDomain());
+            qiNiuCred.setToken(resp.getQiNiuCred().getToken());
+            a.qiNiuCred = qiNiuCred;
+        }
+        if (resp.getPreSignResp() != null) {
+            UploadPreSignCred preSignCred = new UploadPreSignCred();
+            preSignCred.setUrl(resp.getPreSignResp().getUrl());
+            a.preSignCred = preSignCred;
+        }
+        obj.mQryFileCredAck = a;
         return obj;
     }
 
@@ -1029,6 +1073,7 @@ class PBData {
     private static final String QRY_MENTION_MSGS = "qry_mention_msgs";
     private static final String CLEAR_HIS_MSG = "clean_hismsg";
     private static final String DELETE_MSG = "del_msg";
+    private static final String QRY_FILE_CRED = "file_cred";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -1056,6 +1101,7 @@ class PBData {
             put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(CLEAR_HIS_MSG, PBRcvObj.PBRcvType.simpleQryAck);
             put(DELETE_MSG, PBRcvObj.PBRcvType.simpleQryAck);
+            put(QRY_FILE_CRED, PBRcvObj.PBRcvType.qryFileCredAck);
         }
     };
 

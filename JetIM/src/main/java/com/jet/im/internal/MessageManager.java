@@ -174,66 +174,67 @@ public class MessageManager implements IMessageManager {
             return null;
         }
         ConcreteMessage message = saveMessageWithContent(content, conversation, Message.MessageState.UPLOADING, Message.MessageDirection.SEND, false);
-        if (mMessageUploadProvider != null) {
-            mMessageUploadProvider.uploadMessage(message,
-                    new IMessageUploadProvider.UploadCallback() {
-                        @Override
-                        public void onProgress(int progress) {
-                            if (callback != null) {
-                                callback.onProgress(progress, message);
-                            }
-                        }
+        IMessageUploadProvider.UploadCallback uploadCallback = new IMessageUploadProvider.UploadCallback() {
+            @Override
+            public void onProgress(int progress) {
+                if (callback != null) {
+                    callback.onProgress(progress, message);
+                }
+            }
 
-                        @Override
-                        public void onSuccess(Message uploadMessage) {
-                            if (!(uploadMessage instanceof ConcreteMessage)) {
-                                uploadMessage.setState(Message.MessageState.FAIL);
-                                mCore.getDbManager().setMessageState(uploadMessage.getClientMsgNo(), Message.MessageState.FAIL);
-                                if (callback != null) {
-                                    callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
-                                }
-                                return;
-                            }
-                            ConcreteMessage cm = (ConcreteMessage) uploadMessage;
-                            mCore.getDbManager().updateMessageContentWithClientMsgNo(cm.getContent(), cm.getContentType(), cm.getClientMsgNo());
-                            cm.setState(Message.MessageState.SENDING);
-                            mCore.getDbManager().setMessageState(cm.getClientMsgNo(), Message.MessageState.SENDING);
-                            sendWebSocketMessage(cm, false, new ISendMessageCallback() {
-                                @Override
-                                public void onSuccess(Message message1) {
-                                    if (callback != null) {
-                                        callback.onSuccess(message1);
-                                    }
-                                }
-
-                                @Override
-                                public void onError(Message message1, int errorCode) {
-                                    if (callback != null) {
-                                        callback.onError(message1, errorCode);
-                                    }
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onError() {
-                            message.setState(Message.MessageState.FAIL);
-                            mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
-                            if (callback != null) {
-                                callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
-                            }
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            message.setState(Message.MessageState.FAIL);
-                            mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
-                            if (callback != null) {
-                                callback.onCancel(message);
-                            }
+            @Override
+            public void onSuccess(Message uploadMessage) {
+                if (!(uploadMessage instanceof ConcreteMessage)) {
+                    uploadMessage.setState(Message.MessageState.FAIL);
+                    mCore.getDbManager().setMessageState(uploadMessage.getClientMsgNo(), Message.MessageState.FAIL);
+                    if (callback != null) {
+                        callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
+                    }
+                    return;
+                }
+                ConcreteMessage cm = (ConcreteMessage) uploadMessage;
+                mCore.getDbManager().updateMessageContentWithClientMsgNo(cm.getContent(), cm.getContentType(), cm.getClientMsgNo());
+                cm.setState(Message.MessageState.SENDING);
+                mCore.getDbManager().setMessageState(cm.getClientMsgNo(), Message.MessageState.SENDING);
+                sendWebSocketMessage(cm, false, new ISendMessageCallback() {
+                    @Override
+                    public void onSuccess(Message message1) {
+                        if (callback != null) {
+                            callback.onSuccess(message1);
                         }
                     }
-            );
+
+                    @Override
+                    public void onError(Message message1, int errorCode) {
+                        if (callback != null) {
+                            callback.onError(message1, errorCode);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onError() {
+                message.setState(Message.MessageState.FAIL);
+                mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                if (callback != null) {
+                    callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
+                }
+            }
+
+            @Override
+            public void onCancel() {
+                message.setState(Message.MessageState.FAIL);
+                mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                if (callback != null) {
+                    callback.onCancel(message);
+                }
+            }
+        };
+        if (mMessageUploadProvider != null) {
+            mMessageUploadProvider.uploadMessage(message, uploadCallback);
+        } else if (mDefaultMessageUploadProvider != null) {
+            mDefaultMessageUploadProvider.uploadMessage(message, uploadCallback);
         } else {
             if (callback != null) {
                 callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
@@ -946,6 +947,10 @@ public class MessageManager implements IMessageManager {
         this.mMessageUploadProvider = uploadProvider;
     }
 
+    public void setDefaultMessageUploadProvider(IMessageUploadProvider uploadProvider) {
+        this.mDefaultMessageUploadProvider = uploadProvider;
+    }
+
     interface ISendReceiveListener {
         void onMessageSave(ConcreteMessage message);
 
@@ -1301,5 +1306,6 @@ public class MessageManager implements IMessageManager {
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
     private IMessageUploadProvider mMessageUploadProvider;
+    private IMessageUploadProvider mDefaultMessageUploadProvider;
     private ISendReceiveListener mSendReceiveListener;
 }
