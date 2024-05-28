@@ -1,7 +1,6 @@
 package com.jet.im.kit.internal.ui.channels
 
 import android.content.Context
-import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -9,19 +8,15 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
-import com.sendbird.android.channel.GroupChannel
-import com.sendbird.android.message.AdminMessage
-import com.sendbird.android.message.BaseFileMessage
-import com.sendbird.android.message.UserMessage
 import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
-import com.jet.im.kit.internal.extensions.getDisplayMessage
 import com.jet.im.kit.internal.extensions.setAppearance
-import com.jet.im.kit.internal.extensions.toDisplayText
 import com.jet.im.kit.utils.ChannelUtils
 import com.jet.im.kit.utils.DateUtils
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.MessageUtils
+import com.jet.im.model.Conversation
+import com.jet.im.model.ConversationInfo
 
 internal class ChannelPreview @JvmOverloads constructor(
     context: Context,
@@ -48,8 +43,13 @@ internal class ChannelPreview @JvmOverloads constructor(
     init {
         val a = context.theme.obtainStyledAttributes(attrs, R.styleable.ChannelPreview, defStyle, 0)
         try {
-            layout = LayoutInflater.from(getContext()).inflate(R.layout.sb_view_channel_list_item, this, false)
-            addView(layout, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            layout = LayoutInflater.from(getContext())
+                .inflate(R.layout.sb_view_channel_list_item, this, false)
+            addView(
+                layout,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
             coverView = layout.findViewById(R.id.ivMediaSelector)
             tvTitle = layout.findViewById(R.id.tvTitle)
             tvMemberCount = layout.findViewById(R.id.tvMemberCount)
@@ -62,26 +62,32 @@ internal class ChannelPreview @JvmOverloads constructor(
             ivFrozen = layout.findViewById(R.id.ivFrozenIcon)
             ivLastMessageStatus = layout.findViewById(R.id.ivLastMessageStatus)
             val background = a.getResourceId(
-                R.styleable.ChannelPreview_sb_channel_preview_background, R.drawable.selector_rectangle_light
+                R.styleable.ChannelPreview_sb_channel_preview_background,
+                R.drawable.selector_rectangle_light
             )
             val titleAppearance = a.getResourceId(
-                R.styleable.ChannelPreview_sb_channel_preview_title_appearance, R.style.SendbirdSubtitle1OnLight01
+                R.styleable.ChannelPreview_sb_channel_preview_title_appearance,
+                R.style.SendbirdSubtitle1OnLight01
             )
             val memberCountAppearance = a.getResourceId(
-                R.styleable.ChannelPreview_sb_channel_preview_member_count_appearance, R.style.SendbirdCaption1OnLight02
+                R.styleable.ChannelPreview_sb_channel_preview_member_count_appearance,
+                R.style.SendbirdCaption1OnLight02
             )
             val updatedAtAppearance = a.getResourceId(
-                R.styleable.ChannelPreview_sb_channel_preview_updated_at_appearance, R.style.SendbirdCaption2OnLight02
+                R.styleable.ChannelPreview_sb_channel_preview_updated_at_appearance,
+                R.style.SendbirdCaption2OnLight02
             )
             val unReadCountAppearance = a.getResourceId(
-                R.styleable.ChannelPreview_sb_channel_preview_unread_count_appearance, R.style.SendbirdCaption1OnDark01
+                R.styleable.ChannelPreview_sb_channel_preview_unread_count_appearance,
+                R.style.SendbirdCaption1OnDark01
             )
             val unReadMentionCountAppearance = a.getResourceId(
                 R.styleable.ChannelPreview_sb_channel_preview_unread_mention_count_appearance,
                 R.style.SendbirdH2Primary300
             )
             val lastMessageAppearance = a.getResourceId(
-                R.styleable.ChannelPreview_sb_channel_preview_last_message_appearance, R.style.SendbirdBody3OnLight03
+                R.styleable.ChannelPreview_sb_channel_preview_last_message_appearance,
+                R.style.SendbirdBody3OnLight03
             )
             layout.findViewById<View>(R.id.root).setBackgroundResource(background)
             tvTitle.setAppearance(context, titleAppearance)
@@ -95,11 +101,12 @@ internal class ChannelPreview @JvmOverloads constructor(
         }
     }
 
-    fun drawChannel(channel: GroupChannel) {
+    fun drawChannel(channel: ConversationInfo) {
         val context = context
         val lastMessage = channel.lastMessage
-        val unreadMessageCount = channel.unreadMessageCount
-        val unreadMentionCount = channel.unreadMentionCount
+        val unreadMessageCount = channel.unreadCount
+        //todo @未读数
+        val unreadMentionCount = 0
         ivPushEnabled.visibility = if (ChannelUtils.isChannelPushOff(channel)) VISIBLE else GONE
         val pushEnabledTint = SendbirdUIKit.getDefaultThemeMode().monoTintResId
         ivPushEnabled.setImageDrawable(
@@ -108,38 +115,62 @@ internal class ChannelPreview @JvmOverloads constructor(
             )
         )
         tvTitle.text =
-            if (channel.isChatNotification) channel.name.ifEmpty { context.getString(R.string.sb_text_channel_list_title_unknown) } else ChannelUtils.makeTitleText(
+            ChannelUtils.makeTitleText(
                 context, channel
             )
         tvUnreadCount.text =
             if (unreadMessageCount > 99) context.getString(R.string.sb_text_channel_list_unread_count_max) else unreadMessageCount.toString()
         tvUnreadCount.visibility = if (unreadMessageCount > 0) VISIBLE else GONE
         tvUnreadCount.setBackgroundResource(if (SendbirdUIKit.isDarkMode()) R.drawable.sb_shape_unread_message_count_dark else R.drawable.sb_shape_unread_message_count)
-        ivFrozen.visibility = if (channel.isFrozen) VISIBLE else GONE
-        ivBroadcast.visibility = if (channel.isBroadcast) VISIBLE else GONE
+        //todo ivFrozen
+        ivFrozen.visibility = GONE
+//        if (channel.isFrozen) {
+//            val frozenTint =
+//                SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(context)
+//            ivFrozen.setImageDrawable(
+//                DrawableUtils.setTintList(
+//                    context,
+//                    R.drawable.icon_freeze,
+//                    frozenTint
+//                )
+//            )
+//        }
+        //todo isBroadcast
+        ivBroadcast.visibility = GONE
+//        if (channel.isBroadcast) {
+//            val broadcastTint =
+//                SendbirdUIKit.getDefaultThemeMode().getSecondaryTintColorStateList(context)
+//            ivBroadcast.setImageDrawable(
+//                DrawableUtils.setTintList(
+//                    context,
+//                    R.drawable.icon_broadcast,
+//                    broadcastTint
+//                )
+//            )
+//        }
         ChannelUtils.loadChannelCover(coverView, channel)
-        if (channel.isBroadcast) {
-            val broadcastTint = SendbirdUIKit.getDefaultThemeMode().getSecondaryTintColorStateList(context)
-            ivBroadcast.setImageDrawable(DrawableUtils.setTintList(context, R.drawable.icon_broadcast, broadcastTint))
-        }
-        if (channel.isFrozen) {
-            val frozenTint = SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(context)
-            ivFrozen.setImageDrawable(DrawableUtils.setTintList(context, R.drawable.icon_freeze, frozenTint))
-        }
-        val memberCount = channel.memberCount
+        //todo 群成员人数 channel.memberCount
+        val memberCount = 0
         tvMemberCount.visibility = if (memberCount > 2) VISIBLE else GONE
-        tvMemberCount.text = ChannelUtils.makeMemberCountText(channel.memberCount)
+//        tvMemberCount.text = ChannelUtils.makeMemberCountText(channel.memberCount)
         tvUpdatedAt.text = DateUtils.formatDateTime(
-            context, lastMessage?.createdAt ?: channel.createdAt
+            context, lastMessage?.timestamp ?: channel.updateTime
         )
+
         setLastMessage(tvLastMessage, channel, useTypingIndicator)
         ivLastMessageStatus.visibility = if (useMessageReceiptStatus) VISIBLE else GONE
         if (useMessageReceiptStatus) {
             lastMessage?.let {
-                if (MessageUtils.isMine(lastMessage) && !channel.isSuper && channel.isGroupChannel) {
+                // todo !channel.isSuper
+                if (MessageUtils.isMine(lastMessage) && channel.conversation.conversationType.equals(
+                        Conversation.ConversationType.GROUP
+                    )
+                ) {
                     ivLastMessageStatus.visibility = VISIBLE
-                    val unreadMemberCount = channel.getUnreadMemberCount(lastMessage)
-                    val unDeliveredMemberCount = channel.getUndeliveredMemberCount(lastMessage)
+                    val unreadMemberCount = 0;
+                    // todo val unreadMemberCount = channel.getUnreadMemberCount(lastMessage)
+                    val unDeliveredMemberCount = 0
+                    //todo val unDeliveredMemberCount = channel.getUndeliveredMemberCount(lastMessage)
                     when {
                         unreadMemberCount == 0 -> {
                             ivLastMessageStatus.setImageDrawable(
@@ -150,6 +181,7 @@ internal class ChannelPreview @JvmOverloads constructor(
                                 )
                             )
                         }
+
                         unDeliveredMemberCount == 0 -> {
                             ivLastMessageStatus.setImageDrawable(
                                 DrawableUtils.setTintList(
@@ -159,6 +191,7 @@ internal class ChannelPreview @JvmOverloads constructor(
                                 )
                             )
                         }
+
                         else -> {
                             ivLastMessageStatus.setImageDrawable(
                                 DrawableUtils.setTintList(
@@ -183,33 +216,39 @@ internal class ChannelPreview @JvmOverloads constructor(
     }
 
     companion object {
-        private fun setLastMessage(textView: TextView, channel: GroupChannel, useTypingIndicator: Boolean) {
+        private fun setLastMessage(
+            textView: TextView,
+            channel: ConversationInfo,
+            useTypingIndicator: Boolean
+        ) {
             var message: CharSequence = ""
             if (useTypingIndicator) {
-                val typingUsers = channel.typingUsers
-                if (typingUsers.isNotEmpty()) {
-                    message = ChannelUtils.makeTypingText(textView.context, typingUsers)
-                    textView.text = message
-                    return
-                }
+                //todo 用户名称
+//                val typingUsers = channel.conversation.conversationId
+//                if (typingUsers.isNotEmpty()) {
+//                  //todo  message = ChannelUtils.makeTypingText(textView.context, typingUsers)
+//                    message=channel.draft
+//                    textView.text = message
+//                    return
+//                }
             }
-
-            channel.lastMessage?.let {
-                when (it) {
-                    is AdminMessage,
-                    is UserMessage -> {
-                        textView.maxLines = 2
-                        textView.ellipsize = TextUtils.TruncateAt.END
-                        message = it.getDisplayMessage()
-                    }
-
-                    is BaseFileMessage -> {
-                        textView.maxLines = 1
-                        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
-                        message = it.toDisplayText(textView.context)
-                    }
-                }
-            }
+            // todo 最后一条消息内容
+//            channel.lastMessage?.let {
+//                when (it) {
+//                    is AdminMessage,
+//                    is UserMessage -> {
+//                        textView.maxLines = 2
+//                        textView.ellipsize = TextUtils.TruncateAt.END
+//                        message = it.getDisplayMessage()
+//                    }
+//
+//                    is BaseFileMessage -> {
+//                        textView.maxLines = 1
+//                        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+//                        message = it.toDisplayText(textView.context)
+//                    }
+//                }
+//            }
             textView.text = message
         }
     }

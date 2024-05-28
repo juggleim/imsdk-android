@@ -11,6 +11,7 @@ import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.databinding.SbViewChannelSettingsInfoBinding
 import com.jet.im.kit.internal.extensions.setAppearance
 import com.jet.im.kit.utils.ChannelUtils
+import com.jet.im.model.ConversationInfo
 
 internal class ChannelSettingsInfoView @JvmOverloads constructor(
     context: Context,
@@ -20,6 +21,13 @@ internal class ChannelSettingsInfoView @JvmOverloads constructor(
     val binding: SbViewChannelSettingsInfoBinding
     val layout: ChannelSettingsInfoView
         get() = this
+
+    fun drawChannelSettingsInfoView(channel: ConversationInfo?) {
+        channel?.let {
+            binding.tvChannelName.text = ChannelUtils.makeTitleText(context, channel)
+            ChannelUtils.loadChannelCover(binding.ccvChannelImage, channel)
+        }
+    }
 
     fun drawChannelSettingsInfoView(channel: GroupChannel?) {
         channel?.let {

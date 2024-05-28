@@ -5,6 +5,14 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.jet.im.JetIM;
+import com.jet.im.kit.R;
+import com.jet.im.kit.consts.StringSet;
+import com.jet.im.kit.internal.ui.channels.ChannelCoverView;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupInfo;
+import com.jet.im.model.UserInfo;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.channel.BaseChannel;
 import com.sendbird.android.channel.GroupChannel;
@@ -13,9 +21,6 @@ import com.sendbird.android.message.FileMessage;
 import com.sendbird.android.user.Member;
 import com.sendbird.android.user.Sender;
 import com.sendbird.android.user.User;
-import com.jet.im.kit.R;
-import com.jet.im.kit.consts.StringSet;
-import com.jet.im.kit.internal.ui.channels.ChannelCoverView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +49,8 @@ public class ChannelUtils {
 
                 String nickName = member.getNickname();
                 names.append(", ")
-                    .append(TextUtils.isEmpty(nickName) ?
-                        context.getString(R.string.sb_text_channel_list_title_unknown) : nickName);
+                        .append(TextUtils.isEmpty(nickName) ?
+                                context.getString(R.string.sb_text_channel_list_title_unknown) : nickName);
             }
             result = names.delete(0, 2).toString();
         } else {
@@ -59,8 +64,8 @@ public class ChannelUtils {
                 count++;
                 String nickName = member.getNickname();
                 names.append(", ")
-                    .append(TextUtils.isEmpty(nickName) ?
-                        context.getString(R.string.sb_text_channel_list_title_unknown) : nickName);
+                        .append(TextUtils.isEmpty(nickName) ?
+                                context.getString(R.string.sb_text_channel_list_title_unknown) : nickName);
 
                 if (count >= 10) {
                     break;
@@ -70,6 +75,18 @@ public class ChannelUtils {
         }
 
         return result;
+    }
+
+    public static String makeTitleText(@NonNull Context context, @NonNull ConversationInfo channel) {
+        if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.PRIVATE)) {
+            UserInfo info = JetIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
+            return info.getUserName();
+        } else if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.GROUP)) {
+            GroupInfo info = JetIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
+            return info.getGroupName();
+        } else {
+            return channel.getConversation().getConversationId();
+        }
     }
 
     @NonNull
@@ -85,7 +102,7 @@ public class ChannelUtils {
         if (lastMessage instanceof FileMessage) {
             Sender sender = lastMessage.getSender();
             return String.format(context.getString(R.string.sb_text_channel_list_last_message_file),
-                sender != null ? sender.getNickname() : context.getString(R.string.sb_text_channel_list_last_message_file_unknown));
+                    sender != null ? sender.getNickname() : context.getString(R.string.sb_text_channel_list_last_message_file_unknown));
         }
         return lastMessage.getMessage();
     }
@@ -110,6 +127,19 @@ public class ChannelUtils {
         } else {
             coverView.loadImage(channel.getCoverUrl());
         }
+    }
+
+    public static void loadChannelCover(@NonNull ChannelCoverView coverView, @NonNull ConversationInfo channel) {
+        if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.PRIVATE)) {
+            UserInfo info = JetIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
+            coverView.loadImage(info.getPortrait());
+        } else if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.GROUP)) {
+            GroupInfo info = JetIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
+            coverView.loadImage(info.getPortrait());
+        } else {
+            //todo 头像
+        }
+
     }
 
     @NonNull
@@ -144,10 +174,10 @@ public class ChannelUtils {
     public static String makeTypingText(@NonNull Context context, @NonNull List<? extends User> typingUsers) {
         if (typingUsers.size() == 1) {
             return String.format(context.getString(R.string.sb_text_channel_typing_indicator_single),
-                UserUtils.getDisplayName(context, typingUsers.get(0), false));
+                    UserUtils.getDisplayName(context, typingUsers.get(0), false));
         } else if (typingUsers.size() == 2) {
             return String.format(context.getString(R.string.sb_text_channel_typing_indicator_double),
-                UserUtils.getDisplayName(context, typingUsers.get(0), false), UserUtils.getDisplayName(context, typingUsers.get(1), false));
+                    UserUtils.getDisplayName(context, typingUsers.get(0), false), UserUtils.getDisplayName(context, typingUsers.get(1), false));
         } else {
             return context.getString(R.string.sb_text_channel_typing_indicator_multiple);
         }
@@ -156,7 +186,10 @@ public class ChannelUtils {
     public static boolean isChannelPushOff(@NonNull GroupChannel channel) {
         return channel.getMyPushTriggerOption() == GroupChannel.PushTriggerOption.OFF;
     }
-
+    public static boolean isChannelPushOff(@NonNull ConversationInfo channel) {
+        //todo 关闭推送
+        return false;
+    }
     @NonNull
     public static CharSequence makeMemberCountText(int memberCount) {
         String text = String.valueOf(memberCount);

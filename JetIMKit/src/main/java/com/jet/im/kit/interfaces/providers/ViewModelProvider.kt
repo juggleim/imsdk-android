@@ -1,20 +1,34 @@
 package com.jet.im.kit.interfaces.providers
 
 import androidx.lifecycle.ViewModelStoreOwner
-import com.sendbird.android.channel.ChannelType
-import com.sendbird.android.channel.query.GroupChannelListQuery
-import com.sendbird.android.message.BaseMessage
-import com.sendbird.android.message.query.MessageSearchQuery
-import com.sendbird.android.params.MessageListParams
-import com.sendbird.android.params.OpenChannelListQueryParams
-import com.sendbird.android.params.ThreadMessageListParams
-import com.sendbird.android.user.Member
-import com.sendbird.android.user.User
+import com.jet.im.interfaces.IConversationManager
 import com.jet.im.kit.interfaces.PagedQueryHandler
 import com.jet.im.kit.interfaces.UserInfo
 import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.providers.ModuleProviders
-import com.jet.im.kit.vm.*
+import com.jet.im.kit.vm.BannedUserListViewModel
+import com.jet.im.kit.vm.ChannelListViewModel
+import com.jet.im.kit.vm.ChannelPushSettingViewModel
+import com.jet.im.kit.vm.ChannelSettingsViewModel
+import com.jet.im.kit.vm.ChannelViewModel
+import com.jet.im.kit.vm.ChatNotificationChannelViewModel
+import com.jet.im.kit.vm.CreateChannelViewModel
+import com.jet.im.kit.vm.FeedNotificationChannelViewModel
+import com.jet.im.kit.vm.InviteUserViewModel
+import com.jet.im.kit.vm.MemberListViewModel
+import com.jet.im.kit.vm.MessageSearchViewModel
+import com.jet.im.kit.vm.MessageThreadViewModel
+import com.jet.im.kit.vm.ModerationViewModel
+import com.jet.im.kit.vm.MutedMemberListViewModel
+import com.jet.im.kit.vm.OperatorListViewModel
+import com.jet.im.kit.vm.RegisterOperatorViewModel
+import com.sendbird.android.channel.ChannelType
+import com.sendbird.android.message.BaseMessage
+import com.sendbird.android.message.query.MessageSearchQuery
+import com.sendbird.android.params.MessageListParams
+import com.sendbird.android.params.ThreadMessageListParams
+import com.sendbird.android.user.Member
+import com.sendbird.android.user.User
 
 /**
  * Interface definition to be invoked when ChannelListViewModel is created.
@@ -28,7 +42,7 @@ fun interface ChannelListViewModelProvider {
      * @return The [ChannelListViewModel].
      * @since 3.9.0
      */
-    fun provide(owner: ViewModelStoreOwner, query: GroupChannelListQuery?): ChannelListViewModel
+    fun provide(owner: ViewModelStoreOwner, query: IConversationManager?): ChannelListViewModel
 }
 
 /**
@@ -52,21 +66,6 @@ fun interface ChannelViewModelProvider {
 }
 
 /**
- * Interface definition to be invoked when OpenChannelViewModel is created.
- * @see [ModuleProviders.openChannel]
- * @since 3.9.0
- */
-fun interface OpenChannelViewModelProvider {
-    /**
-     * Returns the OpenChannelViewModel.
-     *
-     * @return The [OpenChannelViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String, params: MessageListParams?): OpenChannelViewModel
-}
-
-/**
  * Interface definition to be invoked when CreateChannelViewModel is created.
  * @see [ModuleProviders.createChannel]
  * @since 3.9.0
@@ -81,20 +80,6 @@ fun interface CreateChannelViewModelProvider {
     fun provide(owner: ViewModelStoreOwner, queryHandler: PagedQueryHandler<UserInfo>?): CreateChannelViewModel
 }
 
-/**
- * Interface definition to be invoked when CreateOpenChannelViewModel is created.
- * @see [ModuleProviders.createOpenChannel]
- * @since 3.9.0
- */
-fun interface CreateOpenChannelViewModelProvider {
-    /**
-     * Returns the CreateOpenChannelViewModel.
-     *
-     * @return The [CreateOpenChannelViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner): CreateOpenChannelViewModel
-}
 
 /**
  * Interface definition to be invoked when ChannelSettingsViewModel is created.
@@ -109,21 +94,6 @@ fun interface ChannelSettingsViewModelProvider {
      * @since 3.9.0
      */
     fun provide(owner: ViewModelStoreOwner, channelUrl: String): ChannelSettingsViewModel
-}
-
-/**
- * Interface definition to be invoked when OpenChannelSettingsViewModel is created.
- * @see [ModuleProviders.openChannelSettings]
- * @since 3.9.0
- */
-fun interface OpenChannelSettingsViewModelProvider {
-    /**
-     * Returns the OpenChannelSettingsViewModel.
-     *
-     * @return The [OpenChannelSettingsViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String): OpenChannelSettingsViewModel
 }
 
 /**
@@ -165,25 +135,6 @@ fun interface RegisterOperatorViewModelProvider {
 }
 
 /**
- * Interface definition to be invoked when OpenChannelRegisterOperatorViewModel is created.
- * @see [ModuleProviders.openChannelRegisterOperator]
- * @since 3.9.0
- */
-fun interface OpenChannelRegisterOperatorViewModelProvider {
-    /**
-     * Returns the OpenChannelRegisterOperatorViewModel.
-     *
-     * @return The [OpenChannelRegisterOperatorViewModel].
-     * @since 3.9.0
-     */
-    fun provide(
-        owner: ViewModelStoreOwner,
-        channelUrl: String,
-        queryHandler: PagedQueryHandler<User>?
-    ): OpenChannelRegisterOperatorViewModel
-}
-
-/**
  * Interface definition to be invoked when ModerationViewModel is created.
  * @see [ModuleProviders.moderation]
  * @since 3.9.0
@@ -196,21 +147,6 @@ fun interface ModerationViewModelProvider {
      * @since 3.9.0
      */
     fun provide(owner: ViewModelStoreOwner, channelUrl: String): ModerationViewModel
-}
-
-/**
- * Interface definition to be invoked when OpenChannelModerationViewModel is created.
- * @see [ModuleProviders.openChannelModeration]
- * @since 3.9.0
- */
-fun interface OpenChannelModerationViewModelProvider {
-    /**
-     * Returns the OpenChannelModerationViewModel.
-     *
-     * @return The [OpenChannelModerationViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String): OpenChannelModerationViewModel
 }
 
 /**
@@ -244,21 +180,6 @@ fun interface BannedUserListViewModelProvider {
 }
 
 /**
- * Interface definition to be invoked when OpenChannelBannedUserListViewModel is created.
- * @see [ModuleProviders.openChannelBannedUserList]
- * @since 3.9.0
- */
-fun interface OpenChannelBannedUserListViewModelProvider {
-    /**
-     * Returns the OpenChannelBannedUserListViewModel.
-     *
-     * @return The [OpenChannelBannedUserListViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String): OpenChannelBannedUserListViewModel
-}
-
-/**
  * Interface definition to be invoked when MutedMemberListViewModel is created.
  * @see [ModuleProviders.mutedMemberList]
  * @since 3.9.0
@@ -271,25 +192,6 @@ fun interface MutedMemberListViewModelProvider {
      * @since 3.9.0
      */
     fun provide(owner: ViewModelStoreOwner, channelUrl: String): MutedMemberListViewModel
-}
-
-/**
- * Interface definition to be invoked when OpenChannelMutedParticipantListViewModel is created.
- * @see [ModuleProviders.openChannelMutedParticipantList]
- * @since 3.9.0
- */
-fun interface OpenChannelMutedParticipantListViewModelProvider {
-    /**
-     * Returns the OpenChannelMutedParticipantListViewModel.
-     *
-     * @return The [OpenChannelMutedParticipantListViewModel].
-     * @since 3.9.0
-     */
-    fun provide(
-        owner: ViewModelStoreOwner,
-        channelUrl: String,
-        queryHandler: PagedQueryHandler<UserInfo>?
-    ): OpenChannelMutedParticipantListViewModel
 }
 
 /**
@@ -310,25 +212,6 @@ fun interface OperatorListViewModelProvider {
         channelType: ChannelType?,
         queryHandler: PagedQueryHandler<User>?
     ): OperatorListViewModel
-}
-
-/**
- * Interface definition to be invoked when OpenChannelOperatorListViewModel is created.
- * @see [ModuleProviders.openChannelOperatorList]
- * @since 3.9.0
- */
-fun interface OpenChannelOperatorListViewModelProvider {
-    /**
-     * Returns the OpenChannelOperatorListViewModel.
-     *
-     * @return The [OpenChannelOperatorListViewModel].
-     * @since 3.9.0
-     */
-    fun provide(
-        owner: ViewModelStoreOwner,
-        channelUrl: String,
-        queryHandler: PagedQueryHandler<User>?
-    ): OpenChannelOperatorListViewModel
 }
 
 /**
@@ -367,25 +250,6 @@ fun interface MessageThreadViewModelProvider {
 }
 
 /**
- * Interface definition to be invoked when ParticipantViewModel is created.
- * @see [ModuleProviders.participantList]
- * @since 3.9.0
- */
-fun interface ParticipantViewModelProvider {
-    /**
-     * Returns the ParticipantViewModel.
-     *
-     * @return The [ParticipantViewModel].
-     * @since 3.9.0
-     */
-    fun provide(
-        owner: ViewModelStoreOwner,
-        channelUrl: String,
-        queryHandler: PagedQueryHandler<User>?
-    ): ParticipantViewModel
-}
-
-/**
  * Interface definition to be invoked when ChannelPushSettingViewModel is created.
  * @see [ModuleProviders.channelPushSetting]
  * @since 3.9.0
@@ -398,21 +262,6 @@ fun interface ChannelPushSettingViewModelProvider {
      * @since 3.9.0
      */
     fun provide(owner: ViewModelStoreOwner, channelUrl: String): ChannelPushSettingViewModel
-}
-
-/**
- * Interface definition to be invoked when OpenChannelListViewModel is created.
- * @see [ModuleProviders.openChannelList]
- * @since 3.9.0
- */
-fun interface OpenChannelListViewModelProvider {
-    /**
-     * Returns the OpenChannelListViewModel.
-     *
-     * @return The [OpenChannelListViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, params: OpenChannelListQueryParams?): OpenChannelListViewModel
 }
 
 /**

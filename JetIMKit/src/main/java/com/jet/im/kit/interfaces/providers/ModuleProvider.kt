@@ -40,21 +40,6 @@ fun interface ChannelModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when OpenChannelModule is created.
- * @see [ModuleProviders.openChannel]
- * @since 3.9.0
- */
-fun interface OpenChannelModuleProvider {
-    /**
-     * Returns the OpenChannelModule.
-     *
-     * @return The [OpenChannelModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): OpenChannelModule
-}
-
-/**
  * Interface definition to be invoked when CreateChannelModule is created.
  * @see [ModuleProviders.createChannel]
  * @since 3.9.0
@@ -100,21 +85,6 @@ fun interface ChannelSettingsModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when OpenChannelSettingsModule is created.
- * @see [ModuleProviders.openChannelSettings]
- * @since 3.9.0
- */
-fun interface OpenChannelSettingsModuleProvider {
-    /**
-     * Returns the OpenChannelSettingsModule.
-     *
-     * @return The [OpenChannelSettingsModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): OpenChannelSettingsModule
-}
-
-/**
  * Interface definition to be invoked when InviteUserModule is created.
  * @see [ModuleProviders.inviteUser]
  * @since 3.9.0
@@ -145,21 +115,6 @@ fun interface RegisterOperatorModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when OpenChannelRegisterOperatorModule is created.
- * @see [ModuleProviders.openChannelRegisterOperator]
- * @since 3.9.0
- */
-fun interface OpenChannelRegisterOperatorModuleProvider {
-    /**
-     * Returns the OpenChannelRegisterOperatorModule.
-     *
-     * @return The [OpenChannelRegisterOperatorModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): OpenChannelRegisterOperatorModule
-}
-
-/**
  * Interface definition to be invoked when ModerationModule is created.
  * @see [ModuleProviders.moderation]
  * @since 3.9.0
@@ -172,21 +127,6 @@ fun interface ModerationModuleProvider {
      * @since 3.9.0
      */
     fun provide(context: Context, args: Bundle): ModerationModule
-}
-
-/**
- * Interface definition to be invoked when OpenChannelModerationModule is created.
- * @see [ModuleProviders.openChannelModeration]
- * @since 3.9.0
- */
-fun interface OpenChannelModerationModuleProvider {
-    /**
-     * Returns the OpenChannelModerationModule.
-     *
-     * @return The [OpenChannelModerationModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): OpenChannelModerationModule
 }
 
 /**
@@ -220,21 +160,6 @@ fun interface BannedUserListModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when OpenChannelBannedUserListModule is created.
- * @see [ModuleProviders.openChannelBannedUserList]
- * @since 3.9.0
- */
-fun interface OpenChannelBannedUserListModuleProvider {
-    /**
-     * Returns the OpenChannelBannedUserListModule.
-     *
-     * @return The [OpenChannelBannedUserListModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): OpenChannelBannedUserListModule
-}
-
-/**
  * Interface definition to be invoked when MutedMemberListModule is created.
  * @see [ModuleProviders.mutedMemberList]
  * @since 3.9.0
@@ -250,21 +175,6 @@ fun interface MutedMemberListModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when OpenChannelMutedParticipantListModule is created.
- * @see [ModuleProviders.openChannelMutedParticipantList]
- * @since 3.9.0
- */
-fun interface OpenChannelMutedParticipantListModuleProvider {
-    /**
-     * Returns the OpenChannelMutedParticipantListModule.
-     *
-     * @return The [OpenChannelMutedParticipantListModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): OpenChannelMutedParticipantListModule
-}
-
-/**
  * Interface definition to be invoked when OperatorListModule is created.
  * @see [ModuleProviders.operatorList]
  * @since 3.9.0
@@ -277,21 +187,6 @@ fun interface OperatorListModuleProvider {
      * @since 3.9.0
      */
     fun provide(context: Context, args: Bundle): OperatorListModule
-}
-
-/**
- * Interface definition to be invoked when OpenChannelOperatorListModule is created.
- * @see [ModuleProviders.openChannelOperatorList]
- * @since 3.9.0
- */
-fun interface OpenChannelOperatorListModuleProvider {
-    /**
-     * Returns the OpenChannelOperatorListModule.
-     *
-     * @return The [OpenChannelOperatorListModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): OpenChannelOperatorListModule
 }
 
 /**
@@ -325,21 +220,6 @@ fun interface ChannelPushSettingModuleProvider {
      * @since 3.9.0
      */
     fun provide(context: Context, args: Bundle): ChannelPushSettingModule
-}
-
-/**
- * Interface definition to be invoked when OpenChannelListModule is created.
- * @see [ModuleProviders.openChannelList]
- * @since 3.9.0
- */
-fun interface OpenChannelListModuleProvider {
-    /**
-     * Returns the OpenChannelListModule.
-     *
-     * @return The [OpenChannelListModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): OpenChannelListModule
 }
 
 /**

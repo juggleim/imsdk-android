@@ -3,6 +3,9 @@ package com.jet.im.kit.utils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.jet.im.JetIM;
+import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.model.Message;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.channel.NotificationData;
 import com.sendbird.android.message.AdminMessage;
@@ -33,10 +36,17 @@ public class MessageUtils {
         return isMine(message.getSender().getUserId());
     }
 
+    public static boolean isMine(@NonNull Message message) {
+        if (message.getSenderUserId() == null) {
+            return false;
+        }
+        return isMine(message.getSenderUserId());
+    }
+
     public static boolean isMine(@Nullable String senderId) {
-        User currentUser = SendbirdChat.getCurrentUser();
+        String currentUser = JetIM.getInstance().getCurrentUserId();
         if (currentUser != null) {
-            return currentUser.getUserId().equals(senderId);
+            return currentUser.equals(senderId);
         }
         return false;
     }

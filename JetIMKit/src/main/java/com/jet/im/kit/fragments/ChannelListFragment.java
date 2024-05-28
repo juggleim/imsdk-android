@@ -12,12 +12,9 @@ import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AlertDialog;
 
-import com.sendbird.android.channel.GroupChannel;
-import com.sendbird.android.channel.query.GroupChannelListQuery;
+import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.kit.activities.ChannelActivity;
-import com.jet.im.kit.activities.ChatNotificationChannelActivity;
 import com.jet.im.kit.activities.CreateChannelActivity;
 import com.jet.im.kit.activities.adapter.ChannelListAdapter;
 import com.jet.im.kit.consts.CreatableChannelType;
@@ -27,7 +24,6 @@ import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.interfaces.OnItemLongClickListener;
 import com.jet.im.kit.internal.ui.widgets.SelectChannelTypeView;
 import com.jet.im.kit.log.Logger;
-import com.jet.im.kit.model.DialogListItem;
 import com.jet.im.kit.model.ReadyStatus;
 import com.jet.im.kit.model.configurations.ChannelListConfig;
 import com.jet.im.kit.modules.ChannelListModule;
@@ -37,11 +33,12 @@ import com.jet.im.kit.modules.components.StatusComponent;
 import com.jet.im.kit.providers.ModuleProviders;
 import com.jet.im.kit.providers.ViewModelProviders;
 import com.jet.im.kit.utils.Available;
-import com.jet.im.kit.utils.ChannelUtils;
 import com.jet.im.kit.utils.ContextUtils;
 import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.vm.ChannelListViewModel;
 import com.jet.im.kit.widgets.StatusFrameView;
+import com.jet.im.model.ConversationInfo;
+import com.sendbird.android.channel.GroupChannel;
 
 /**
  * Fragment displaying the list of channels.
@@ -55,11 +52,11 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
     @Nullable
     private ChannelListAdapter adapter;
     @Nullable
-    private OnItemClickListener<GroupChannel> itemClickListener;
+    private OnItemClickListener<ConversationInfo> itemClickListener;
     @Nullable
-    private OnItemLongClickListener<GroupChannel> itemLongClickListener;
+    private OnItemLongClickListener<ConversationInfo> itemLongClickListener;
     @Nullable
-    private GroupChannelListQuery query;
+    private IConversationManager query;
 
     @NonNull
     @Override
@@ -171,42 +168,44 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
         }
     }
 
-    private void startChannelActivity(@NonNull GroupChannel channel) {
+    private void startChannelActivity(@NonNull ConversationInfo channel) {
         if (isFragmentAlive()) {
-            if (channel.isChatNotification()) {
-                startActivity(ChatNotificationChannelActivity.newIntent(requireContext(), channel.getUrl()));
-            } else {
-                startActivity(ChannelActivity.newIntent(requireContext(), channel.getUrl()));
-            }
+            //todo 跳转消息页面
+//            if (channel.isChatNotification()) {
+//                startActivity(ChatNotificationChannelActivity.newIntent(requireContext(), channel.getUrl()));
+//            } else {
+//                startActivity(ChannelActivity.newIntent(requireContext(), channel.getUrl()));
+//            }
         }
     }
 
-    private void showListContextMenu(@NonNull GroupChannel channel) {
-        if (channel.isChatNotification()) return;
-        DialogListItem pushOnOff = new DialogListItem(ChannelUtils.isChannelPushOff(channel) ? R.string.sb_text_channel_list_push_on : R.string.sb_text_channel_list_push_off);
-        DialogListItem leaveChannel = new DialogListItem(R.string.sb_text_channel_list_leave);
-        DialogListItem[] items = {pushOnOff, leaveChannel};
-
-        if (isFragmentAlive()) {
-            DialogUtils.showListDialog(requireContext(),
-                ChannelUtils.makeTitleText(requireContext(), channel),
-                items, (v, p, item) -> {
-                    final int key = item.getKey();
-                    if (key == R.string.sb_text_channel_list_leave) {
-                        Logger.dev("leave channel");
-                        leaveChannel(channel);
-                    } else {
-                        Logger.dev("change push notifications");
-                        final boolean enable = ChannelUtils.isChannelPushOff(channel);
-                        getViewModel().setPushNotification(channel, ChannelUtils.isChannelPushOff(channel), e -> {
-                            if (e != null) {
-                                int message = enable ? R.string.sb_text_error_push_notification_on : R.string.sb_text_error_push_notification_off;
-                                toastError(message);
-                            }
-                        });
-                    }
-                });
-        }
+    private void showListContextMenu(@NonNull ConversationInfo channel) {
+        //todo 创建群组
+//        if (channel.isChatNotification()) return;
+//        DialogListItem pushOnOff = new DialogListItem(ChannelUtils.isChannelPushOff(channel) ? R.string.sb_text_channel_list_push_on : R.string.sb_text_channel_list_push_off);
+//        DialogListItem leaveChannel = new DialogListItem(R.string.sb_text_channel_list_leave);
+//        DialogListItem[] items = {pushOnOff, leaveChannel};
+//
+//        if (isFragmentAlive()) {
+//            DialogUtils.showListDialog(requireContext(),
+//                ChannelUtils.makeTitleText(requireContext(), channel),
+//                items, (v, p, item) -> {
+//                    final int key = item.getKey();
+//                    if (key == R.string.sb_text_channel_list_leave) {
+//                        Logger.dev("leave channel");
+//                        leaveChannel(channel);
+//                    } else {
+//                        Logger.dev("change push notifications");
+//                        final boolean enable = ChannelUtils.isChannelPushOff(channel);
+//                        getViewModel().setPushNotification(channel, ChannelUtils.isChannelPushOff(channel), e -> {
+//                            if (e != null) {
+//                                int message = enable ? R.string.sb_text_error_push_notification_on : R.string.sb_text_error_push_notification_off;
+//                                toastError(message);
+//                            }
+//                        });
+//                    }
+//                });
+//        }
     }
 
     /**
@@ -239,7 +238,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
      * @param channel  The channel that the clicked item displays
      * since 3.2.0
      */
-    protected void onItemClicked(@NonNull View view, int position, @NonNull GroupChannel channel) {
+    protected void onItemClicked(@NonNull View view, int position, @NonNull ConversationInfo channel) {
         if (itemClickListener != null) {
             itemClickListener.onItemClick(view, position, channel);
             return;
@@ -252,15 +251,15 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
      *
      * @param view     The View long-clicked.
      * @param position The position long-clicked.
-     * @param channel  The channel that the long-clicked item displays
+     * @param conversationInfo  The channel that the long-clicked item displays
      * since 3.2.0
      */
-    protected void onItemLongClicked(@NonNull View view, int position, @NonNull GroupChannel channel) {
+    protected void onItemLongClicked(@NonNull View view, int position, @NonNull ConversationInfo conversationInfo) {
         if (itemLongClickListener != null) {
-            itemLongClickListener.onItemLongClick(view, position, channel);
+            itemLongClickListener.onItemLongClick(view, position, conversationInfo);
             return;
         }
-        showListContextMenu(channel);
+        showListContextMenu(conversationInfo);
     }
 
     public static class Builder {
@@ -273,11 +272,11 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
         @Nullable
         private ChannelListAdapter adapter;
         @Nullable
-        private OnItemClickListener<GroupChannel> itemClickListener;
+        private OnItemClickListener<ConversationInfo> itemClickListener;
         @Nullable
-        private OnItemLongClickListener<GroupChannel> itemLongClickListener;
+        private OnItemLongClickListener<ConversationInfo> itemLongClickListener;
         @Nullable
-        private GroupChannelListQuery query;
+        private IConversationManager query;
         @Nullable
         private ChannelListFragment customFragment;
 
@@ -499,7 +498,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
          * since 3.0.0
          */
         @NonNull
-        public Builder setOnItemClickListener(@NonNull OnItemClickListener<GroupChannel> itemClickListener) {
+        public Builder setOnItemClickListener(@NonNull OnItemClickListener<ConversationInfo> itemClickListener) {
             this.itemClickListener = itemClickListener;
             return this;
         }
@@ -512,7 +511,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
          * since 3.0.0
          */
         @NonNull
-        public Builder setOnItemLongClickListener(@NonNull OnItemLongClickListener<GroupChannel> itemLongClickListener) {
+        public Builder setOnItemLongClickListener(@NonNull OnItemLongClickListener<ConversationInfo> itemLongClickListener) {
             this.itemLongClickListener = itemLongClickListener;
             return this;
         }
@@ -525,7 +524,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
          * since 1.0.5
          */
         @NonNull
-        public Builder setGroupChannelListQuery(@NonNull GroupChannelListQuery query) {
+        public Builder setGroupChannelListQuery(@NonNull IConversationManager query) {
             this.query = query;
             return this;
         }

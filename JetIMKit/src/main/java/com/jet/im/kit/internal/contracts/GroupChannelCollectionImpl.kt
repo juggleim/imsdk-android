@@ -1,33 +1,41 @@
 package com.jet.im.kit.internal.contracts
 
-import com.sendbird.android.SendbirdChat.createGroupChannelCollection
-import com.sendbird.android.channel.GroupChannel
-import com.sendbird.android.channel.query.GroupChannelListQuery
-import com.sendbird.android.collection.GroupChannelCollection
-import com.sendbird.android.handler.GroupChannelCollectionHandler
-import com.sendbird.android.handler.GroupChannelsCallbackHandler
-import com.sendbird.android.params.GroupChannelCollectionCreateParams
+import com.jet.im.JetIMConst
+import com.jet.im.interfaces.IConversationManager
+import com.jet.im.kit.cust.handler.ConversationCallbackHandler
+import com.jet.im.model.ConversationInfo
 
-internal class GroupChannelCollectionImpl(query: GroupChannelListQuery) : GroupChannelCollectionContract {
-    private val collection: GroupChannelCollection
+internal class GroupChannelCollectionImpl(query: IConversationManager) :
+    GroupChannelCollectionContract {
+    private var collection: ArrayList<ConversationInfo> = ArrayList()
+    private var hasMore: Boolean = true
+    private val conversationManager: IConversationManager = query
 
-    init {
-        collection = createGroupChannelCollection(GroupChannelCollectionCreateParams(query))
+
+    override fun setConversationCollectionHandler(handler: IConversationManager.IConversationListener) {
+        conversationManager.addListener("GroupChannelCollectionImpl", handler)
     }
 
-    override fun setGroupChannelCollectionHandler(handler: GroupChannelCollectionHandler?) {
-        collection.groupChannelCollectionHandler = handler
+    override fun loadMore(handler: ConversationCallbackHandler) {
+        val timestamp: Long =
+            if (collection.isEmpty()) 0 else collection[collection.size - 1].updateTime;
+        val conversationInfoList = conversationManager.getConversationInfoList(
+            10,
+            timestamp,
+            JetIMConst.PullDirection.OLDER
+        )
+        collection.addAll(conversationInfoList);
+        if (conversationInfoList.size < 10) {
+            hasMore = false;
+        }
+        handler.onResult(conversationInfoList)
     }
 
-    override fun loadMore(handler: GroupChannelsCallbackHandler) {
-        collection.loadMore(handler)
-    }
+    override fun getChannelList(): List<ConversationInfo> = collection
 
-    override fun getChannelList(): List<GroupChannel> = collection.channelList
-
-    override fun getHasMore(): Boolean = collection.hasMore
+    override fun getHasMore(): Boolean = hasMore
 
     override fun dispose() {
-        collection.dispose()
+        conversationManager.removeListener("GroupChannelCollectionImpl")
     }
 }

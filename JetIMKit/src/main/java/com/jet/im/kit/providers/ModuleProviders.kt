@@ -34,15 +34,6 @@ object ModuleProviders {
     lateinit var channel: ChannelModuleProvider
 
     /**
-     * Returns the OpenChannelModule provider.
-     *
-     * @return The [OpenChannelModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannel: OpenChannelModuleProvider
-
-    /**
      * Returns the CreateChannelModule provider.
      *
      * @return The [CreateChannelModuleProvider].
@@ -70,15 +61,6 @@ object ModuleProviders {
     lateinit var channelSettings: ChannelSettingsModuleProvider
 
     /**
-     * Returns the OpenChannelSettingsModule provider.
-     *
-     * @return The [OpenChannelSettingsModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelSettings: OpenChannelSettingsModuleProvider
-
-    /**
      * Returns the InviteUserModule provider.
      *
      * @return The [InviteUserModuleProvider].
@@ -97,15 +79,6 @@ object ModuleProviders {
     lateinit var registerOperator: RegisterOperatorModuleProvider
 
     /**
-     * Returns the OpenChannelRegisterOperatorModule provider.
-     *
-     * @return The [OpenChannelRegisterOperatorModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelRegisterOperator: OpenChannelRegisterOperatorModuleProvider
-
-    /**
      * Returns the ModerationModule provider.
      *
      * @return The [ModerationModuleProvider].
@@ -113,15 +86,6 @@ object ModuleProviders {
      */
     @JvmStatic
     lateinit var moderation: ModerationModuleProvider
-
-    /**
-     * Returns the OpenChannelModerationModule provider.
-     *
-     * @return The [OpenChannelModerationModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelModeration: OpenChannelModerationModuleProvider
 
     /**
      * Returns the MemberListModule provider.
@@ -142,15 +106,6 @@ object ModuleProviders {
     lateinit var bannedUserList: BannedUserListModuleProvider
 
     /**
-     * Returns the OpenChannelBannedUserListModule provider.
-     *
-     * @return The [OpenChannelBannedUserListModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelBannedUserList: OpenChannelBannedUserListModuleProvider
-
-    /**
      * Returns the MutedMemberListModule provider.
      *
      * @return The [MutedMemberListModuleProvider].
@@ -160,15 +115,6 @@ object ModuleProviders {
     lateinit var mutedMemberList: MutedMemberListModuleProvider
 
     /**
-     * Returns the OpenChannelMutedParticipantListModule provider.
-     *
-     * @return The [OpenChannelMutedParticipantListModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelMutedParticipantList: OpenChannelMutedParticipantListModuleProvider
-
-    /**
      * Returns the OperatorListModule provider.
      *
      * @return The [OperatorListModuleProvider].
@@ -176,15 +122,6 @@ object ModuleProviders {
      */
     @JvmStatic
     lateinit var operatorList: OperatorListModuleProvider
-
-    /**
-     * Returns the OpenChannelOperatorListModule provider.
-     *
-     * @return The [OpenChannelOperatorListModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelOperatorList: OpenChannelOperatorListModuleProvider
 
     /**
      * Returns the MessageSearchModule provider.
@@ -223,15 +160,6 @@ object ModuleProviders {
     lateinit var channelPushSetting: ChannelPushSettingModuleProvider
 
     /**
-     * Returns the OpenChannelListModule provider.
-     *
-     * @return The [OpenChannelListModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var openChannelList: OpenChannelListModuleProvider
-
-    /**
      * Returns the OpenChannelParticipantListModule provider.
      *
      * @return The [FeedNotificationChannelModuleProvider].
@@ -260,44 +188,25 @@ object ModuleProviders {
 
         this.channel = ChannelModuleProvider { context, _ -> ChannelModule(context) }
 
-        this.openChannel = OpenChannelModuleProvider { context, _ -> OpenChannelModule(context) }
-
         this.createChannel = CreateChannelModuleProvider { context, _ -> CreateChannelModule(context) }
 
         this.createOpenChannel = CreateOpenChannelModuleProvider { context, _ -> CreateOpenChannelModule(context) }
 
         this.channelSettings = ChannelSettingsModuleProvider { context, _ -> ChannelSettingsModule(context) }
 
-        this.openChannelSettings = OpenChannelSettingsModuleProvider { context, _ -> OpenChannelSettingsModule(context) }
-
         this.inviteUser = InviteUserModuleProvider { context, _ -> InviteUserModule(context) }
 
         this.registerOperator = RegisterOperatorModuleProvider { context, _ -> RegisterOperatorModule(context) }
 
-        this.openChannelRegisterOperator =
-            OpenChannelRegisterOperatorModuleProvider { context, _ -> OpenChannelRegisterOperatorModule(context) }
-
         this.moderation = ModerationModuleProvider { context, _ -> ModerationModule(context) }
-
-        this.openChannelModeration =
-            OpenChannelModerationModuleProvider { context, _ -> OpenChannelModerationModule(context) }
 
         this.memberList = MemberListModuleProvider { context, _ -> MemberListModule(context) }
 
         this.bannedUserList = BannedUserListModuleProvider { context, _ -> BannedUserListModule(context) }
 
-        this.openChannelBannedUserList =
-            OpenChannelBannedUserListModuleProvider { context, _ -> OpenChannelBannedUserListModule(context) }
-
         this.mutedMemberList = MutedMemberListModuleProvider { context, _ -> MutedMemberListModule(context) }
 
-        this.openChannelMutedParticipantList =
-            OpenChannelMutedParticipantListModuleProvider { context, _ -> OpenChannelMutedParticipantListModule(context) }
-
         this.operatorList = OperatorListModuleProvider { context, _ -> OperatorListModule(context) }
-
-        this.openChannelOperatorList =
-            OpenChannelOperatorListModuleProvider { context, _ -> OpenChannelOperatorListModule(context) }
 
         this.messageSearch = MessageSearchModuleProvider { context, _ -> MessageSearchModule(context) }
 
@@ -306,8 +215,6 @@ object ModuleProviders {
         this.participantList = ParticipantListModuleProvider { context, _ -> ParticipantListModule(context) }
 
         this.channelPushSetting = ChannelPushSettingModuleProvider { context, _ -> ChannelPushSettingModule(context) }
-
-        this.openChannelList = OpenChannelListModuleProvider { context, _ -> OpenChannelListModule(context) }
 
         this.feedNotificationChannel = FeedNotificationChannelModuleProvider { context, _, config ->
             FeedNotificationChannelModule(context, config)
