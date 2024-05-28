@@ -2,19 +2,20 @@ package com.jet.im.model.messages;
 
 import android.text.TextUtils;
 
-import com.jet.im.model.MessageContent;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MediaMessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
-public class ImageMessage extends MessageContent {
+public class ImageMessage extends MediaMessageContent {
 
     public ImageMessage() {
         this.mContentType = "jg:img";
     }
+
     @Override
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();

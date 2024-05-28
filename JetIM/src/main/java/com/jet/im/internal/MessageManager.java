@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IMessageManager;
+import com.jet.im.interfaces.IMessageUploadProvider;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.QryHisMsgCallback;
@@ -23,9 +24,11 @@ import com.jet.im.internal.model.messages.ReadNtfMessage;
 import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.internal.model.messages.TopConvMessage;
 import com.jet.im.internal.model.messages.UnDisturbConvMessage;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
+import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
@@ -36,7 +39,6 @@ import com.jet.im.model.messages.RecallInfoMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.internal.util.JLogger;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -72,15 +74,18 @@ public class MessageManager implements IMessageManager {
 
     private final JetIMCore mCore;
 
-    private ConcreteMessage createSendMessage(MessageContent content,
-                                              Conversation conversation,
-                                              boolean isBroadcast) {
+    private ConcreteMessage saveMessageWithContent(MessageContent content,
+                                                   Conversation conversation,
+                                                   Message.MessageState state,
+                                                   Message.MessageDirection direction,
+                                                   boolean isBroadcast) {
+        //构造消息
         ConcreteMessage message = new ConcreteMessage();
         message.setContent(content);
         message.setConversation(conversation);
         message.setContentType(content.getContentType());
-        message.setDirection(Message.MessageDirection.SEND);
-        message.setState(Message.MessageState.SENDING);
+        message.setDirection(direction);
+        message.setState(state);
         message.setSenderUserId(mCore.getUserId());
         message.setClientUid(createClientUid());
         message.setTimestamp(System.currentTimeMillis());
@@ -89,23 +94,33 @@ public class MessageManager implements IMessageManager {
             flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
         }
         message.setFlags(flags);
+        //保存消息
+        List<ConcreteMessage> list = new ArrayList<>(1);
+        list.add(message);
+        mCore.getDbManager().insertMessages(list);
+        //回调通知
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onMessageSave(message);
+        }
+        //返回消息
         return message;
     }
 
     private Message sendMessage(MessageContent content,
                                 Conversation conversation,
-                                List<ConcreteMessage> mergedMessages,
                                 boolean isBroadcast,
                                 ISendMessageCallback callback) {
-        ConcreteMessage message = createSendMessage(content, conversation, isBroadcast);
-        List<ConcreteMessage> list = new ArrayList<>(1);
-        list.add(message);
-        mCore.getDbManager().insertMessages(list);
+        ConcreteMessage message = saveMessageWithContent(content, conversation, Message.MessageState.SENDING, Message.MessageDirection.SEND, isBroadcast);
+        sendWebSocketMessage(message, isBroadcast, callback);
+        return message;
+    }
 
-        if (mSendReceiveListener != null) {
-            mSendReceiveListener.onMessageSave(message);
+    private void sendWebSocketMessage(ConcreteMessage message, boolean isBroadcast, ISendMessageCallback callback) {
+        List mergedMessages = null;
+        if (message.getContent() instanceof MergeMessage) {
+            MergeMessage mergeMessage = (MergeMessage) message.getContent();
+            mergedMessages = mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
         }
-
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo) {
@@ -141,19 +156,81 @@ public class MessageManager implements IMessageManager {
             }
         };
         if (mCore.getWebSocket() != null) {
-            mCore.getWebSocket().sendIMMessage(content, conversation, message.getClientUid(), mergedMessages, isBroadcast, mCore.getUserId(), messageCallback);
+            mCore.getWebSocket().sendIMMessage(message.getContent(), message.getConversation(), message.getClientUid(), mergedMessages, isBroadcast, mCore.getUserId(), messageCallback);
         }
-        return message;
     }
 
     @Override
     public Message sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
-        List mergedMessages = null;
-        if (content instanceof MergeMessage) {
-            MergeMessage mergeMessage = (MergeMessage) content;
-            mergedMessages = mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
+        return sendMessage(content, conversation, false, callback);
+    }
+
+    @Override
+    public Message sendMediaMessage(MediaMessageContent content, Conversation conversation, ISendMediaMessageCallback callback) {
+        if (content == null) {
+            if (callback != null) {
+                callback.onError(null, JErrorCode.INVALID_PARAM);
+            }
+            return null;
         }
-        return sendMessage(content, conversation, mergedMessages, false, callback);
+        ConcreteMessage message = saveMessageWithContent(content, conversation, Message.MessageState.UPLOADING, Message.MessageDirection.SEND, false);
+        if (mMessageUploadProvider != null) {
+            mMessageUploadProvider.uploadMessage(message,
+                    progress -> {
+                        if (callback != null) {
+                            callback.onProgress(progress, message);
+                        }
+                    },
+                    uploadMessage -> {
+                        if (!(uploadMessage instanceof ConcreteMessage)) {
+                            uploadMessage.setState(Message.MessageState.FAIL);
+                            mCore.getDbManager().setMessageState(uploadMessage.getClientMsgNo(), Message.MessageState.FAIL);
+                            if (callback != null) {
+                                callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
+                            }
+                            return;
+                        }
+                        ConcreteMessage cm = (ConcreteMessage) uploadMessage;
+                        mCore.getDbManager().updateMessageContentWithClientMsgNo(cm.getContent(), cm.getContentType(), cm.getClientMsgNo());
+                        cm.setState(Message.MessageState.SENDING);
+                        mCore.getDbManager().setMessageState(cm.getClientMsgNo(), Message.MessageState.SENDING);
+                        sendWebSocketMessage(cm, false, new ISendMessageCallback() {
+                            @Override
+                            public void onSuccess(Message message1) {
+                                if (callback != null) {
+                                    callback.onSuccess(message1);
+                                }
+                            }
+
+                            @Override
+                            public void onError(Message message1, int errorCode) {
+                                if (callback != null) {
+                                    callback.onError(message1, errorCode);
+                                }
+                            }
+                        });
+                    },
+                    () -> {
+                        message.setState(Message.MessageState.FAIL);
+                        mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                        if (callback != null) {
+                            callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
+                        }
+                    },
+                    () -> {
+                        message.setState(Message.MessageState.FAIL);
+                        mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                        if (callback != null) {
+                            callback.onCancel(message);
+                        }
+                    }
+            );
+        } else {
+            if (callback != null) {
+                callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
+            }
+        }
+        return message;
     }
 
     @Override
@@ -491,7 +568,7 @@ public class MessageManager implements IMessageManager {
                     RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
                     recallInfoMessage.setExtra(extras);
                     m.setContent(recallInfoMessage);
-                    mCore.getDbManager().updateMessageContent(recallInfoMessage, m.getContentType(), messageId);
+                    mCore.getDbManager().updateMessageContentWithMessageId(recallInfoMessage, m.getContentType(), messageId);
                     //通知会话更新
                     List<ConcreteMessage> messageList = new ArrayList<>();
                     messageList.add((ConcreteMessage) m);
@@ -745,17 +822,11 @@ public class MessageManager implements IMessageManager {
             }
             return;
         }
-        List mergedMessages = null;
-        if (content instanceof MergeMessage) {
-            MergeMessage mergeMessage = (MergeMessage) content;
-            mergedMessages = mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
-        }
-        loopBroadcastMessage(content, conversations, mergedMessages, 0, conversations.size(), callback);
+        loopBroadcastMessage(content, conversations, 0, conversations.size(), callback);
     }
 
     private void loopBroadcastMessage(MessageContent content,
                                       List<Conversation> conversations,
-                                      List<ConcreteMessage> mergedMessages,
                                       int processCount,
                                       int totalCount,
                                       IBroadcastMessageCallback callback) {
@@ -765,15 +836,15 @@ public class MessageManager implements IMessageManager {
             }
             return;
         }
-        sendMessage(content, conversations.get(0), mergedMessages, true, new ISendMessageCallback() {
+        sendMessage(content, conversations.get(0), true, new ISendMessageCallback() {
             @Override
             public void onSuccess(Message message) {
-                broadcastCallbackAndLoopNext(message, JErrorCode.NONE, conversations, mergedMessages, processCount, totalCount, callback);
+                broadcastCallbackAndLoopNext(message, JErrorCode.NONE, conversations, processCount, totalCount, callback);
             }
 
             @Override
             public void onError(Message message, int errorCode) {
-                broadcastCallbackAndLoopNext(message, errorCode, conversations, mergedMessages, processCount, totalCount, callback);
+                broadcastCallbackAndLoopNext(message, errorCode, conversations, processCount, totalCount, callback);
             }
         });
     }
@@ -781,7 +852,6 @@ public class MessageManager implements IMessageManager {
     private void broadcastCallbackAndLoopNext(Message message,
                                               int errorCode,
                                               List<Conversation> conversations,
-                                              List<ConcreteMessage> mergedMessages,
                                               int processCount,
                                               int totalCount,
                                               IBroadcastMessageCallback callback) {
@@ -794,7 +864,7 @@ public class MessageManager implements IMessageManager {
             }
         } else {
             conversations.remove(0);
-            mCore.getSendHandler().postDelayed(() -> loopBroadcastMessage(message.getContent(), conversations, mergedMessages, processCount + 1, totalCount, callback), 50);
+            mCore.getSendHandler().postDelayed(() -> loopBroadcastMessage(message.getContent(), conversations, processCount + 1, totalCount, callback), 50);
         }
     }
 
@@ -860,6 +930,11 @@ public class MessageManager implements IMessageManager {
         if (!TextUtils.isEmpty(key) && mReadReceiptListenerMap != null) {
             mReadReceiptListenerMap.remove(key);
         }
+    }
+
+    @Override
+    public void setMessageUploadProvider(IMessageUploadProvider uploadProvider) {
+        this.mMessageUploadProvider = uploadProvider;
     }
 
     interface ISendReceiveListener {
@@ -953,7 +1028,7 @@ public class MessageManager implements IMessageManager {
     private Message handleRecallCmdMessage(String messageId, Map<String, String> extra) {
         RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
         recallInfoMessage.setExtra(extra);
-        mCore.getDbManager().updateMessageContent(recallInfoMessage, RecallInfoMessage.CONTENT_TYPE, messageId);
+        mCore.getDbManager().updateMessageContentWithMessageId(recallInfoMessage, RecallInfoMessage.CONTENT_TYPE, messageId);
         List<String> ids = new ArrayList<>(1);
         ids.add(messageId);
         List<Message> messages = mCore.getDbManager().getMessagesByMessageIds(ids);
@@ -1216,5 +1291,6 @@ public class MessageManager implements IMessageManager {
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
+    private IMessageUploadProvider mMessageUploadProvider;
     private ISendReceiveListener mSendReceiveListener;
 }

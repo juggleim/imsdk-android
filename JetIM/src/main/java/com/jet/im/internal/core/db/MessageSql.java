@@ -198,7 +198,8 @@ class MessageSql {
         return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s WHERE id = %s", state, timestamp, seqNo, clientMsgNo);
     }
 
-    static final String SQL_UPDATE_MESSAGE_CONTENT = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE message_uid = ?";
+    static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_ID = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE message_uid = ?";
+    static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_NO = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE id = ?";
 
     static String sqlMessageSendFail(long clientMsgNo) {
         return String.format("UPDATE message SET state = %s WHERE id = %s", Message.MessageState.FAIL.getValue(), clientMsgNo);

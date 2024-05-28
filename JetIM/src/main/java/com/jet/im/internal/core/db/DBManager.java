@@ -499,7 +499,7 @@ public class DBManager {
         execSQL(sql, args);
     }
 
-    public void updateMessageContent(MessageContent content, String type, String messageId) {
+    public void updateMessageContentWithMessageId(MessageContent content, String type, String messageId) {
         Object[] args = new Object[4];
         if (content != null) {
             args[0] = new String(content.encode());
@@ -510,7 +510,21 @@ public class DBManager {
         }
         args[1] = type;
         args[3] = messageId;
-        execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT, args);
+        execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_ID, args);
+    }
+
+    public void updateMessageContentWithClientMsgNo(MessageContent content, String type, long clientMsgNo) {
+        Object[] args = new Object[4];
+        if (content != null) {
+            args[0] = new String(content.encode());
+            args[2] = content.getSearchContent();
+        } else {
+            args[0] = "";
+            args[2] = "";
+        }
+        args[1] = type;
+        args[3] = clientMsgNo;
+        execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_NO, args);
     }
 
     public void messageSendFail(long clientMsgNo) {

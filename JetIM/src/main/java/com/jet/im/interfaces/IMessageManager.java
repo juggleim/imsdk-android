@@ -3,6 +3,7 @@ package com.jet.im.interfaces;
 import com.jet.im.JetIMConst;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupMessageReadInfo;
+import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
@@ -21,6 +22,16 @@ public interface IMessageManager {
         void onSuccess(Message message);
 
         void onError(Message message, int errorCode);
+    }
+
+    interface ISendMediaMessageCallback {
+        void onProgress(int progress, Message message);
+
+        void onSuccess(Message message);
+
+        void onError(Message message, int errorCode);
+
+        void onCancel(Message message);
     }
 
     interface IGetLocalAndRemoteMessagesCallback {
@@ -64,6 +75,10 @@ public interface IMessageManager {
     Message sendMessage(MessageContent content,
                         Conversation conversation,
                         ISendMessageCallback callback);
+
+    Message sendMediaMessage(MediaMessageContent content,
+                             Conversation conversation,
+                             ISendMediaMessageCallback callback);
 
     Message resendMessage(Message message,
                           ISendMessageCallback callback);
@@ -181,6 +196,8 @@ public interface IMessageManager {
     void addReadReceiptListener(String key, IMessageReadReceiptListener listener);
 
     void removeReadReceiptListener(String key);
+
+    void setMessageUploadProvider(IMessageUploadProvider uploadProvider);
 
     interface IMessageListener {
         void onMessageReceive(Message message);

@@ -2,19 +2,20 @@ package com.jet.im.model.messages;
 
 import android.text.TextUtils;
 
-import com.jet.im.model.MessageContent;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MediaMessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
-public class VideoMessage extends MessageContent {
+public class VideoMessage extends MediaMessageContent {
 
     public VideoMessage() {
         this.mContentType = "jg:video";
     }
+
     @Override
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
@@ -134,6 +135,7 @@ public class VideoMessage extends MessageContent {
     public void setExtra(String extra) {
         mExtra = extra;
     }
+
     private String mUrl;
     private String mSnapshotUrl;
     private int mHeight;
