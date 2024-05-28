@@ -1,6 +1,5 @@
 package com.jet.im.internal.core.network;
 
-import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 
@@ -10,13 +9,11 @@ import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.model.ConcreteMessage;
-import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
 import com.jet.im.push.PushChannel;
 import com.jet.im.internal.util.JLogger;
 
-import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
@@ -24,23 +21,40 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class JWebSocket extends WebSocketClient implements WebSocketCommandManager.CommandTimeoutListener {
-
-    public static URI createWebSocketUri(String server) {
-        String webSocketUrl = WEB_SOCKET_PREFIX + server + WEB_SOCKET_SUFFIX;
-        return URI.create(webSocketUrl);
-    }
-
-    public JWebSocket(String appKey, String token, URI serverUri, Context context) {
-        super(serverUri);
-        mAppKey = appKey;
-        mToken = token;
-        mContext = context;
+public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListener, JWebSocketClient.IWebSocketClientListener {
+    public JWebSocket(Handler sendHandler) {
+        mSendHandler = sendHandler;
         mPbData = new PBData();
         mHeartbeatManager = new HeartbeatManager(this);
         mWebSocketCommandManager = new WebSocketCommandManager(this);
         mWebSocketCommandManager.start(false);
+        mCompeteWSCList = new ArrayList<>();
+    }
+
+    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, List<String> servers) {
+        mSendHandler.post(() -> {
+            mAppKey = appKey;
+            mToken = token;
+            mDeviceId = deviceId;
+            mPackageName = packageName;
+            mPushChannel = pushChannel;
+            mPushToken = pushToken;
+            mNetworkType = networkType;
+            mCarrier = carrier;
+
+            resetWebSocketClient();
+            ExecutorService executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_COUNT);
+
+            for (String server : servers) {
+                URI uri = createWebSocketUri(server);
+                JWebSocketClient wsc = new JWebSocketClient(uri, JWebSocket.this);
+                mCompeteWSCList.add(wsc);
+                executorService.execute(wsc::connect);
+            }
+        });
     }
 
     public void disconnect(Boolean receivePush) {
@@ -200,12 +214,12 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         sendWhenOpen(bytes);
     }
 
-    public void registerPushToken(PushChannel channel, String token, String userId, WebSocketSimpleCallback callback) {
+    public void registerPushToken(PushChannel channel, String token, String deviceId, String packageName, String userId, WebSocketSimpleCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.registerPushToken(channel,
                 token,
-                JUtility.getDeviceId(mContext),
-                mContext.getPackageName(),
+                deviceId,
+                packageName,
                 userId,
                 mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
@@ -301,19 +315,38 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     @Override
-    public void onOpen(ServerHandshake handshakedata) {
-        JLogger.i("JWebSocket, onOpen");
-        sendConnectMsg();
+    public void onOpen(JWebSocketClient client, ServerHandshake handshakedata) {
+        mSendHandler.post(() -> {
+            if (mIsCompeteFinish) {
+                client.close();
+                return;
+            }
+            for (JWebSocketClient wsc : mCompeteWSCList) {
+                if (wsc == client) {
+                    JLogger.i("JWebSocket, onOpen");
+                    mIsCompeteFinish = true;
+                    mWebSocketClient = client;
+                    sendConnectMsg();
+                    break;
+                }
+            }
+        });
     }
 
     @Override
-    public void onMessage(String message) {
+    public void onMessage(JWebSocketClient client, String message) {
+        if (client != mWebSocketClient) {
+            return;
+        }
         mHeartbeatManager.updateLastMessageReceivedTime();
         JLogger.i("JWebSocket, onMessage");
     }
 
     @Override
-    public void onMessage(ByteBuffer bytes) {
+    public void onMessage(JWebSocketClient client, ByteBuffer bytes) {
+        if (client != mWebSocketClient) {
+            return;
+        }
         mHeartbeatManager.updateLastMessageReceivedTime();
         PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
         JLogger.i("JWebSocket, onMessage bytes, type is " + obj.getRcvType());
@@ -363,16 +396,24 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     @Override
-    public void onClose(int code, String reason, boolean remote) {
+    public void onClose(JWebSocketClient client, int code, String reason, boolean remote) {
+        if (client != mWebSocketClient) {
+            return;
+        }
         JLogger.i("JWebSocket, onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
+        mSendHandler.post(this::resetWebSocketClient);
         if (remote && mConnectListener != null) {
             mConnectListener.onWebSocketClose();
         }
     }
 
     @Override
-    public void onError(Exception ex) {
+    public void onError(JWebSocketClient client, Exception ex) {
+        if (client != mWebSocketClient) {
+            return;
+        }
         JLogger.i("JWebSocket, onError, msg is " + ex.getMessage());
+        mSendHandler.post(this::resetWebSocketClient);
         if (mConnectListener != null) {
             mConnectListener.onWebSocketFail();
         }
@@ -386,31 +427,19 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         mAppKey = appKey;
     }
 
-    public void setSendHandler(Handler sendHandler) {
-        mSendHandler = sendHandler;
-    }
-
-    public void setPushChannel(PushChannel pushChannel) {
-        mPushChannel = pushChannel;
-    }
-
-    public void setPushToken(String pushToken) {
-        mPushToken = pushToken;
-    }
-
     private void sendConnectMsg() {
         byte[] bytes = mPbData.connectData(mAppKey,
                 mToken,
-                JUtility.getDeviceId(mContext),
+                mDeviceId,
                 ConstInternal.PLATFORM,
                 Build.BRAND,
                 Build.MODEL,
                 Build.VERSION.RELEASE,
-                mContext.getPackageName(),
+                mPackageName,
                 mPushChannel,
                 mPushToken,
-                JUtility.getNetworkType(mContext),
-                JUtility.getCarrier(mContext),
+                mNetworkType,
+                mCarrier,
                 "");
         sendWhenOpen(bytes);
     }
@@ -418,6 +447,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     private void sendDisconnectMsg(boolean receivePush) {
         byte[] bytes = mPbData.disconnectData(receivePush);
         sendWhenOpen(bytes);
+        mSendHandler.post(this::resetWebSocketClient);
     }
 
     private void sendPublishAck(int index) {
@@ -500,6 +530,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleDisconnectMsg(PBRcvObj.DisconnectMsg msg) {
+        mSendHandler.post(this::resetWebSocketClient);
         if (mConnectListener != null) {
             mConnectListener.onDisconnect(msg.code, msg.extra);
         }
@@ -563,24 +594,43 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     private void sendWhenOpen(byte[] bytes) {
         mSendHandler.post(() -> {
-            if (isOpen()) {
-                send(bytes);
+            if (mWebSocketClient != null) {
+                mWebSocketClient.send(bytes);
             }
         });
     }
 
+    private void resetWebSocketClient() {
+        mWebSocketClient = null;
+        mCompeteWSCList.clear();
+        mIsCompeteFinish = false;
+    }
+
+    private URI createWebSocketUri(String server) {
+        String webSocketUrl = WEB_SOCKET_PREFIX + server + WEB_SOCKET_SUFFIX;
+        return URI.create(webSocketUrl);
+    }
+
     private String mAppKey;
     private String mToken;
+    private String mDeviceId;
+    private String mPackageName;
+    private String mNetworkType;
+    private String mCarrier;
     private PushChannel mPushChannel;
     private String mPushToken;
     private final PBData mPbData;
-    private final Context mContext;
+
     private final WebSocketCommandManager mWebSocketCommandManager;
     private final HeartbeatManager mHeartbeatManager;
     private IWebSocketConnectListener mConnectListener;
     private IWebSocketMessageListener mMessageListener;
     private Integer mCmdIndex = 0;
-    private Handler mSendHandler;
+    private JWebSocketClient mWebSocketClient;
+    private boolean mIsCompeteFinish;
+    private final List<JWebSocketClient> mCompeteWSCList;
+    private final Handler mSendHandler;
     private static final String WEB_SOCKET_PREFIX = "ws://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
+    private static final int MAX_CONCURRENT_COUNT = 5;
 }

@@ -61,19 +61,22 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            TextMessage text = new TextMessage("Android broadcast");
-                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
-                            JetIM.getInstance().getConversationManager().setTop(c1, true, new IConversationManager.ISimpleCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    Log.d("zzb", "setTop success");
-                                }
+                            JetIM.getInstance().getConnectionManager().disconnect(false);
+                            JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 
-                                @Override
-                                public void onError(int errorCode) {
-                                    Log.d("zzb", "setTop fail, errorCode is " + errorCode);
-                                }
-                            });
+//                            TextMessage text = new TextMessage("Android broadcast");
+//                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+//                            JetIM.getInstance().getConversationManager().setTop(c1, true, new IConversationManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    Log.d("zzb", "setTop success");
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//                                    Log.d("zzb", "setTop fail, errorCode is " + errorCode);
+//                                }
+//                            });
 
 //                            Conversation c2 = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
 //                            Conversation c3 = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");

@@ -21,17 +21,40 @@ public class JetIMCore {
         HandlerThread sendThread = new HandlerThread("JET_SEND");
         sendThread.start();
         mSendHandler = new Handler(sendThread.getLooper());
+        mWebSocket = new JWebSocket(mSendHandler);
     }
 
     public JWebSocket getWebSocket() {
         return mWebSocket;
     }
 
-    public void setWebSocket(JWebSocket ws) {
-        ws.setSendHandler(mSendHandler);
-        this.mWebSocket = ws;
+    public String getDeviceId() {
+        if (mContext == null) {
+            return "";
+        }
+        return JUtility.getDeviceId(mContext);
     }
 
+    public String getPackageName() {
+        if (mContext == null) {
+            return "";
+        }
+        return mContext.getPackageName();
+    }
+
+    public String getNetworkType() {
+        if (mContext == null) {
+            return "";
+        }
+        return JUtility.getNetworkType(mContext);
+    }
+
+    public String getCarrier() {
+        if (mContext == null) {
+            return "";
+        }
+        return JUtility.getCarrier(mContext);
+    }
     public List<String> getNaviUrls() {
         if (mNaviUrls == null) {
             mNaviUrls = new ArrayList<>();
@@ -180,7 +203,7 @@ public class JetIMCore {
         public static final int WAITING_FOR_CONNECTING = 5;
     }
 
-    private JWebSocket mWebSocket;
+    private final JWebSocket mWebSocket;
     private List<String> mNaviUrls;
     private List<String> mServers;
     private String mAppKey;
@@ -192,7 +215,7 @@ public class JetIMCore {
     private long mConversationSyncTime;
     private long mMessageSendSyncTime;
     private long mMessageReceiveTime;
-    private Handler mSendHandler;
+    private final Handler mSendHandler;
 
     private final String APP_KEY = "AppKey";
     private final String TOKEN = "Token";

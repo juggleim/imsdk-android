@@ -23,7 +23,7 @@ class NaviTask {
         void onSuccess(String userId, List<String> servers);
         void onError(int errorCode);
     }
-    static void request(List<String> urls, String appKey, String token, IRequestCallback callback) {
+    void request(List<String> urls, String appKey, String token, IRequestCallback callback) {
         if (urls.size() > MAX_CONCURRENT_COUNT) {
             urls = urls.subList(0, MAX_CONCURRENT_COUNT);
         }
@@ -33,7 +33,7 @@ class NaviTask {
         }
     }
 
-    private static void request(String url, String appKey, String token, IRequestCallback callback) {
+    void request(String url, String appKey, String token, IRequestCallback callback) {
         url = url + NAVI_SERVER_SUFFIX;
         try {
             URL u = new URL(url);
@@ -42,11 +42,11 @@ class NaviTask {
             con.setRequestProperty(APP_KEY, appKey);
             con.setRequestProperty(TOKEN, token);
             con.connect();
-            synchronized (NaviTask.class) {
-                if (sIsFinish) {
+            synchronized (this) {
+                if (mIsFinish) {
                     return;
                 }
-                sIsFinish = true;
+                mIsFinish = true;
                 responseConnection(con, callback);
             }
         } catch (IOException | JSONException e) {
@@ -57,7 +57,7 @@ class NaviTask {
         }
     }
 
-    private static void responseConnection(HttpURLConnection con, IRequestCallback callback) throws IOException, JSONException {
+    private void responseConnection(HttpURLConnection con, IRequestCallback callback) throws IOException, JSONException {
         int responseCode = con.getResponseCode();
         if (responseCode != 200) {
             if (responseCode == 401) {
@@ -107,5 +107,5 @@ class NaviTask {
     private static final String USER_ID = "user_id";
     private static final String SERVERS = "servers";
     private static final int MAX_CONCURRENT_COUNT = 5;
-    private static boolean sIsFinish = false;
+    private boolean mIsFinish = false;
 }
