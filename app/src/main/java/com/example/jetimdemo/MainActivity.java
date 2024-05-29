@@ -648,13 +648,28 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendMediaMessage() {
         String filePath = getFilesDir().getAbsolutePath() + File.separator + "xhup.png";
+        String filePath2 = getFilesDir().getAbsolutePath() + File.separator + "VID_20240129092043475.mp4";
         Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
-        FileMessage f = new FileMessage();
-        f.setName("xhup.png");
-        f.setLocalPath(filePath);
-        f.setSize(116 * 1024);
-        f.setType("png");
-        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(f, c, new IMessageManager.ISendMediaMessageCallback() {
+        ImageMessage image = new ImageMessage();
+        image.setHeight(600);
+        image.setWidth(800);
+        image.setSize(116 * 1024);
+        image.setLocalPath(filePath);
+        image.setThumbnailLocalPath(filePath);
+        VideoMessage video = new VideoMessage();
+        video.setHeight(400);
+        video.setWidth(600);
+        video.setLocalPath(filePath2);
+        video.setSnapshotLocalPath(filePath);
+        FileMessage file = new FileMessage();
+        file.setName("xhup.png");
+        file.setLocalPath(filePath);
+        file.setSize(116 * 1024);
+        file.setType("png");
+        VoiceMessage voice = new VoiceMessage();
+        voice.setLocalPath(filePath);
+        voice.setDuration(15);
+        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(voice, c, new IMessageManager.ISendMediaMessageCallback() {
             @Override
             public void onProgress(int progress, Message message) {
                 Log.i("sendMediaMessage", "onProgress, clientMsgNo is " + message.getClientMsgNo() + ", progress is " + progress);
