@@ -13,7 +13,7 @@ import com.qiniu.android.storage.UploadOptions;
  */
 public class QiNiuUploader extends BaseUploader {
     private final UploadQiNiuCred mQiNiuCred;
-    private volatile boolean isCancel = false;
+    private volatile boolean mIsCancelled = false;
 
     public QiNiuUploader(String localPath, UploaderCallback uploaderCallback, UploadQiNiuCred qiNiuCred) {
         super(localPath, uploaderCallback);
@@ -66,7 +66,7 @@ public class QiNiuUploader extends BaseUploader {
 
                     notifyProgress((int) (percent * 100));
                 },
-                () -> isCancel);
+                () -> mIsCancelled);
         //开始上传
         UploadManager uploadManager = new UploadManager();
         uploadManager.put(mLocalPath, fileName, mQiNiuCred.getToken(), completionHandler, options);
@@ -74,6 +74,6 @@ public class QiNiuUploader extends BaseUploader {
 
     @Override
     public void cancel() {
-        isCancel = true;
+        mIsCancelled = true;
     }
 }
