@@ -20,8 +20,8 @@ public class ImageMessage extends MediaMessageContent {
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
         try {
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             if (!TextUtils.isEmpty(mThumbnailUrl)) {
                 jsonObject.put(THUMBNAIL, mThumbnailUrl);
@@ -49,7 +49,7 @@ public class ImageMessage extends MediaMessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(THUMBNAIL)) {
                 mThumbnailUrl = jsonObject.optString(THUMBNAIL);
@@ -74,14 +74,6 @@ public class ImageMessage extends MediaMessageContent {
     @Override
     public String conversationDigest() {
         return DIGEST;
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        mUrl = url;
     }
 
     public String getThumbnailUrl() {
@@ -124,7 +116,6 @@ public class ImageMessage extends MediaMessageContent {
         mSize = size;
     }
 
-    private String mUrl;
     private String mThumbnailUrl;
     private int mHeight;
     private int mWidth;

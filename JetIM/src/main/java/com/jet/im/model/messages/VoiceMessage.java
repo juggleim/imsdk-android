@@ -19,8 +19,8 @@ public class VoiceMessage extends MediaMessageContent {
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
         try {
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             jsonObject.put(DURATION, mDuration);
             if (!TextUtils.isEmpty(mExtra)) {
@@ -43,7 +43,7 @@ public class VoiceMessage extends MediaMessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(DURATION)) {
                 mDuration = jsonObject.optInt(DURATION);
@@ -59,14 +59,6 @@ public class VoiceMessage extends MediaMessageContent {
     @Override
     public String conversationDigest() {
         return DIGEST;
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        mUrl = url;
     }
 
     public int getDuration() {
@@ -85,7 +77,6 @@ public class VoiceMessage extends MediaMessageContent {
         mExtra = extra;
     }
 
-    private String mUrl;
     private int mDuration;
     private String mExtra;
     private static final String URL = "url";

@@ -22,8 +22,8 @@ public class FileMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(mName)) {
                 jsonObject.put(NAME, mName);
             }
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             jsonObject.put(SIZE, mSize);
             if (!TextUtils.isEmpty(mType)) {
@@ -49,7 +49,7 @@ public class FileMessage extends MediaMessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(NAME)) {
                 mName = jsonObject.optString(NAME);
@@ -79,14 +79,6 @@ public class FileMessage extends MediaMessageContent {
 
     public void setName(String name) {
         this.mName = name;
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        this.mUrl = url;
     }
 
     public long getSize() {
@@ -119,7 +111,6 @@ public class FileMessage extends MediaMessageContent {
     }
 
     private String mName;
-    private String mUrl;
     private long mSize;
     private String mType;
     private String mExtra;
