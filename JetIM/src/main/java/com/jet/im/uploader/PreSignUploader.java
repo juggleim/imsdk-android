@@ -17,11 +17,12 @@ import java.net.URL;
  * @create 2024-05-29 9:12
  */
 public class PreSignUploader extends BaseUploader {
+    private static final int BUFFER_SIZE = 4096; //缓冲区大小
+    private static final int CONNECT_TIMEOUT = 10 * 1000; //连接超时时间
+    private static final int READ_TIMEOUT = 10 * 1000; //读取超时时间
+
     private final UploadPreSignCred mPreSignCred;
     private volatile boolean mIsCancelled = false;
-    private final int BUFFER_SIZE = 4096; //缓冲区大小
-    private final int CONNECT_TIMEOUT = 10 * 1000; //连接超时时间
-    private final int READ_TIMEOUT = 10 * 1000; //读取超时时间
 
     public PreSignUploader(String localPath, UploaderCallback uploaderCallback, UploadPreSignCred preSignCred) {
         super(localPath, uploaderCallback);
@@ -127,7 +128,7 @@ public class PreSignUploader extends BaseUploader {
         mIsCancelled = true;
     }
 
-    // 移除 URL 的 query 部分
+    //移除URL的query 部分
     private String removeQueryFromUrl(String url) {
         int index = url.indexOf("?");
         if (index != -1) {
