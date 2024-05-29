@@ -86,14 +86,6 @@ public class VideoMessage extends MediaMessageContent {
         return UploadFileType.VIDEO;
     }
 
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        mUrl = url;
-    }
-
     public String getSnapshotUrl() {
         return mSnapshotUrl;
     }
@@ -142,7 +134,6 @@ public class VideoMessage extends MediaMessageContent {
         mExtra = extra;
     }
 
-    private String mUrl;
     private String mSnapshotUrl;
     private int mHeight;
     private int mWidth;

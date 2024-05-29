@@ -87,14 +87,6 @@ public class FileMessage extends MediaMessageContent {
         this.mName = name;
     }
 
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        this.mUrl = url;
-    }
-
     public long getSize() {
         return mSize;
     }
@@ -125,7 +117,6 @@ public class FileMessage extends MediaMessageContent {
     }
 
     private String mName;
-    private String mUrl;
     private long mSize;
     private String mType;
     private String mExtra;

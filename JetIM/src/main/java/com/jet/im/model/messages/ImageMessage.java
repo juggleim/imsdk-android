@@ -82,14 +82,6 @@ public class ImageMessage extends MediaMessageContent {
         return UploadFileType.IMAGE;
     }
 
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        mUrl = url;
-    }
-
     public String getThumbnailUrl() {
         return mThumbnailUrl;
     }
@@ -130,7 +122,6 @@ public class ImageMessage extends MediaMessageContent {
         mSize = size;
     }
 
-    private String mUrl;
     private String mThumbnailUrl;
     private int mHeight;
     private int mWidth;

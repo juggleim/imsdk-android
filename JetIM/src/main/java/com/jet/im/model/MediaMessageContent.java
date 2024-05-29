@@ -4,7 +4,7 @@ import com.jet.im.model.upload.UploadFileType;
 
 public abstract class MediaMessageContent extends MessageContent {
     private String mLocalPath;
-    private String mUrl;
+    protected String mUrl;
 
     public String getLocalPath() {
         return mLocalPath;

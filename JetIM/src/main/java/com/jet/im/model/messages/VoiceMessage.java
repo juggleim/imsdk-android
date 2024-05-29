@@ -67,14 +67,6 @@ public class VoiceMessage extends MediaMessageContent {
         return UploadFileType.AUDIO;
     }
 
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        mUrl = url;
-    }
-
     public int getDuration() {
         return mDuration;
     }
@@ -91,7 +83,6 @@ public class VoiceMessage extends MediaMessageContent {
         mExtra = extra;
     }
 
-    private String mUrl;
     private int mDuration;
     private String mExtra;
     private static final String URL = "url";
