@@ -82,6 +82,14 @@ public class ImageMessage extends MediaMessageContent {
         return UploadFileType.IMAGE;
     }
 
+    public String getThumbnailLocalPath() {
+        return mThumbnailLocalPath;
+    }
+
+    public void setThumbnailLocalPath(String thumbnailLocalPath) {
+        this.mThumbnailLocalPath = thumbnailLocalPath;
+    }
+
     public String getThumbnailUrl() {
         return mThumbnailUrl;
     }
@@ -122,6 +130,7 @@ public class ImageMessage extends MediaMessageContent {
         mSize = size;
     }
 
+    private String mThumbnailLocalPath;
     private String mThumbnailUrl;
     private int mHeight;
     private int mWidth;

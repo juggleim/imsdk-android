@@ -86,6 +86,14 @@ public class VideoMessage extends MediaMessageContent {
         return UploadFileType.VIDEO;
     }
 
+    public String getSnapshotLocalPath() {
+        return mSnapshotLocalPath;
+    }
+
+    public void setSnapshotLocalPath(String snapshotLocalPath) {
+        this.mSnapshotLocalPath = snapshotLocalPath;
+    }
+
     public String getSnapshotUrl() {
         return mSnapshotUrl;
     }
@@ -134,6 +142,7 @@ public class VideoMessage extends MediaMessageContent {
         mExtra = extra;
     }
 
+    private String mSnapshotLocalPath;
     private String mSnapshotUrl;
     private int mHeight;
     private int mWidth;
