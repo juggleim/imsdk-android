@@ -1,8 +1,12 @@
 package com.example.jetimdemo;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,11 +31,15 @@ import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
+import com.jet.im.model.messages.SnapshotPackedVideoMessage;
 import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.ThumbnailPackedImageMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
+import com.jet.im.uploader.FileUtil;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -656,11 +664,19 @@ public class MainActivity extends AppCompatActivity {
         image.setSize(116 * 1024);
         image.setLocalPath(filePath);
         image.setThumbnailLocalPath(filePath);
+        ThumbnailPackedImageMessage tpImage = ThumbnailPackedImageMessage.messageWithImage(filePath);
+        tpImage.setHeight(600);
+        tpImage.setWidth(800);
+        tpImage.setSize(116 * 1024);
         VideoMessage video = new VideoMessage();
         video.setHeight(400);
         video.setWidth(600);
         video.setLocalPath(filePath2);
         video.setSnapshotLocalPath(filePath);
+        SnapshotPackedVideoMessage spVideo = SnapshotPackedVideoMessage.messageWithVideo(filePath2, getThumbnailVideoFile(getApplicationContext(), filePath2));
+        spVideo.setHeight(400);
+        spVideo.setWidth(600);
+        spVideo.setName(FileUtil.getFileName(filePath2));
         FileMessage file = new FileMessage();
         file.setName("xhup.png");
         file.setLocalPath(filePath);
@@ -669,7 +685,7 @@ public class MainActivity extends AppCompatActivity {
         VoiceMessage voice = new VoiceMessage();
         voice.setLocalPath(filePath);
         voice.setDuration(15);
-        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(voice, c, new IMessageManager.ISendMediaMessageCallback() {
+        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(tpImage, c, new IMessageManager.ISendMediaMessageCallback() {
             @Override
             public void onProgress(int progress, Message message) {
                 Log.i("sendMediaMessage", "onProgress, clientMsgNo is " + message.getClientMsgNo() + ", progress is " + progress);
@@ -720,5 +736,29 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    public static Bitmap getThumbnailVideoFile(Context context, String videoPath) {
+        if (context == null || TextUtils.isEmpty(videoPath)) return null;
+        File video = new File(videoPath);
+        if (!video.exists()) return null;
+
+        MediaMetadataRetriever mmr = null;
+        try {
+            mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(video.getPath());
+
+            return mmr.getFrameAtTime();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (mmr != null) {
+                try {
+                    mmr.release();
+                } catch (IOException ignore) {
+                }
+            }
+        }
+        return null;
     }
 }

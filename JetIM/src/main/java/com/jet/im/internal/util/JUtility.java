@@ -2,20 +2,70 @@ package com.jet.im.internal.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Base64;
 
 import androidx.annotation.NonNull;
+
+import com.jet.im.internal.ConstInternal;
 
 import java.lang.reflect.Method;
 
 public class JUtility {
+    public static Bitmap generateThumbnail(Bitmap image, int targetWidth, int targetHeight) {
+        if (image == null) return null;
+        int imageWidth = image.getWidth();
+        int imageHeight = image.getHeight();
+        float scaleFactor;
+        int scaledWidth;
+        int scaledHeight;
+
+        if ((float) imageWidth / imageHeight < 2.4 && (float) imageHeight / imageWidth < 2.4) {
+            float widthFactor = (float) targetWidth / imageWidth;
+            float heightFactor = (float) targetHeight / imageHeight;
+
+            scaleFactor = Math.min(widthFactor, heightFactor);
+        } else {
+            if ((float) imageWidth / imageHeight > 2.4) {
+                scaleFactor = 100 * (float) targetHeight / imageHeight / ConstInternal.THUMBNAIL_HEIGHT;
+            } else {
+                scaleFactor = 100 * (float) targetWidth / imageWidth / ConstInternal.THUMBNAIL_WIDTH;
+            }
+        }
+        scaledWidth = Math.round(imageWidth * scaleFactor);
+        scaledHeight = Math.round(imageHeight * scaleFactor);
+
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(image, scaledWidth, scaledHeight, true);
+        Bitmap newBitmap;
+
+        if ((float) imageWidth / imageHeight > 2.4) {
+            newBitmap = Bitmap.createBitmap(scaledBitmap, (scaledWidth - ConstInternal.THUMBNAIL_WIDTH) / 2, 0, ConstInternal.THUMBNAIL_WIDTH, scaledHeight);
+        } else if ((float) imageHeight / imageWidth > 2.4) {
+            newBitmap = Bitmap.createBitmap(scaledBitmap, 0, (scaledHeight - ConstInternal.THUMBNAIL_HEIGHT) / 2, scaledWidth, ConstInternal.THUMBNAIL_HEIGHT);
+        } else {
+            newBitmap = scaledBitmap;
+        }
+
+        return newBitmap;
+    }
+
+    public static String base64EncodedStringFrom(byte[] data) {
+        return Base64.encodeToString(data, Base64.NO_WRAP);
+    }
+
+    public static byte[] dataWithBase64EncodedString(String string) {
+        return Base64.decode(string, Base64.NO_WRAP);
+    }
+
     public static SharedPreferences getSP(@NonNull Context context) {
         return context.getSharedPreferences(SP_NAME, 0);
     }
+
     public static String getDeviceId(Context context) {
         String deviceId = "";
         SharedPreferences sp = getSP(context);

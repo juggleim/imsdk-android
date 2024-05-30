@@ -36,7 +36,9 @@ import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.MergeMessage;
 import com.jet.im.model.messages.RecallInfoMessage;
+import com.jet.im.model.messages.SnapshotPackedVideoMessage;
 import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.ThumbnailPackedImageMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
 
@@ -70,6 +72,8 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(ClearUnreadMessage.class);
         ContentTypeCenter.getInstance().registerContentType(TopConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(UnDisturbConvMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(ThumbnailPackedImageMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(SnapshotPackedVideoMessage.class);
     }
 
     private final JetIMCore mCore;
