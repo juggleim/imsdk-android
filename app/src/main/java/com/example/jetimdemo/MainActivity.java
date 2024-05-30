@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.Group;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -23,9 +24,11 @@ import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
@@ -61,6 +64,13 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            UserInfo u1 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid1");
+                            UserInfo u2 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid2");
+                            UserInfo u3 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid3");
+                            UserInfo u5 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid5");
+                            GroupInfo g = JetIM.getInstance().getUserInfoManager().getGroupInfo("groupid1");
+                            Log.i("lifei", "");
+
 //                            JetIM.getInstance().getConnectionManager().disconnect(false);
 //                            JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 

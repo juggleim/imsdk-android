@@ -1,5 +1,7 @@
 package com.jet.im.model;
 
+import java.util.Map;
+
 public class UserInfo {
 
     public String getUserId() {
@@ -26,7 +28,17 @@ public class UserInfo {
         mPortrait = portrait;
     }
 
+    public Map<String, String> getExtra() {
+        return mExtra;
+    }
+
+    public void setExtra(Map<String, String> extra) {
+        mExtra = extra;
+    }
+
     private String mUserId;
     private String mUserName;
     private String mPortrait;
+
+    private Map<String, String> mExtra;
 }

@@ -603,7 +603,8 @@ public class DBManager {
     public void insertUserInfoList(List<UserInfo> userInfoList) {
         mDb.beginTransaction();
         for (UserInfo info : userInfoList) {
-            String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), ""};
+            String extra = UserInfoSql.stringFromMap(info.getExtra());
+            String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), extra};
             execSQL(UserInfoSql.SQL_INSERT_USER_INFO, args);
         }
         mDb.setTransactionSuccessful();
@@ -613,7 +614,8 @@ public class DBManager {
     public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
         mDb.beginTransaction();
         for (GroupInfo info : groupInfoList) {
-            String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), ""};
+            String extra = UserInfoSql.stringFromMap(info.getExtra());
+            String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), extra};
             execSQL(UserInfoSql.SQL_INSERT_GROUP_INFO, args);
         }
         mDb.setTransactionSuccessful();

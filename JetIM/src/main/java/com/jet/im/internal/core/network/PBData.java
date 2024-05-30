@@ -895,6 +895,13 @@ class PBData {
         userInfo.setUserId(item.getMember().getUserId());
         userInfo.setUserName(item.getMember().getNickname());
         userInfo.setPortrait(item.getMember().getUserPortrait());
+        if (item.getMember().getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem it : item.getMember().getExtFieldsList()) {
+                extra.put(it.getKey(), it.getValue());
+            }
+            userInfo.setExtra(extra);
+        }
         return userInfo;
     }
 
@@ -906,6 +913,13 @@ class PBData {
         result.setUserId(pbUserInfo.getUserId());
         result.setUserName(pbUserInfo.getNickname());
         result.setPortrait(pbUserInfo.getUserPortrait());
+        if (pbUserInfo.getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem item : pbUserInfo.getExtFieldsList()) {
+                extra.put(item.getKey(), item.getValue());
+            }
+            result.setExtra(extra);
+        }
         return result;
     }
 
@@ -917,6 +931,13 @@ class PBData {
         result.setGroupId(pbGroupInfo.getGroupId());
         result.setGroupName(pbGroupInfo.getGroupName());
         result.setPortrait(pbGroupInfo.getGroupPortrait());
+        if (pbGroupInfo.getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem item : pbGroupInfo.getExtFieldsList()) {
+                extra.put(item.getKey(), item.getValue());
+            }
+            result.setExtra(extra);
+        }
         return result;
     }
 
