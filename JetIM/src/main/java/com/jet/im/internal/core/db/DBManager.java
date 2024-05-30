@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
@@ -18,7 +19,6 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
-import com.jet.im.internal.util.JLogger;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -198,12 +198,8 @@ public class DBManager {
         execSQL(ConversationSql.sqlSetMute(conversation, isMute));
     }
 
-    public void setTop(Conversation conversation, boolean isTop) {
-        execSQL(ConversationSql.sqlSetTop(conversation, isTop));
-    }
-
-    public void setTopTime(Conversation conversation, long topTime) {
-        execSQL(ConversationSql.sqlSetTopTime(conversation, topTime));
+    public void setTop(Conversation conversation, boolean isTop, long topTime) {
+        execSQL(ConversationSql.sqlSetTop(conversation, isTop, topTime));
     }
 
     public void setMentionInfo(Conversation conversation, String mentionInfoJson) {

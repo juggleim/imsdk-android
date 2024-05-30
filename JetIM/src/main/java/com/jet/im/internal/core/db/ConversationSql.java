@@ -223,12 +223,8 @@ class ConversationSql {
         return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
 
-    static String sqlSetTop(Conversation conversation, boolean isTop) {
-        if (isTop) {
-            return String.format("UPDATE conversation_info SET is_top = 1 WHERE conversation_type = %s AND conversation_id = '%s'", conversation.getConversationType().getValue(), conversation.getConversationId());
-        } else {
-            return String.format("UPDATE conversation_info SET is_top = 0, top_time = 0 WHERE conversation_type = %s AND conversation_id = '%s'", conversation.getConversationType().getValue(), conversation.getConversationId());
-        }
+    static String sqlSetTop(Conversation conversation, boolean isTop, long topTime) {
+        return String.format("UPDATE conversation_info SET is_top = %s, top_time = %s WHERE conversation_type = %s AND conversation_id = '%s'", isTop ? 1 : 0, isTop ? topTime : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
 
     static String sqlSetTopTime(Conversation conversation, long time) {
@@ -280,7 +276,7 @@ class ConversationSql {
             + "last_message_has_read=?, last_message_timestamp=?, last_message_sender=?, "
             + "last_message_content=?, last_message_mention_info=?, last_message_seq_no=? WHERE conversation_type = ? "
             + "AND conversation_id = ?";
-    static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY is_top DESC, timestamp DESC";
+    static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY is_top DESC, top_time DESC, timestamp DESC";
     static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET last_message_id=?, last_message_type=?,"
             + "last_message_client_uid=?, last_message_client_msg_no=?, "
             + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
@@ -313,7 +309,7 @@ class ConversationSql {
             }
             sql.append(")");
         }
-        sql.append(" ORDER BY is_top DESC, timestamp DESC").append(" LIMIT ").append(count);
+        sql.append(" ORDER BY is_top DESC, top_time DESC, timestamp DESC").append(" LIMIT ").append(count);
         return sql.toString();
     }
 

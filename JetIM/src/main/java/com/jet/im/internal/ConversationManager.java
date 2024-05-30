@@ -14,6 +14,7 @@ import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.model.messages.ClearUnreadMessage;
 import com.jet.im.internal.model.messages.TopConvMessage;
 import com.jet.im.internal.model.messages.UnDisturbConvMessage;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.ConversationMentionInfo;
@@ -22,7 +23,6 @@ import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
-import com.jet.im.internal.util.JLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -129,8 +129,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         mCore.getWebSocket().setTop(conversation, isTop, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
-                mCore.getDbManager().setTop(conversation, isTop);
-                mCore.getDbManager().setTopTime(conversation, timestamp);
+                mCore.getDbManager().setTop(conversation, isTop, timestamp);
                 if (callback != null) {
                     callback.onSuccess();
                 }
@@ -402,8 +401,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
                     break;
                 case TopConvMessage.CONTENT_TYPE:
-                    mCore.getDbManager().setTop(conversation.getConversation(), conversation.isTop());
-                    mCore.getDbManager().setTopTime(conversation.getConversation(), conversation.getTopTime());
+                    mCore.getDbManager().setTop(conversation.getConversation(), conversation.isTop(), conversation.getTopTime());
                     break;
                 case UnDisturbConvMessage.CONTENT_TYPE:
                     mCore.getDbManager().setMute(conversation.getConversation(), conversation.isMute());
