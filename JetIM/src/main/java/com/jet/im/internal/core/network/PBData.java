@@ -1050,7 +1050,7 @@ class PBData {
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
-            put(TOP_CONVERS, PBRcvObj.PBRcvType.conversationSetTopAck);
+            put(TOP_CONVERS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);

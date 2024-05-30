@@ -387,9 +387,6 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp:
                 handleSimpleQryAckWithTimeCallback(obj.mSimpleQryAck);
                 break;
-            case PBRcvObj.PBRcvType.conversationSetTopAck:
-                handleTimestampCallback(obj.mTimestampQryAck);
-                break;
             default:
                 break;
         }
@@ -560,20 +557,6 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.timestamp);
-            }
-        }
-    }
-
-    private void handleTimestampCallback(PBRcvObj.TimestampQryAck ack) {
-        JLogger.d("handleTimestampAck, code is " + ack.code);
-        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
-        if (c == null) return;
-        if (c instanceof WebSocketTimestampCallback) {
-            WebSocketTimestampCallback callback = (WebSocketTimestampCallback) c;
-            if (ack.code != 0) {
-                callback.onError(ack.code);
-            } else {
-                callback.onSuccess(ack.operationTime);
             }
         }
     }

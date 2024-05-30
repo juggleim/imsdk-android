@@ -10,7 +10,8 @@ public class JetIMApp extends Application {
     public void onCreate() {
         super.onCreate();
 //        JetIM.getInstance().setServer("https://nav.gxjipei.com");
-        PushConfig pushConfig = new PushConfig();
-        JetIM.getInstance().init(this, "appkey");
+        JetIM.InitConfig initConfig = new JetIM.InitConfig();
+        initConfig.setPushConfig(new PushConfig());
+        JetIM.getInstance().init(this, "appkey", initConfig);
     }
 }

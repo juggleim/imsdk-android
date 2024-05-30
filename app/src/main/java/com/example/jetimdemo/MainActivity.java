@@ -61,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            JetIM.getInstance().getConnectionManager().disconnect(false);
-                            JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+//                            JetIM.getInstance().getConnectionManager().disconnect(false);
+//                            JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 
 //                            TextMessage text = new TextMessage("Android broadcast");
 //                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
