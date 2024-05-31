@@ -1,8 +1,8 @@
-package com.jet.im.uploader;
+package com.jet.im.internal.uploader;
 
-import com.jet.im.model.upload.UploadOssType;
-import com.jet.im.model.upload.UploadPreSignCred;
-import com.jet.im.model.upload.UploadQiNiuCred;
+import com.jet.im.internal.model.upload.UploadOssType;
+import com.jet.im.internal.model.upload.UploadPreSignCred;
+import com.jet.im.internal.model.upload.UploadQiNiuCred;
 
 /**
  * @author Ye_Guli

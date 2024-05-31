@@ -4,7 +4,6 @@ import android.text.TextUtils;
 
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.MediaMessageContent;
-import com.jet.im.model.upload.UploadFileType;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,8 +22,8 @@ public class FileMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(mName)) {
                 jsonObject.put(NAME, mName);
             }
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             jsonObject.put(SIZE, mSize);
             if (!TextUtils.isEmpty(mType)) {
@@ -50,7 +49,7 @@ public class FileMessage extends MediaMessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(NAME)) {
                 mName = jsonObject.optString(NAME);
@@ -72,11 +71,6 @@ public class FileMessage extends MediaMessageContent {
     @Override
     public String conversationDigest() {
         return DIGEST;
-    }
-
-    @Override
-    public UploadFileType getUploadFileType() {
-        return UploadFileType.FILE;
     }
 
     public String getName() {

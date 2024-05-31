@@ -4,7 +4,6 @@ import android.text.TextUtils;
 
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.MediaMessageContent;
-import com.jet.im.model.upload.UploadFileType;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,8 +19,8 @@ public class VoiceMessage extends MediaMessageContent {
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
         try {
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             jsonObject.put(DURATION, mDuration);
             if (!TextUtils.isEmpty(mExtra)) {
@@ -44,7 +43,7 @@ public class VoiceMessage extends MediaMessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(DURATION)) {
                 mDuration = jsonObject.optInt(DURATION);
@@ -60,11 +59,6 @@ public class VoiceMessage extends MediaMessageContent {
     @Override
     public String conversationDigest() {
         return DIGEST;
-    }
-
-    @Override
-    public UploadFileType getUploadFileType() {
-        return UploadFileType.AUDIO;
     }
 
     public int getDuration() {

@@ -1,4 +1,4 @@
-package com.jet.im.uploader;
+package com.jet.im.internal.uploader;
 
 import android.text.TextUtils;
 
@@ -7,7 +7,7 @@ import androidx.annotation.Nullable;
 
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.internal.util.JThreadPoolExecutor;
-import com.jet.im.model.upload.UploadPreSignCred;
+import com.jet.im.internal.model.upload.UploadPreSignCred;
 
 import java.io.File;
 import java.io.IOException;

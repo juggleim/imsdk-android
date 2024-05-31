@@ -1,4 +1,4 @@
-package com.jet.im.uploader;
+package com.jet.im.internal.uploader;
 
 import android.text.TextUtils;
 

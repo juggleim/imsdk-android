@@ -5,20 +5,22 @@ import android.text.TextUtils;
 import com.jet.im.interfaces.IMessageUploadProvider;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.QryUploadFileCredCallback;
+import com.jet.im.internal.model.upload.UploadFileType;
+import com.jet.im.internal.model.upload.UploadOssType;
+import com.jet.im.internal.model.upload.UploadPreSignCred;
+import com.jet.im.internal.model.upload.UploadQiNiuCred;
+import com.jet.im.internal.uploader.FileUtil;
+import com.jet.im.internal.uploader.IUploader;
+import com.jet.im.internal.uploader.UploaderFactory;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
+import com.jet.im.model.messages.SnapshotPackedVideoMessage;
+import com.jet.im.model.messages.ThumbnailPackedImageMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.model.upload.UploadFileType;
-import com.jet.im.model.upload.UploadOssType;
-import com.jet.im.model.upload.UploadPreSignCred;
-import com.jet.im.model.upload.UploadQiNiuCred;
-import com.jet.im.uploader.FileUtil;
-import com.jet.im.uploader.IUploader;
-import com.jet.im.uploader.UploaderFactory;
 
 /**
  * @author Ye_Guli
@@ -53,6 +55,19 @@ public class UploadManager implements IMessageUploadProvider {
             uploadCallback.onError();
             return;
         }
+        //获取localPath上传类型
+        UploadFileType uploadFileType;
+        if (content instanceof ImageMessage || content instanceof ThumbnailPackedImageMessage) {
+            uploadFileType = UploadFileType.IMAGE;
+        } else if (content instanceof VideoMessage || content instanceof SnapshotPackedVideoMessage) {
+            uploadFileType = UploadFileType.VIDEO;
+        } else if (content instanceof FileMessage) {
+            uploadFileType = UploadFileType.FILE;
+        } else if (content instanceof VoiceMessage) {
+            uploadFileType = UploadFileType.AUDIO;
+        } else {
+            uploadFileType = UploadFileType.DEFAULT;
+        }
         //获取封面或缩略图
         boolean needPreUpload = false;
         String preUploadLocalPath = "";
@@ -71,11 +86,11 @@ public class UploadManager implements IMessageUploadProvider {
         }
         //有缩略图的情况下先上传缩略图
         if (needPreUpload) {
-            doRequestUploadFileCred(message, UploadFileType.IMAGE, preUploadLocalPath, true, new PreUploadCallback(uploadCallback));
+            doRequestUploadFileCred(message, UploadFileType.IMAGE, preUploadLocalPath, true, new PreUploadCallback(uploadFileType, uploadCallback));
             return;
         }
         //没有缩略图的情况下直接上传
-        doRequestUploadFileCred(message, content.getUploadFileType(), content.getLocalPath(), false, uploadCallback);
+        doRequestUploadFileCred(message, uploadFileType, content.getLocalPath(), false, uploadCallback);
     }
 
     private void doRequestUploadFileCred(Message message, UploadFileType fileType, String localPath, boolean isPreUpload, UploadCallback uploadCallback) {
@@ -155,46 +170,48 @@ public class UploadManager implements IMessageUploadProvider {
     }
 
     class PreUploadCallback implements UploadCallback {
-        private volatile boolean isPreUpload;
-        private final UploadCallback internalUploadCallback;
+        private volatile boolean mIsPreUpload;
+        private final UploadFileType mUploadFileType;
+        private final UploadCallback mInternalUploadCallback;
 
-        public PreUploadCallback(UploadCallback uploadCallback) {
-            this.isPreUpload = true;
-            this.internalUploadCallback = uploadCallback;
+        public PreUploadCallback(UploadFileType uploadFileType, UploadCallback uploadCallback) {
+            this.mIsPreUpload = true;
+            this.mUploadFileType = uploadFileType;
+            this.mInternalUploadCallback = uploadCallback;
         }
 
         @Override
         public void onProgress(int progress) {
             float preProgressPercent = 0.2f;
             int realProgress;
-            if (isPreUpload) {
+            if (mIsPreUpload) {
                 realProgress = (int) (progress * preProgressPercent);
             } else {
                 realProgress = (int) (100 * preProgressPercent + progress * (1 - preProgressPercent));
             }
-            internalUploadCallback.onProgress(realProgress);
+            mInternalUploadCallback.onProgress(realProgress);
         }
 
         @Override
         public void onSuccess(Message message) {
-            if (isPreUpload) {
+            if (mIsPreUpload) {
                 //缩略图上传成功，继续上传localPath
-                isPreUpload = false;
+                mIsPreUpload = false;
                 MediaMessageContent content = (MediaMessageContent) message.getContent();
-                doRequestUploadFileCred(message, content.getUploadFileType(), content.getLocalPath(), false, this);
+                doRequestUploadFileCred(message, mUploadFileType, content.getLocalPath(), false, this);
             } else {
-                internalUploadCallback.onSuccess(message);
+                mInternalUploadCallback.onSuccess(message);
             }
         }
 
         @Override
         public void onError() {
-            internalUploadCallback.onError();
+            mInternalUploadCallback.onError();
         }
 
         @Override
         public void onCancel() {
-            internalUploadCallback.onCancel();
+            mInternalUploadCallback.onCancel();
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.jet.im.uploader;
+package com.jet.im.internal.uploader;
 
 /**
  * @author Ye_Guli

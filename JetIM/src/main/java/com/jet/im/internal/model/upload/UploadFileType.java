@@ -1,4 +1,4 @@
-package com.jet.im.model.upload;
+package com.jet.im.internal.model.upload;
 
 /**
  * @author Ye_Guli

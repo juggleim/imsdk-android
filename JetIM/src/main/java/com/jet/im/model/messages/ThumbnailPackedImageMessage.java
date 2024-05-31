@@ -8,7 +8,6 @@ import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.MediaMessageContent;
-import com.jet.im.model.upload.UploadFileType;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,8 +55,8 @@ public class ThumbnailPackedImageMessage extends MediaMessageContent {
 
         JSONObject jsonObject = new JSONObject();
         try {
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             if (!TextUtils.isEmpty(thumbnailString)) {
                 jsonObject.put(THUMBNAIL, thumbnailString);
@@ -85,7 +84,7 @@ public class ThumbnailPackedImageMessage extends MediaMessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(THUMBNAIL)) {
                 String thumbnailString = jsonObject.optString(THUMBNAIL);
@@ -112,11 +111,6 @@ public class ThumbnailPackedImageMessage extends MediaMessageContent {
     @Override
     public String conversationDigest() {
         return DIGEST;
-    }
-
-    @Override
-    public UploadFileType getUploadFileType() {
-        return UploadFileType.IMAGE;
     }
 
     public Bitmap getThumbnailImage() {

@@ -3,9 +3,9 @@ package com.jet.im.internal.core.network;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.model.UserInfo;
-import com.jet.im.model.upload.UploadOssType;
-import com.jet.im.model.upload.UploadPreSignCred;
-import com.jet.im.model.upload.UploadQiNiuCred;
+import com.jet.im.internal.model.upload.UploadOssType;
+import com.jet.im.internal.model.upload.UploadPreSignCred;
+import com.jet.im.internal.model.upload.UploadQiNiuCred;
 
 import java.util.List;
 

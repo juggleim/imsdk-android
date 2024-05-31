@@ -1,8 +1,8 @@
-package com.jet.im.uploader;
+package com.jet.im.internal.uploader;
 
 import android.text.TextUtils;
 
-import com.jet.im.model.upload.UploadQiNiuCred;
+import com.jet.im.internal.model.upload.UploadQiNiuCred;
 import com.qiniu.android.storage.UpCompletionHandler;
 import com.qiniu.android.storage.UploadManager;
 import com.qiniu.android.storage.UploadOptions;

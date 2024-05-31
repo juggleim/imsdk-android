@@ -20,10 +20,10 @@ import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.push.PushChannel;
-import com.jet.im.model.upload.UploadFileType;
-import com.jet.im.model.upload.UploadOssType;
-import com.jet.im.model.upload.UploadPreSignCred;
-import com.jet.im.model.upload.UploadQiNiuCred;
+import com.jet.im.internal.model.upload.UploadFileType;
+import com.jet.im.internal.model.upload.UploadOssType;
+import com.jet.im.internal.model.upload.UploadPreSignCred;
+import com.jet.im.internal.model.upload.UploadQiNiuCred;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

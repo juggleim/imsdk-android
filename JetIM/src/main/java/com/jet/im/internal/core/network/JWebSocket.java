@@ -15,7 +15,7 @@ import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
 import com.jet.im.push.PushChannel;
-import com.jet.im.model.upload.UploadFileType;
+import com.jet.im.internal.model.upload.UploadFileType;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
