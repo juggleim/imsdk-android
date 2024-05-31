@@ -1,6 +1,6 @@
-package com.jet.im.log.action;
+package com.jet.im.internal.logger.action;
 
-import com.jet.im.log.IJLog;
+import com.jet.im.internal.logger.IJLog;
 
 /**
  * @author Ye_Guli

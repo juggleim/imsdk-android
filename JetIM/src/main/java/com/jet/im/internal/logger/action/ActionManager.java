@@ -1,10 +1,10 @@
-package com.jet.im.log.action;
+package com.jet.im.internal.logger.action;
 
 import android.os.Looper;
 
-import com.jet.im.log.IJLog;
-import com.jet.im.log.JLogConfig;
-import com.jet.im.log.JLogLevel;
+import com.jet.im.internal.logger.IJLog;
+import com.jet.im.internal.logger.JLogConfig;
+import com.jet.im.internal.logger.JLogLevel;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;

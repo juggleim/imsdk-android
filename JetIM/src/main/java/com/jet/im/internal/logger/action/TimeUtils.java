@@ -1,4 +1,4 @@
-package com.jet.im.log.action;
+package com.jet.im.internal.logger.action;
 
 import java.util.Calendar;
 

@@ -1,8 +1,7 @@
-package com.jet.im.log.action;
+package com.jet.im.internal.logger.action;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 

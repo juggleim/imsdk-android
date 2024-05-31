@@ -1,11 +1,13 @@
-package com.jet.im.log;
+package com.jet.im.internal.logger;
 
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.jet.im.internal.logger.action.ActionManager;
 import com.jet.im.internal.util.JLogger;
 
 import java.io.File;
+import java.util.Arrays;
 
 public class JLogManager implements IJLog {
     private static final String TAG = "JLogManager";
@@ -13,8 +15,8 @@ public class JLogManager implements IJLog {
     private static final long DEFAULT_LOG_FILE_CREATE_INTERVAL = 60 * 60 * 1000;//默认新日志文件创建间隔，1小时
     private static final String DEFAULT_LOG_FILE_DIR = "jet_im/jlog";
 
-    private IJLog mInternalJLog;
     private JLogConfig mJLogConfig;
+    private ActionManager mActionManager;
 
     public static JLogManager getInstance() {
         return JLogManager.SingletonHolder.sInstance;
@@ -56,33 +58,37 @@ public class JLogManager implements IJLog {
         }
         createJLogDir(config.getLogFileDir());
         this.mJLogConfig = config;
-
-        this.mInternalJLog = initInternalJLog("com.jet.im.log.JLog");
-        if (mInternalJLog == null) return;
-        mInternalJLog.setLogConfig(config);
+        if (mActionManager == null) {
+            mActionManager = ActionManager.instance(config);
+        } else {
+            mActionManager.setJLogConfig(config);
+        }
     }
 
     @Override
     public void removeExpiredLogs() {
         if (mJLogConfig == null) return;
-        if (mInternalJLog == null) return;
-        mInternalJLog.removeExpiredLogs();
+        if (mActionManager == null) return;
+        mActionManager.addRemoveAction();
     }
 
     @Override
     public void uploadLog(long startTime, long endTime, IJLog.Callback callback) {
-        if (mJLogConfig == null || mInternalJLog == null) {
+        if (mJLogConfig == null || mActionManager == null) {
             callback.onError(-1, "IJLog not initialized yet");
             return;
         }
-        mInternalJLog.uploadLog(startTime, endTime, callback);
+        mActionManager.addUploadAction(startTime, endTime, callback);
     }
 
     @Override
     public void write(JLogLevel level, String tag, String... keys) {
         if (mJLogConfig == null) return;
-        if (mInternalJLog == null) return;
-        mInternalJLog.write(level, tag, keys);
+        if (mActionManager == null) return;
+        if (level == null || level.getCode() > mActionManager.getJLogConfig().getLogWriteLevel().getCode())
+            return;
+        if (keys == null || keys.length == 0) return;
+        mActionManager.addWriteAction(level, tag, Arrays.asList(keys));
     }
 
     public boolean isDebugModel() {

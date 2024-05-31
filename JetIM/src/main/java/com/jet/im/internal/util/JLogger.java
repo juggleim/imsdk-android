@@ -2,8 +2,8 @@ package com.jet.im.internal.util;
 
 import android.util.Log;
 
-import com.jet.im.log.JLogLevel;
-import com.jet.im.log.JLogManager;
+import com.jet.im.internal.logger.JLogLevel;
+import com.jet.im.internal.logger.JLogManager;
 
 public class JLogger {
     public static void e(String msg) {

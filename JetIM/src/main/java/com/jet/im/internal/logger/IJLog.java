@@ -1,4 +1,4 @@
-package com.jet.im.log;
+package com.jet.im.internal.logger;
 
 /**
  * @author Ye_Guli

@@ -1,4 +1,4 @@
-package com.jet.im.log;
+package com.jet.im.internal.logger;
 
 import android.content.Context;
 

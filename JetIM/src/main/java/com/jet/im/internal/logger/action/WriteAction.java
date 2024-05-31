@@ -1,6 +1,6 @@
-package com.jet.im.log.action;
+package com.jet.im.internal.logger.action;
 
-import com.jet.im.log.JLogLevel;
+import com.jet.im.internal.logger.JLogLevel;
 
 import java.util.List;
 

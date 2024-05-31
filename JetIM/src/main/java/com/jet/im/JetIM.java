@@ -13,8 +13,8 @@ import com.jet.im.internal.MessageManager;
 import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.util.JLogger;
-import com.jet.im.log.JLogConfig;
-import com.jet.im.log.JLogManager;
+import com.jet.im.internal.logger.JLogConfig;
+import com.jet.im.internal.logger.JLogManager;
 import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
 
