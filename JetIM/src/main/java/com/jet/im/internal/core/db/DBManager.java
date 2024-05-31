@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JLoggerEx;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
@@ -18,7 +20,6 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
-import com.jet.im.internal.util.JLogger;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,16 +30,17 @@ import java.util.Map;
 public class DBManager {
     public boolean openIMDB(Context context, String appKey, String userId) {
         String path = getOrCreateDbPath(context, appKey, userId);
-        JLogger.d("open db, path is " + path);
         closeDB();
         if (!TextUtils.isEmpty(path)) {
             mDBHelper = new DBHelper(context, path);
             mDb = mDBHelper.getWritableDatabase();
         }
+        JLoggerEx.d("DB-Open", "open db, path is " + path + ", result is " + isOpen());
         return true;
     }
 
     public void closeDB() {
+        JLoggerEx.d("DB-Close", "close db");
         if (mDBHelper != null) {
             mDb = null;
             mDBHelper.close();

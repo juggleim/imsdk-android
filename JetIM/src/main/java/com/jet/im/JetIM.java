@@ -12,9 +12,8 @@ import com.jet.im.internal.ConversationManager;
 import com.jet.im.internal.MessageManager;
 import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
-import com.jet.im.internal.util.JLogger;
 import com.jet.im.internal.logger.JLogConfig;
-import com.jet.im.internal.logger.JLogManager;
+import com.jet.im.internal.util.JLoggerEx;
 import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
 
@@ -47,11 +46,11 @@ public class JetIM {
         //保存context
         mCore.setContext(context);
         //初始化日志
-        JLogManager.getInstance().setLogConfig(initConfig.getJLogConfig());
+        JLoggerEx.getInstance().init(initConfig.getJLogConfig());
         //初始化push
         PushManager.getInstance().init(context, initConfig.getPushConfig());
         //初始化appKey
-        JLogger.i("init, appKey is " + appKey);
+        JLoggerEx.i("J-Init", "appKey is " + appKey);
         if (appKey.equals(mCore.getAppKey())) {
             return;
         }

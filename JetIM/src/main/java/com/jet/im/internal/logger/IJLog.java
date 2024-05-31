@@ -5,8 +5,6 @@ package com.jet.im.internal.logger;
  * @create 2024-05-22 9:38
  */
 public interface IJLog {
-    void setLogConfig(JLogConfig config);
-
     void removeExpiredLogs();
 
     void uploadLog(long startTime, long endTime, Callback callback);

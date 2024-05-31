@@ -1,8 +1,8 @@
 package com.jet.im.internal;
 
 import com.jet.im.internal.core.network.JWebSocket;
+import com.jet.im.internal.util.JLoggerEx;
 import com.jet.im.internal.util.JSimpleTimer;
-import com.jet.im.internal.util.JLogger;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -33,6 +33,7 @@ public class HeartbeatManager {
     }
 
     public void start(boolean immediately) {
+        JLoggerEx.i("HB-Start", "start, immediately is " + immediately);
         stop();
         mHeartbeatTimer.start(immediately);
         mHeartbeatDetectionTimer.start(immediately);
@@ -40,6 +41,7 @@ public class HeartbeatManager {
     }
 
     public void stop() {
+        JLoggerEx.i("HB-Stop", "stop");
         mHeartbeatTimer.stop();
         mHeartbeatDetectionTimer.stop();
         mLastMessageReceivedTime.set(0);
@@ -73,20 +75,18 @@ public class HeartbeatManager {
     }
 
     private void doHeartbeat() {
-        JLogger.d(TAG + ", send ping...");
         if (mJWebsocket != null) {
             mJWebsocket.ping();
         }
     }
 
     private void doHeartbeatDetection() {
-        JLogger.d(TAG + ", heartbeat detecting...");
         if (mLastMessageReceivedTime.longValue() != 0) {
             //获取当前系统时间
             long now = System.currentTimeMillis();
             //如果当前时系统时间和lastMessageReceivedTime的差值大于HEARTBEAT_DETECTION_TIME_OUT，认为心跳超时，执行timeout回调
             if (now - mLastMessageReceivedTime.longValue() >= HEARTBEAT_DETECTION_TIME_OUT) {
-                JLogger.e("heartbeat has timeout, perform reconnection...");
+                JLoggerEx.e("HB-TimeOut", "timeout");
                 notifyHeartbeatTimeout();
             }
         }

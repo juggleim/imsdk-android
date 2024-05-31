@@ -1,5 +1,7 @@
 package com.jet.im.model;
 
+import androidx.annotation.NonNull;
+
 import java.util.Objects;
 
 public class Conversation {
@@ -14,6 +16,15 @@ public class Conversation {
     @Override
     public int hashCode() {
         return Objects.hash(mConversationId, mConversationType);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Conversation{" +
+                "mConversationId='" + mConversationId + '\'' +
+                ", mConversationType=" + mConversationType +
+                '}';
     }
 
     public Conversation(ConversationType type, String conversationId) {

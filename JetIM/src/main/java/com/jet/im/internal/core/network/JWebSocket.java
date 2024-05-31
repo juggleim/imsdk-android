@@ -12,11 +12,12 @@ import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.HeartbeatManager;
 import com.jet.im.internal.WebSocketCommandManager;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JLoggerEx;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
 import com.jet.im.push.PushChannel;
-import com.jet.im.internal.util.JLogger;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -36,6 +37,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     public JWebSocket(String appKey, String token, URI serverUri, Context context) {
         super(serverUri);
+        JLoggerEx.i("WS-Connect", "appKey is " + appKey + ", token is " + token + ", serverUri is " + serverUri);
         mAppKey = appKey;
         mToken = token;
         mContext = context;
@@ -46,6 +48,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     public void disconnect(Boolean receivePush) {
+        JLoggerEx.i("WS-Disconnect", "receivePush is " + receivePush);
         sendDisconnectMsg(receivePush);
     }
 
@@ -77,6 +80,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
                 conversation.getConversationId(),
                 content.getMentionInfo());
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "send message");
         sendWhenOpen(bytes);
     }
 
@@ -88,6 +92,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, extras, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "recallMessage, messageId is " + messageId);
         sendWhenOpen(bytes);
     }
 
@@ -98,6 +103,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.syncConversationsData(startTime, count, userId, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "syncConversations, startTime is " + startTime + ", count is " + count);
         sendWhenOpen(bytes);
     }
 
@@ -105,6 +111,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
                              long sendTime,
                              String userId) {
         byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mCmdIndex++);
+        JLoggerEx.i("WS-Send", "syncMessages, receiveTime is " + receiveTime + ", sendTime is " + sendTime);
         sendWhenOpen(bytes);
     }
 
@@ -114,6 +121,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.sendReadReceiptData(conversation, messageIds, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "sendReadReceipt");
         sendWhenOpen(bytes);
     }
 
@@ -123,6 +131,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.getGroupMessageReadDetail(conversation, messageId, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "getGroupMessageReadDetail, messageId is " + messageId);
         sendWhenOpen(bytes);
     }
 
@@ -132,6 +141,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.deleteConversationData(conversation, userId, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "getGroupMessageReadDetail, conversation is " + conversation);
         sendWhenOpen(bytes);
     }
 
@@ -142,6 +152,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "clearUnreadCount, conversation is " + conversation + ", msgIndex is " + msgIndex);
         sendWhenOpen(bytes);
     }
 
@@ -149,6 +160,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.clearTotalUnreadCountData(userId, time, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "clearTotalUnreadCount, time is " + time);
         sendWhenOpen(bytes);
     }
 
@@ -156,6 +168,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "queryHisMsg, conversation is " + conversation + ", startTime is " + startTime + ", count is " + count + ", direction is " + direction);
         sendWhenOpen(bytes);
     }
 
@@ -163,6 +176,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.queryHisMsgDataByIds(conversation, messageIds, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "queryHisMsgByIds, conversation is " + conversation);
         sendWhenOpen(bytes);
     }
 
@@ -170,6 +184,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLoggerEx.i("WS-Send", "setMute, conversation is " + conversation + ", isMute is " + isMute);
         sendWhenOpen(bytes);
     }
 
@@ -250,6 +265,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     public void ping() {
+        JLoggerEx.v("WS-Send", "ping");
         byte[] bytes = mPbData.pingData();
         sendWhenOpen(bytes);
     }
@@ -423,6 +439,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void sendPublishAck(int index) {
+        JLoggerEx.v("WS-Send", "publish ack");
         byte[] bytes = mPbData.publishAckData(index);
         sendWhenOpen(bytes);
     }
@@ -498,7 +515,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handlePong() {
-        JLogger.d("pong, mMsgCallbackMap count is " + mWebSocketCommandManager.size());
+        JLoggerEx.v("WS-Receive", "handlePong");
     }
 
     private void handleDisconnectMsg(PBRcvObj.DisconnectMsg msg) {

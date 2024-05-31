@@ -10,6 +10,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.util.JLoggerEx;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationMentionInfo;
 import com.jet.im.model.GroupInfo;
@@ -19,7 +20,6 @@ import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.push.PushChannel;
-import com.jet.im.internal.util.JLogger;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -575,13 +575,12 @@ class PBData {
         try {
             Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.parseFrom(byteBuffer);
             if (msg == null) {
-                JLogger.e("rcvObjWithBytes msg is null");
+                JLoggerEx.e("PB-Parse", "rcvObjWithBytes msg is null");
                 obj.setRcvType(PBRcvObj.PBRcvType.parseError);
                 return obj;
             }
             if (msg.getCmd() == CmdType.pong) {
                 obj.setRcvType(PBRcvObj.PBRcvType.pong);
-                JLogger.d("mMsgCmdMap size is " + mMsgCmdMap.size());
                 return obj;
             }
             switch (msg.getTestofCase()) {
@@ -643,7 +642,6 @@ class PBData {
 
                 case PUBLISHMSGBODY:
                     if (msg.getPublishMsgBody().getTopic().equals(NTF)) {
-                        JLogger.d("publish msg notify");
                         Appmessages.Notify ntf = Appmessages.Notify.parseFrom(msg.getPublishMsgBody().getData());
                         if (ntf.getType() == Appmessages.NotifyType.Msg) {
                             obj.setRcvType(PBRcvObj.PBRcvType.publishMsgNtf);
@@ -652,7 +650,6 @@ class PBData {
                             obj.mPublishMsgNtf = n;
                         }
                     } else if (msg.getPublishMsgBody().getTopic().equals(MSG)) {
-                        JLogger.d("publish msg directly");
                         Appmessages.DownMsg downMsg = Appmessages.DownMsg.parseFrom(msg.getPublishMsgBody().getData());
                         PBRcvObj.PublishMsgBody body = new PBRcvObj.PublishMsgBody();
                         body.rcvMessage = messageWithDownMsg(downMsg);
@@ -675,6 +672,7 @@ class PBData {
 
             }
         } catch (InvalidProtocolBufferException e) {
+            JLoggerEx.e("PB-Parse", "rcvObjWithBytes msg parse error, msgType is " + obj.getRcvType() + ", exception is " + e.getMessage());
             obj.setRcvType(PBRcvObj.PBRcvType.parseError);
         }
         return obj;
@@ -977,12 +975,12 @@ class PBData {
     private int getTypeInCmdMap(Integer index) {
         String cachedCmd = mMsgCmdMap.remove(index);
         if (TextUtils.isEmpty(cachedCmd)) {
-            JLogger.e("rcvObjWithBytes ack can't match a cached cmd");
+            JLoggerEx.w("PB-Match", "rcvObjWithBytes ack can't match a cached cmd");
             return PBRcvObj.PBRcvType.cmdMatchError;
         }
         Integer type = sCmdAckMap.get(cachedCmd);
         if (type == null) {
-            JLogger.e("rcvObjWithBytes ack cmd match error, cmd is " + cachedCmd);
+            JLoggerEx.w("PB-Match", "rcvObjWithBytes ack cmd match error, cmd is " + cachedCmd);
             return PBRcvObj.PBRcvType.cmdMatchError;
         }
         return type;
