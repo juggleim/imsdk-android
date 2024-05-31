@@ -1,7 +1,7 @@
 package com.jet.im.model.messages;
 
-import com.jet.im.model.MessageContent;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,9 +21,11 @@ public class RecallInfoMessage extends MessageContent {
         JSONObject jsonObject = new JSONObject();
         try {
             if (mExtra != null) {
+                JSONObject extObject = new JSONObject();
                 for (Map.Entry<String, String> entry : mExtra.entrySet()) {
-                    jsonObject.put(entry.getKey(), entry.getValue());
+                    extObject.put(entry.getKey(), entry.getValue());
                 }
+                jsonObject.put(EXTRA, extObject);
             }
         } catch (JSONException e) {
             JLogger.e("RecallInfoMessage JSONException " + e.getMessage());
@@ -40,7 +42,10 @@ public class RecallInfoMessage extends MessageContent {
         String jsonStr = new String(data, StandardCharsets.UTF_8);
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
-            decodeExt(jsonObject);
+            if (jsonObject.has(EXTRA)) {
+                decodeExt(jsonObject.optJSONObject(EXTRA));
+            }
+
         } catch (JSONException e) {
             JLogger.e("RecallInfoMessage decode JSONException " + e.getMessage());
         }
@@ -73,6 +78,6 @@ public class RecallInfoMessage extends MessageContent {
 
     private Map<String, String> mExtra;
 
-    private static final String EXTRA = "extra";
+    private static final String EXTRA = "exts";
 
 }
