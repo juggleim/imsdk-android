@@ -29,8 +29,9 @@ import okio.Source;
  */
 public class PreSignUploader extends BaseUploader {
     private static final int BUFFER_SIZE = 4096; //缓冲区大小
-    private static final int CONNECT_TIMEOUT = 10 * 1000; //连接超时时间
-    private static final int READ_TIMEOUT = 10 * 1000; //读取超时时间
+    private static final int CONNECT_TIMEOUT = 20 * 1000; //连接超时时间
+    private static final int READ_TIMEOUT = 20 * 1000; //读取超时时间
+    private static final int WRITE_TIMEOUT = 20 * 1000; //读取超时时间
 
     private final UploadPreSignCred mPreSignCred;
     private volatile boolean mIsCancelled = false;
@@ -66,6 +67,7 @@ public class PreSignUploader extends BaseUploader {
             OkHttpClient client = new OkHttpClient.Builder()
                     .connectTimeout(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)
                     .readTimeout(READ_TIMEOUT, TimeUnit.MILLISECONDS)
+                    .writeTimeout(WRITE_TIMEOUT, TimeUnit.MILLISECONDS)
                     .build();
             //构造RequestBody
             File file = new File(mLocalPath);
@@ -119,7 +121,7 @@ public class PreSignUploader extends BaseUploader {
                     String modifiedUrl = removeQueryFromUrl(mPreSignCred.getUrl());
                     notifySuccess(modifiedUrl);
                 } else {
-                    JLogger.d("OkHttp , responseCode= " + response.code());
+                    JLogger.d("OkHttp , responseCode= " + response.code() + ", responseMessage= " + response.message());
                     notifyFail();
                 }
             } catch (Exception e) {
