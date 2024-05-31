@@ -36,7 +36,7 @@ import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.ThumbnailPackedImageMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.uploader.FileUtil;
+import com.jet.im.internal.uploader.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -685,7 +685,7 @@ public class MainActivity extends AppCompatActivity {
         VoiceMessage voice = new VoiceMessage();
         voice.setLocalPath(filePath);
         voice.setDuration(15);
-        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(tpImage, c, new IMessageManager.ISendMediaMessageCallback() {
+        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(image, c, new IMessageManager.ISendMediaMessageCallback() {
             @Override
             public void onProgress(int progress, Message message) {
                 Log.i("sendMediaMessage", "onProgress, clientMsgNo is " + message.getClientMsgNo() + ", progress is " + progress);
