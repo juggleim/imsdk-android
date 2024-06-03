@@ -12,6 +12,7 @@ import com.jet.im.internal.core.network.QryReadDetailCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
+import com.jet.im.internal.logger.IJLog;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.model.messages.CleanMsgMessage;
@@ -19,6 +20,7 @@ import com.jet.im.internal.model.messages.ClearUnreadMessage;
 import com.jet.im.internal.model.messages.DeleteConvMessage;
 import com.jet.im.internal.model.messages.DeleteMsgMessage;
 import com.jet.im.internal.model.messages.GroupReadNtfMessage;
+import com.jet.im.internal.model.messages.LogCommandMessage;
 import com.jet.im.internal.model.messages.ReadNtfMessage;
 import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.internal.model.messages.TopConvMessage;
@@ -68,6 +70,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(ClearUnreadMessage.class);
         ContentTypeCenter.getInstance().registerContentType(TopConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(UnDisturbConvMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(LogCommandMessage.class);
     }
 
     private final JetIMCore mCore;
@@ -1082,6 +1085,13 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
+            //log command
+            if (message.getContentType().equals(LogCommandMessage.CONTENT_TYPE)) {
+                LogCommandMessage logCommandMessage = (LogCommandMessage) message.getContent();
+                handleLogCommandCmdMessage(logCommandMessage.getStartTime(), logCommandMessage.getEndTime());
+                continue;
+            }
+
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
@@ -1178,6 +1188,20 @@ public class MessageManager implements IMessageManager {
         if (mSendReceiveListener != null) {
             mSendReceiveListener.onConversationsUpdate(UnDisturbConvMessage.CONTENT_TYPE, conversations);
         }
+    }
+
+    private void handleLogCommandCmdMessage(long startTime, long endTime) {
+        JLogger.getInstance().uploadLog(startTime, endTime, mCore.getAppKey(), mCore.getToken(), new IJLog.Callback() {
+            @Override
+            public void onSuccess() {
+                JLogger.i("J-Logger", "uploadLogger success, startTime is " + startTime + ", endTime is " + endTime);
+            }
+
+            @Override
+            public void onError(int code, String msg) {
+                JLogger.e("J-Logger", "uploadLogger error, code is " + code + ", msg is " + msg);
+            }
+        });
     }
 
     //通知会话更新最新信息
