@@ -13,4 +13,5 @@ class Constants {
     static final String LOG_FILE_SUFFIX = ".jlog";
     static final String ZIP_FILE_SUFFIX = ".zip";
     static final String LOG_TIMESTAMP_FORMAT = "yyyyMMddHH";
+    static final int LOG_UPLOAD_TIME_OUT = 15 * 1000;
 }

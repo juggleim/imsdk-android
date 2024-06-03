@@ -7,7 +7,7 @@ package com.jet.im.internal.logger;
 public interface IJLog {
     void removeExpiredLogs();
 
-    void uploadLog(long startTime, long endTime, Callback callback);
+    void uploadLog(long startTime, long endTime, String appKey, String token, Callback callback);
 
     void write(JLogLevel level, String tag, String... keys);
 

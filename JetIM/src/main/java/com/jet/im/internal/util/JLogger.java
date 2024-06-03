@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.logger.IJLog;
 import com.jet.im.internal.logger.JLogConfig;
 import com.jet.im.internal.logger.JLogLevel;
@@ -11,6 +12,8 @@ import com.jet.im.internal.logger.action.ActionManager;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JLogger implements IJLog {
     public static JLogger getInstance() {
@@ -128,12 +131,19 @@ public class JLogger implements IJLog {
     }
 
     @Override
-    public void uploadLog(long startTime, long endTime, Callback callback) {
+    public void uploadLog(long startTime, long endTime, String appKey, String token, Callback callback) {
         if (mJLogConfig == null || mActionManager == null) {
             callback.onError(-1, "IJLog not initialized yet");
             return;
         }
-        mActionManager.addUploadAction(startTime, endTime, callback);
+        if (TextUtils.isEmpty(appKey) || TextUtils.isEmpty(token)) {
+            callback.onError(-1, "appKey or token is empty");
+            return;
+        }
+        final Map<String, String> headers = new HashMap<>();
+        headers.put("app-key", appKey);
+        headers.put("token", token);
+        mActionManager.addUploadAction(startTime, endTime, ConstInternal.LOG_UPLOAD_URL, headers, callback);
     }
 
     @Override

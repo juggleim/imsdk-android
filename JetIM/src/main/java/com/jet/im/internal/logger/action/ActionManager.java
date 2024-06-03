@@ -7,6 +7,7 @@ import com.jet.im.internal.logger.JLogConfig;
 import com.jet.im.internal.logger.JLogLevel;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -72,12 +73,15 @@ public class ActionManager {
         }
     }
 
-    public void addUploadAction(long startTime, long endTime, IJLog.Callback callback) {
+    public void addUploadAction(long startTime, long endTime, String url, Map<String, String> headers, IJLog.Callback callback) {
+        UploadDefaultRunnable runnable = new UploadDefaultRunnable();
+        runnable.setUploadUrl(url);
+        runnable.setRequestHeader(headers);
         UploadAction action = new UploadAction.Builder()
                 .setStartTime(startTime)
                 .setEndTime(endTime)
                 .setCallback(callback)
-                .setUploadRunnable(new UploadDefaultRunnable())
+                .setUploadRunnable(runnable)
                 .build();
         mActionCacheQueue.add(action);
         if (mActionThread != null) {

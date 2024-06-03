@@ -46,9 +46,9 @@ class FileUtils {
             if (files != null) {
                 for (String item : files) {
                     try {
-                        if (TextUtils.isEmpty(item)) {
-                            continue;
-                        }
+                        if (TextUtils.isEmpty(item)) continue;
+                        //检查是否是日志文件，如果不是则跳过
+                        if (!item.endsWith(Constants.LOG_FILE_SUFFIX)) continue;
                         String[] longStrArray = item.split("\\.");
                         if (longStrArray.length > 0) {//小于时间就删除
                             long longItem = Long.parseLong(longStrArray[0]);
