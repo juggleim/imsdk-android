@@ -12,7 +12,6 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.util.JLogger;
-import com.jet.im.internal.util.JLoggerEx;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
@@ -35,12 +34,12 @@ public class DBManager {
             mDBHelper = new DBHelper(context, path);
             mDb = mDBHelper.getWritableDatabase();
         }
-        JLoggerEx.d("DB-Open", "open db, path is " + path + ", result is " + isOpen());
+        JLogger.i("DB-Open", "open db, path is " + path + ", result is " + isOpen());
         return true;
     }
 
     public void closeDB() {
-        JLoggerEx.d("DB-Close", "close db");
+        JLogger.i("DB-Close", "close db");
         if (mDBHelper != null) {
             mDb = null;
             mDBHelper.close();
@@ -647,7 +646,7 @@ public class DBManager {
         file = new File(path);
         if (!file.exists()) {
             if (!file.mkdirs()) {
-                JLogger.e("create db path fail");
+                JLogger.e("DB-Open", "create db path fail");
             }
         }
         path = String.format("%s/%s", path, DB_NAME);

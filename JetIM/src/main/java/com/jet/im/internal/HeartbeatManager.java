@@ -1,7 +1,7 @@
 package com.jet.im.internal;
 
 import com.jet.im.internal.core.network.JWebSocket;
-import com.jet.im.internal.util.JLoggerEx;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.internal.util.JSimpleTimer;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,7 +33,7 @@ public class HeartbeatManager {
     }
 
     public void start(boolean immediately) {
-        JLoggerEx.i("HB-Start", "start, immediately is " + immediately);
+        JLogger.i("HB-Start", "start, immediately is " + immediately);
         stop();
         mHeartbeatTimer.start(immediately);
         mHeartbeatDetectionTimer.start(immediately);
@@ -41,7 +41,7 @@ public class HeartbeatManager {
     }
 
     public void stop() {
-        JLoggerEx.i("HB-Stop", "stop");
+        JLogger.i("HB-Stop", "stop");
         mHeartbeatTimer.stop();
         mHeartbeatDetectionTimer.stop();
         mLastMessageReceivedTime.set(0);
@@ -86,7 +86,7 @@ public class HeartbeatManager {
             long now = System.currentTimeMillis();
             //如果当前时系统时间和lastMessageReceivedTime的差值大于HEARTBEAT_DETECTION_TIME_OUT，认为心跳超时，执行timeout回调
             if (now - mLastMessageReceivedTime.longValue() >= HEARTBEAT_DETECTION_TIME_OUT) {
-                JLoggerEx.e("HB-TimeOut", "timeout");
+                JLogger.e("HB-TimeOut", "timeout");
                 notifyHeartbeatTimeout();
             }
         }

@@ -1,9 +1,9 @@
 package com.jet.im.model.messages;
 
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.MergeMessagePreviewUnit;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
-import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +30,7 @@ public class MergeMessage extends MessageContent {
     public MergeMessage() {
         this.mContentType = "jg:merge";
     }
+
     @Override
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
@@ -58,7 +59,7 @@ public class MergeMessage extends MessageContent {
             }
             jsonObject.putOpt(PREVIEW_LIST, previewListJson);
         } catch (JSONException e) {
-            JLogger.e("MergeMessage JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "MergeMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -66,7 +67,7 @@ public class MergeMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("MergeMessage decode data is null");
+            JLogger.e("MSG-Decode", "MergeMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -102,7 +103,7 @@ public class MergeMessage extends MessageContent {
                 mPreviewList = previewList;
             }
         } catch (JSONException e) {
-            JLogger.e("ImageMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "ImageMessage decode JSONException " + e.getMessage());
         }
     }
 

@@ -10,7 +10,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
-import com.jet.im.internal.util.JLoggerEx;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationMentionInfo;
 import com.jet.im.model.GroupInfo;
@@ -575,7 +575,7 @@ class PBData {
         try {
             Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.parseFrom(byteBuffer);
             if (msg == null) {
-                JLoggerEx.e("PB-Parse", "rcvObjWithBytes msg is null");
+                JLogger.e("PB-Parse", "rcvObjWithBytes msg is null");
                 obj.setRcvType(PBRcvObj.PBRcvType.parseError);
                 return obj;
             }
@@ -672,7 +672,7 @@ class PBData {
 
             }
         } catch (InvalidProtocolBufferException e) {
-            JLoggerEx.e("PB-Parse", "rcvObjWithBytes msg parse error, msgType is " + obj.getRcvType() + ", exception is " + e.getMessage());
+            JLogger.e("PB-Parse", "rcvObjWithBytes msg parse error, msgType is " + obj.getRcvType() + ", exception is " + e.getMessage());
             obj.setRcvType(PBRcvObj.PBRcvType.parseError);
         }
         return obj;
@@ -975,12 +975,12 @@ class PBData {
     private int getTypeInCmdMap(Integer index) {
         String cachedCmd = mMsgCmdMap.remove(index);
         if (TextUtils.isEmpty(cachedCmd)) {
-            JLoggerEx.w("PB-Match", "rcvObjWithBytes ack can't match a cached cmd");
+            JLogger.w("PB-Match", "rcvObjWithBytes ack can't match a cached cmd");
             return PBRcvObj.PBRcvType.cmdMatchError;
         }
         Integer type = sCmdAckMap.get(cachedCmd);
         if (type == null) {
-            JLoggerEx.w("PB-Match", "rcvObjWithBytes ack cmd match error, cmd is " + cachedCmd);
+            JLogger.w("PB-Match", "rcvObjWithBytes ack cmd match error, cmd is " + cachedCmd);
             return PBRcvObj.PBRcvType.cmdMatchError;
         }
         return type;

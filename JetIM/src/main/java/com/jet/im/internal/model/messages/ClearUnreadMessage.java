@@ -1,9 +1,9 @@
 package com.jet.im.internal.model.messages;
 
 import com.jet.im.internal.model.ConcreteConversationInfo;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
-import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,14 +27,12 @@ public class ClearUnreadMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("ClearUnreadMessage decode data is null");
+            JLogger.e("MSG-Decode", "ClearUnreadMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
-        JLogger.d("ClearUnreadMessage decode data= " + jsonStr);
-
-        List<ConcreteConversationInfo> conversations = new ArrayList<>();
         try {
+            List<ConcreteConversationInfo> conversations = new ArrayList<>();
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(CONVERSATIONS)) {
                 JSONArray jsonArray = jsonObject.optJSONArray(CONVERSATIONS);
@@ -59,7 +57,7 @@ public class ClearUnreadMessage extends MessageContent {
             }
             mConversations = conversations;
         } catch (JSONException e) {
-            JLogger.e("ClearUnreadMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "ClearUnreadMessage decode JSONException " + e.getMessage());
         }
     }
 

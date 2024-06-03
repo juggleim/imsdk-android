@@ -9,7 +9,7 @@ import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
-import com.jet.im.internal.util.JLoggerEx;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.push.PushChannel;
 
 import java.net.URI;
@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager implements IConnectionManager {
     @Override
     public void connect(String token) {
-        JLoggerEx.i("CON-Connect", "connect, token is " + token);
+        JLogger.i("CON-Connect", "connect, token is " + token);
         //todo 校验，是否有连接
 
         if (!mCore.getToken().equals(token)) {
@@ -58,7 +58,7 @@ public class ConnectionManager implements IConnectionManager {
 
     @Override
     public void disconnect(boolean receivePush) {
-        JLoggerEx.i("CON-Disconnect", "user disconnect receivePush is " + receivePush);
+        JLogger.i("CON-Disconnect", "user disconnect receivePush is " + receivePush);
         changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE, "");
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().disconnect(receivePush);
@@ -67,7 +67,7 @@ public class ConnectionManager implements IConnectionManager {
 
     @Override
     public void registerPushToken(PushChannel channel, String token) {
-        JLoggerEx.i("CON-Token", "registerPushToken, channel is " + channel.getName() + ", token is " + token);
+        JLogger.i("CON-Push", "registerPushToken, channel is " + channel.getName() + ", token is " + token);
         mPushChannel = channel;
         mPushToken = token;
         if (mCore.getWebSocket() == null) {
@@ -76,12 +76,12 @@ public class ConnectionManager implements IConnectionManager {
         mCore.getWebSocket().registerPushToken(channel, token, mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                JLoggerEx.i("CON-Token", "registerPushToken success");
+                JLogger.i("CON-Push", "registerPushToken success");
             }
 
             @Override
             public void onError(int errorCode) {
-                JLoggerEx.e("CON-Token", "registerPushToken error, errorCode is " + errorCode);
+                JLogger.e("CON-Push", "registerPushToken error, errorCode is " + errorCode);
             }
         });
     }
@@ -128,7 +128,7 @@ public class ConnectionManager implements IConnectionManager {
                             if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
                                 dbStatusNotice(true);
                             } else {
-                                JLoggerEx.e("CON-Db", "open fail");
+                                JLogger.e("CON-Db", "open fail");
                             }
                         }
                         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, "");
@@ -201,7 +201,7 @@ public class ConnectionManager implements IConnectionManager {
 
     private void changeStatus(int status, int errorCode, String extra) {
         mCore.getSendHandler().post(() -> {
-            JLoggerEx.i("CON-Status", "status is " + status + ", code is " + errorCode + ", extra is " + extra);
+            JLogger.i("CON-Status", "status is " + status + ", code is " + errorCode + ", extra is " + extra);
             if (status == mCore.getConnectionStatus()) {
                 return;
             }
@@ -264,7 +264,7 @@ public class ConnectionManager implements IConnectionManager {
     }
 
     private void reconnect() {
-        JLoggerEx.i("CON-Reconnect", "reconnect");
+        JLogger.i("CON-Reconnect", "reconnect");
         //todo 线程控制，间隔控制
         if (mReconnectTimer != null) {
             return;
@@ -283,7 +283,7 @@ public class ConnectionManager implements IConnectionManager {
     }
 
     private void dbStatusNotice(boolean isOpen) {
-        JLoggerEx.i("CON-Db", "db notice, isOpen is " + isOpen);
+        JLogger.i("CON-Db", "db notice, isOpen is " + isOpen);
         if (isOpen) {
             mCore.getSyncTimeFromDB();
             for (Map.Entry<String, IConnectionStatusListener> entry :

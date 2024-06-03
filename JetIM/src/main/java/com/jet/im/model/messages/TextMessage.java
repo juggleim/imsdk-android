@@ -2,8 +2,8 @@ package com.jet.im.model.messages;
 
 import android.text.TextUtils;
 
-import com.jet.im.model.MessageContent;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +33,7 @@ public class TextMessage extends MessageContent {
                 jsonObject.put(EXTRA, mExtra);
             }
         } catch (JSONException e) {
-            JLogger.e("TextMessage JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "TextMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -41,7 +41,7 @@ public class TextMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("TextMessage decode data is null");
+            JLogger.e("MSG-Decode", "TextMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -55,7 +55,7 @@ public class TextMessage extends MessageContent {
                 mExtra = jsonObject.optString(EXTRA);
             }
         } catch (JSONException e) {
-            JLogger.e("TextMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "TextMessage decode JSONException " + e.getMessage());
         }
     }
 

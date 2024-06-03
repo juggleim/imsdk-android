@@ -1,8 +1,8 @@
 package com.jet.im.internal;
 
 import com.jet.im.internal.core.network.IWebSocketCallback;
-import com.jet.im.internal.util.JSimpleTimer;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JSimpleTimer;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 重发：可以做到业务层
  */
 public class WebSocketCommandManager {
-    private final static String TAG = WebSocketCommandManager.class.getSimpleName();
+    private final static String TAG = "WS-Command";
     private final static int COMMAND_TIME_OUT = 5 * 1000;
     private final static int COMMAND_DETECTION_INTERVAL = 5 * 1000;
 
@@ -58,14 +58,14 @@ public class WebSocketCommandManager {
 
     public void putCommand(Integer mCmdIndex, IWebSocketCallback callback) {
         if (mCmdIndex == null || callback == null) {
-            JLogger.e(TAG + ", putCommand failed, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
+            JLogger.e(TAG, "putCommand failed, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
             return;
         }
         if (mCmdCallbackMap.get(mCmdIndex) != null) {
-            JLogger.e(TAG + ", putCommand failed, the mCmdIndex is already added, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
+            JLogger.e(TAG, "putCommand failed, the mCmdIndex is already added, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
             return;
         }
-        JLogger.d(TAG + ", putCommand success, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
+        JLogger.v(TAG, "putCommand success, mCmdIndex= " + mCmdIndex + ", callback= " + callback);
         mCmdCallbackMap.put(mCmdIndex, callback);
         mCmdCallbackTimestampMap.put(mCmdIndex, System.currentTimeMillis());
     }
@@ -76,7 +76,7 @@ public class WebSocketCommandManager {
         }
         mCmdCallbackTimestampMap.remove(mCmdIndex);
         IWebSocketCallback removedCallback = mCmdCallbackMap.remove(mCmdIndex);
-        JLogger.d(TAG + ", removeCommand success, mCmdIndex= " + mCmdIndex + ", removedCallback= " + removedCallback);
+        JLogger.v(TAG, "removeCommand success, mCmdIndex= " + mCmdIndex + ", removedCallback= " + removedCallback);
         return removedCallback;
     }
 
@@ -84,7 +84,7 @@ public class WebSocketCommandManager {
         ArrayList<IWebSocketCallback> commandList = new ArrayList<>(mCmdCallbackMap.values());
         this.mCmdCallbackMap.clear();
         this.mCmdCallbackTimestampMap.clear();
-        JLogger.d(TAG + ", clearCommand success, the commandList.size= " + commandList.size());
+        JLogger.v(TAG, "clearCommand success, the commandList.size= " + commandList.size());
         return commandList;
     }
 
@@ -108,26 +108,26 @@ public class WebSocketCommandManager {
     }
 
     private ArrayList<IWebSocketCallback> doCommandDetection() {
-        JLogger.d(TAG + ", command detection executing, the cmdCallbackMap.size= " + mCmdCallbackMap.size());
+        JLogger.v(TAG, "command detection executing, the cmdCallbackMap.size= " + mCmdCallbackMap.size());
         ArrayList<IWebSocketCallback> timeoutMessages = new ArrayList<>();
         try {
             for (Integer key : mCmdCallbackMap.keySet()) {
                 final IWebSocketCallback callback = mCmdCallbackMap.get(key);
                 if (callback == null) {
-                    JLogger.e(TAG + ", command detection executing, removeCommand because the callback is null, mCmdIndex= " + key);
+                    JLogger.e(TAG, "command detection executing, removeCommand because the callback is null, mCmdIndex= " + key);
                     removeCommand(key);
                 } else {
                     Long sendMessageTimestamp = mCmdCallbackTimestampMap.get(key);
                     long delta = System.currentTimeMillis() - (sendMessageTimestamp == null ? 0 : sendMessageTimestamp);
                     if (delta > COMMAND_TIME_OUT) {
-                        JLogger.e(TAG + ", command detection executing, removeCommand because the command is timeout, mCmdIndex= " + key + ", callback= " + callback);
+                        JLogger.e(TAG, "command detection executing, removeCommand because the command is timeout, mCmdIndex= " + key + ", callback= " + callback);
                         timeoutMessages.add(callback);
                         removeCommand(key);
                     }
                 }
             }
         } catch (Exception e) {
-            JLogger.e(TAG + ", command detection error, exception= " + e.getMessage());
+            JLogger.e(TAG, "command detection error, exception= " + e.getMessage());
         }
         return timeoutMessages;
     }

@@ -1,7 +1,7 @@
 package com.jet.im.internal.model.messages;
 
-import com.jet.im.model.MessageContent;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MessageContent;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReadNtfMessage  extends MessageContent {
+public class ReadNtfMessage extends MessageContent {
     public ReadNtfMessage() {
         mContentType = CONTENT_TYPE;
     }
@@ -25,7 +25,7 @@ public class ReadNtfMessage  extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("ReadNtfMessage decode data is null");
+            JLogger.e("MSG-Decode", "ReadNtfMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -49,7 +49,7 @@ public class ReadNtfMessage  extends MessageContent {
             }
             mMessageIds = messageIds;
         } catch (JSONException e) {
-            JLogger.e("ReadNtfMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "ReadNtfMessage decode JSONException " + e.getMessage());
         }
     }
 

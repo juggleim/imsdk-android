@@ -21,10 +21,13 @@ import java.util.List;
 public class NaviManager {
     interface IRequestCallback {
         void onSuccess(String userId, List<String> servers);
+
         void onError(int errorCode);
     }
+
     static void request(String url, String appKey, String token, IRequestCallback callback) {
         url = url + NAVI_SERVER_SUFFIX;
+        JLogger.e("NAV-Request", "url is " + url);
         try {
             URL u = new URL(url);
             HttpURLConnection con = (HttpURLConnection) u.openConnection();
@@ -34,6 +37,7 @@ public class NaviManager {
             con.connect();
             int responseCode = con.getResponseCode();
             if (responseCode != 200) {
+                JLogger.e("NAV-Request", "error, http code is " + responseCode);
                 if (responseCode == 401) {
                     if (callback != null) {
                         callback.onError(ConstInternal.ErrorCode.TOKEN_ILLEGAL);
@@ -54,6 +58,7 @@ public class NaviManager {
             }
             String s = new String(responseData.toByteArray(), StandardCharsets.UTF_8).trim();
             if (TextUtils.isEmpty(s)) {
+                JLogger.e("NAV-Request", "error, response is empty");
                 if (callback != null) {
                     callback.onError(ConstInternal.ErrorCode.NAVI_FAILURE);
                 }
@@ -73,7 +78,7 @@ public class NaviManager {
                 callback.onSuccess(userId, serverList);
             }
         } catch (IOException | JSONException e) {
-            JLogger.e("get navi exception, e is " + e.getMessage());
+            JLogger.e("NAV-Request", "error, exception is " + e.getMessage());
             if (callback != null) {
                 callback.onError(ConstInternal.ErrorCode.NAVI_FAILURE);
             }

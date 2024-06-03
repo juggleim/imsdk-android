@@ -3,8 +3,8 @@ package com.jet.im.push;
 import android.content.Context;
 
 import com.jet.im.JetIM;
-import com.jet.im.internal.util.JUtility;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JUtility;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class PushManager implements IPush.Callback {
-    private static final String TAG = "PushManager";
+    private static final String TAG = "CON-Push";
     private ThreadPoolExecutor pushExecutor;
     Map<PushChannel, IPush> iPushMap = new HashMap<>();
 
@@ -71,7 +71,7 @@ public class PushManager implements IPush.Callback {
             IPush push = (IPush) aClass.newInstance();
             iPushMap.put(push.getType(), push);
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            JLogger.d(TAG + ", not register " + className);
+            JLogger.d(TAG, "not register " + className);
         }
     }
 
@@ -81,7 +81,7 @@ public class PushManager implements IPush.Callback {
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                JLogger.d(TAG + ", on push token received, channel= " + type.getName() + ", token= " + token);
+                JLogger.d(TAG, "on push token received, channel= " + type.getName() + ", token= " + token);
                 JetIM.getInstance().getConnectionManager().registerPushToken(type, token);
             }
         });
@@ -90,7 +90,7 @@ public class PushManager implements IPush.Callback {
     @Override
     public void onError(PushChannel type, int code, String msg) {
         //todo 处理 onError
-        JLogger.d(TAG + ", on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
+        JLogger.d(TAG, "on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
     }
 
     private static class SingletonHolder {

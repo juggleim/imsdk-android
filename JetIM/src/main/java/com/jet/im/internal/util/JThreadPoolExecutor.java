@@ -58,8 +58,7 @@ public class JThreadPoolExecutor {
 
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            JLogger.d(TAG + ", rejectedExecution:" + r);
-            JLogger.e(TAG + ", " + logAllThreadStackTrace());
+            JLogger.e("J-ThreadPool", "rejectedExecution, exception is " + e + ", trace is " + logAllThreadStackTrace());
             if (!mPool.isShutdown()) {
                 mPool.shutdown();
                 mPool = null;
@@ -147,7 +146,7 @@ public class JThreadPoolExecutor {
         sb.append(mPool.getTaskCount());
         sb.append("\ngetCompletedTaskCount=");
         sb.append(mPool.getCompletedTaskCount());
-        JLogger.d(TAG + ", " + sb);
+        JLogger.d("J-ThreadPool", "logStatus, status is " + sb);
     }
 
     public static StringBuilder logAllThreadStackTrace() {

@@ -69,7 +69,7 @@ public class ConversationMentionInfo {
                 jsonObject.putOpt(MENTION_MSG_LIST, jsonMentionMsgs);
             }
         } catch (JSONException e) {
-            JLogger.e("ConcreteConversationMention encodeToJson JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "ConcreteConversationMention encodeToJson JSONException " + e.getMessage());
         }
         return jsonObject.toString();
     }
@@ -94,7 +94,7 @@ public class ConversationMentionInfo {
                 mMentionMsgList = mentionMsgs;
             }
         } catch (JSONException e) {
-            JLogger.e("ConcreteConversationMention decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "ConcreteConversationMention decode JSONException " + e.getMessage());
         }
     }
 

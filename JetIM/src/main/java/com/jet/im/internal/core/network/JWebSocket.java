@@ -13,7 +13,6 @@ import com.jet.im.internal.HeartbeatManager;
 import com.jet.im.internal.WebSocketCommandManager;
 import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.util.JLogger;
-import com.jet.im.internal.util.JLoggerEx;
 import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
@@ -37,7 +36,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     public JWebSocket(String appKey, String token, URI serverUri, Context context) {
         super(serverUri);
-        JLoggerEx.i("WS-Connect", "appKey is " + appKey + ", token is " + token + ", serverUri is " + serverUri);
+        JLogger.i("WS-Connect", "appKey is " + appKey + ", token is " + token + ", serverUri is " + serverUri);
         mAppKey = appKey;
         mToken = token;
         mContext = context;
@@ -48,7 +47,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     public void disconnect(Boolean receivePush) {
-        JLoggerEx.i("WS-Disconnect", "receivePush is " + receivePush);
+        JLogger.i("WS-Disconnect", "receivePush is " + receivePush);
         sendDisconnectMsg(receivePush);
     }
 
@@ -80,7 +79,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
                 conversation.getConversationId(),
                 content.getMentionInfo());
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "send message");
+        JLogger.i("WS-Send", "send message");
         sendWhenOpen(bytes);
     }
 
@@ -92,7 +91,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, extras, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "recallMessage, messageId is " + messageId);
+        JLogger.i("WS-Send", "recallMessage, messageId is " + messageId);
         sendWhenOpen(bytes);
     }
 
@@ -103,7 +102,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.syncConversationsData(startTime, count, userId, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "syncConversations, startTime is " + startTime + ", count is " + count);
+        JLogger.i("WS-Send", "syncConversations, startTime is " + startTime + ", count is " + count);
         sendWhenOpen(bytes);
     }
 
@@ -111,7 +110,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
                              long sendTime,
                              String userId) {
         byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mCmdIndex++);
-        JLoggerEx.i("WS-Send", "syncMessages, receiveTime is " + receiveTime + ", sendTime is " + sendTime);
+        JLogger.i("WS-Send", "syncMessages, receiveTime is " + receiveTime + ", sendTime is " + sendTime);
         sendWhenOpen(bytes);
     }
 
@@ -121,7 +120,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.sendReadReceiptData(conversation, messageIds, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "sendReadReceipt");
+        JLogger.i("WS-Send", "sendReadReceipt");
         sendWhenOpen(bytes);
     }
 
@@ -131,7 +130,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.getGroupMessageReadDetail(conversation, messageId, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "getGroupMessageReadDetail, messageId is " + messageId);
+        JLogger.i("WS-Send", "getGroupMessageReadDetail, messageId is " + messageId);
         sendWhenOpen(bytes);
     }
 
@@ -141,7 +140,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.deleteConversationData(conversation, userId, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "getGroupMessageReadDetail, conversation is " + conversation);
+        JLogger.i("WS-Send", "getGroupMessageReadDetail, conversation is " + conversation);
         sendWhenOpen(bytes);
     }
 
@@ -152,7 +151,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "clearUnreadCount, conversation is " + conversation + ", msgIndex is " + msgIndex);
+        JLogger.i("WS-Send", "clearUnreadCount, conversation is " + conversation + ", msgIndex is " + msgIndex);
         sendWhenOpen(bytes);
     }
 
@@ -160,7 +159,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.clearTotalUnreadCountData(userId, time, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "clearTotalUnreadCount, time is " + time);
+        JLogger.i("WS-Send", "clearTotalUnreadCount, time is " + time);
         sendWhenOpen(bytes);
     }
 
@@ -168,7 +167,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "queryHisMsg, conversation is " + conversation + ", startTime is " + startTime + ", count is " + count + ", direction is " + direction);
+        JLogger.i("WS-Send", "queryHisMsg, conversation is " + conversation + ", startTime is " + startTime + ", count is " + count + ", direction is " + direction);
         sendWhenOpen(bytes);
     }
 
@@ -176,7 +175,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.queryHisMsgDataByIds(conversation, messageIds, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "queryHisMsgByIds, conversation is " + conversation);
+        JLogger.i("WS-Send", "queryHisMsgByIds, conversation is " + conversation);
         sendWhenOpen(bytes);
     }
 
@@ -184,7 +183,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLoggerEx.i("WS-Send", "setMute, conversation is " + conversation + ", isMute is " + isMute);
+        JLogger.i("WS-Send", "setMute, conversation is " + conversation + ", isMute is " + isMute);
         sendWhenOpen(bytes);
     }
 
@@ -192,6 +191,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.topConversationData(conversation, userId, isTop, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "setTop, conversation is " + conversation + ", isTop is " + isTop);
         sendWhenOpen(bytes);
     }
 
@@ -203,6 +203,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.getMergedMessageList(messageId, timestamp, count, direction, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "getMergedMessageList, messageId is " + messageId + ", timestamp is " + timestamp + ", count is " + count + ", direction is " + direction);
         sendWhenOpen(bytes);
     }
 
@@ -214,6 +215,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.getMentionMessages(conversation, time, count, direction, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "getMentionMessageList, conversation is " + conversation + ", time is " + time + ", count is " + count + ", direction is " + direction);
         sendWhenOpen(bytes);
     }
 
@@ -226,6 +228,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
                 userId,
                 mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "registerPushToken, channel is " + channel.getName() + ", token is " + token);
         sendWhenOpen(bytes);
     }
 
@@ -233,6 +236,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.clearHistoryMessage(conversation, time, 0, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "clearHistoryMessage, conversation is " + conversation + ", time is " + time);
         sendWhenOpen(bytes);
     }
 
@@ -240,6 +244,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.deleteMessage(conversation, msgList, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "deleteMessage, conversation is " + conversation);
         sendWhenOpen(bytes);
     }
 
@@ -265,7 +270,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     public void ping() {
-        JLoggerEx.v("WS-Send", "ping");
+        JLogger.v("WS-Send", "ping");
         byte[] bytes = mPbData.pingData();
         sendWhenOpen(bytes);
     }
@@ -320,21 +325,19 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        JLogger.i("JWebSocket, onOpen");
+        JLogger.i("WS-Connect", "onOpen");
         sendConnectMsg();
     }
 
     @Override
     public void onMessage(String message) {
         mHeartbeatManager.updateLastMessageReceivedTime();
-        JLogger.i("JWebSocket, onMessage");
     }
 
     @Override
     public void onMessage(ByteBuffer bytes) {
         mHeartbeatManager.updateLastMessageReceivedTime();
         PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
-        JLogger.i("JWebSocket, onMessage bytes, type is " + obj.getRcvType());
         switch (obj.getRcvType()) {
             case PBRcvObj.PBRcvType.connectAck:
                 handleConnectAckMsg(obj.mConnectAck);
@@ -376,13 +379,14 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
                 handleTimestampCallback(obj.mTimestampQryAck);
                 break;
             default:
+                JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
                 break;
         }
     }
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        JLogger.i("JWebSocket, onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
+        JLogger.i("WS-Connect", "onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
         if (remote && mConnectListener != null) {
             mConnectListener.onWebSocketClose();
         }
@@ -390,7 +394,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
 
     @Override
     public void onError(Exception ex) {
-        JLogger.i("JWebSocket, onError, msg is " + ex.getMessage());
+        JLogger.e("WS-Connect", "onError, msg is " + ex.getMessage());
         if (mConnectListener != null) {
             mConnectListener.onWebSocketFail();
         }
@@ -439,20 +443,20 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void sendPublishAck(int index) {
-        JLoggerEx.v("WS-Send", "publish ack");
+        JLogger.v("WS-Send", "publish ack");
         byte[] bytes = mPbData.publishAckData(index);
         sendWhenOpen(bytes);
     }
 
     private void handleConnectAckMsg(@NonNull PBRcvObj.ConnectAck ack) {
-        JLogger.i("connect userId is " + ack.userId);
+        JLogger.i("WS-Receive", "handleConnectAckMsg, connect userId is " + ack.userId);
         if (mConnectListener != null) {
             mConnectListener.onConnectComplete(ack.code, ack.userId);
         }
     }
 
     private void handlePublishAckMsg(PBRcvObj.PublishMsgAck ack) {
-        JLogger.d("handlePublishAckMsg, msgId is " + ack.msgId + ", code is " + ack.code);
+        JLogger.i("WS-Receive", "handlePublishAckMsg, msgId is " + ack.msgId + ", code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof SendMessageCallback) {
@@ -466,7 +470,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleQryHisMsgAck(PBRcvObj.QryHisMsgAck ack) {
-        JLogger.d("handleQryHisMsgAck");
+        JLogger.i("WS-Receive", "handleQryHisMsgAck");
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof QryHisMsgCallback) {
@@ -480,7 +484,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleSyncConversationAck(PBRcvObj.SyncConvAck ack) {
-        JLogger.d("handleSyncConversationAck");
+        JLogger.i("WS-Receive", "handleSyncConversationAck");
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof SyncConversationsCallback) {
@@ -494,12 +498,14 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleSyncMsgAck(PBRcvObj.QryHisMsgAck ack) {
+        JLogger.i("WS-Receive", "handleSyncMsgAck");
         if (mMessageListener != null) {
             mMessageListener.onMessageReceive(ack.msgList, ack.isFinished);
         }
     }
 
     private void handleReceiveMessage(PBRcvObj.PublishMsgBody body) {
+        JLogger.i("WS-Receive", "handleReceiveMessage");
         if (mMessageListener != null) {
             mMessageListener.onMessageReceive(body.rcvMessage);
         }
@@ -509,23 +515,25 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handlePublishMsgNtf(PBRcvObj.PublishMsgNtf ntf) {
+        JLogger.i("WS-Receive", "handlePublishMsgNtf");
         if (mMessageListener != null) {
             mMessageListener.onSyncNotify(ntf.syncTime);
         }
     }
 
     private void handlePong() {
-        JLoggerEx.v("WS-Receive", "handlePong");
+        JLogger.v("WS-Receive", "handlePong");
     }
 
     private void handleDisconnectMsg(PBRcvObj.DisconnectMsg msg) {
+        JLogger.i("WS-Receive", "handleDisconnectMsg");
         if (mConnectListener != null) {
             mConnectListener.onDisconnect(msg.code, msg.extra);
         }
     }
 
     private void handleSimpleQryAck(PBRcvObj.SimpleQryAck ack) {
-        JLogger.d("handleSimpleQryAck, code is " + ack.code);
+        JLogger.i("WS-Receive", "handleSimpleQryAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof WebSocketSimpleCallback) {
@@ -539,7 +547,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleSimpleQryAckWithTimeCallback(PBRcvObj.SimpleQryAck ack) {
-        JLogger.d("handleSimpleQryAckWithTimeCallback, code is " + ack.code);
+        JLogger.i("WS-Receive", "handleSimpleQryAckWithTimeCallback, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof WebSocketTimestampCallback) {
@@ -553,7 +561,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleTimestampCallback(PBRcvObj.TimestampQryAck ack) {
-        JLogger.d("handleTimestampAck, code is " + ack.code);
+        JLogger.i("WS-Receive", "handleTimestampAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof WebSocketTimestampCallback) {
@@ -567,7 +575,7 @@ public class JWebSocket extends WebSocketClient implements WebSocketCommandManag
     }
 
     private void handleQryReadDetailAck(PBRcvObj.QryReadDetailAck ack) {
-        JLogger.d("handleQryReadDetailAck, code is " + ack.code);
+        JLogger.i("WS-Receive", "handleQryReadDetailAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
         if (c instanceof QryReadDetailCallback) {

@@ -1,7 +1,7 @@
 package com.jet.im.internal.model.messages;
 
-import com.jet.im.model.MessageContent;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MessageContent;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,14 +25,12 @@ public class DeleteMsgMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("DeleteMsgMessage decode data is null");
+            JLogger.e("MSG-Decode", "DeleteMsgMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
-        JLogger.d("DeleteMsgMessage decode data= " + jsonStr);
-
-        List<String> msgIdList = new ArrayList<>();
         try {
+            List<String> msgIdList = new ArrayList<>();
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(MSG_LIST)) {
                 JSONArray jsonArray = jsonObject.optJSONArray(MSG_LIST);
@@ -50,7 +48,7 @@ public class DeleteMsgMessage extends MessageContent {
             }
             mMsgIdList = msgIdList;
         } catch (JSONException e) {
-            JLogger.e("DeleteMsgMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "DeleteMsgMessage decode JSONException " + e.getMessage());
         }
     }
 

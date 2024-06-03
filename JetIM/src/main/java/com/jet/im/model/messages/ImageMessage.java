@@ -2,8 +2,8 @@ package com.jet.im.model.messages;
 
 import android.text.TextUtils;
 
-import com.jet.im.model.MessageContent;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +15,7 @@ public class ImageMessage extends MessageContent {
     public ImageMessage() {
         this.mContentType = "jg:img";
     }
+
     @Override
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
@@ -32,7 +33,7 @@ public class ImageMessage extends MessageContent {
             }
             jsonObject.put(SIZE, mSize);
         } catch (JSONException e) {
-            JLogger.e("ImageMessage JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "ImageMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -40,7 +41,7 @@ public class ImageMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("ImageMessage decode data is null");
+            JLogger.e("MSG-Decode", "ImageMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -66,7 +67,7 @@ public class ImageMessage extends MessageContent {
                 mSize = jsonObject.optLong(SIZE);
             }
         } catch (JSONException e) {
-            JLogger.e("ImageMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "ImageMessage decode JSONException " + e.getMessage());
         }
     }
 

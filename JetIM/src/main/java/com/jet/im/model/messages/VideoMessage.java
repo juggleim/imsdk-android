@@ -2,8 +2,8 @@ package com.jet.im.model.messages;
 
 import android.text.TextUtils;
 
-import com.jet.im.model.MessageContent;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +15,7 @@ public class VideoMessage extends MessageContent {
     public VideoMessage() {
         this.mContentType = "jg:video";
     }
+
     @Override
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
@@ -33,7 +34,7 @@ public class VideoMessage extends MessageContent {
             jsonObject.put(DURATION, mDuration);
             jsonObject.put(SIZE, mSize);
         } catch (JSONException e) {
-            JLogger.e("VideoMessage JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "VideoMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -41,7 +42,7 @@ public class VideoMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("VideoMessage decode data is null");
+            JLogger.e("MSG-Decode", "VideoMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -70,7 +71,7 @@ public class VideoMessage extends MessageContent {
                 mExtra = jsonObject.optString(EXTRA);
             }
         } catch (JSONException e) {
-            JLogger.e("VideoMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "VideoMessage decode JSONException " + e.getMessage());
         }
     }
 
@@ -134,6 +135,7 @@ public class VideoMessage extends MessageContent {
     public void setExtra(String extra) {
         mExtra = extra;
     }
+
     private String mUrl;
     private String mSnapshotUrl;
     private int mHeight;

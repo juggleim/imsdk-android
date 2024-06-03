@@ -1,7 +1,7 @@
 package com.jet.im.internal.model.messages;
 
-import com.jet.im.model.MessageContent;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +25,7 @@ public class RecallCmdMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("RecallCmdMessage decode data is null");
+            JLogger.e("MSG-Decode", "RecallCmdMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -40,7 +40,7 @@ public class RecallCmdMessage extends MessageContent {
             }
             decodeExt(jsonObject);
         } catch (JSONException e) {
-            JLogger.e("RecallCmdMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "RecallCmdMessage decode JSONException " + e.getMessage());
         }
     }
 
@@ -58,7 +58,7 @@ public class RecallCmdMessage extends MessageContent {
                 String value = extJsonObject.getString(key);
                 mExtra.put(key, value);
             } catch (JSONException e) {
-                JLogger.e("RecallCmdMessage decodeExt JSONException " + e.getMessage());
+                JLogger.e("MSG-Decode", "RecallCmdMessage decodeExt JSONException " + e.getMessage());
             }
         }
     }

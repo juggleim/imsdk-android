@@ -24,7 +24,6 @@ import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.internal.model.messages.TopConvMessage;
 import com.jet.im.internal.model.messages.UnDisturbConvMessage;
 import com.jet.im.internal.util.JLogger;
-import com.jet.im.internal.util.JLoggerEx;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
@@ -239,7 +238,7 @@ public class MessageManager implements IMessageManager {
             mCore.getWebSocket().queryHisMsgByIds(conversation, notExistList, new QryHisMsgCallback() {
                 @Override
                 public void onSuccess(List<ConcreteMessage> remoteMessages, boolean isFinished) {
-                    JLoggerEx.i("MSG-Get", "by id, success");
+                    JLogger.i("MSG-Get", "by id, success");
                     List<Message> result = new ArrayList<>();
                     for (String messageId : messageIds) {
                         boolean isMatch = false;
@@ -267,7 +266,7 @@ public class MessageManager implements IMessageManager {
 
                 @Override
                 public void onError(int errorCode) {
-                    JLoggerEx.e("MSG-Get", "by id, fail, errorCode is " + errorCode);
+                    JLogger.e("MSG-Get", "by id, fail, errorCode is " + errorCode);
                     if (localMessages.size() > 0) {
                         if (callback != null) {
                             callback.onSuccess(localMessages);
@@ -340,12 +339,12 @@ public class MessageManager implements IMessageManager {
             }
             return;
         }
-        JLoggerEx.i("MSG-Delete", "by messageId, count is " + deleteList.size());
+        JLogger.i("MSG-Delete", "by messageId, count is " + deleteList.size());
         //调用接口
         mCore.getWebSocket().deleteMessage(conversation, deleteList, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                JLoggerEx.i("MSG-Delete", "by messageId, success");
+                JLogger.i("MSG-Delete", "by messageId, success");
                 //删除消息
                 mCore.getDbManager().deleteMessagesByMessageIds(deleteIdList);
                 //通知会话更新
@@ -358,7 +357,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                JLoggerEx.e("MSG-Delete", "by messageId, fail, code is " + errorCode);
+                JLogger.e("MSG-Delete", "by messageId, fail, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -403,7 +402,7 @@ public class MessageManager implements IMessageManager {
             }
             return;
         }
-        JLoggerEx.i("MSG-Delete", "by clientMsgNo, local count is " + deleteLocalList.size() + ", remote count is " + deleteRemoteList);
+        JLogger.i("MSG-Delete", "by clientMsgNo, local count is " + deleteLocalList.size() + ", remote count is " + deleteRemoteList);
         //所有消息均为仅本地保存的消息，不需要调用接口
         if (deleteRemoteList.isEmpty()) {
             //删除消息
@@ -419,7 +418,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().deleteMessage(conversation, deleteRemoteList, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                JLoggerEx.i("MSG-Delete", "by clientMsgNo, success");
+                JLogger.i("MSG-Delete", "by clientMsgNo, success");
                 //删除消息
                 mCore.getDbManager().deleteMessageByClientMsgNo(deleteClientMsgNoList);
                 //通知会话更新
@@ -433,7 +432,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                JLoggerEx.e("MSG-Delete", "by clientMsgNo, fail, code is " + errorCode);
+                JLogger.e("MSG-Delete", "by clientMsgNo, fail, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -449,7 +448,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                JLoggerEx.i("MSG-Clear", "success");
+                JLogger.i("MSG-Clear", "success");
                 //清空消息
                 mCore.getDbManager().clearMessages(conversation, finalStartTime, null);
                 //通知会话更新
@@ -462,7 +461,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                JLoggerEx.e("MSG-Clear", "fail, code is " + errorCode);
+                JLogger.e("MSG-Clear", "fail, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -487,7 +486,7 @@ public class MessageManager implements IMessageManager {
             mCore.getWebSocket().recallMessage(messageId, m.getConversation(), m.getTimestamp(), extras, new WebSocketTimestampCallback() {
                 @Override
                 public void onSuccess(long timestamp) {
-                    JLoggerEx.i("MSG-Recall", "success");
+                    JLogger.i("MSG-Recall", "success");
                     if (mSyncProcessing) {
                         mCachedSendTime = timestamp;
                     } else {
@@ -509,7 +508,7 @@ public class MessageManager implements IMessageManager {
 
                 @Override
                 public void onError(int errorCode) {
-                    JLoggerEx.e("MSG-Recall", "fail, code is " + errorCode);
+                    JLogger.e("MSG-Recall", "fail, code is " + errorCode);
                     if (callback != null) {
                         callback.onError(errorCode);
                     }
@@ -530,7 +529,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().queryHisMsg(conversation, startTime, count, direction, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
-                JLoggerEx.i("MSG-Get", "getRemoteMessages, success");
+                JLogger.i("MSG-Get", "getRemoteMessages, success");
                 mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
@@ -540,7 +539,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                JLoggerEx.e("MSG-Get", "getRemoteMessages, fail, errorCode is " + errorCode);
+                JLogger.e("MSG-Get", "getRemoteMessages, fail, errorCode is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -575,7 +574,7 @@ public class MessageManager implements IMessageManager {
             getRemoteMessages(conversation, count, startTime, direction, new IGetMessagesCallback() {
                 @Override
                 public void onSuccess(List<Message> messages) {
-                    JLoggerEx.i("MSG-Get", "getLocalAndRemoteMessages, success");
+                    JLogger.i("MSG-Get", "getLocalAndRemoteMessages, success");
                     //合并去重
                     List<Message> mergeList = mergeLocalAndRemoteMessages(localMessages == null ? new ArrayList<>() : localMessages, messages);
                     //消息排序
@@ -593,7 +592,7 @@ public class MessageManager implements IMessageManager {
 
                 @Override
                 public void onError(int errorCode) {
-                    JLoggerEx.e("MSG-Get", "getLocalAndRemoteMessages, fail, errorCode is " + errorCode);
+                    JLogger.e("MSG-Get", "getLocalAndRemoteMessages, fail, errorCode is " + errorCode);
                     if (callback != null) {
                         callback.onGetRemoteListError(errorCode);
                     }
@@ -644,6 +643,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().sendReadReceipt(conversation, messageIds, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
+                JLogger.i("MSG-ReadReceipt", "sendReadReceipt, success");
                 mCore.getDbManager().setMessagesRead(messageIds);
                 if (callback != null) {
                     callback.onSuccess();
@@ -652,6 +652,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
+                JLogger.e("MSG-ReadReceipt", "sendReadReceipt, fail, errorCode is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -664,7 +665,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().getGroupMessageReadDetail(conversation, messageId, new QryReadDetailCallback() {
             @Override
             public void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers) {
-                JLoggerEx.i("MSG-GroupReadDetail", "success");
+                JLogger.i("MSG-GroupReadDetail", "success");
                 GroupMessageReadInfo info = new GroupMessageReadInfo();
                 info.setReadCount(readMembers.size());
                 info.setMemberCount(readMembers.size() + unreadMembers.size());
@@ -680,7 +681,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                JLoggerEx.e("MSG-GroupReadDetail", "fail, errorCode is " + errorCode);
+                JLogger.e("MSG-GroupReadDetail", "fail, errorCode is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -693,7 +694,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().getMergedMessageList(messageId, 0, 100, JetIMConst.PullDirection.OLDER, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
-                JLoggerEx.i("MSG-GetMerge", "success");
+                JLogger.i("MSG-GetMerge", "success");
                 mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
@@ -703,7 +704,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                JLoggerEx.e("MSG-GetMerge", "fail, code is " + errorCode);
+                JLogger.e("MSG-GetMerge", "fail, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -716,7 +717,7 @@ public class MessageManager implements IMessageManager {
         mCore.getWebSocket().getMentionMessageList(conversation, time, count, direction, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
-                JLoggerEx.i("MSG-GetMention", "success");
+                JLogger.i("MSG-GetMention", "success");
                 mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
@@ -726,7 +727,7 @@ public class MessageManager implements IMessageManager {
 
             @Override
             public void onError(int errorCode) {
-                JLoggerEx.e("MSG-GetMention", "fail, code is " + errorCode);
+                JLogger.e("MSG-GetMention", "fail, code is " + errorCode);
                 if (callback != null) {
                     callback.onError(errorCode);
                 }
@@ -822,7 +823,7 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void registerContentType(Class<? extends MessageContent> messageContentClass) {
-        JLoggerEx.i("MSG-Register", "class is " + messageContentClass);
+        JLogger.i("MSG-Register", "class is " + messageContentClass);
         ContentTypeCenter.getInstance().registerContentType(messageContentClass);
     }
 
@@ -945,7 +946,6 @@ public class MessageManager implements IMessageManager {
 
                     @Override
                     public void onSyncNotify(long syncTime) {
-                        JLogger.d("onSyncNotify, syncTime is " + syncTime + ", receiveSyncTime is " + mCore.getMessageReceiveTime());
                         if (syncTime > mCore.getMessageReceiveTime()) {
                             mSyncProcessing = true;
                             sync();
@@ -1199,7 +1199,7 @@ public class MessageManager implements IMessageManager {
     }
 
     private void sync() {
-        JLoggerEx.i("MSG-Sync", "receive time is " + mCore.getMessageReceiveTime() + ", send time is " + mCore.getMessageSendSyncTime());
+        JLogger.i("MSG-Sync", "receive time is " + mCore.getMessageReceiveTime() + ", send time is " + mCore.getMessageSendSyncTime());
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().syncMessages(mCore.getMessageReceiveTime(), mCore.getMessageSendSyncTime(), mCore.getUserId());
         }

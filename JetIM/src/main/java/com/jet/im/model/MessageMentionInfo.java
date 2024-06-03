@@ -22,9 +22,11 @@ public class MessageMentionInfo {
         MentionType(int value) {
             this.mValue = value;
         }
+
         public int getValue() {
             return mValue;
         }
+
         public static MentionType setValue(int value) {
             for (MentionType m : MentionType.values()) {
                 if (value == m.mValue) {
@@ -33,6 +35,7 @@ public class MessageMentionInfo {
             }
             return DEFAULT;
         }
+
         private final int mValue;
     }
 
@@ -52,7 +55,7 @@ public class MessageMentionInfo {
                 jsonObject.putOpt(TARGET_USERS, jsonUsers);
             }
         } catch (JSONException e) {
-            JLogger.e("MessageMentionInfo encodeToJson JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "MessageMentionInfo encodeToJson JSONException " + e.getMessage());
         }
         return jsonObject.toString();
     }
@@ -78,7 +81,7 @@ public class MessageMentionInfo {
                 mTargetUsers = users;
             }
         } catch (JSONException e) {
-            JLogger.e("MessageMentionInfo decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "MessageMentionInfo decode JSONException " + e.getMessage());
         }
     }
 
