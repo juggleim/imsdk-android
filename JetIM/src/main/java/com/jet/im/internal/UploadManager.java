@@ -37,13 +37,13 @@ public class UploadManager implements IMessageUploadProvider {
     public void uploadMessage(Message message, UploadCallback uploadCallback) {
         //判空WebSocket
         if (mCore.getWebSocket() == null) {
-            JLogger.d("uploadMessage fail, webSocket is null, message= " + message.getClientMsgNo());
+            JLogger.e("J-Uploader, uploadMessage fail, webSocket is null, message= " + message.getClientMsgNo());
             uploadCallback.onError();
             return;
         }
         //判空content
         if (message.getContent() == null || !(message.getContent() instanceof MediaMessageContent)) {
-            JLogger.d("uploadMessage fail, message content is null, message= " + message.getClientMsgNo());
+            JLogger.e("J-Uploader, uploadMessage fail, message content is null, message= " + message.getClientMsgNo());
             uploadCallback.onError();
             return;
         }
@@ -51,7 +51,7 @@ public class UploadManager implements IMessageUploadProvider {
         MediaMessageContent content = (MediaMessageContent) message.getContent();
         //判空localPath
         if (TextUtils.isEmpty(content.getLocalPath())) {
-            JLogger.d("uploadMessage fail, local path is null, message= " + message.getClientMsgNo());
+            JLogger.e("J-Uploader, uploadMessage fail, local path is null, message= " + message.getClientMsgNo());
             uploadCallback.onError();
             return;
         }
@@ -80,7 +80,7 @@ public class UploadManager implements IMessageUploadProvider {
         }
         //判空封面或缩略图
         if (needPreUpload && TextUtils.isEmpty(preUploadLocalPath)) {
-            JLogger.d("uploadMessage fail, need pre upload but pre upload local path is null, message= " + message.getClientMsgNo());
+            JLogger.e("J-Uploader, uploadMessage fail, need pre upload but pre upload local path is null, message= " + message.getClientMsgNo());
             uploadCallback.onError();
             return;
         }
@@ -98,7 +98,7 @@ public class UploadManager implements IMessageUploadProvider {
         String ext = FileUtil.getFileExtension(localPath);
         //判空文件后缀
         if (TextUtils.isEmpty(ext)) {
-            JLogger.d("doRequestUploadFileCred fail, ext is null, localPath= " + localPath);
+            JLogger.e("J-Uploader, doRequestUploadFileCred fail, ext is null, localPath= " + localPath);
             uploadCallback.onError();
             return;
         }
@@ -106,13 +106,13 @@ public class UploadManager implements IMessageUploadProvider {
         mCore.getWebSocket().getUploadFileCred(mCore.getUserId(), fileType, ext, new QryUploadFileCredCallback() {
             @Override
             public void onSuccess(UploadOssType ossType, UploadQiNiuCred qiNiuCred, UploadPreSignCred preSignCred) {
-                JLogger.d("getUploadFileCred success, localPath= " + localPath + ", ossType= " + ossType + ", qiNiuCred= " + qiNiuCred.toString() + ", preSignCred= " + preSignCred.toString());
+                JLogger.i("J-Uploader, getUploadFileCred success, localPath= " + localPath + ", ossType= " + ossType + ", qiNiuCred= " + qiNiuCred.toString() + ", preSignCred= " + preSignCred.toString());
                 doRealUpload(message, uploadCallback, ossType, qiNiuCred, preSignCred, localPath, isPreUpload);
             }
 
             @Override
             public void onError(int errorCode) {
-                JLogger.d("getUploadFileCred failed, localPath= " + localPath + ", errorCode= " + errorCode);
+                JLogger.e("J-Uploader, getUploadFileCred failed, localPath= " + localPath + ", errorCode= " + errorCode);
                 uploadCallback.onError();
             }
         });
@@ -161,7 +161,7 @@ public class UploadManager implements IMessageUploadProvider {
         //获取Uploader
         IUploader uploader = new UploaderFactory().getUploader(localPath, callback, ossType, qiNiuCred, preSignCred);
         if (uploader == null) {
-            JLogger.d("doRealUpload failed, uploader is null, localPath= " + localPath);
+            JLogger.e("J-Uploader, doRealUpload failed, uploader is null, localPath= " + localPath);
             uploadCallback.onError();
             return;
         }
