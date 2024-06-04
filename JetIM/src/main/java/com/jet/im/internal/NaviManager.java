@@ -27,7 +27,7 @@ public class NaviManager {
 
     static void request(String url, String appKey, String token, IRequestCallback callback) {
         url = url + NAVI_SERVER_SUFFIX;
-        JLogger.e("NAV-Request", "url is " + url);
+        JLogger.i("NAV-Request", "url is " + url);
         try {
             URL u = new URL(url);
             HttpURLConnection con = (HttpURLConnection) u.openConnection();
