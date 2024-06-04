@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class PushManager implements IPush.Callback {
     private static final String TAG = "PushManager";
     private ThreadPoolExecutor pushExecutor;
+    private PushConfig mConfig;
     Map<PushChannel, IPush> iPushMap = new HashMap<>();
 
     public static PushManager getInstance() {
@@ -28,7 +29,8 @@ public class PushManager implements IPush.Callback {
         pushExecutor.allowCoreThreadTimeOut(true);
     }
 
-    public void init(Context context, PushConfig config) {
+    public void init(PushConfig config) {
+        mConfig = config;
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -38,9 +40,18 @@ public class PushManager implements IPush.Callback {
                 init("com.jet.im.push.oppo.OPPOPush");
                 init("com.jet.im.push.jg.JGPush");
                 init("com.jet.im.push.google.GooglePush");
+            }
+        });
+    }
+
+    public void getToken(Context context) {
+        pushExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (mConfig == null) return;
                 List<IPush> pushList = getRegisterPush();
                 for (IPush item : pushList) {
-                    item.getToken(context, config, PushManager.this);
+                    item.getToken(context, mConfig, PushManager.this);
                 }
             }
         });

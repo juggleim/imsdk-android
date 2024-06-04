@@ -7,8 +7,9 @@ import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
-import com.jet.im.push.PushChannel;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.push.PushChannel;
+import com.jet.im.push.PushManager;
 
 import java.util.List;
 import java.util.Map;
@@ -124,6 +125,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             }
             changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
             mConversationManager.syncConversations(mMessageManager::syncMessage);
+            PushManager.getInstance().getToken(mCore.getContext());
         } else {
             if (checkConnectionFailure(errorCode)) {
                 changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, extra);
