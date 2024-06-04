@@ -82,7 +82,7 @@ public class JLogConfig {
     }
 
     public static class Builder {
-        private Context mContext;
+        private final Context mContext;
         private JLogLevel mLogPrintLevel;
         private JLogLevel mLogWriteLevel;
         private String mLogFileDir;
