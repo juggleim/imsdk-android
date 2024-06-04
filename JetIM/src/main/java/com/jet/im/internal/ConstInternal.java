@@ -4,6 +4,9 @@ public class ConstInternal {
     public static final String WEB_SOCKET_URL = "120.48.178.248:9002";
     public static final String NAVI_URL = "http://120.48.178.248:8083";
     public static final String PLATFORM = "Android";
+    public static final int THUMBNAIL_WIDTH = 240;
+    public static final int THUMBNAIL_HEIGHT = 240;
+    public static final int THUMBNAIL_QUALITY = 30;
 
     static class ErrorCode {
         static final int NONE = 0;

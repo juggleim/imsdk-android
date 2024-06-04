@@ -1,40 +1,73 @@
 package com.jet.im.model.messages;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 
+import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JUtility;
 import com.jet.im.model.MediaMessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
-public class VideoMessage extends MediaMessageContent {
+public class SnapshotPackedVideoMessage extends MediaMessageContent {
 
-    public VideoMessage() {
-        this.mContentType = "jg:video";
+    public SnapshotPackedVideoMessage() {
+        this.mContentType = "jg:spvideo";
+    }
+
+    public static SnapshotPackedVideoMessage messageWithVideo(String videoPath, String snapshotImagePath) {
+        SnapshotPackedVideoMessage message = new SnapshotPackedVideoMessage();
+        message.setLocalPath(videoPath);
+        if (snapshotImagePath != null) {
+            Bitmap snapshotImage = BitmapFactory.decodeFile(snapshotImagePath);
+            message.setSnapshotImage(snapshotImage);
+        }
+        return message;
+    }
+
+    public static SnapshotPackedVideoMessage messageWithVideo(String videoPath, Bitmap snapshotImage) {
+        SnapshotPackedVideoMessage message = new SnapshotPackedVideoMessage();
+        message.setLocalPath(videoPath);
+        message.setSnapshotImage(snapshotImage);
+        return message;
     }
 
     @Override
     public byte[] encode() {
+        String snapshotString = "";
+        if (mSnapshotImage != null) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            mSnapshotImage.compress(Bitmap.CompressFormat.JPEG, ConstInternal.THUMBNAIL_QUALITY, byteArrayOutputStream);
+            byte[] snapshotData = byteArrayOutputStream.toByteArray();
+            snapshotString = JUtility.base64EncodedStringFrom(snapshotData);
+        }
+
         JSONObject jsonObject = new JSONObject();
         try {
             if (!TextUtils.isEmpty(getUrl())) {
                 jsonObject.put(URL, getUrl());
             }
-            if (!TextUtils.isEmpty(mSnapshotUrl)) {
-                jsonObject.put(POSTER, mSnapshotUrl);
+            if (!TextUtils.isEmpty(snapshotString)) {
+                jsonObject.put(POSTER, snapshotString);
             }
             jsonObject.put(HEIGHT, mHeight);
             jsonObject.put(WIDTH, mWidth);
+            jsonObject.put(DURATION, mDuration);
+            jsonObject.put(SIZE, mSize);
+            if (!TextUtils.isEmpty(mName)) {
+                jsonObject.put(NAME, mName);
+            }
             if (!TextUtils.isEmpty(mExtra)) {
                 jsonObject.put(EXTRA, mExtra);
             }
-            jsonObject.put(DURATION, mDuration);
-            jsonObject.put(SIZE, mSize);
         } catch (JSONException e) {
-            JLogger.e("VideoMessage JSONException " + e.getMessage());
+            JLogger.e("SnapshotPackedVideoMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -42,7 +75,7 @@ public class VideoMessage extends MediaMessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("VideoMessage decode data is null");
+            JLogger.e("SnapshotPackedVideoMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -53,7 +86,9 @@ public class VideoMessage extends MediaMessageContent {
                 setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(POSTER)) {
-                mSnapshotUrl = jsonObject.optString(POSTER);
+                String snapshotString = jsonObject.optString(POSTER);
+                byte[] snapshotData = JUtility.dataWithBase64EncodedString(snapshotString);
+                mSnapshotImage = BitmapFactory.decodeByteArray(snapshotData, 0, snapshotData.length);
             }
             if (jsonObject.has(HEIGHT)) {
                 mHeight = jsonObject.optInt(HEIGHT);
@@ -67,11 +102,14 @@ public class VideoMessage extends MediaMessageContent {
             if (jsonObject.has(SIZE)) {
                 mSize = jsonObject.optLong(SIZE);
             }
+            if (jsonObject.has(NAME)) {
+                mName = jsonObject.optString(NAME);
+            }
             if (jsonObject.has(EXTRA)) {
                 mExtra = jsonObject.optString(EXTRA);
             }
         } catch (JSONException e) {
-            JLogger.e("VideoMessage decode JSONException " + e.getMessage());
+            JLogger.e("SnapshotPackedVideoMessage decode JSONException " + e.getMessage());
         }
     }
 
@@ -80,20 +118,12 @@ public class VideoMessage extends MediaMessageContent {
         return DIGEST;
     }
 
-    public String getSnapshotLocalPath() {
-        return mSnapshotLocalPath;
+    public Bitmap getSnapshotImage() {
+        return mSnapshotImage;
     }
 
-    public void setSnapshotLocalPath(String snapshotLocalPath) {
-        this.mSnapshotLocalPath = snapshotLocalPath;
-    }
-
-    public String getSnapshotUrl() {
-        return mSnapshotUrl;
-    }
-
-    public void setSnapshotUrl(String snapshotUrl) {
-        mSnapshotUrl = snapshotUrl;
+    public void setSnapshotImage(Bitmap snapshotImage) {
+        this.mSnapshotImage = snapshotImage;
     }
 
     public int getHeight() {
@@ -128,6 +158,14 @@ public class VideoMessage extends MediaMessageContent {
         mDuration = duration;
     }
 
+    public String getName() {
+        return mName;
+    }
+
+    public void setName(String name) {
+        this.mName = name;
+    }
+
     public String getExtra() {
         return mExtra;
     }
@@ -136,19 +174,20 @@ public class VideoMessage extends MediaMessageContent {
         mExtra = extra;
     }
 
-    private String mSnapshotLocalPath;
-    private String mSnapshotUrl;
+    private Bitmap mSnapshotImage;
     private int mHeight;
     private int mWidth;
     private long mSize;
     private int mDuration;
+    private String mName;
     private String mExtra;
-    private static final String URL = "url";
-    private static final String POSTER = "poster";
+    private static final String URL = "sightUrl";
+    private static final String POSTER = "content";
     private static final String HEIGHT = "height";
     private static final String WIDTH = "width";
     private static final String SIZE = "size";
     private static final String DURATION = "duration";
+    private static final String NAME = "name";
     private static final String EXTRA = "extra";
     private static final String DIGEST = "[Video]";
 }

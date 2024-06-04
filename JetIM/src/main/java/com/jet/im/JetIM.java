@@ -10,6 +10,7 @@ import com.jet.im.interfaces.IUserInfoManager;
 import com.jet.im.internal.ConnectionManager;
 import com.jet.im.internal.ConversationManager;
 import com.jet.im.internal.MessageManager;
+import com.jet.im.internal.UploadManager;
 import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.push.PushConfig;
@@ -78,12 +79,15 @@ public class JetIM {
         mMessageManager.setSendReceiveListener(mConversationManager);
         mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager);
         mUserInfoManager = new UserInfoManager(core);
+        mUploadManager = new UploadManager(core);
+        mMessageManager.setDefaultMessageUploadProvider(mUploadManager);
     }
 
     private final ConnectionManager mConnectionManager;
     private final MessageManager mMessageManager;
     private final ConversationManager mConversationManager;
     private final UserInfoManager mUserInfoManager;
+    private final UploadManager mUploadManager;
     private final JetIMCore mCore;
 
     public static class InitConfig {
