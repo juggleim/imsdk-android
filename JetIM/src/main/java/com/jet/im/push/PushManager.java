@@ -3,8 +3,8 @@ package com.jet.im.push;
 import android.content.Context;
 
 import com.jet.im.JetIM;
-import com.jet.im.internal.util.JUtility;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JUtility;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +18,7 @@ public class PushManager implements IPush.Callback {
     private static final String TAG = "PushManager";
     private ThreadPoolExecutor pushExecutor;
     private PushConfig mConfig;
+    private boolean mHasRegister = false;
     Map<PushChannel, IPush> iPushMap = new HashMap<>();
 
     public static PushManager getInstance() {
@@ -30,10 +31,11 @@ public class PushManager implements IPush.Callback {
     }
 
     public void init(PushConfig config) {
-        mConfig = config;
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                mConfig = config;
+                mHasRegister = false;
                 init("com.jet.im.push.hw.HWPush");
                 init("com.jet.im.push.xm.XMPush");
                 init("com.jet.im.push.vivo.VIVOPush");
@@ -49,6 +51,9 @@ public class PushManager implements IPush.Callback {
             @Override
             public void run() {
                 if (mConfig == null) return;
+                if (mHasRegister) return;
+                mHasRegister = true;
+
                 List<IPush> pushList = getRegisterPush();
                 for (IPush item : pushList) {
                     item.getToken(context, mConfig, PushManager.this);
@@ -101,7 +106,13 @@ public class PushManager implements IPush.Callback {
     @Override
     public void onError(PushChannel type, int code, String msg) {
         //todo 处理 onError
-        JLogger.d(TAG + ", on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
+        pushExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                JLogger.d(TAG + ", on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
+                mHasRegister = false;
+            }
+        });
     }
 
     private static class SingletonHolder {
