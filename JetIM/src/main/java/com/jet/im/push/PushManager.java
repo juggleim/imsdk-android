@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PushManager implements IPush.Callback {
     private static final String TAG = "PushManager";
-    private ThreadPoolExecutor pushExecutor;
+    private final ThreadPoolExecutor pushExecutor;
     private PushConfig mConfig;
     private boolean mHasRegister = false;
     Map<PushChannel, IPush> iPushMap = new HashMap<>();
@@ -65,7 +65,7 @@ public class PushManager implements IPush.Callback {
     /**
      * 获取适合的推送类型 根据手机机型和用户 enable 适配的推送类型
      */
-    public List<IPush> getRegisterPush() {
+    private List<IPush> getRegisterPush() {
         List<IPush> result = new ArrayList<>();
         String os = JUtility.getDeviceManufacturer().toLowerCase();
         for (Map.Entry<PushChannel, IPush> item : iPushMap.entrySet()) {
