@@ -38,7 +38,7 @@ public class JetIM {
         }
         JLogger.i("init, appKey is " + appKey);
         mCore.setContext(context);
-        PushManager.getInstance().init(context, initConfig.getPushConfig());
+        PushManager.getInstance().init(initConfig.getPushConfig());
         if (appKey.equals(mCore.getAppKey())) {
             return;
         }

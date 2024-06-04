@@ -8,12 +8,12 @@ import java.util.List;
 public enum PushChannel {
     HUAWEI(2, "HW", "huawei"),
     XIAOMI(3, "MI", "xiaomi"),
-    GOOGLE(4, "FCM", "google"),
-    MEIZU(5, "MEIZU", "meizu"),
-    VIVO(6, "VIVO", "vivo"),
-    OPPO(7, "OPPO", "oppo|realme|oneplus"),
-    HONOR(8, "HONOR", "honor"),
-    JIGUANG(9, "JIGUANG", "jiguang");
+    OPPO(4, "OPPO", "oppo|realme|oneplus"),
+    VIVO(5, "VIVO", "vivo"),
+    GOOGLE(6, "FCM", "google"),
+    JIGUANG(7, "JIGUANG", "jiguang"),
+    MEIZU(8, "MEIZU", "meizu"),
+    HONOR(9, "HONOR", "honor");
 
     private final String name;
     private String os;
