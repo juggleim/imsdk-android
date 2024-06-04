@@ -41,7 +41,6 @@ public class HeartbeatManager {
     public void stop() {
         mHeartbeatTimer.stop();
         mHeartbeatDetectionTimer.stop();
-        mLastMessageReceivedTime.set(0);
         mIsRunning = false;
     }
 
