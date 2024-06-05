@@ -9,6 +9,7 @@ import android.content.Context;
 public class JLogConfig {
     private Context mContext;
     private JLogLevel mLogConsoleLevel;
+    private JLogLevel mLogWriteLevel;
     private String mLogFileDir;
     private long mExpiredTime;
     private long mLogFileCreateInterval;
@@ -16,6 +17,7 @@ public class JLogConfig {
     public JLogConfig(Builder builder) {
         this.mContext = builder.mContext;
         this.mLogConsoleLevel = builder.mLogConsoleLevel;
+        this.mLogWriteLevel = builder.mLogWriteLevel;
         this.mLogFileDir = builder.mLogFileDir;
         this.mExpiredTime = builder.mExpiredTime;
         this.mLogFileCreateInterval = builder.mLogFileCreateInterval;
@@ -35,6 +37,14 @@ public class JLogConfig {
 
     public void setLogConsoleLevel(JLogLevel logPrintLevel) {
         this.mLogConsoleLevel = logPrintLevel;
+    }
+
+    public JLogLevel getLogWriteLevel() {
+        return mLogWriteLevel;
+    }
+
+    public void setLogWriteLevel(JLogLevel logWriteLevel) {
+        this.mLogWriteLevel = logWriteLevel;
     }
 
     public String getLogFileDir() {
@@ -64,6 +74,7 @@ public class JLogConfig {
     public static class Builder {
         private final Context mContext;
         private JLogLevel mLogConsoleLevel;
+        private JLogLevel mLogWriteLevel;
         private String mLogFileDir;
         private long mExpiredTime;
         private long mLogFileCreateInterval;
@@ -74,6 +85,11 @@ public class JLogConfig {
 
         public Builder setLogConsoleLevel(JLogLevel logLevel) {
             this.mLogConsoleLevel = logLevel;
+            return this;
+        }
+
+        public Builder setLogWriteLevel(JLogLevel logLevel) {
+            this.mLogWriteLevel = logLevel;
             return this;
         }
 

@@ -103,6 +103,9 @@ public class JLogger implements IJLog {
         if (config.getLogConsoleLevel() == null) {
             config.setLogConsoleLevel(JLogLevel.JLogLevelNone);
         }
+        if (config.getLogWriteLevel() == null) {
+            config.setLogWriteLevel(JLogLevel.JLogLevelInfo);
+        }
         if (config.getExpiredTime() <= 0) {
             config.setExpiredTime(DEFAULT_EXPIRED_TIME);
         }
@@ -145,7 +148,7 @@ public class JLogger implements IJLog {
     @Override
     public void write(JLogLevel level, String tag, String... keys) {
         if (mJLogConfig == null || mActionManager == null) return;
-        if (level == null || level.getCode() > JLogLevel.JLogLevelInfo.getCode())
+        if (level == null || level.getCode() > mActionManager.getJLogConfig().getLogWriteLevel().getCode())
             return;
         if (TextUtils.isEmpty(tag)) return;
         if (keys == null || keys.length == 0) return;
