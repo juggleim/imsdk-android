@@ -84,7 +84,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
 
             @Override
             public void onError(int errorCode) {
-                JLogger.e("CON-Push", "registerPushToken error, errorCode is " + errorCode);
+                JLogger.w("CON-Push", "registerPushToken error, errorCode is " + errorCode);
             }
         });
     }
