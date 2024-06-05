@@ -2,6 +2,9 @@ package com.jet.im.internal.core.network;
 
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.upload.UploadOssType;
+import com.jet.im.internal.model.upload.UploadPreSignCred;
+import com.jet.im.internal.model.upload.UploadQiNiuCred;
 import com.jet.im.model.UserInfo;
 
 import java.util.List;
@@ -13,6 +16,8 @@ class PBRcvObj {
     static class ConnectAck {
         int code;
         String userId;
+        String session;
+        String extra;
     }
 
     static class PublishMsgAck {
@@ -35,6 +40,7 @@ class PBRcvObj {
             this.code = body.getCode();
             this.timestamp = body.getTimestamp();
         }
+
         int index;
         int code;
         long timestamp;
@@ -62,6 +68,7 @@ class PBRcvObj {
     static class QryReadDetailAck extends QryAck {
         List<UserInfo> readMembers;
         List<UserInfo> unreadMembers;
+
         QryReadDetailAck(Connect.QueryAckMsgBody body) {
             super(body);
         }
@@ -75,7 +82,18 @@ class PBRcvObj {
 
     static class TimestampQryAck extends QryAck {
         long operationTime;
+
         TimestampQryAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
+    static class QryFileCredAck extends QryAck {
+        UploadOssType ossType;
+        UploadQiNiuCred qiNiuCred;
+        UploadPreSignCred preSignCred;
+
+        QryFileCredAck(Connect.QueryAckMsgBody body) {
             super(body);
         }
     }
@@ -106,6 +124,7 @@ class PBRcvObj {
         static final int simpleQryAck = 12;
         static final int simpleQryAckCallbackTimestamp = 13;
         static final int conversationSetTopAck = 14;
+        static final int qryFileCredAck = 15;
     }
 
     public int getRcvType() {
@@ -126,6 +145,7 @@ class PBRcvObj {
     QryReadDetailAck mQryReadDetailAck;
     SimpleQryAck mSimpleQryAck;
     TimestampQryAck mTimestampQryAck;
+    QryFileCredAck mQryFileCredAck;
     private int mRcvType;
 }
 

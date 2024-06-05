@@ -22,11 +22,11 @@ class ActionThread extends Thread {
     //上次检查sdcard的时间
     private long mLastCheckSDCardTime;
     //日志保存目录
-    private final String mPath;
+    private String mPath;
     //日志过期时间
-    private final long mExpiredTime;
+    private long mExpiredTime;
     //新日志文件创建间隔
-    private final long mLogFileCreateInterval;
+    private long mLogFileCreateInterval;
     //上传结果StatusCode
     private int mUploadStatusCode;
     //action缓存队列
@@ -38,6 +38,12 @@ class ActionThread extends Thread {
 
     ActionThread(String path, long expiredTime, long logFileCreateInterval, ConcurrentLinkedQueue<IAction> cacheLogQueue) {
         this.mActionCacheQueue = cacheLogQueue;
+        this.mPath = path;
+        this.mExpiredTime = expiredTime;
+        this.mLogFileCreateInterval = logFileCreateInterval;
+    }
+
+    void updateConfig(String path, long expiredTime, long logFileCreateInterval) {
         this.mPath = path;
         this.mExpiredTime = expiredTime;
         this.mLogFileCreateInterval = logFileCreateInterval;

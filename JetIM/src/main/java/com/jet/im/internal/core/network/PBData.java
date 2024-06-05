@@ -10,6 +10,10 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.upload.UploadFileType;
+import com.jet.im.internal.model.upload.UploadOssType;
+import com.jet.im.internal.model.upload.UploadPreSignCred;
+import com.jet.im.internal.model.upload.UploadQiNiuCred;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationMentionInfo;
@@ -547,6 +551,23 @@ class PBData {
         return m.toByteArray();
     }
 
+    public byte[] getUploadFileCred(String userId, UploadFileType fileType, String ext, Integer index) {
+        Appmessages.QryFileCredReq req = Appmessages.QryFileCredReq.newBuilder()
+                .setFileTypeValue(fileType.getValue())
+                .setExt(ext == null ? "" : ext)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_FILE_CRED)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -589,6 +610,8 @@ class PBData {
                     PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
                     ack.code = msg.getConnectAckMsgBody().getCode();
                     ack.userId = msg.getConnectAckMsgBody().getUserId();
+                    ack.session = msg.getConnectAckMsgBody().getSession();
+                    ack.extra = msg.getConnectAckMsgBody().getExt();
                     obj.mConnectAck = ack;
                     break;
 
@@ -634,7 +657,9 @@ class PBData {
                         case PBRcvObj.PBRcvType.conversationSetTopAck:
                             obj = conversationSetTopAckWithImWebsocketMsg(msg);
                             break;
-
+                        case PBRcvObj.PBRcvType.qryFileCredAck:
+                            obj = qryFileCredAckWithImWebsocketMsg(msg);
+                            break;
                         default:
                             break;
                     }
@@ -779,6 +804,27 @@ class PBData {
         return obj;
     }
 
+    private PBRcvObj qryFileCredAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.qryFileCredAck);
+        Appmessages.QryFileCredResp resp = Appmessages.QryFileCredResp.parseFrom(msg.getQryAckMsgBody().getData());
+        PBRcvObj.QryFileCredAck a = new PBRcvObj.QryFileCredAck(msg.getQryAckMsgBody());
+        a.ossType = UploadOssType.setValue(resp.getOssType().getNumber());
+        if (resp.getQiNiuCred() != null) {
+            UploadQiNiuCred qiNiuCred = new UploadQiNiuCred();
+            qiNiuCred.setDomain(resp.getQiNiuCred().getDomain());
+            qiNiuCred.setToken(resp.getQiNiuCred().getToken());
+            a.qiNiuCred = qiNiuCred;
+        }
+        if (resp.getPreSignResp() != null) {
+            UploadPreSignCred preSignCred = new UploadPreSignCred();
+            preSignCred.setUrl(resp.getPreSignResp().getUrl());
+            a.preSignCred = preSignCred;
+        }
+        obj.mQryFileCredAck = a;
+        return obj;
+    }
+
     private Connect.ImWebsocketMsg createImWebsocketMsgWithPublishMsg(Connect.PublishMsgBody publishMsgBody) {
         return Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -891,6 +937,13 @@ class PBData {
         userInfo.setUserId(item.getMember().getUserId());
         userInfo.setUserName(item.getMember().getNickname());
         userInfo.setPortrait(item.getMember().getUserPortrait());
+        if (item.getMember().getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem it : item.getMember().getExtFieldsList()) {
+                extra.put(it.getKey(), it.getValue());
+            }
+            userInfo.setExtra(extra);
+        }
         return userInfo;
     }
 
@@ -902,6 +955,13 @@ class PBData {
         result.setUserId(pbUserInfo.getUserId());
         result.setUserName(pbUserInfo.getNickname());
         result.setPortrait(pbUserInfo.getUserPortrait());
+        if (pbUserInfo.getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem item : pbUserInfo.getExtFieldsList()) {
+                extra.put(item.getKey(), item.getValue());
+            }
+            result.setExtra(extra);
+        }
         return result;
     }
 
@@ -913,6 +973,13 @@ class PBData {
         result.setGroupId(pbGroupInfo.getGroupId());
         result.setGroupName(pbGroupInfo.getGroupName());
         result.setPortrait(pbGroupInfo.getGroupPortrait());
+        if (pbGroupInfo.getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem item : pbGroupInfo.getExtFieldsList()) {
+                extra.put(item.getKey(), item.getValue());
+            }
+            result.setExtra(extra);
+        }
         return result;
     }
 
@@ -1025,6 +1092,7 @@ class PBData {
     private static final String QRY_MENTION_MSGS = "qry_mention_msgs";
     private static final String CLEAR_HIS_MSG = "clean_hismsg";
     private static final String DELETE_MSG = "del_msg";
+    private static final String QRY_FILE_CRED = "file_cred";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -1046,12 +1114,13 @@ class PBData {
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
-            put(TOP_CONVERS, PBRcvObj.PBRcvType.conversationSetTopAck);
+            put(TOP_CONVERS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(CLEAR_HIS_MSG, PBRcvObj.PBRcvType.simpleQryAck);
             put(DELETE_MSG, PBRcvObj.PBRcvType.simpleQryAck);
+            put(QRY_FILE_CRED, PBRcvObj.PBRcvType.qryFileCredAck);
         }
     };
 

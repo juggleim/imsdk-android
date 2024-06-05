@@ -10,12 +10,15 @@ import com.jet.im.interfaces.IUserInfoManager;
 import com.jet.im.internal.ConnectionManager;
 import com.jet.im.internal.ConversationManager;
 import com.jet.im.internal.MessageManager;
+import com.jet.im.internal.UploadManager;
 import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.logger.JLogConfig;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
+
+import java.util.List;
 
 public class JetIM {
 
@@ -48,7 +51,7 @@ public class JetIM {
         //初始化日志
         JLogger.getInstance().init(initConfig.getJLogConfig());
         //初始化push
-        PushManager.getInstance().init(context, initConfig.getPushConfig());
+        PushManager.getInstance().init(initConfig.getPushConfig());
         //初始化appKey
         JLogger.i("J-Init", "appKey is " + appKey);
         if (appKey.equals(mCore.getAppKey())) {
@@ -59,8 +62,8 @@ public class JetIM {
         mCore.setToken("");
     }
 
-    public void setServer(String serverUrl) {
-        mCore.setNaviUrl(serverUrl);
+    public void setServer(List<String> serverUrls) {
+        mCore.setNaviUrl(serverUrls);
     }
 
     public IConnectionManager getConnectionManager() {
@@ -91,12 +94,15 @@ public class JetIM {
         mMessageManager.setSendReceiveListener(mConversationManager);
         mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager);
         mUserInfoManager = new UserInfoManager(core);
+        mUploadManager = new UploadManager(core);
+        mMessageManager.setDefaultMessageUploadProvider(mUploadManager);
     }
 
     private final ConnectionManager mConnectionManager;
     private final MessageManager mMessageManager;
     private final ConversationManager mConversationManager;
     private final UserInfoManager mUserInfoManager;
+    private final UploadManager mUploadManager;
     private final JetIMCore mCore;
 
     public static class InitConfig {

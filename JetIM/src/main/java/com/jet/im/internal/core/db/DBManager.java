@@ -199,12 +199,8 @@ public class DBManager {
         execSQL(ConversationSql.sqlSetMute(conversation, isMute));
     }
 
-    public void setTop(Conversation conversation, boolean isTop) {
-        execSQL(ConversationSql.sqlSetTop(conversation, isTop));
-    }
-
-    public void setTopTime(Conversation conversation, long topTime) {
-        execSQL(ConversationSql.sqlSetTopTime(conversation, topTime));
+    public void setTop(Conversation conversation, boolean isTop, long topTime) {
+        execSQL(ConversationSql.sqlSetTop(conversation, isTop, topTime));
     }
 
     public void setMentionInfo(Conversation conversation, String mentionInfoJson) {
@@ -500,7 +496,7 @@ public class DBManager {
         execSQL(sql, args);
     }
 
-    public void updateMessageContent(MessageContent content, String type, String messageId) {
+    public void updateMessageContentWithMessageId(MessageContent content, String type, String messageId) {
         Object[] args = new Object[4];
         if (content != null) {
             args[0] = new String(content.encode());
@@ -511,7 +507,21 @@ public class DBManager {
         }
         args[1] = type;
         args[3] = messageId;
-        execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT, args);
+        execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_ID, args);
+    }
+
+    public void updateMessageContentWithClientMsgNo(MessageContent content, String type, long clientMsgNo) {
+        Object[] args = new Object[4];
+        if (content != null) {
+            args[0] = new String(content.encode());
+            args[2] = content.getSearchContent();
+        } else {
+            args[0] = "";
+            args[2] = "";
+        }
+        args[1] = type;
+        args[3] = clientMsgNo;
+        execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_NO, args);
     }
 
     public void messageSendFail(long clientMsgNo) {
@@ -594,7 +604,8 @@ public class DBManager {
     public void insertUserInfoList(List<UserInfo> userInfoList) {
         mDb.beginTransaction();
         for (UserInfo info : userInfoList) {
-            String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), ""};
+            String extra = UserInfoSql.stringFromMap(info.getExtra());
+            String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), extra};
             execSQL(UserInfoSql.SQL_INSERT_USER_INFO, args);
         }
         mDb.setTransactionSuccessful();
@@ -604,7 +615,8 @@ public class DBManager {
     public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
         mDb.beginTransaction();
         for (GroupInfo info : groupInfoList) {
-            String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), ""};
+            String extra = UserInfoSql.stringFromMap(info.getExtra());
+            String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), extra};
             execSQL(UserInfoSql.SQL_INSERT_GROUP_INFO, args);
         }
         mDb.setTransactionSuccessful();

@@ -1,21 +1,25 @@
 package com.example.jetimdemo;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.Group;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.jetimdemo.databinding.ActivityMainBinding;
-import com.google.android.material.snackbar.Snackbar;
 import com.jet.im.JetIM;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
@@ -23,15 +27,22 @@ import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
+import com.jet.im.model.messages.SnapshotPackedVideoMessage;
 import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.ThumbnailPackedImageMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
+import com.jet.im.internal.uploader.FileUtil;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -61,19 +72,29 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            TextMessage text = new TextMessage("Android broadcast");
-                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
-                            JetIM.getInstance().getConversationManager().setTop(c1, true, new IConversationManager.ISimpleCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    Log.d("zzb", "setTop success");
-                                }
+                            UserInfo u1 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid1");
+                            UserInfo u2 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid2");
+                            UserInfo u3 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid3");
+                            UserInfo u5 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid5");
+                            GroupInfo g = JetIM.getInstance().getUserInfoManager().getGroupInfo("groupid1");
+                            Log.i("lifei", "");
 
-                                @Override
-                                public void onError(int errorCode) {
-                                    Log.d("zzb", "setTop fail, errorCode is " + errorCode);
-                                }
-                            });
+//                            JetIM.getInstance().getConnectionManager().disconnect(false);
+//                            JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+
+//                            TextMessage text = new TextMessage("Android broadcast");
+//                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+//                            JetIM.getInstance().getConversationManager().setTop(c1, true, new IConversationManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    Log.d("zzb", "setTop success");
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//                                    Log.d("zzb", "setTop fail, errorCode is " + errorCode);
+//                                }
+//                            });
 
 //                            Conversation c2 = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
 //                            Conversation c3 = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
@@ -578,9 +599,7 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.fab)
-                        .setAction("Action", null).show();
+                sendMediaMessage();
             }
         });
     }
@@ -648,6 +667,61 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void sendMediaMessage() {
+        String filePath = getFilesDir().getAbsolutePath() + File.separator + "xhup.png";
+        String filePath2 = getFilesDir().getAbsolutePath() + File.separator + "VID_20240129092043475.mp4";
+        Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+        ImageMessage image = new ImageMessage();
+        image.setHeight(600);
+        image.setWidth(800);
+        image.setSize(116 * 1024);
+        image.setLocalPath(filePath);
+        image.setThumbnailLocalPath(filePath);
+        ThumbnailPackedImageMessage tpImage = ThumbnailPackedImageMessage.messageWithImage(filePath);
+        tpImage.setHeight(600);
+        tpImage.setWidth(800);
+        tpImage.setSize(116 * 1024);
+        VideoMessage video = new VideoMessage();
+        video.setHeight(400);
+        video.setWidth(600);
+        video.setLocalPath(filePath2);
+        video.setSnapshotLocalPath(filePath);
+        SnapshotPackedVideoMessage spVideo = SnapshotPackedVideoMessage.messageWithVideo(filePath2, getThumbnailVideoFile(getApplicationContext(), filePath2));
+        spVideo.setHeight(400);
+        spVideo.setWidth(600);
+        spVideo.setName(FileUtil.getFileName(filePath2));
+        FileMessage file = new FileMessage();
+        file.setName("xhup.png");
+        file.setLocalPath(filePath);
+        file.setSize(116 * 1024);
+        file.setType("png");
+        VoiceMessage voice = new VoiceMessage();
+        voice.setLocalPath(filePath);
+        voice.setDuration(15);
+        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(image, c, new IMessageManager.ISendMediaMessageCallback() {
+            @Override
+            public void onProgress(int progress, Message message) {
+                Log.i("sendMediaMessage", "onProgress, clientMsgNo is " + message.getClientMsgNo() + ", progress is " + progress);
+            }
+
+            @Override
+            public void onSuccess(Message message) {
+                Log.i("sendMediaMessage", "onSuccess, clientMsgNo is " + message.getClientMsgNo() + ", messageId is " + message.getMessageId());
+            }
+
+            @Override
+            public void onError(Message message, int errorCode) {
+                Log.i("sendMediaMessage", "onError, clientMsgNo is " + message.getClientMsgNo() + ", errorCode is " + errorCode);
+            }
+
+            @Override
+            public void onCancel(Message message) {
+                Log.i("sendMediaMessage", "onCancel, clientMsgNo is " + message.getClientMsgNo());
+            }
+        });
+        Log.i("sendMediaMessage", "after send, clientMsgNo is " + m.getClientMsgNo());
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -675,5 +749,29 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    public static Bitmap getThumbnailVideoFile(Context context, String videoPath) {
+        if (context == null || TextUtils.isEmpty(videoPath)) return null;
+        File video = new File(videoPath);
+        if (!video.exists()) return null;
+
+        MediaMetadataRetriever mmr = null;
+        try {
+            mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(video.getPath());
+
+            return mmr.getFrameAtTime();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (mmr != null) {
+                try {
+                    mmr.release();
+                } catch (IOException ignore) {
+                }
+            }
+        }
+        return null;
     }
 }

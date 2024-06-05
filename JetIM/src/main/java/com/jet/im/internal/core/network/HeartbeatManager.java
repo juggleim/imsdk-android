@@ -1,6 +1,5 @@
-package com.jet.im.internal;
+package com.jet.im.internal.core.network;
 
-import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.internal.util.JSimpleTimer;
 
@@ -44,7 +43,6 @@ public class HeartbeatManager {
         JLogger.i("HB-Stop", "stop");
         mHeartbeatTimer.stop();
         mHeartbeatDetectionTimer.stop();
-        mLastMessageReceivedTime.set(0);
         mIsRunning = false;
     }
 

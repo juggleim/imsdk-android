@@ -34,4 +34,5 @@ public class JErrorCode {
 
     public static final int MESSAGE_NOT_EXIST = 22001;
     public static final int MESSAGE_ALREADY_RECALLED = 22002;
+    public static final int MESSAGE_UPLOAD_ERROR = 22003;
 }

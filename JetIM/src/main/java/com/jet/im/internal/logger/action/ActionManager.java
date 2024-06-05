@@ -15,45 +15,38 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @create 2024-05-23 10:03
  */
 public class ActionManager {
-    private static ActionManager mActionManager;
-
-    public static ActionManager instance(JLogConfig config) {
-        if (mActionManager == null) {
-            synchronized (ActionManager.class) {
-                if (mActionManager == null) {
-                    mActionManager = new ActionManager(config);
-                }
-            }
-        }
-        return mActionManager;
+    public static ActionManager getInstance() {
+        return ActionManager.SingletonHolder.sInstance;
     }
 
-    private ActionManager(JLogConfig config) {
-        if (config == null) {
-            throw new NullPointerException("JLogConfig  is invalid");
-        }
-        this.jLogConfig = config;
-        init();
+    private static class SingletonHolder {
+        static final ActionManager sInstance = new ActionManager();
+    }
+
+    private ActionManager() {
     }
 
     private JLogConfig jLogConfig;
     private ActionThread mActionThread;
     private final ConcurrentLinkedQueue<IAction> mActionCacheQueue = new ConcurrentLinkedQueue<>();//缓存任务队列
 
+    public JLogConfig getJLogConfig() {
+        return jLogConfig;
+    }
+
+    public void setJLogConfig(JLogConfig config) {
+        this.jLogConfig = config;
+        init();
+    }
+
     private void init() {
         if (mActionThread == null) {
             mActionThread = new ActionThread(jLogConfig.getLogFileDir(), jLogConfig.getExpiredTime(), jLogConfig.getLogFileCreateInterval(), mActionCacheQueue);
             mActionThread.setName("logger-thread");
             mActionThread.start();
+        } else {
+            mActionThread.updateConfig(jLogConfig.getLogFileDir(), jLogConfig.getExpiredTime(), jLogConfig.getLogFileCreateInterval());
         }
-    }
-
-    public JLogConfig getJLogConfig() {
-        return jLogConfig;
-    }
-
-    public void setJLogConfig(JLogConfig jLogConfig) {
-        this.jLogConfig = jLogConfig;
     }
 
     public void addWriteAction(JLogLevel level, String tag, List<String> logs) {

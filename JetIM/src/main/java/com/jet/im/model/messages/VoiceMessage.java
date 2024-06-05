@@ -3,14 +3,14 @@ package com.jet.im.model.messages;
 import android.text.TextUtils;
 
 import com.jet.im.internal.util.JLogger;
-import com.jet.im.model.MessageContent;
+import com.jet.im.model.MediaMessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
-public class VoiceMessage extends MessageContent {
+public class VoiceMessage extends MediaMessageContent {
     public VoiceMessage() {
         mContentType = "jg:voice";
     }
@@ -19,8 +19,8 @@ public class VoiceMessage extends MessageContent {
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
         try {
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             jsonObject.put(DURATION, mDuration);
             if (!TextUtils.isEmpty(mExtra)) {
@@ -43,7 +43,7 @@ public class VoiceMessage extends MessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(DURATION)) {
                 mDuration = jsonObject.optInt(DURATION);
@@ -59,14 +59,6 @@ public class VoiceMessage extends MessageContent {
     @Override
     public String conversationDigest() {
         return DIGEST;
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        mUrl = url;
     }
 
     public int getDuration() {
@@ -85,7 +77,6 @@ public class VoiceMessage extends MessageContent {
         mExtra = extra;
     }
 
-    private String mUrl;
     private int mDuration;
     private String mExtra;
     private static final String URL = "url";

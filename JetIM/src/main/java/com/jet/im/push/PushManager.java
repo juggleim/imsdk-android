@@ -16,7 +16,9 @@ import java.util.concurrent.TimeUnit;
 
 public class PushManager implements IPush.Callback {
     private static final String TAG = "CON-Push";
-    private ThreadPoolExecutor pushExecutor;
+    private final ThreadPoolExecutor pushExecutor;
+    private PushConfig mConfig;
+    private boolean mHasRegister = false;
     Map<PushChannel, IPush> iPushMap = new HashMap<>();
 
     public static PushManager getInstance() {
@@ -28,19 +30,33 @@ public class PushManager implements IPush.Callback {
         pushExecutor.allowCoreThreadTimeOut(true);
     }
 
-    public void init(Context context, PushConfig config) {
+    public void init(PushConfig config) {
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                mConfig = config;
+                mHasRegister = false;
                 init("com.jet.im.push.hw.HWPush");
                 init("com.jet.im.push.xm.XMPush");
                 init("com.jet.im.push.vivo.VIVOPush");
                 init("com.jet.im.push.oppo.OPPOPush");
                 init("com.jet.im.push.jg.JGPush");
                 init("com.jet.im.push.google.GooglePush");
+            }
+        });
+    }
+
+    public void getToken(Context context) {
+        pushExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (mConfig == null) return;
+                if (mHasRegister) return;
+                mHasRegister = true;
+
                 List<IPush> pushList = getRegisterPush();
                 for (IPush item : pushList) {
-                    item.getToken(context, config, PushManager.this);
+                    item.getToken(context, mConfig, PushManager.this);
                 }
             }
         });
@@ -49,7 +65,7 @@ public class PushManager implements IPush.Callback {
     /**
      * 获取适合的推送类型 根据手机机型和用户 enable 适配的推送类型
      */
-    public List<IPush> getRegisterPush() {
+    private List<IPush> getRegisterPush() {
         List<IPush> result = new ArrayList<>();
         String os = JUtility.getDeviceManufacturer().toLowerCase();
         for (Map.Entry<PushChannel, IPush> item : iPushMap.entrySet()) {
@@ -71,7 +87,7 @@ public class PushManager implements IPush.Callback {
             IPush push = (IPush) aClass.newInstance();
             iPushMap.put(push.getType(), push);
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            JLogger.d(TAG, "not register " + className);
+            JLogger.e(TAG, "not register " + className);
         }
     }
 
@@ -81,7 +97,7 @@ public class PushManager implements IPush.Callback {
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                JLogger.d(TAG, "on push token received, channel= " + type.getName() + ", token= " + token);
+                JLogger.i(TAG, "on push token received, channel= " + type.getName() + ", token= " + token);
                 JetIM.getInstance().getConnectionManager().registerPushToken(type, token);
             }
         });
@@ -90,7 +106,13 @@ public class PushManager implements IPush.Callback {
     @Override
     public void onError(PushChannel type, int code, String msg) {
         //todo 处理 onError
-        JLogger.d(TAG, "on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
+        pushExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                JLogger.e(TAG, "on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
+                mHasRegister = false;
+            }
+        });
     }
 
     private static class SingletonHolder {

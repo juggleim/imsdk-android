@@ -3,14 +3,14 @@ package com.jet.im.model.messages;
 import android.text.TextUtils;
 
 import com.jet.im.internal.util.JLogger;
-import com.jet.im.model.MessageContent;
+import com.jet.im.model.MediaMessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
-public class ImageMessage extends MessageContent {
+public class ImageMessage extends MediaMessageContent {
 
     public ImageMessage() {
         this.mContentType = "jg:img";
@@ -20,8 +20,8 @@ public class ImageMessage extends MessageContent {
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
         try {
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             if (!TextUtils.isEmpty(mThumbnailUrl)) {
                 jsonObject.put(THUMBNAIL, mThumbnailUrl);
@@ -49,7 +49,7 @@ public class ImageMessage extends MessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(THUMBNAIL)) {
                 mThumbnailUrl = jsonObject.optString(THUMBNAIL);
@@ -76,12 +76,12 @@ public class ImageMessage extends MessageContent {
         return DIGEST;
     }
 
-    public String getUrl() {
-        return mUrl;
+    public String getThumbnailLocalPath() {
+        return mThumbnailLocalPath;
     }
 
-    public void setUrl(String url) {
-        mUrl = url;
+    public void setThumbnailLocalPath(String thumbnailLocalPath) {
+        this.mThumbnailLocalPath = thumbnailLocalPath;
     }
 
     public String getThumbnailUrl() {
@@ -124,7 +124,7 @@ public class ImageMessage extends MessageContent {
         mSize = size;
     }
 
-    private String mUrl;
+    private String mThumbnailLocalPath;
     private String mThumbnailUrl;
     private int mHeight;
     private int mWidth;

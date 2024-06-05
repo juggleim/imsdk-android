@@ -29,6 +29,7 @@ message ConnectAckMsgBody{
     string userId = 2;
     string session = 3;
     int64 timestamp = 4;
+    string ext = 5;
 }
 
 message DisconnectMsgBody{

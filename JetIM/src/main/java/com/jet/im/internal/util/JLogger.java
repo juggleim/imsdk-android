@@ -118,10 +118,9 @@ public class JLogger implements IJLog {
         createJLogDir(config.getLogFileDir());
         this.mJLogConfig = config;
         if (mActionManager == null) {
-            mActionManager = ActionManager.instance(config);
-        } else {
-            mActionManager.setJLogConfig(config);
+            mActionManager = ActionManager.getInstance();
         }
+        mActionManager.setJLogConfig(config);
     }
 
     @Override

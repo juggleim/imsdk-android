@@ -132,8 +132,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("CONV-Top", "success");
-                mCore.getDbManager().setTop(conversation, isTop);
-                mCore.getDbManager().setTopTime(conversation, timestamp);
+                mCore.getDbManager().setTop(conversation, isTop, timestamp);
                 if (callback != null) {
                     callback.onSuccess();
                 }
@@ -408,8 +407,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
                     break;
                 case TopConvMessage.CONTENT_TYPE:
-                    mCore.getDbManager().setTop(conversation.getConversation(), conversation.isTop());
-                    mCore.getDbManager().setTopTime(conversation.getConversation(), conversation.getTopTime());
+                    mCore.getDbManager().setTop(conversation.getConversation(), conversation.isTop(), conversation.getTopTime());
                     break;
                 case UnDisturbConvMessage.CONTENT_TYPE:
                     mCore.getDbManager().setMute(conversation.getConversation(), conversation.isMute());

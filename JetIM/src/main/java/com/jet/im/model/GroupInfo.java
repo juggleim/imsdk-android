@@ -1,5 +1,7 @@
 package com.jet.im.model;
 
+import java.util.Map;
+
 public class GroupInfo {
     public String getGroupId() {
         return mGroupId;
@@ -25,7 +27,16 @@ public class GroupInfo {
         mPortrait = portrait;
     }
 
+    public Map<String, String> getExtra() {
+        return mExtra;
+    }
+
+    public void setExtra(Map<String, String> extra) {
+        mExtra = extra;
+    }
+
     private String mGroupId;
     private String mGroupName;
     private String mPortrait;
+    private Map<String, String> mExtra;
 }

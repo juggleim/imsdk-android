@@ -1,7 +1,5 @@
 package com.jet.im.internal;
 
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.text.TextUtils;
 
 import com.jet.im.JetIMConst;
@@ -11,18 +9,18 @@ import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.push.PushChannel;
+import com.jet.im.push.PushManager;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConnectionManager implements IConnectionManager {
+public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSocketConnectListener {
     @Override
     public void connect(String token) {
-        JLogger.i("CON-Connect", "connect, token is " + token);
+        JLogger.i("CON-Connect", "token is " + token);
         //todo 校验，是否有连接
 
         if (!mCore.getToken().equals(token)) {
@@ -38,31 +36,36 @@ public class ConnectionManager implements IConnectionManager {
         }
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
 
-        mNaviHandler.post(() -> NaviManager.request(mCore.getNaviUrl(), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
+        NaviTask task = new NaviTask();
+        task.request(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
             @Override
             public void onSuccess(String userId, List<String> servers) {
-                mCore.setServers(servers);
-                connectWebSocket(token);
+                mCore.getSendHandler().post(() -> {
+                    JLogger.i("CON-Navi", "success, servers is " + servers);
+                    mCore.setServers(servers);
+                    connectWebSocket(token);
+                });
             }
 
             @Override
             public void onError(int errorCode) {
+                JLogger.i("CON-Navi", "fail, errorCode is " + errorCode);
                 if (errorCode == ConstInternal.ErrorCode.TOKEN_ILLEGAL) {
                     changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
                 } else {
                     changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
                 }
             }
-        }));
+        });
     }
 
     @Override
     public void disconnect(boolean receivePush) {
         JLogger.i("CON-Disconnect", "user disconnect receivePush is " + receivePush);
-        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE, "");
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().disconnect(receivePush);
         }
+        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE, "");
     }
 
     @Override
@@ -73,7 +76,7 @@ public class ConnectionManager implements IConnectionManager {
         if (mCore.getWebSocket() == null) {
             return;
         }
-        mCore.getWebSocket().registerPushToken(channel, token, mCore.getUserId(), new WebSocketSimpleCallback() {
+        mCore.getWebSocket().registerPushToken(channel, token, mCore.getDeviceId(), mCore.getPackageName(), mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 JLogger.i("CON-Push", "registerPushToken success");
@@ -107,75 +110,56 @@ public class ConnectionManager implements IConnectionManager {
     public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {
         this.mCore = core;
         this.mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.IDLE);
+        this.mCore.getWebSocket().setConnectionListener(this);
         this.mConversationManager = conversationManager;
         this.mMessageManager = messageManager;
+    }
 
-        HandlerThread thread = new HandlerThread("JET_NAVI");
-        thread.start();
-        this.mNaviHandler = new Handler(thread.getLooper());
+    @Override
+    public void onConnectComplete(int errorCode, String userId, String session, String extra) {
+        if (errorCode == ConstInternal.ErrorCode.NONE) {
+            mCore.setUserId(userId);
+            if (!mCore.getDbManager().isOpen()) {
+                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
+                    dbStatusNotice(true);
+                } else {
+                    JLogger.e("CON-Db","open db fail");
+                }
+            }
+            changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
+            mConversationManager.syncConversations(mMessageManager::syncMessage);
+            PushManager.getInstance().getToken(mCore.getContext());
+        } else {
+            if (checkConnectionFailure(errorCode)) {
+                changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, extra);
+            } else {
+                changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, extra);
+            }
+        }
+    }
+
+    @Override
+    public void onDisconnect(int errorCode, String extra) {
+        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode, extra);
+    }
+
+    @Override
+    public void onWebSocketFail() {
+        handleWebsocketFail();
+    }
+
+    @Override
+    public void onWebSocketClose() {
+        handleWebsocketFail();
+    }
+
+    @Override
+    public void onTimeOut() {
+        handleWebsocketFail();
     }
 
     private void connectWebSocket(String token) {
-        if (mCore.getWebSocket() == null) {
-            URI uri = JWebSocket.createWebSocketUri(mCore.getServers().get(0));
-            mCore.setWebSocket(new JWebSocket(mCore.getAppKey(), token, uri, mCore.getContext()));
-            mCore.getWebSocket().setConnectionListener(new JWebSocket.IWebSocketConnectListener() {
-                @Override
-                public void onConnectComplete(int errorCode, String userId) {
-                    if (errorCode == ConstInternal.ErrorCode.NONE) {
-                        mCore.setUserId(userId);
-                        if (!mCore.getDbManager().isOpen()) {
-                            if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
-                                dbStatusNotice(true);
-                            } else {
-                                JLogger.e("CON-Db", "open fail");
-                            }
-                        }
-                        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, "");
-                        mConversationManager.syncConversations(mMessageManager::syncMessage);
-                    } else {
-                        if (checkConnectionFailure(errorCode)) {
-                            changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
-                        } else {
-                            changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, "");
-                        }
-                    }
-                }
-
-                @Override
-                public void onDisconnect(int errorCode, String extra) {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode, extra);
-                }
-
-                @Override
-                public void onWebSocketFail() {
-                    handleWebsocketFail();
-                }
-
-                @Override
-                public void onWebSocketClose() {
-                    handleWebsocketFail();
-                }
-
-                @Override
-                public void onTimeOut() {
-                    handleWebsocketFail();
-                }
-            });
-            mCore.getWebSocket().setPushChannel(mPushChannel);
-            if (!TextUtils.isEmpty(mPushToken)) {
-                mCore.getWebSocket().setPushToken(mPushToken);
-            }
-            mCore.getWebSocket().connect();
-        } else {
-            mCore.getWebSocket().setAppKey(mCore.getAppKey());
-            mCore.getWebSocket().setToken(token);
-            mCore.getWebSocket().setPushChannel(mPushChannel);
-            if (!TextUtils.isEmpty(mPushToken)) {
-                mCore.getWebSocket().setPushToken(mPushToken);
-            }
-            mCore.getWebSocket().reconnect();
-        }
+        mCore.getWebSocket().connect(mCore.getAppKey(), token, mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getServers());
     }
 
     private void handleWebsocketFail() {
@@ -310,6 +294,5 @@ public class ConnectionManager implements IConnectionManager {
     private Timer mReconnectTimer;
     private PushChannel mPushChannel;
     private String mPushToken;
-    private final Handler mNaviHandler;
     private static final int RECONNECT_INTERVAL = 5 * 1000;
 }

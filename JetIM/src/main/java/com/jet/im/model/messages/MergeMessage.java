@@ -18,11 +18,11 @@ public class MergeMessage extends MessageContent {
         this();
         this.mTitle = title;
         if (messageIdList.size() > 100) {
-            messageIdList = messageIdList.subList(0, 99);
+            messageIdList = messageIdList.subList(0, 100);
         }
         this.mMessageIdList = messageIdList;
         if (previewList.size() > 10) {
-            previewList = previewList.subList(0, 9);
+            previewList = previewList.subList(0, 10);
         }
         this.mPreviewList = previewList;
     }
