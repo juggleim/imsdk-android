@@ -8,21 +8,19 @@ import android.content.Context;
  */
 public class JLogConfig {
     private Context mContext;
-    private JLogLevel mLogPrintLevel;
+    private JLogLevel mLogConsoleLevel;
     private JLogLevel mLogWriteLevel;
     private String mLogFileDir;
     private long mExpiredTime;
     private long mLogFileCreateInterval;
-    private boolean mIsDebugMode;
 
     public JLogConfig(Builder builder) {
         this.mContext = builder.mContext;
-        this.mLogPrintLevel = builder.mLogPrintLevel;
+        this.mLogConsoleLevel = builder.mLogConsoleLevel;
         this.mLogWriteLevel = builder.mLogWriteLevel;
         this.mLogFileDir = builder.mLogFileDir;
         this.mExpiredTime = builder.mExpiredTime;
         this.mLogFileCreateInterval = builder.mLogFileCreateInterval;
-        this.mIsDebugMode = builder.mIsDebugMode;
     }
 
     public Context getContext() {
@@ -33,12 +31,12 @@ public class JLogConfig {
         this.mContext = context;
     }
 
-    public JLogLevel getLogPrintLevel() {
-        return mLogPrintLevel;
+    public JLogLevel getLogConsoleLevel() {
+        return mLogConsoleLevel;
     }
 
-    public void setLogPrintLevel(JLogLevel logPrintLevel) {
-        this.mLogPrintLevel = logPrintLevel;
+    public void setLogConsoleLevel(JLogLevel logPrintLevel) {
+        this.mLogConsoleLevel = logPrintLevel;
     }
 
     public JLogLevel getLogWriteLevel() {
@@ -73,29 +71,20 @@ public class JLogConfig {
         this.mLogFileCreateInterval = logFileCreateInterval;
     }
 
-    public boolean isDebugMode() {
-        return mIsDebugMode;
-    }
-
-    public void setIsDebugMode(boolean isDebugMode) {
-        this.mIsDebugMode = isDebugMode;
-    }
-
     public static class Builder {
         private final Context mContext;
-        private JLogLevel mLogPrintLevel;
+        private JLogLevel mLogConsoleLevel;
         private JLogLevel mLogWriteLevel;
         private String mLogFileDir;
         private long mExpiredTime;
         private long mLogFileCreateInterval;
-        private boolean mIsDebugMode;
 
         public Builder(Context context) {
             this.mContext = context;
         }
 
-        public Builder setLogPrintLevel(JLogLevel logLevel) {
-            this.mLogPrintLevel = logLevel;
+        public Builder setLogConsoleLevel(JLogLevel logLevel) {
+            this.mLogConsoleLevel = logLevel;
             return this;
         }
 
@@ -116,11 +105,6 @@ public class JLogConfig {
 
         public Builder setLogFileCreateInterval(long logFileCreateInterval) {
             this.mLogFileCreateInterval = logFileCreateInterval;
-            return this;
-        }
-
-        public Builder setIsDebugMode(boolean isDebugMode) {
-            this.mIsDebugMode = isDebugMode;
             return this;
         }
 

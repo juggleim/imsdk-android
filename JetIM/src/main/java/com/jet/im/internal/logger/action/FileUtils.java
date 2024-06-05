@@ -52,7 +52,7 @@ class FileUtils {
                         String[] longStrArray = item.split("\\.");
                         if (longStrArray.length > 0) {//小于时间就删除
                             long longItem = Long.parseLong(longStrArray[0]);
-                            if (longItem <= deleteTime && longStrArray.length == 1) {
+                            if (longItem <= deleteTime) {
                                 new File(path, item).delete(); //删除文件
                             }
                         }

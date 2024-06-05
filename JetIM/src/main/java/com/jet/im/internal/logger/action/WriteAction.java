@@ -44,8 +44,8 @@ class WriteAction implements IAction {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
-        sb.append("\"levelCode\": \"").append(mLevel.getCode()).append("\",");
-        sb.append("\"levelName\": \"").append(mLevel.getName()).append("\",");
+        sb.append("\"time\": \"").append(TimeUtils.formatTimeSpanDetailed(mLogTime)).append("\",");
+        sb.append("\"level\": \"").append(mLevel.getName()).append("\",");
         sb.append("\"tag\": \"").append(mTag).append("\",");
         sb.append("\"keys\": [");
         for (int i = 0; i < mLogs.size(); i++) {
@@ -55,9 +55,8 @@ class WriteAction implements IAction {
             }
         }
         sb.append("],");
-        sb.append("\"logTime\": ").append(mLogTime).append(",");
-        sb.append("\"threadInfo\": \"").append(mThreadInfo).append("\",");
-        sb.append("\"isMainThread\": ").append(mIsMainThread);
+        sb.append("\"thread\": \"").append(mThreadInfo).append("\",");
+        sb.append("\"isMain\": ").append(mIsMainThread);
         sb.append("}");
         return sb.toString();
     }
