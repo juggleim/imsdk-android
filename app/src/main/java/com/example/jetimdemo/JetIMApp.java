@@ -13,9 +13,7 @@ public class JetIMApp extends Application {
 //        JetIM.getInstance().setServer("https://nav.gxjipei.com");
         JetIM.InitConfig initConfig = new JetIM.InitConfig.Builder()
                 .setPushConfig(new PushConfig.Builder().build())
-                .setJLogConfig(new JLogConfig.Builder(getApplicationContext())
-                        .setIsDebugMode(true)
-                        .build())
+                .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).build())
                 .build();
         JetIM.getInstance().init(this, "appkey", initConfig);
     }

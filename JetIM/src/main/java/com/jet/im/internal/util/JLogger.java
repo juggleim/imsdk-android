@@ -100,11 +100,8 @@ public class JLogger implements IJLog {
         if (config.getContext() == null) {
             throw new IllegalArgumentException("log config context is null");
         }
-        if (config.getLogPrintLevel() == null) {
-            config.setLogPrintLevel(JLogLevel.JLogLevelDebug);
-        }
-        if (config.getLogWriteLevel() == null) {
-            config.setLogWriteLevel(JLogLevel.JLogLevelInfo);
+        if (config.getLogConsoleLevel() == null) {
+            config.setLogConsoleLevel(JLogLevel.JLogLevelNone);
         }
         if (config.getExpiredTime() <= 0) {
             config.setExpiredTime(DEFAULT_EXPIRED_TIME);
@@ -148,7 +145,7 @@ public class JLogger implements IJLog {
     @Override
     public void write(JLogLevel level, String tag, String... keys) {
         if (mJLogConfig == null || mActionManager == null) return;
-        if (level == null || level.getCode() > mActionManager.getJLogConfig().getLogWriteLevel().getCode())
+        if (level == null || level.getCode() > JLogLevel.JLogLevelInfo.getCode())
             return;
         if (TextUtils.isEmpty(tag)) return;
         if (keys == null || keys.length == 0) return;
@@ -157,12 +154,7 @@ public class JLogger implements IJLog {
 
     //检查当前是否允许在控制台打印日志
     private boolean canPrintConsole(JLogLevel printLevel) {
-        return isDebugModel() && printLevel.getCode() <= mJLogConfig.getLogPrintLevel().getCode();
-    }
-
-    //是否为debug模式，非debug模式不允许在控制台打印日志
-    private boolean isDebugModel() {
-        return mJLogConfig != null && mJLogConfig.isDebugMode();
+        return mJLogConfig != null && printLevel.getCode() <= mJLogConfig.getLogConsoleLevel().getCode();
     }
 
     //构造默认日志保存目录
