@@ -101,7 +101,7 @@ public class JLogger implements IJLog {
             throw new IllegalArgumentException("log config context is null");
         }
         if (config.getLogConsoleLevel() == null) {
-            config.setLogConsoleLevel(JLogLevel.JLogLevelVerbose);
+            config.setLogConsoleLevel(JLogLevel.JLogLevelNone);
         }
         if (config.getLogWriteLevel() == null) {
             config.setLogWriteLevel(JLogLevel.JLogLevelInfo);

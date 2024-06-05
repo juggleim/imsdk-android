@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.jet.im.JetIM;
 import com.jet.im.internal.logger.JLogConfig;
+import com.jet.im.internal.logger.JLogLevel;
 import com.jet.im.push.PushConfig;
 
 public class JetIMApp extends Application {
@@ -13,7 +14,7 @@ public class JetIMApp extends Application {
 //        JetIM.getInstance().setServer("https://nav.gxjipei.com");
         JetIM.InitConfig initConfig = new JetIM.InitConfig.Builder()
                 .setPushConfig(new PushConfig.Builder().build())
-                .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).build())
+                .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build())
                 .build();
         JetIM.getInstance().init(this, "appkey", initConfig);
     }
