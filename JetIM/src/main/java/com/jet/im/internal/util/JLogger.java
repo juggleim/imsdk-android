@@ -40,7 +40,7 @@ public class JLogger implements IJLog {
         if (getInstance().canPrintConsole(JLogLevel.JLogLevelError)) {
             Log.e(logTag, generateLogContent(msg));
         }
-        getInstance().write(JLogLevel.JLogLevelError, logTag, msg);
+        getInstance().write(JLogLevel.JLogLevelError, tag, msg);
     }
 
     public static void w(String tag, String... msg) {
@@ -48,7 +48,7 @@ public class JLogger implements IJLog {
         if (getInstance().canPrintConsole(JLogLevel.JLogLevelWarning)) {
             Log.w(logTag, generateLogContent(msg));
         }
-        getInstance().write(JLogLevel.JLogLevelWarning, logTag, msg);
+        getInstance().write(JLogLevel.JLogLevelWarning, tag, msg);
     }
 
     public static void i(String tag, String... msg) {
@@ -56,7 +56,7 @@ public class JLogger implements IJLog {
         if (getInstance().canPrintConsole(JLogLevel.JLogLevelInfo)) {
             Log.i(logTag, generateLogContent(msg));
         }
-        getInstance().write(JLogLevel.JLogLevelInfo, logTag, msg);
+        getInstance().write(JLogLevel.JLogLevelInfo, tag, msg);
     }
 
     public static void d(String tag, String... msg) {
@@ -64,7 +64,7 @@ public class JLogger implements IJLog {
         if (getInstance().canPrintConsole(JLogLevel.JLogLevelDebug)) {
             Log.d(logTag, generateLogContent(msg));
         }
-        getInstance().write(JLogLevel.JLogLevelDebug, logTag, msg);
+        getInstance().write(JLogLevel.JLogLevelDebug, tag, msg);
     }
 
     public static void v(String tag, String... msg) {
