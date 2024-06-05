@@ -1,6 +1,9 @@
 package com.jet.im.internal.logger.action;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * @author Ye_Guli
@@ -22,5 +25,10 @@ class TimeUtils {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
+    }
+
+    static String formatTimeSpanDetailed(long timeSpan){
+        SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.LOG_TIMESTAMP_FORMAT_DETAILED, Locale.US);
+        return dateFormat.format(new Date(timeSpan));
     }
 }

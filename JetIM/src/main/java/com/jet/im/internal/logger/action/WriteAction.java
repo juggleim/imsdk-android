@@ -44,6 +44,7 @@ class WriteAction implements IAction {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
+        sb.append("\"logTime\": \"").append(TimeUtils.formatTimeSpanDetailed(mLogTime)).append("\",");
         sb.append("\"levelCode\": \"").append(mLevel.getCode()).append("\",");
         sb.append("\"levelName\": \"").append(mLevel.getName()).append("\",");
         sb.append("\"tag\": \"").append(mTag).append("\",");
@@ -55,7 +56,6 @@ class WriteAction implements IAction {
             }
         }
         sb.append("],");
-        sb.append("\"logTime\": ").append(mLogTime).append(",");
         sb.append("\"threadInfo\": \"").append(mThreadInfo).append("\",");
         sb.append("\"isMainThread\": ").append(mIsMainThread);
         sb.append("}");
