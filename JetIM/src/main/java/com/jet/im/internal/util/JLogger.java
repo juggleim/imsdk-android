@@ -72,7 +72,7 @@ public class JLogger implements IJLog {
         if (getInstance().canPrintConsole(JLogLevel.JLogLevelVerbose)) {
             Log.v(logTag, generateLogContent(msg));
         }
-        getInstance().write(JLogLevel.JLogLevelVerbose, logTag, msg);
+        getInstance().write(JLogLevel.JLogLevelVerbose, tag, msg);
     }
 
     //构造日志打印tag
@@ -101,7 +101,7 @@ public class JLogger implements IJLog {
             throw new IllegalArgumentException("log config context is null");
         }
         if (config.getLogConsoleLevel() == null) {
-            config.setLogConsoleLevel(JLogLevel.JLogLevelNone);
+            config.setLogConsoleLevel(JLogLevel.JLogLevelVerbose);
         }
         if (config.getLogWriteLevel() == null) {
             config.setLogWriteLevel(JLogLevel.JLogLevelInfo);
