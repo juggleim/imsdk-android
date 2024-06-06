@@ -33,10 +33,6 @@ class UploadDefaultRunnable extends UploadRunnable {
     public void doRealUpload(File logFile) {
         doRealUploadByAction(logFile, mRequestHeaders, mUploadUrl);
         finish();
-        //上传完成后删除文件
-        if (logFile != null) {
-            logFile.delete();
-        }
     }
 
     public void setUploadUrl(String uploadUrl) {
@@ -114,6 +110,8 @@ class UploadDefaultRunnable extends UploadRunnable {
                 }
                 fileInputStream.close();
                 outputStream.write(Constants.LOG_UPLOAD_LINE_END.getBytes());
+                //上传完成后删除文件
+                file.delete();
             }
             //请求结束标志
             byte[] end_data = (Constants.LOG_UPLOAD_PREFIX + boundary + Constants.LOG_UPLOAD_PREFIX + Constants.LOG_UPLOAD_LINE_END).getBytes();
@@ -158,7 +156,19 @@ class UploadDefaultRunnable extends UploadRunnable {
                 }
             }
             if (connection != null) {
-                connection.disconnect();
+                try {
+                    connection.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            //上传完成后删除文件
+            if (file != null) {
+                try {
+                    file.delete();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

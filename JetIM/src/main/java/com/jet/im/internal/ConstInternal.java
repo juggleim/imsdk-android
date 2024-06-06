@@ -2,9 +2,11 @@ package com.jet.im.internal;
 
 public class ConstInternal {
     public static final String WEB_SOCKET_URL = "120.48.178.248:9002";
-    public static final String NAVI_URL = "http://120.48.178.248:8083";
+    public static final String NAVI_URL = "http://8.130.171.185:8083";
     public static final String LOG_UPLOAD_URL = "https://imlog.gxjipei.com/api/upload-log";
     public static final String PLATFORM = "Android";
+    public static final String LOG_UPLOAD_HEADER_APP_KEY = "x-appkey";
+    public static final String LOG_UPLOAD_HEADER_TOKEN = "x-token";
     public static final int THUMBNAIL_WIDTH = 240;
     public static final int THUMBNAIL_HEIGHT = 240;
     public static final int THUMBNAIL_QUALITY = 30;
