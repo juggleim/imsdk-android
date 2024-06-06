@@ -18,10 +18,12 @@ abstract class UploadRunnable implements Runnable {
     @Override
     public void run() {
         if (mUploadAction == null || !mUploadAction.isValid()) {
+            notifyUploadActionCallbackFail(-1, "upload param invalid");
             finish();
             return;
         }
         if (TextUtils.isEmpty(mUploadAction.mUploadLocalPath)) {
+            notifyUploadActionCallbackFail(-1, "upload file empty");
             finish();
             return;
         }

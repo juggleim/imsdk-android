@@ -148,11 +148,18 @@ class ActionThread extends Thread {
 
     //上传日志
     private void doUploadLog2Net(UploadAction action) {
-        if (TextUtils.isEmpty(mPath) || action == null || !action.isValid()) {
+        if (action == null) return;
+        if (TextUtils.isEmpty(mPath) || !action.isValid()) {
+            if (action.mCallback != null) {
+                action.mCallback.onError(-1, "log path or time invalid");
+            }
             return;
         }
         boolean success = prepareUploadLogFile(action);
         if (!success) {
+            if (action.mCallback != null) {
+                action.mCallback.onError(-1, "upload file invalid");
+            }
             return;
         }
         action.mUploadRunnable.setUploadAction(action);
