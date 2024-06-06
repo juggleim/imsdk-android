@@ -1,6 +1,7 @@
 package com.jet.im.internal;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.jet.im.internal.util.JLogger;
 
@@ -14,13 +15,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 class NaviTask {
     NaviTask(List<String> urls, String appKey, String token, IRequestCallback callback) {
-        mRequestMap = new HashMap<>();
+        mRequestMap = new ConcurrentHashMap<>();
         if (urls.size() > MAX_CONCURRENT_COUNT) {
             urls = urls.subList(0, MAX_CONCURRENT_COUNT);
         }
@@ -51,10 +51,10 @@ class NaviTask {
     }
 
     private void request(String url, String appKey, String token) {
-        url = url + NAVI_SERVER_SUFFIX;
         JLogger.i("NAV-Request", "url is " + url);
+        String realUrl = url + NAVI_SERVER_SUFFIX;
         try {
-            URL u = new URL(url);
+            URL u = new URL(realUrl);
             HttpURLConnection con = (HttpURLConnection) u.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty(APP_KEY, appKey);
@@ -144,7 +144,7 @@ class NaviTask {
     private static final String SERVERS = "servers";
     private static final int MAX_CONCURRENT_COUNT = 5;
     private boolean mIsFinish = false;
-    private final Map<String, TaskStatus> mRequestMap;
+    private final ConcurrentHashMap<String, TaskStatus> mRequestMap;
     private final String mAppKey;
     private final String mToken;
     private final IRequestCallback mCallback;
