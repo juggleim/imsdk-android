@@ -87,7 +87,7 @@ public class PushManager implements IPush.Callback {
             IPush push = (IPush) aClass.newInstance();
             iPushMap.put(push.getType(), push);
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            JLogger.e(TAG, "not register " + className);
+            JLogger.w(TAG, "not register " + className);
         }
     }
 

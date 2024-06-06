@@ -44,6 +44,7 @@ public class ConstInternal {
         static final int INVALID_PARAM = 21003;
         static final int OPERATION_TIMEOUT = 21004;
         static final int CONNECTION_UNAVAILABLE = 21005;
+        static final int SERVER_SET_ERROR = 21006;
 
         static final int MESSAGE_NOT_EXIST = 22001;
         static final int MESSAGE_ALREADY_RECALLED = 22002;
