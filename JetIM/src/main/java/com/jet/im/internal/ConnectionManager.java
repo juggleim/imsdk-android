@@ -36,8 +36,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         }
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
 
-        NaviTask task = new NaviTask();
-        task.request(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
+        NaviTask task = new NaviTask(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
             @Override
             public void onSuccess(String userId, List<String> servers) {
                 mCore.getSendHandler().post(() -> {
@@ -57,6 +56,8 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
                 }
             }
         });
+
+        task.start();
     }
 
     @Override
