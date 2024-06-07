@@ -110,8 +110,6 @@ class UploadDefaultRunnable extends UploadRunnable {
                 }
                 fileInputStream.close();
                 outputStream.write(Constants.LOG_UPLOAD_LINE_END.getBytes());
-                //上传完成后删除文件
-                file.delete();
             }
             //请求结束标志
             byte[] end_data = (Constants.LOG_UPLOAD_PREFIX + boundary + Constants.LOG_UPLOAD_PREFIX + Constants.LOG_UPLOAD_LINE_END).getBytes();
