@@ -268,6 +268,23 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
+    public Message resendMediaMessage(Message message,
+                                      ISendMediaMessageCallback callback) {
+        if (message.getClientMsgNo() <= 0
+                || message.getContent() == null
+                || !(message.getContent() instanceof MediaMessageContent)
+                || message.getConversation() == null
+                || message.getConversation().getConversationId() == null) {
+            if (callback != null) {
+                callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM);
+            }
+            return message;
+        }
+        mCore.getDbManager().deleteMessageByClientMsgNo(message.getClientMsgNo());
+        return sendMediaMessage((MediaMessageContent) message.getContent(), message.getConversation(), callback);
+    }
+
+    @Override
     public Message saveMessage(MessageContent content, Conversation conversation) {
         ConcreteMessage message = new ConcreteMessage();
         message.setContent(content);

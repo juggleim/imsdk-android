@@ -83,6 +83,9 @@ public interface IMessageManager {
     Message resendMessage(Message message,
                           ISendMessageCallback callback);
 
+    Message resendMediaMessage(Message message,
+                               ISendMediaMessageCallback callback);
+
     Message saveMessage(MessageContent content, Conversation conversation);
 
     List<Message> getMessages(Conversation conversation,

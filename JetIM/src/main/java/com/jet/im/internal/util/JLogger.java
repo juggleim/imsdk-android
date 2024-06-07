@@ -140,8 +140,8 @@ public class JLogger implements IJLog {
             return;
         }
         final Map<String, String> headers = new HashMap<>();
-        headers.put("app-key", appKey);
-        headers.put("token", token);
+        headers.put(ConstInternal.LOG_UPLOAD_HEADER_APP_KEY, appKey);
+        headers.put(ConstInternal.LOG_UPLOAD_HEADER_TOKEN, token);
         mActionManager.addUploadAction(startTime, endTime, ConstInternal.LOG_UPLOAD_URL, headers, callback);
     }
 

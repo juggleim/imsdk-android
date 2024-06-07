@@ -124,6 +124,8 @@ class FileUtils {
                 if (!logFolder.exists()) {
                     return null; //日志文件夹不存在，返回空
                 }
+                //记录是否有符合条件的日志
+                boolean hasLog = false;
                 //遍历日志文件夹下的所有文件，将符合时间范围的文件添加到压缩包中
                 File[] logFiles = logFolder.listFiles();
                 if (logFiles != null) {
@@ -147,8 +149,17 @@ class FileUtils {
                             }
                             //关闭当前ZipEntry
                             zos.closeEntry();
+                            //更新hasLog
+                            if(!hasLog) hasLog = true;
                         }
                     }
+                }
+                //如果没有符合条件的日志，删除文件并返回null
+                if(!hasLog){
+                    if (zipFile.exists()) {
+                        zipFile.delete();
+                    }
+                    return null;
                 }
             }
             //返回压缩文件路径
