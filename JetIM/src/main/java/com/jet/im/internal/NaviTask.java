@@ -1,8 +1,6 @@
 package com.jet.im.internal;
 
 import android.text.TextUtils;
-import android.util.Log;
-
 import com.jet.im.internal.util.JLogger;
 
 import org.json.JSONArray;
@@ -40,7 +38,7 @@ class NaviTask {
 
     void start() {
         JLogger.i("NAV-Start", "urls is " + mRequestMap.keySet());
-        if (mRequestMap.size() == 0) {
+        if (mRequestMap.size() == 0 && mCallback != null) {
             mCallback.onError(ConstInternal.ErrorCode.SERVER_SET_ERROR);
             return;
         }
