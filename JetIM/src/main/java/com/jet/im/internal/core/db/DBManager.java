@@ -271,9 +271,25 @@ public class DBManager {
         Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID, args);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                message = MessageSql.messageWithCursor(cursor);
+                message = getMessageWithCursor(cursor);
             }
             cursor.close();
+        }
+        return message;
+    }
+
+    private ConcreteMessage getMessageWithCursor(Cursor cursor) {
+        ConcreteMessage message = null;
+        if (cursor == null) {
+            return null;
+        }
+        message = MessageSql.messageWithCursor(cursor);
+        if (message.getReferredInfo() == null) return message;
+        //查询被引用的消息
+        ConcreteMessage referMsg = getMessageWithMessageId(message.getReferredInfo().getMessageId());
+        if (referMsg != null) {
+            message.setReferMsg(referMsg);
+            message.getReferredInfo().setContent(referMsg.getContent());
         }
         return message;
     }
@@ -667,14 +683,14 @@ public class DBManager {
 
     private void addMessagesFromCursor(@NonNull List<Message> list, @NonNull Cursor cursor) {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            ConcreteMessage message = MessageSql.messageWithCursor(cursor);
+            ConcreteMessage message = getMessageWithCursor(cursor);
             list.add(message);
         }
     }
 
     private void addConcreteMessagesFromCursor(@NonNull List<ConcreteMessage> list, @NonNull Cursor cursor) {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            ConcreteMessage message = MessageSql.messageWithCursor(cursor);
+            ConcreteMessage message = getMessageWithCursor(cursor);
             list.add(message);
         }
     }

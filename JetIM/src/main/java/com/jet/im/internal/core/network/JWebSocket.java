@@ -76,6 +76,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               Conversation conversation,
                               String clientUid,
                               List<ConcreteMessage> mergedMsgList,
+                              ConcreteMessage referMsg,
                               boolean isBroadcast,
                               String userId,
                               SendMessageCallback callback) {
@@ -90,7 +91,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 mCmdIndex++,
                 conversation.getConversationType(),
                 conversation.getConversationId(),
-                content.getMentionInfo());
+                content.getMentionInfo(),
+                referMsg);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "send message");
         sendWhenOpen(bytes);

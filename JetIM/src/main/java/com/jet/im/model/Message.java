@@ -142,6 +142,14 @@ public class Message {
         mGroupMessageReadInfo = groupMessageReadInfo;
     }
 
+    public MessageReferredInfo getReferredInfo() {
+        return mReferredInfo;
+    }
+
+    public void setReferredInfo(MessageReferredInfo referredInfo) {
+        this.mReferredInfo = referredInfo;
+    }
+
     public String getLocalAttribute() {
         return localAttribute;
     }
@@ -170,5 +178,6 @@ public class Message {
     /// 消息内容
     private MessageContent content;
     private GroupMessageReadInfo mGroupMessageReadInfo;
+    private MessageReferredInfo mReferredInfo;
     private String localAttribute;
 }

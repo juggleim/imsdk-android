@@ -6,6 +6,7 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 
 import java.util.List;
@@ -76,8 +77,18 @@ public interface IMessageManager {
                         Conversation conversation,
                         ISendMessageCallback callback);
 
+    Message sendMessage(MessageContent content,
+                        Conversation conversation,
+                        MessageReferredInfo referredInfo,
+                        ISendMessageCallback callback);
+
     Message sendMediaMessage(MediaMessageContent content,
                              Conversation conversation,
+                             ISendMediaMessageCallback callback);
+
+    Message sendMediaMessage(MediaMessageContent content,
+                             Conversation conversation,
+                             MessageReferredInfo referredInfo,
                              ISendMediaMessageCallback callback);
 
     Message resendMessage(Message message,

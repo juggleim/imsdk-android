@@ -12,6 +12,7 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
+import com.jet.im.model.MessageReferredInfo;
 
 import java.nio.charset.StandardCharsets;
 
@@ -52,6 +53,14 @@ class MessageSql {
                 messageContent.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
             }
             message.setContent(messageContent);
+        }
+        String referMsgId = CursorHelper.readString(cursor, COL_REFER_MSG_ID);
+        String referSenderId = CursorHelper.readString(cursor, COL_REFER_SENDER_ID);
+        if (!TextUtils.isEmpty(referMsgId) && !TextUtils.isEmpty(referSenderId)) {
+            MessageReferredInfo referredInfo = new MessageReferredInfo();
+            referredInfo.setMessageId(referMsgId);
+            referredInfo.setSenderId(referSenderId);
+            message.setReferredInfo(referredInfo);
         }
         return message;
     }
@@ -100,7 +109,10 @@ class MessageSql {
             }
             cv.put(COL_MEMBER_COUNT, memberCount);
         }
-
+        if (message.getReferredInfo() != null) {
+            cv.put(COL_REFER_MSG_ID, message.getReferredInfo().getMessageId());
+            cv.put(COL_REFER_SENDER_ID, message.getReferredInfo().getSenderId());
+        }
         return cv;
     }
 
@@ -125,7 +137,9 @@ class MessageSql {
             + "is_deleted BOOLEAN DEFAULT 0,"
             + "search_content TEXT,"
             + "local_attribute TEXT,"
-            + "mention_info TEXT"
+            + "mention_info TEXT,"
+            + "refer_msg_id VARCHAR (64),"
+            + "refer_sender_id VARCHAR (64)"
             + ")";
 
     static final String TABLE = "message";
@@ -288,4 +302,6 @@ class MessageSql {
     static final String COL_SEARCH_CONTENT = "search_content";
     static final String COL_LOCAL_ATTRIBUTE = "local_attribute";
     static final String COL_MENTION_INFO = "mention_info";
+    static final String COL_REFER_MSG_ID = "refer_msg_id";
+    static final String COL_REFER_SENDER_ID = "refer_sender_id";
 }
