@@ -150,6 +150,14 @@ public class Message {
         this.mReferredInfo = referredInfo;
     }
 
+    public MessageMentionInfo getMentionInfo() {
+        return mMentionInfo;
+    }
+
+    public void setMentionInfo(MessageMentionInfo mentionInfo) {
+        this.mMentionInfo = mentionInfo;
+    }
+
     public String getLocalAttribute() {
         return localAttribute;
     }
@@ -179,5 +187,6 @@ public class Message {
     private MessageContent content;
     private GroupMessageReadInfo mGroupMessageReadInfo;
     private MessageReferredInfo mReferredInfo;
+    private MessageMentionInfo mMentionInfo;
     private String localAttribute;
 }

@@ -64,8 +64,8 @@ class ConversationSql {
             lastMessage.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), lastMessage.getContentType()));
         }
         String mentionInfoStr = CursorHelper.readString(cursor, COL_LAST_MESSAGE_MENTION_INFO);
-        if (lastMessage.getContent() != null && mentionInfoStr != null) {
-            lastMessage.getContent().setMentionInfo(new MessageMentionInfo(mentionInfoStr));
+        if (!TextUtils.isEmpty(mentionInfoStr)) {
+            lastMessage.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
         }
         lastMessage.setSeqNo(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_SEQ_NO));
         lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
@@ -102,8 +102,8 @@ class ConversationSql {
         } else {
             args[16] = "";
         }
-        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
-            args[17] = lastMessage.getContent().getMentionInfo().encodeToJson();
+        if (lastMessage.getMentionInfo() != null) {
+            args[17] = lastMessage.getMentionInfo().encodeToJson();
         } else {
             args[17] = "";
         }
@@ -143,8 +143,8 @@ class ConversationSql {
         } else {
             args[18] = "";
         }
-        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
-            args[19] = lastMessage.getContent().getMentionInfo().encodeToJson();
+        if (lastMessage.getMentionInfo() != null) {
+            args[19] = lastMessage.getMentionInfo().encodeToJson();
         } else {
             args[19] = "";
         }
@@ -180,8 +180,8 @@ class ConversationSql {
         } else {
             args[i++] = "";
         }
-        if (message.getContent() != null && message.getContent().getMentionInfo() != null) {
-            args[i++] = message.getContent().getMentionInfo().encodeToJson();
+        if (message.getMentionInfo() != null) {
+            args[i++] = message.getMentionInfo().encodeToJson();
         } else {
             args[i++] = "";
         }

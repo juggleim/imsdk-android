@@ -52,14 +52,4 @@ public abstract class MessageContent {
     public String getSearchContent() {
         return "";
     }
-
-    public MessageMentionInfo getMentionInfo() {
-        return mMentionInfo;
-    }
-
-    public void setMentionInfo(MessageMentionInfo mentionInfo) {
-        mMentionInfo = mentionInfo;
-    }
-
-    private MessageMentionInfo mMentionInfo;
 }

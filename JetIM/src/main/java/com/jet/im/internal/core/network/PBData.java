@@ -886,7 +886,7 @@ class PBData {
                 }
             }
             mentionInfo.setTargetUsers(mentionUserList);
-            messageContent.setMentionInfo(mentionInfo);
+            message.setMentionInfo(mentionInfo);
         }
         if (downMsg.hasReferMsg()) {
             ConcreteMessage referMsg = messageWithDownMsg(downMsg.getReferMsg());
@@ -938,11 +938,11 @@ class PBData {
             downMsgBuilder
                     .setTargetUserInfo(pbUserInfoWithUserInfo(message.getTargetUserInfo()));
         }
-        if (message.getContent().getMentionInfo() != null) {
+        if (message.getMentionInfo() != null) {
             Appmessages.MentionInfo.Builder pbMentionInfo = Appmessages.MentionInfo.newBuilder()
-                    .setMentionType(pbMentionTypeFromMentionType(message.getContent().getMentionInfo().getType()));
-            if (message.getContent().getMentionInfo().getTargetUsers() != null) {
-                for (UserInfo targetUser : message.getContent().getMentionInfo().getTargetUsers()) {
+                    .setMentionType(pbMentionTypeFromMentionType(message.getMentionInfo().getType()));
+            if (message.getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo targetUser : message.getMentionInfo().getTargetUsers()) {
                     pbMentionInfo.addTargetUsers(pbUserInfoWithUserInfo(targetUser));
                 }
             }

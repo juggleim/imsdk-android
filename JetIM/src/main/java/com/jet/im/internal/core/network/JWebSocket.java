@@ -13,6 +13,7 @@ import com.jet.im.internal.model.upload.UploadFileType;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.push.PushChannel;
 
 import org.java_websocket.handshake.ServerHandshake;
@@ -76,6 +77,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               Conversation conversation,
                               String clientUid,
                               List<ConcreteMessage> mergedMsgList,
+                              MessageMentionInfo mentionInfo,
                               ConcreteMessage referMsg,
                               boolean isBroadcast,
                               String userId,
@@ -91,7 +93,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 mCmdIndex++,
                 conversation.getConversationType(),
                 conversation.getConversationId(),
-                content.getMentionInfo(),
+                mentionInfo,
                 referMsg);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "send message");

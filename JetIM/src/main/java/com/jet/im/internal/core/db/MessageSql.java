@@ -39,6 +39,7 @@ class MessageSql {
         MessageContent messageContent = null;
         if (content != null) {
             messageContent = ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType());
+            message.setContent(messageContent);
         }
         message.setSeqNo(CursorHelper.readLong(cursor, COL_SEQ_NO));
         message.setMsgIndex(CursorHelper.readLong(cursor, COL_MESSAGE_INDEX));
@@ -48,11 +49,8 @@ class MessageSql {
         message.setGroupMessageReadInfo(info);
         message.setLocalAttribute(CursorHelper.readString(cursor, COL_LOCAL_ATTRIBUTE));
         String mentionInfoStr = CursorHelper.readString(cursor, COL_MENTION_INFO);
-        if (messageContent != null) {
-            if (mentionInfoStr != null && mentionInfoStr.length() > 0) {
-                messageContent.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
-            }
-            message.setContent(messageContent);
+        if (!TextUtils.isEmpty(mentionInfoStr)) {
+            message.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
         }
         String referMsgId = CursorHelper.readString(cursor, COL_REFER_MSG_ID);
         String referSenderId = CursorHelper.readString(cursor, COL_REFER_SENDER_ID);
@@ -98,8 +96,8 @@ class MessageSql {
         if (message.getLocalAttribute() != null) {
             cv.put(COL_LOCAL_ATTRIBUTE, message.getLocalAttribute());
         }
-        if (message.getContent() != null && message.getContent().getMentionInfo() != null) {
-            cv.put(COL_MENTION_INFO, message.getContent().getMentionInfo().encodeToJson());
+        if (message.getMentionInfo() != null) {
+            cv.put(COL_MENTION_INFO, message.getMentionInfo().encodeToJson());
         }
         if (message.getGroupMessageReadInfo() != null) {
             cv.put(COL_READ_COUNT, message.getGroupMessageReadInfo().getReadCount());

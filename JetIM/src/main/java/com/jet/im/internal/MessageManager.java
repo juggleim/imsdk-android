@@ -183,6 +183,7 @@ public class MessageManager implements IMessageManager {
                     message.getConversation(),
                     message.getClientUid(),
                     mergedMessages,
+                    message.getMentionInfo(),
                     message.getReferMsg(),
                     isBroadcast,
                     mCore.getUserId(),
@@ -1250,10 +1251,9 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
-            if (message.getContent() != null
-                    && message.getContent().getMentionInfo() != null
-                    && message.getContent().getMentionInfo().getTargetUsers() != null) {
-                for (UserInfo userInfo : message.getContent().getMentionInfo().getTargetUsers()) {
+            if (message.getMentionInfo() != null
+                    && message.getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
                     if (userInfo.getUserId() != null) {
                         userInfoMap.put(userInfo.getUserId(), userInfo);
                     }
