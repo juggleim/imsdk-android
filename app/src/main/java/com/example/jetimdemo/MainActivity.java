@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.Group;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -25,6 +24,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
+import com.jet.im.internal.uploader.FileUtil;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
@@ -40,7 +40,6 @@ import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.ThumbnailPackedImageMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.internal.uploader.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -633,7 +632,7 @@ public class MainActivity extends AppCompatActivity {
         MessageReferredInfo referredInfo = new MessageReferredInfo();
         referredInfo.setMessageId("nr8hwtuhgdgk5g4v");
         referredInfo.setSenderId("userid3");
-        Message m = JetIM.getInstance().getMessageManager().sendMessage(textMessage, c,referredInfo, new IMessageManager.ISendMessageCallback() {
+        Message m = JetIM.getInstance().getMessageManager().sendMessage(textMessage, c, null, referredInfo, new IMessageManager.ISendMessageCallback() {
             @Override
             public void onSuccess(Message message) {
                 Log.i("TAG", "send message success");

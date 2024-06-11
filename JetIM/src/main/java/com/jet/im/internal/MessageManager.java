@@ -33,6 +33,7 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
@@ -84,6 +85,7 @@ public class MessageManager implements IMessageManager {
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
                                                    Conversation conversation,
+                                                   MessageMentionInfo mentionInfo,
                                                    MessageReferredInfo referredInfo,
                                                    Message.MessageState state,
                                                    Message.MessageDirection direction,
@@ -103,6 +105,9 @@ public class MessageManager implements IMessageManager {
             flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
         }
         message.setFlags(flags);
+        if (mentionInfo != null) {
+            message.setMentionInfo(mentionInfo);
+        }
         if (referredInfo != null) {
             ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(referredInfo.getMessageId());
             if (referMsg != null) {
@@ -127,10 +132,11 @@ public class MessageManager implements IMessageManager {
 
     private Message sendMessage(MessageContent content,
                                 Conversation conversation,
+                                MessageMentionInfo mentionInfo,
                                 MessageReferredInfo referredInfo,
                                 boolean isBroadcast,
                                 ISendMessageCallback callback) {
-        ConcreteMessage message = saveMessageWithContent(content, conversation, referredInfo, Message.MessageState.SENDING, Message.MessageDirection.SEND, isBroadcast);
+        ConcreteMessage message = saveMessageWithContent(content, conversation, mentionInfo, referredInfo, Message.MessageState.SENDING, Message.MessageDirection.SEND, isBroadcast);
         sendWebSocketMessage(message, isBroadcast, callback);
         return message;
     }
@@ -194,28 +200,28 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public Message sendMessage(MessageContent content, Conversation conversation, ISendMessageCallback callback) {
-        return sendMessage(content, conversation, null, callback);
+        return sendMessage(content, conversation, null, null, callback);
     }
 
     @Override
-    public Message sendMessage(MessageContent content, Conversation conversation, MessageReferredInfo referredInfo, ISendMessageCallback callback) {
-        return sendMessage(content, conversation, referredInfo, false, callback);
+    public Message sendMessage(MessageContent content, Conversation conversation, MessageMentionInfo mentionInfo, MessageReferredInfo referredInfo, ISendMessageCallback callback) {
+        return sendMessage(content, conversation, mentionInfo, referredInfo, false, callback);
     }
 
     @Override
     public Message sendMediaMessage(MediaMessageContent content, Conversation conversation, ISendMediaMessageCallback callback) {
-        return sendMediaMessage(content, conversation, null, callback);
+        return sendMediaMessage(content, conversation, null, null, callback);
     }
 
     @Override
-    public Message sendMediaMessage(MediaMessageContent content, Conversation conversation, MessageReferredInfo referredInfo, ISendMediaMessageCallback callback) {
+    public Message sendMediaMessage(MediaMessageContent content, Conversation conversation, MessageMentionInfo mentionInfo, MessageReferredInfo referredInfo, ISendMediaMessageCallback callback) {
         if (content == null) {
             if (callback != null) {
                 callback.onError(null, JErrorCode.INVALID_PARAM);
             }
             return null;
         }
-        ConcreteMessage message = saveMessageWithContent(content, conversation, referredInfo, Message.MessageState.UPLOADING, Message.MessageDirection.SEND, false);
+        ConcreteMessage message = saveMessageWithContent(content, conversation, mentionInfo, referredInfo, Message.MessageState.UPLOADING, Message.MessageDirection.SEND, false);
         IMessageUploadProvider.UploadCallback uploadCallback = new IMessageUploadProvider.UploadCallback() {
             @Override
             public void onProgress(int progress) {
@@ -297,29 +303,17 @@ public class MessageManager implements IMessageManager {
             return message;
         }
         mCore.getDbManager().deleteMessageByClientMsgNo(message.getClientMsgNo());
-        return sendMessage(message.getContent(), message.getConversation(), callback);
+        return sendMessage(message.getContent(), message.getConversation(), message.getMentionInfo(), message.getReferredInfo(), callback);
     }
 
     @Override
     public Message saveMessage(MessageContent content, Conversation conversation) {
-        ConcreteMessage message = new ConcreteMessage();
-        message.setContent(content);
-        message.setConversation(conversation);
-        message.setContentType(content.getContentType());
-        message.setDirection(Message.MessageDirection.SEND);
-        message.setState(Message.MessageState.UNKNOWN);
-        message.setSenderUserId(mCore.getUserId());
-        message.setClientUid(createClientUid());
-        message.setTimestamp(System.currentTimeMillis());
+        return saveMessage(content, conversation, null, null);
+    }
 
-        List<ConcreteMessage> list = new ArrayList<>(1);
-        list.add(message);
-        mCore.getDbManager().insertMessages(list);
-
-        if (mSendReceiveListener != null) {
-            mSendReceiveListener.onMessageSave(message);
-        }
-        return message;
+    @Override
+    public Message saveMessage(MessageContent content, Conversation conversation, MessageMentionInfo mentionInfo, MessageReferredInfo referredInfo) {
+        return saveMessageWithContent(content, conversation, mentionInfo, referredInfo, Message.MessageState.UNKNOWN, Message.MessageDirection.SEND, false);
     }
 
     @Override
@@ -906,7 +900,7 @@ public class MessageManager implements IMessageManager {
             }
             return;
         }
-        sendMessage(content, conversations.get(0), null, true, new ISendMessageCallback() {
+        sendMessage(content, conversations.get(0), null, null, true, new ISendMessageCallback() {
             @Override
             public void onSuccess(Message message) {
                 broadcastCallbackAndLoopNext(message, JErrorCode.NONE, conversations, processCount, totalCount, callback);

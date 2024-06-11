@@ -6,6 +6,7 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 
@@ -79,6 +80,7 @@ public interface IMessageManager {
 
     Message sendMessage(MessageContent content,
                         Conversation conversation,
+                        MessageMentionInfo mentionInfo,
                         MessageReferredInfo referredInfo,
                         ISendMessageCallback callback);
 
@@ -88,6 +90,7 @@ public interface IMessageManager {
 
     Message sendMediaMessage(MediaMessageContent content,
                              Conversation conversation,
+                             MessageMentionInfo mentionInfo,
                              MessageReferredInfo referredInfo,
                              ISendMediaMessageCallback callback);
 
@@ -95,6 +98,8 @@ public interface IMessageManager {
                           ISendMessageCallback callback);
 
     Message saveMessage(MessageContent content, Conversation conversation);
+
+    Message saveMessage(MessageContent content, Conversation conversation, MessageMentionInfo mentionInfo, MessageReferredInfo referredInfo);
 
     List<Message> getMessages(Conversation conversation,
                               int count,
