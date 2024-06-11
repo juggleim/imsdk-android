@@ -31,6 +31,7 @@ import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageOptions;
 import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
@@ -632,7 +633,9 @@ public class MainActivity extends AppCompatActivity {
         MessageReferredInfo referredInfo = new MessageReferredInfo();
         referredInfo.setMessageId("nr8hwtuhgdgk5g4v");
         referredInfo.setSenderId("userid3");
-        Message m = JetIM.getInstance().getMessageManager().sendMessage(textMessage, c, null, referredInfo, new IMessageManager.ISendMessageCallback() {
+        MessageOptions options = new MessageOptions();
+        options.setReferredInfo(referredInfo);
+        Message m = JetIM.getInstance().getMessageManager().sendMessage(textMessage, c, options, new IMessageManager.ISendMessageCallback() {
             @Override
             public void onSuccess(Message message) {
                 Log.i("TAG", "send message success");

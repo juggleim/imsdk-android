@@ -12,6 +12,7 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
+import com.jet.im.model.MessageOptions;
 import com.jet.im.model.MessageReferredInfo;
 
 import java.nio.charset.StandardCharsets;
@@ -48,9 +49,10 @@ class MessageSql {
         info.setMemberCount(CursorHelper.readInt(cursor, COL_MEMBER_COUNT));
         message.setGroupMessageReadInfo(info);
         message.setLocalAttribute(CursorHelper.readString(cursor, COL_LOCAL_ATTRIBUTE));
+        message.setMessageOptions(new MessageOptions());
         String mentionInfoStr = CursorHelper.readString(cursor, COL_MENTION_INFO);
         if (!TextUtils.isEmpty(mentionInfoStr)) {
-            message.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
+            message.getMessageOptions().setMentionInfo(new MessageMentionInfo(mentionInfoStr));
         }
         String referMsgId = CursorHelper.readString(cursor, COL_REFER_MSG_ID);
         String referSenderId = CursorHelper.readString(cursor, COL_REFER_SENDER_ID);
@@ -58,7 +60,7 @@ class MessageSql {
             MessageReferredInfo referredInfo = new MessageReferredInfo();
             referredInfo.setMessageId(referMsgId);
             referredInfo.setSenderId(referSenderId);
-            message.setReferredInfo(referredInfo);
+            message.getMessageOptions().setReferredInfo(referredInfo);
         }
         return message;
     }
@@ -96,8 +98,8 @@ class MessageSql {
         if (message.getLocalAttribute() != null) {
             cv.put(COL_LOCAL_ATTRIBUTE, message.getLocalAttribute());
         }
-        if (message.getMentionInfo() != null) {
-            cv.put(COL_MENTION_INFO, message.getMentionInfo().encodeToJson());
+        if (message.hasMentionInfo()) {
+            cv.put(COL_MENTION_INFO, message.getMessageOptions().getMentionInfo().encodeToJson());
         }
         if (message.getGroupMessageReadInfo() != null) {
             cv.put(COL_READ_COUNT, message.getGroupMessageReadInfo().getReadCount());
@@ -107,9 +109,9 @@ class MessageSql {
             }
             cv.put(COL_MEMBER_COUNT, memberCount);
         }
-        if (message.getReferredInfo() != null) {
-            cv.put(COL_REFER_MSG_ID, message.getReferredInfo().getMessageId());
-            cv.put(COL_REFER_SENDER_ID, message.getReferredInfo().getSenderId());
+        if (message.hasReferredInfo()) {
+            cv.put(COL_REFER_MSG_ID, message.getMessageOptions().getReferredInfo().getMessageId());
+            cv.put(COL_REFER_SENDER_ID, message.getMessageOptions().getReferredInfo().getSenderId());
         }
         return cv;
     }

@@ -22,6 +22,7 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
+import com.jet.im.model.MessageOptions;
 import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.push.PushChannel;
@@ -875,6 +876,7 @@ class PBData {
         message.setGroupMessageReadInfo(info);
         message.setGroupInfo(groupInfoWithPBGroupInfo(downMsg.getGroupInfo()));
         message.setTargetUserInfo(userInfoWithPBUserInfo(downMsg.getTargetUserInfo()));
+        message.setMessageOptions(new MessageOptions());
         if (downMsg.hasMentionInfo() && Appmessages.MentionType.MentionDefault != downMsg.getMentionInfo().getMentionType()) {
             MessageMentionInfo mentionInfo = new MessageMentionInfo();
             mentionInfo.setType(mentionTypeFromPbMentionType(downMsg.getMentionInfo().getMentionType()));
@@ -886,7 +888,7 @@ class PBData {
                 }
             }
             mentionInfo.setTargetUsers(mentionUserList);
-            message.setMentionInfo(mentionInfo);
+            message.getMessageOptions().setMentionInfo(mentionInfo);
         }
         if (downMsg.hasReferMsg()) {
             ConcreteMessage referMsg = messageWithDownMsg(downMsg.getReferMsg());
@@ -896,7 +898,7 @@ class PBData {
             referredInfo.setMessageId(referMsg.getMessageId());
             referredInfo.setSenderId(referMsg.getSenderUserId());
             referredInfo.setContent(referMsg.getContent());
-            message.setReferredInfo(referredInfo);
+            message.getMessageOptions().setReferredInfo(referredInfo);
         }
         message.setContent(messageContent);
         return message;
@@ -938,11 +940,11 @@ class PBData {
             downMsgBuilder
                     .setTargetUserInfo(pbUserInfoWithUserInfo(message.getTargetUserInfo()));
         }
-        if (message.getMentionInfo() != null) {
+        if (message.hasMentionInfo()) {
             Appmessages.MentionInfo.Builder pbMentionInfo = Appmessages.MentionInfo.newBuilder()
-                    .setMentionType(pbMentionTypeFromMentionType(message.getMentionInfo().getType()));
-            if (message.getMentionInfo().getTargetUsers() != null) {
-                for (UserInfo targetUser : message.getMentionInfo().getTargetUsers()) {
+                    .setMentionType(pbMentionTypeFromMentionType(message.getMessageOptions().getMentionInfo().getType()));
+            if (message.getMessageOptions().getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo targetUser : message.getMessageOptions().getMentionInfo().getTargetUsers()) {
                     pbMentionInfo.addTargetUsers(pbUserInfoWithUserInfo(targetUser));
                 }
             }

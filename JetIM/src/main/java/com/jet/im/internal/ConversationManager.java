@@ -442,13 +442,13 @@ public class ConversationManager implements IConversationManager, MessageManager
         boolean hasMention = false;
         //接收到的消息才处理 mention
         if (Message.MessageDirection.RECEIVE == message.getDirection()
-                && message.getMentionInfo() != null) {
-            if (MessageMentionInfo.MentionType.ALL == message.getMentionInfo().getType()
-                    || MessageMentionInfo.MentionType.ALL_AND_SOMEONE == message.getMentionInfo().getType()) {
+                && message.hasMentionInfo()) {
+            if (MessageMentionInfo.MentionType.ALL == message.getMessageOptions().getMentionInfo().getType()
+                    || MessageMentionInfo.MentionType.ALL_AND_SOMEONE == message.getMessageOptions().getMentionInfo().getType()) {
                 hasMention = true;
-            } else if (MessageMentionInfo.MentionType.SOMEONE == message.getMentionInfo().getType()
-                    && message.getMentionInfo().getTargetUsers() != null) {
-                for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
+            } else if (MessageMentionInfo.MentionType.SOMEONE == message.getMessageOptions().getMentionInfo().getType()
+                    && message.getMessageOptions().getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo userInfo : message.getMessageOptions().getMentionInfo().getTargetUsers()) {
                     if (userInfo.getUserId() != null && userInfo.getUserId().equals(mCore.getUserId())) {
                         hasMention = true;
                         break;

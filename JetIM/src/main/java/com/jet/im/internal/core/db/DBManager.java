@@ -284,12 +284,14 @@ public class DBManager {
             return null;
         }
         message = MessageSql.messageWithCursor(cursor);
-        if (message.getReferredInfo() == null) return message;
+        if (!message.hasReferredInfo()) {
+            return message;
+        }
         //查询被引用的消息
-        ConcreteMessage referMsg = getMessageWithMessageId(message.getReferredInfo().getMessageId());
+        ConcreteMessage referMsg = getMessageWithMessageId(message.getMessageOptions().getReferredInfo().getMessageId());
         if (referMsg != null) {
             message.setReferMsg(referMsg);
-            message.getReferredInfo().setContent(referMsg.getContent());
+            message.getMessageOptions().getReferredInfo().setContent(referMsg.getContent());
         }
         return message;
     }

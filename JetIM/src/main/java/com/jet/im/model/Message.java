@@ -142,20 +142,20 @@ public class Message {
         mGroupMessageReadInfo = groupMessageReadInfo;
     }
 
-    public MessageReferredInfo getReferredInfo() {
-        return mReferredInfo;
+    public MessageOptions getMessageOptions() {
+        return mMessageOptions;
     }
 
-    public void setReferredInfo(MessageReferredInfo referredInfo) {
-        this.mReferredInfo = referredInfo;
+    public void setMessageOptions(MessageOptions messageOptions) {
+        this.mMessageOptions = messageOptions;
     }
 
-    public MessageMentionInfo getMentionInfo() {
-        return mMentionInfo;
+    public boolean hasMentionInfo() {
+        return mMessageOptions != null && mMessageOptions.getMentionInfo() != null;
     }
 
-    public void setMentionInfo(MessageMentionInfo mentionInfo) {
-        this.mMentionInfo = mentionInfo;
+    public boolean hasReferredInfo() {
+        return mMessageOptions != null && mMessageOptions.getReferredInfo() != null;
     }
 
     public String getLocalAttribute() {
@@ -186,7 +186,6 @@ public class Message {
     /// 消息内容
     private MessageContent content;
     private GroupMessageReadInfo mGroupMessageReadInfo;
-    private MessageReferredInfo mReferredInfo;
-    private MessageMentionInfo mMentionInfo;
+    private MessageOptions mMessageOptions;
     private String localAttribute;
 }
