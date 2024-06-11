@@ -46,7 +46,7 @@ public class TopConvMessage extends MessageContent {
                         continue;
                     }
                     int type = object.optInt(CHANNEL_TYPE);
-                    long topUpdatedTime = object.getLong(TOP_UPDATED_TIME);
+                    long topUpdatedTime = object.optLong(TOP_UPDATED_TIME);
                     boolean isTop = object.optBoolean(IS_TOP);
                     String conversationId = object.optString(TARGET_ID);
 
