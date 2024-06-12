@@ -412,6 +412,43 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void onConversationsAdd(ConcreteConversationInfo conversationInfo) {
+        if (conversationInfo == null || conversationInfo.getConversation() == null) return;
+
+        List<ConcreteConversationInfo> convList = new ArrayList<>();
+        convList.add(conversationInfo);
+
+        updateSyncTime(conversationInfo.getSyncTime());
+        updateUserInfo(convList);
+        ConcreteConversationInfo old = mCore.getDbManager().getConversationInfo(conversationInfo.getConversation());
+        if (old == null) {
+            mCore.getDbManager().insertConversations(convList, (insertList, updateList) -> {
+                if (insertList.size() > 0) {
+                    if (mListenerMap != null) {
+                        List<ConversationInfo> l = new ArrayList<>(insertList);
+                        for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onConversationInfoAdd(l);
+                        }
+                    }
+                }
+            });
+            return;
+        }
+        if (conversationInfo.getSortTime() > old.getSortTime()) {
+            mCore.getDbManager().updateSortTime(conversationInfo.getConversation(), conversationInfo.getSortTime());
+            old.setSortTime(conversationInfo.getSortTime());
+            old.setSyncTime(conversationInfo.getSyncTime());
+            if (mListenerMap != null) {
+                List<ConversationInfo> l = new ArrayList<>();
+                l.add(old);
+                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                    entry.getValue().onConversationInfoUpdate(l);
+                }
+            }
+        }
+    }
+
+    @Override
     public void onConversationsDelete(List<Conversation> conversations) {
         List<ConversationInfo> results = new ArrayList<>();
         for (Conversation conversation : conversations) {
