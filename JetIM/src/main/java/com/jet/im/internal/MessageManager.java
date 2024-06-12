@@ -104,7 +104,7 @@ public class MessageManager implements IMessageManager {
             flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
         }
         message.setFlags(flags);
-        if (message.hasReferredInfo()) {
+        if (options != null && options.getReferredInfo() != null) {
             ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(options.getReferredInfo().getMessageId());
             if (referMsg != null) {
                 message.setReferMsg(referMsg);
