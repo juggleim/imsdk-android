@@ -98,6 +98,15 @@ class PBRcvObj {
         }
     }
 
+    static class ConversationInfoAck extends QryAck {
+        ConcreteConversationInfo conversationInfo;
+
+        ConversationInfoAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
+
     static class PublishMsgNtf {
         long syncTime;
     }
@@ -125,6 +134,7 @@ class PBRcvObj {
         static final int simpleQryAckCallbackTimestamp = 13;
         static final int conversationSetTopAck = 14;
         static final int qryFileCredAck = 15;
+        static final int addConversationAck = 16;
     }
 
     public int getRcvType() {
@@ -146,6 +156,7 @@ class PBRcvObj {
     SimpleQryAck mSimpleQryAck;
     TimestampQryAck mTimestampQryAck;
     QryFileCredAck mQryFileCredAck;
+    ConversationInfoAck mConversationInfoAck;
     private int mRcvType;
 }
 

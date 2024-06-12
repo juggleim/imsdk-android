@@ -6,6 +6,7 @@ import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.JetIMCore;
+import com.jet.im.internal.core.network.AddConversationsCallback;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
@@ -36,6 +37,45 @@ public class ConversationManager implements IConversationManager, MessageManager
     public ConversationManager(JetIMCore core) {
         this.mCore = core;
         this.mCachedSyncTime = -1;
+    }
+
+    @Override
+    public void createConversationInfo(Conversation conversation, ICreateConversationInfoCallback callback) {
+        mCore.getWebSocket().addConversationInfo(conversation, mCore.getUserId(), new AddConversationsCallback() {
+            @Override
+            public void onSuccess(ConcreteConversationInfo conversationInfo) {
+                JLogger.i("CONV-Create", "success");
+                updateSyncTime(conversationInfo.getSyncTime());
+
+                ConcreteConversationInfo old = mCore.getDbManager().getConversationInfo(conversation);
+                if (old == null) {
+                    List<ConcreteConversationInfo> list = new ArrayList<>();
+                    list.add(conversationInfo);
+                    mCore.getDbManager().insertConversations(list, null);
+                    if (callback != null) {
+                        callback.onSuccess(conversationInfo);
+                    }
+                    return;
+                }
+
+                if (conversationInfo.getSortTime() > old.getSortTime()) {
+                    mCore.getDbManager().updateSortTime(conversation, conversationInfo.getSortTime());
+                    old.setSortTime(conversationInfo.getSortTime());
+                    old.setSyncTime(conversationInfo.getSyncTime());
+                }
+                if (callback != null) {
+                    callback.onSuccess(old);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-Create", "fail, code is " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
     }
 
     @Override

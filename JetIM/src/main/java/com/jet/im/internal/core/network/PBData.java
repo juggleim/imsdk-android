@@ -294,6 +294,21 @@ class PBData {
         return m.toByteArray();
     }
 
+    public byte[] addConversationInfo(Conversation conversation, String userId, Integer index) {
+        Appmessages.Conversation req = pbConversationFromConversation(conversation).build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(ADD_CONVERSATION)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] syncMessagesData(long receiveTime, long sendTime, String userId, int index) {
         Appmessages.SyncMsgReq req = Appmessages.SyncMsgReq.newBuilder()
                 .setSyncTime(receiveTime)
@@ -660,6 +675,9 @@ class PBData {
                         case PBRcvObj.PBRcvType.qryFileCredAck:
                             obj = qryFileCredAckWithImWebsocketMsg(msg);
                             break;
+                        case PBRcvObj.PBRcvType.addConversationAck:
+                            obj = addConversationAckWithImWebsocketMsg(msg);
+                            break;
                         default:
                             break;
                     }
@@ -822,6 +840,16 @@ class PBData {
             a.preSignCred = preSignCred;
         }
         obj.mQryFileCredAck = a;
+        return obj;
+    }
+
+    private PBRcvObj addConversationAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.addConversationAck);
+        Appmessages.Conversation resp = Appmessages.Conversation.parseFrom(msg.getQryAckMsgBody().getData());
+        PBRcvObj.ConversationInfoAck a = new PBRcvObj.ConversationInfoAck(msg.getQryAckMsgBody());
+        a.conversationInfo = conversationInfoWithPBConversation(resp);
+        obj.mConversationInfoAck = a;
         return obj;
     }
 
@@ -1093,6 +1121,7 @@ class PBData {
     private static final String CLEAR_HIS_MSG = "clean_hismsg";
     private static final String DELETE_MSG = "del_msg";
     private static final String QRY_FILE_CRED = "file_cred";
+    private static final String ADD_CONVERSATION = "add_conver";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -1121,6 +1150,7 @@ class PBData {
             put(CLEAR_HIS_MSG, PBRcvObj.PBRcvType.simpleQryAck);
             put(DELETE_MSG, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_FILE_CRED, PBRcvObj.PBRcvType.qryFileCredAck);
+            put(ADD_CONVERSATION, PBRcvObj.PBRcvType.addConversationAck);
         }
     };
 

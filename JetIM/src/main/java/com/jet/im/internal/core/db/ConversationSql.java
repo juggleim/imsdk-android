@@ -235,6 +235,10 @@ class ConversationSql {
         return String.format("UPDATE conversation_info SET mention_info = '%s' WHERE conversation_type = %s AND conversation_id = '%s'", mentionInfoJson, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
 
+    static String sqlUpdateSortTime(Conversation conversation, long sortTime) {
+        return String.format("UPDATE conversation_info SET timestamp = %s WHERE conversation_type = %s AND conversation_id = '%s'", sortTime, conversation.getConversationType().getValue(), conversation.getConversationId());
+    }
+
     static final String SQL_CLEAR_MENTION_INFO = "UPDATE conversation_info SET mention_info = NULL";
 
     static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS conversation_info ("
@@ -358,5 +362,4 @@ class ConversationSql {
     static final String COL_LAST_MESSAGE_SEQ_NO = "last_message_seq_no";
     static final String COL_LAST_MESSAGE_MENTION_INFO = "last_message_mention_info";
     static final String COL_TOTAL_COUNT = "total_count";
-
 }

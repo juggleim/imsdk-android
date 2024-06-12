@@ -14,6 +14,14 @@ public interface IConversationManager {
         void onError(int errorCode);
     }
 
+    interface ICreateConversationInfoCallback {
+        void onSuccess(ConversationInfo conversationInfo);
+
+        void onError(int errorCode);
+    }
+
+    void createConversationInfo(Conversation conversation, ICreateConversationInfoCallback callback);
+
     List<ConversationInfo> getConversationInfoList();
 
     List<ConversationInfo> getConversationInfoList(int[] conversationTypes,

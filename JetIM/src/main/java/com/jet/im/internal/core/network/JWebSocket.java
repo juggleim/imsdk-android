@@ -176,6 +176,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void addConversationInfo(Conversation conversation, String userId, AddConversationsCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.addConversationInfo(conversation, userId, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "addConversationInfo, conversation is " + conversation);
+        sendWhenOpen(bytes);
+    }
+
     public void queryHisMsg(Conversation conversation, long startTime, int count, JetIMConst.PullDirection direction, QryHisMsgCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, mCmdIndex++);
@@ -323,6 +331,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof QryUploadFileCredCallback) {
             QryUploadFileCredCallback sCallback = (QryUploadFileCredCallback) callback;
             sCallback.onError(errorCode);
+        } else if (callback instanceof AddConversationsCallback) {
+            AddConversationsCallback sCallback = (AddConversationsCallback) callback;
+            sCallback.onError(errorCode);
         }
     }
 
@@ -419,6 +430,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 break;
             case PBRcvObj.PBRcvType.qryFileCredAck:
                 handleUploadFileCredCallback(obj.mQryFileCredAck);
+                break;
+            case PBRcvObj.PBRcvType.addConversationAck:
+                handleAddConversationAck(obj.mConversationInfoAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -638,6 +652,20 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.ossType, ack.qiNiuCred, ack.preSignCred);
+            }
+        }
+    }
+
+    private void handleAddConversationAck(PBRcvObj.ConversationInfoAck ack) {
+        JLogger.i("WS-Receive", "handleAddConversationAck, code is " + ack.code);
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof AddConversationsCallback) {
+            AddConversationsCallback callback = (AddConversationsCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.conversationInfo);
             }
         }
     }

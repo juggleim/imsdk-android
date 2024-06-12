@@ -11,9 +11,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.Group;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -25,6 +25,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
+import com.jet.im.internal.uploader.FileUtil;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
@@ -39,7 +40,6 @@ import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.ThumbnailPackedImageMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.internal.uploader.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -599,7 +599,32 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendMediaMessage();
+                createConversation();
+            }
+        });
+    }
+
+    private void createConversation() {
+        Conversation conversation = new Conversation(Conversation.ConversationType.GROUP, "test14");
+        JetIM.getInstance().getConversationManager().createConversationInfo(conversation, new IConversationManager.ICreateConversationInfoCallback() {
+            @Override
+            public void onSuccess(ConversationInfo conversationInfo) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "createConversationInfo success", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "createConversationInfo error", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
     }

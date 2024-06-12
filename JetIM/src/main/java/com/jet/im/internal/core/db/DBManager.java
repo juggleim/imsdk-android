@@ -231,6 +231,10 @@ public class DBManager {
         return count;
     }
 
+    public void updateSortTime(Conversation conversation, long sortTime) {
+        execSQL(ConversationSql.sqlUpdateSortTime(conversation, sortTime));
+    }
+
     public void updateLastMessage(ConcreteMessage message) {
         String sql = ConversationSql.SQL_UPDATE_LAST_MESSAGE;
         boolean isUpdateSortTime = true;
