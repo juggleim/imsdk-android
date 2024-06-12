@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.Group;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -25,12 +24,15 @@ import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
+import com.jet.im.internal.uploader.FileUtil;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageOptions;
+import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
@@ -39,7 +41,6 @@ import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.ThumbnailPackedImageMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.internal.uploader.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -599,9 +600,53 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendMediaMessage();
+//                sendMediaMessage();
+//                sendReferMessage();
+                getMessageList();
             }
         });
+    }
+
+    private void getMessageList() {
+        Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+        JetIM.getInstance().getMessageManager().getLocalAndRemoteMessages(c, 5, 0, JetIMConst.PullDirection.OLDER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
+            @Override
+            public void onGetLocalList(List<Message> messages, boolean hasRemote) {
+                Log.i("getMessageList", "onGetLocalList");
+            }
+
+            @Override
+            public void onGetRemoteList(List<Message> messages) {
+                Log.i("getMessageList", "onGetRemoteList");
+            }
+
+            @Override
+            public void onGetRemoteListError(int errorCode) {
+                Log.i("getMessageList", "onGetRemoteListError");
+            }
+        });
+    }
+
+    private void sendReferMessage() {
+        Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+        TextMessage textMessage = new TextMessage("666666");
+        MessageReferredInfo referredInfo = new MessageReferredInfo();
+        referredInfo.setMessageId("nr8hwtuhgdgk5g4v");
+        referredInfo.setSenderId("userid3");
+        MessageOptions options = new MessageOptions();
+        options.setReferredInfo(referredInfo);
+        Message m = JetIM.getInstance().getMessageManager().sendMessage(textMessage, c, options, new IMessageManager.ISendMessageCallback() {
+            @Override
+            public void onSuccess(Message message) {
+                Log.i("TAG", "send message success");
+            }
+
+            @Override
+            public void onError(Message message, int errorCode) {
+                Log.i("TAG", "send message error, code is " + errorCode);
+            }
+        });
+        Log.i("sendReferMessage", "after send, clientMsgNo is " + m.getClientMsgNo());
     }
 
     private void sendMessages() {

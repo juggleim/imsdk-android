@@ -442,14 +442,13 @@ public class ConversationManager implements IConversationManager, MessageManager
         boolean hasMention = false;
         //接收到的消息才处理 mention
         if (Message.MessageDirection.RECEIVE == message.getDirection()
-                && message.getContent() != null
-                && message.getContent().getMentionInfo() != null) {
-            if (MessageMentionInfo.MentionType.ALL == message.getContent().getMentionInfo().getType()
-                    || MessageMentionInfo.MentionType.ALL_AND_SOMEONE == message.getContent().getMentionInfo().getType()) {
+                && message.hasMentionInfo()) {
+            if (MessageMentionInfo.MentionType.ALL == message.getMessageOptions().getMentionInfo().getType()
+                    || MessageMentionInfo.MentionType.ALL_AND_SOMEONE == message.getMessageOptions().getMentionInfo().getType()) {
                 hasMention = true;
-            } else if (MessageMentionInfo.MentionType.SOMEONE == message.getContent().getMentionInfo().getType()
-                    && message.getContent().getMentionInfo().getTargetUsers() != null) {
-                for (UserInfo userInfo : message.getContent().getMentionInfo().getTargetUsers()) {
+            } else if (MessageMentionInfo.MentionType.SOMEONE == message.getMessageOptions().getMentionInfo().getType()
+                    && message.getMessageOptions().getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo userInfo : message.getMessageOptions().getMentionInfo().getTargetUsers()) {
                     if (userInfo.getUserId() != null && userInfo.getUserId().equals(mCore.getUserId())) {
                         hasMention = true;
                         break;

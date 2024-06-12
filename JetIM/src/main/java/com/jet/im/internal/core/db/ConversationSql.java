@@ -11,6 +11,7 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationMentionInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageMentionInfo;
+import com.jet.im.model.MessageOptions;
 
 import java.nio.charset.StandardCharsets;
 
@@ -64,8 +65,9 @@ class ConversationSql {
             lastMessage.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), lastMessage.getContentType()));
         }
         String mentionInfoStr = CursorHelper.readString(cursor, COL_LAST_MESSAGE_MENTION_INFO);
-        if (lastMessage.getContent() != null && mentionInfoStr != null) {
-            lastMessage.getContent().setMentionInfo(new MessageMentionInfo(mentionInfoStr));
+        if (!TextUtils.isEmpty(mentionInfoStr)) {
+            lastMessage.setMessageOptions(new MessageOptions());
+            lastMessage.getMessageOptions().setMentionInfo(new MessageMentionInfo(mentionInfoStr));
         }
         lastMessage.setSeqNo(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_SEQ_NO));
         lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
@@ -102,8 +104,8 @@ class ConversationSql {
         } else {
             args[16] = "";
         }
-        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
-            args[17] = lastMessage.getContent().getMentionInfo().encodeToJson();
+        if (lastMessage.hasMentionInfo()) {
+            args[17] = lastMessage.getMessageOptions().getMentionInfo().encodeToJson();
         } else {
             args[17] = "";
         }
@@ -143,8 +145,8 @@ class ConversationSql {
         } else {
             args[18] = "";
         }
-        if (lastMessage.getContent() != null && lastMessage.getContent().getMentionInfo() != null) {
-            args[19] = lastMessage.getContent().getMentionInfo().encodeToJson();
+        if (lastMessage.hasMentionInfo()) {
+            args[19] = lastMessage.getMessageOptions().getMentionInfo().encodeToJson();
         } else {
             args[19] = "";
         }
@@ -180,8 +182,8 @@ class ConversationSql {
         } else {
             args[i++] = "";
         }
-        if (message.getContent() != null && message.getContent().getMentionInfo() != null) {
-            args[i++] = message.getContent().getMentionInfo().encodeToJson();
+        if (message.hasMentionInfo()) {
+            args[i++] = message.getMessageOptions().getMentionInfo().encodeToJson();
         } else {
             args[i++] = "";
         }

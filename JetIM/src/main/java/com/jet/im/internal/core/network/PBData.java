@@ -22,6 +22,8 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
+import com.jet.im.model.MessageOptions;
+import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.push.PushChannel;
 
@@ -112,7 +114,8 @@ class PBData {
                            int index,
                            Conversation.ConversationType conversationType,
                            String conversationId,
-                           MessageMentionInfo mentionInfo) {
+                           MessageMentionInfo mentionInfo,
+                           ConcreteMessage referMsg) {
         ByteString byteString = ByteString.copyFrom(msgData);
         Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
         upMsgBuilder.setMsgType(contentType)
@@ -144,7 +147,6 @@ class PBData {
             flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
             upMsgBuilder.setFlags(flags);
         }
-
         if (mentionInfo != null) {
             Appmessages.MentionInfo.Builder pbMentionBuilder = Appmessages.MentionInfo.newBuilder();
             pbMentionBuilder.setMentionTypeValue(mentionInfo.getType().getValue());
@@ -158,7 +160,10 @@ class PBData {
             }
             upMsgBuilder.setMentionInfo(pbMentionBuilder);
         }
-
+        if (referMsg != null) {
+            Appmessages.DownMsg downMsg = downMsgWithMessage(referMsg);
+            upMsgBuilder.setReferMsg(downMsg);
+        }
         Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
         String topic = "";
@@ -871,6 +876,7 @@ class PBData {
         message.setGroupMessageReadInfo(info);
         message.setGroupInfo(groupInfoWithPBGroupInfo(downMsg.getGroupInfo()));
         message.setTargetUserInfo(userInfoWithPBUserInfo(downMsg.getTargetUserInfo()));
+        message.setMessageOptions(new MessageOptions());
         if (downMsg.hasMentionInfo() && Appmessages.MentionType.MentionDefault != downMsg.getMentionInfo().getMentionType()) {
             MessageMentionInfo mentionInfo = new MessageMentionInfo();
             mentionInfo.setType(mentionTypeFromPbMentionType(downMsg.getMentionInfo().getMentionType()));
@@ -882,10 +888,74 @@ class PBData {
                 }
             }
             mentionInfo.setTargetUsers(mentionUserList);
-            messageContent.setMentionInfo(mentionInfo);
+            message.getMessageOptions().setMentionInfo(mentionInfo);
+        }
+        if (downMsg.hasReferMsg()) {
+            ConcreteMessage referMsg = messageWithDownMsg(downMsg.getReferMsg());
+            message.setReferMsg(referMsg);
+
+            MessageReferredInfo referredInfo = new MessageReferredInfo();
+            referredInfo.setMessageId(referMsg.getMessageId());
+            referredInfo.setSenderId(referMsg.getSenderUserId());
+            referredInfo.setContent(referMsg.getContent());
+            message.getMessageOptions().setReferredInfo(referredInfo);
         }
         message.setContent(messageContent);
         return message;
+    }
+
+    private Appmessages.DownMsg downMsgWithMessage(ConcreteMessage message) {
+        if (message.getContent() == null) return null;
+        if (message.getConversation() == null) return null;
+
+        Appmessages.DownMsg.Builder downMsgBuilder = Appmessages.DownMsg.newBuilder()
+                .setTargetId(message.getConversation().getConversationId())
+                .setChannelType(channelTypeFromConversationType(message.getConversation().getConversationType()))
+                .setMsgType(message.getContentType())
+                .setSenderId(message.getSenderUserId())
+                .setMsgId(message.getMessageId())
+                .setMsgSeqNo(message.getSeqNo())
+                .setMsgContent(ByteString.copyFrom(message.getContent().encode()))
+                .setMsgTime(message.getTimestamp())
+                .setFlags(message.getFlags())
+                .setIsSend(Message.MessageDirection.SEND == message.getDirection())
+//                .setPlatform("")
+                .setClientUid(message.getClientUid())
+//                .setPushData()
+                .setIsRead(message.isHasRead())
+//                .setMergedMsgs()
+//                .setUndisturbType()
+                .setUnreadIndex(message.getMsgIndex());
+
+        if (message.getGroupMessageReadInfo() != null) {
+            downMsgBuilder
+                    .setReadCount(message.getGroupMessageReadInfo().getReadCount())
+                    .setMemberCount(message.getGroupMessageReadInfo().getMemberCount());
+        }
+        if (message.getGroupInfo() != null) {
+            downMsgBuilder
+                    .setGroupInfo(pbGroupInfoWithGroupInfo(message.getGroupInfo()));
+        }
+        if (message.getTargetUserInfo() != null) {
+            downMsgBuilder
+                    .setTargetUserInfo(pbUserInfoWithUserInfo(message.getTargetUserInfo()));
+        }
+        if (message.hasMentionInfo()) {
+            Appmessages.MentionInfo.Builder pbMentionInfo = Appmessages.MentionInfo.newBuilder()
+                    .setMentionType(pbMentionTypeFromMentionType(message.getMessageOptions().getMentionInfo().getType()));
+            if (message.getMessageOptions().getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo targetUser : message.getMessageOptions().getMentionInfo().getTargetUsers()) {
+                    pbMentionInfo.addTargetUsers(pbUserInfoWithUserInfo(targetUser));
+                }
+            }
+            downMsgBuilder
+                    .setMentionInfo(pbMentionInfo.build());
+        }
+        if (message.getReferMsg() != null) {
+            downMsgBuilder
+                    .setReferMsg(downMsgWithMessage(message.getReferMsg()));
+        }
+        return downMsgBuilder.build();
     }
 
     private ConcreteConversationInfo conversationInfoWithPBConversation(Appmessages.Conversation conversation) {
@@ -965,6 +1035,27 @@ class PBData {
         return result;
     }
 
+    private Appmessages.UserInfo pbUserInfoWithUserInfo(UserInfo userInfo) {
+        if (userInfo == null) {
+            return null;
+        }
+        Appmessages.UserInfo.Builder pbUserInfoBuilder = Appmessages.UserInfo.newBuilder()
+                .setUserId(userInfo.getUserId())
+                .setNickname(userInfo.getUserName())
+                .setUserPortrait(userInfo.getPortrait());
+        if (userInfo.getExtra() != null) {
+            for (Map.Entry<String, String> entry : userInfo.getExtra().entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) continue;
+                Appmessages.KvItem kvItem = Appmessages.KvItem.newBuilder()
+                        .setKey(entry.getKey())
+                        .setValue(entry.getValue())
+                        .build();
+                pbUserInfoBuilder.addExtFields(kvItem);
+            }
+        }
+        return pbUserInfoBuilder.build();
+    }
+
     private GroupInfo groupInfoWithPBGroupInfo(Appmessages.GroupInfo pbGroupInfo) {
         if (pbGroupInfo == null) {
             return null;
@@ -981,6 +1072,28 @@ class PBData {
             result.setExtra(extra);
         }
         return result;
+    }
+
+    private Appmessages.GroupInfo pbGroupInfoWithGroupInfo(GroupInfo groupInfo) {
+        if (groupInfo == null) {
+            return null;
+        }
+        Appmessages.GroupInfo.Builder pbGroupInfoBuilder = Appmessages.GroupInfo.newBuilder()
+                .setGroupId(groupInfo.getGroupId())
+                .setGroupName(groupInfo.getGroupName())
+                .setGroupPortrait(groupInfo.getPortrait());
+
+        if (groupInfo.getExtra() != null) {
+            for (Map.Entry<String, String> entry : groupInfo.getExtra().entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) continue;
+                Appmessages.KvItem kvItem = Appmessages.KvItem.newBuilder()
+                        .setKey(entry.getKey())
+                        .setValue(entry.getValue())
+                        .build();
+                pbGroupInfoBuilder.addExtFields(kvItem);
+            }
+        }
+        return pbGroupInfoBuilder.build();
     }
 
     private ConversationMentionInfo.MentionMsg mentionMsgWithPBMentionMsg(Appmessages.MentionMsg pbMentionMsg) {
@@ -1015,6 +1128,27 @@ class PBData {
         return result;
     }
 
+    private Appmessages.ChannelType channelTypeFromConversationType(Conversation.ConversationType conversationType) {
+        Appmessages.ChannelType result = Appmessages.ChannelType.Unknown;
+        switch (conversationType) {
+            case PRIVATE:
+                result = Appmessages.ChannelType.Private;
+                break;
+            case GROUP:
+                result = Appmessages.ChannelType.Group;
+                break;
+            case CHATROOM:
+                result = Appmessages.ChannelType.Chatroom;
+                break;
+            case SYSTEM:
+                result = Appmessages.ChannelType.System;
+                break;
+            default:
+                break;
+        }
+        return result;
+    }
+
     private MessageMentionInfo.MentionType mentionTypeFromPbMentionType(Appmessages.MentionType pbMentionType) {
         MessageMentionInfo.MentionType type = MessageMentionInfo.MentionType.DEFAULT;
         switch (pbMentionType) {
@@ -1026,6 +1160,24 @@ class PBData {
                 break;
             case AllAndSomeone:
                 type = MessageMentionInfo.MentionType.ALL_AND_SOMEONE;
+                break;
+            default:
+                break;
+        }
+        return type;
+    }
+
+    private Appmessages.MentionType pbMentionTypeFromMentionType(MessageMentionInfo.MentionType mentionType) {
+        Appmessages.MentionType type = Appmessages.MentionType.MentionDefault;
+        switch (mentionType) {
+            case ALL:
+                type = Appmessages.MentionType.All;
+                break;
+            case SOMEONE:
+                type = Appmessages.MentionType.Someone;
+                break;
+            case ALL_AND_SOMEONE:
+                type = Appmessages.MentionType.AllAndSomeone;
                 break;
             default:
                 break;

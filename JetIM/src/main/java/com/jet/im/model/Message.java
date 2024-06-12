@@ -142,6 +142,22 @@ public class Message {
         mGroupMessageReadInfo = groupMessageReadInfo;
     }
 
+    public MessageOptions getMessageOptions() {
+        return mMessageOptions;
+    }
+
+    public void setMessageOptions(MessageOptions messageOptions) {
+        this.mMessageOptions = messageOptions;
+    }
+
+    public boolean hasMentionInfo() {
+        return mMessageOptions != null && mMessageOptions.getMentionInfo() != null;
+    }
+
+    public boolean hasReferredInfo() {
+        return mMessageOptions != null && mMessageOptions.getReferredInfo() != null;
+    }
+
     public String getLocalAttribute() {
         return localAttribute;
     }
@@ -170,5 +186,6 @@ public class Message {
     /// 消息内容
     private MessageContent content;
     private GroupMessageReadInfo mGroupMessageReadInfo;
+    private MessageOptions mMessageOptions;
     private String localAttribute;
 }
