@@ -176,7 +176,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void addConversationInfo(Conversation conversation, String userId, AddConversationsCallback callback) {
+    public void addConversationInfo(Conversation conversation, String userId, AddConversationCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.addConversationInfo(conversation, userId, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
@@ -331,8 +331,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof QryUploadFileCredCallback) {
             QryUploadFileCredCallback sCallback = (QryUploadFileCredCallback) callback;
             sCallback.onError(errorCode);
-        } else if (callback instanceof AddConversationsCallback) {
-            AddConversationsCallback sCallback = (AddConversationsCallback) callback;
+        } else if (callback instanceof AddConversationCallback) {
+            AddConversationCallback sCallback = (AddConversationCallback) callback;
             sCallback.onError(errorCode);
         }
     }
@@ -660,8 +660,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         JLogger.i("WS-Receive", "handleAddConversationAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
-        if (c instanceof AddConversationsCallback) {
-            AddConversationsCallback callback = (AddConversationsCallback) c;
+        if (c instanceof AddConversationCallback) {
+            AddConversationCallback callback = (AddConversationCallback) c;
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {
