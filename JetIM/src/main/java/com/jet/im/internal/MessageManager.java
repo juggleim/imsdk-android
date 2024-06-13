@@ -16,6 +16,7 @@ import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.logger.IJLog;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.messages.AddConvMessage;
 import com.jet.im.internal.model.messages.CleanMsgMessage;
 import com.jet.im.internal.model.messages.ClearUnreadMessage;
 import com.jet.im.internal.model.messages.DeleteConvMessage;
@@ -79,6 +80,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(LogCommandMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ThumbnailPackedImageMessage.class);
         ContentTypeCenter.getInstance().registerContentType(SnapshotPackedVideoMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(AddConvMessage.class);
     }
 
     private final JetIMCore mCore;
@@ -1028,6 +1030,8 @@ public class MessageManager implements IMessageManager {
 
         void onMessageClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastMessage);
 
+        void onConversationsAdd(ConcreteConversationInfo conversations);
+
         void onConversationsDelete(List<Conversation> conversations);
 
         void onConversationsUpdate(String updateType, List<ConcreteConversationInfo> conversations);
@@ -1253,6 +1257,13 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
+            //add conversation
+            if (message.getContentType().equals(AddConvMessage.CONTENT_TYPE)) {
+                AddConvMessage addConvMessage = (AddConvMessage) message.getContent();
+                handleAddConvMessage(addConvMessage.getConversationInfo());
+                continue;
+            }
+
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
@@ -1362,6 +1373,12 @@ public class MessageManager implements IMessageManager {
                 JLogger.e("J-Logger", "uploadLogger error, code is " + code + ", msg is " + msg);
             }
         });
+    }
+
+    private void handleAddConvMessage(ConcreteConversationInfo conversationInfo) {
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onConversationsAdd(conversationInfo);
+        }
     }
 
     //通知会话更新最新信息

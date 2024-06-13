@@ -6,6 +6,7 @@ import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.JetIMCore;
+import com.jet.im.internal.core.network.AddConversationCallback;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
@@ -39,6 +40,28 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void createConversationInfo(Conversation conversation, ICreateConversationInfoCallback callback) {
+        mCore.getWebSocket().addConversationInfo(conversation, mCore.getUserId(), new AddConversationCallback() {
+            @Override
+            public void onSuccess(ConcreteConversationInfo conversationInfo) {
+                JLogger.i("CONV-Create", "success");
+                ConcreteConversationInfo added = doConversationsAdd(conversationInfo);
+                if (callback != null) {
+                    callback.onSuccess(added);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-Create", "fail, code is " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
+    }
+
+    @Override
     public List<ConversationInfo> getConversationInfoList() {
         return mCore.getDbManager().getConversationInfoList();
     }
@@ -59,21 +82,31 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
-    public void deleteConversationInfo(Conversation conversation) {
-        mCore.getDbManager().deleteConversationInfo(conversation);
-        //手动删除不给回调
-        if (mCore.getWebSocket() == null) {
-            return;
-        }
+    public void deleteConversationInfo(Conversation conversation, ISimpleCallback callback) {
         mCore.getWebSocket().deleteConversationInfo(conversation, mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 JLogger.i("CONV-Delete", "success");
+                ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
+                mCore.getDbManager().deleteConversationInfo(conversation);
+                if (callback != null) {
+                    callback.onSuccess();
+                }
+                if (conversationInfo != null && mListenerMap != null) {
+                    List<ConversationInfo> list = new ArrayList<>();
+                    list.add(conversationInfo);
+                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                        entry.getValue().onConversationInfoDelete(list);
+                    }
+                }
             }
 
             @Override
             public void onError(int errorCode) {
                 JLogger.e("CONV-Delete", "fail, code is " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
             }
         });
     }
@@ -372,6 +405,11 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void onConversationsAdd(ConcreteConversationInfo conversationInfo) {
+        doConversationsAdd(conversationInfo);
+    }
+
+    @Override
     public void onConversationsDelete(List<Conversation> conversations) {
         List<ConversationInfo> results = new ArrayList<>();
         for (Conversation conversation : conversations) {
@@ -436,7 +474,6 @@ public class ConversationManager implements IConversationManager, MessageManager
     interface ICompleteCallback {
         void onComplete();
     }
-
 
     private void addOrUpdateConversationIfNeed(ConcreteMessage message) {
         boolean hasMention = false;
@@ -709,6 +746,43 @@ public class ConversationManager implements IConversationManager, MessageManager
                 entry.getValue().onTotalUnreadMessageCountUpdate(count);
             }
         }
+    }
+
+    private ConcreteConversationInfo doConversationsAdd(ConcreteConversationInfo conversationInfo) {
+        if (conversationInfo == null || conversationInfo.getConversation() == null) return null;
+
+        List<ConcreteConversationInfo> convList = new ArrayList<>();
+        convList.add(conversationInfo);
+
+        updateSyncTime(conversationInfo.getSyncTime());
+        updateUserInfo(convList);
+        ConcreteConversationInfo old = mCore.getDbManager().getConversationInfo(conversationInfo.getConversation());
+        if (old == null) {
+            mCore.getDbManager().insertConversations(convList, (insertList, updateList) -> {
+                if (insertList.size() > 0) {
+                    if (mListenerMap != null) {
+                        List<ConversationInfo> l = new ArrayList<>(insertList);
+                        for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onConversationInfoAdd(l);
+                        }
+                    }
+                }
+            });
+            return conversationInfo;
+        }
+        if (conversationInfo.getSortTime() > old.getSortTime()) {
+            mCore.getDbManager().updateSortTime(conversationInfo.getConversation(), conversationInfo.getSortTime());
+            old.setSortTime(conversationInfo.getSortTime());
+            old.setSyncTime(conversationInfo.getSyncTime());
+            if (mListenerMap != null) {
+                List<ConversationInfo> l = new ArrayList<>();
+                l.add(old);
+                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                    entry.getValue().onConversationInfoUpdate(l);
+                }
+            }
+        }
+        return old;
     }
 
     private final JetIMCore mCore;
