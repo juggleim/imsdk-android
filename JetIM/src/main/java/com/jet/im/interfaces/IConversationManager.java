@@ -35,7 +35,7 @@ public interface IConversationManager {
 
     ConversationInfo getConversationInfo(Conversation conversation);
 
-    void deleteConversationInfo(Conversation conversation);
+    void deleteConversationInfo(Conversation conversation, ISimpleCallback callback);
 
     void setDraft(Conversation conversation, String draft);
 

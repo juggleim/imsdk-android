@@ -82,21 +82,31 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
-    public void deleteConversationInfo(Conversation conversation) {
-        mCore.getDbManager().deleteConversationInfo(conversation);
-        //手动删除不给回调
-        if (mCore.getWebSocket() == null) {
-            return;
-        }
+    public void deleteConversationInfo(Conversation conversation, ISimpleCallback callback) {
         mCore.getWebSocket().deleteConversationInfo(conversation, mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
                 JLogger.i("CONV-Delete", "success");
+                ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
+                mCore.getDbManager().deleteConversationInfo(conversation);
+                if (callback != null) {
+                    callback.onSuccess();
+                }
+                if (conversationInfo != null && mListenerMap != null) {
+                    List<ConversationInfo> list = new ArrayList<>();
+                    list.add(conversationInfo);
+                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                        entry.getValue().onConversationInfoDelete(list);
+                    }
+                }
             }
 
             @Override
             public void onError(int errorCode) {
                 JLogger.e("CONV-Delete", "fail, code is " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
             }
         });
     }
