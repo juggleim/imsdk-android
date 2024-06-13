@@ -6,7 +6,7 @@ import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.JetIMCore;
-import com.jet.im.internal.core.network.AddConversationsCallback;
+import com.jet.im.internal.core.network.AddConversationCallback;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
@@ -41,7 +41,7 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void createConversationInfo(Conversation conversation, ICreateConversationInfoCallback callback) {
-        mCore.getWebSocket().addConversationInfo(conversation, mCore.getUserId(), new AddConversationsCallback() {
+        mCore.getWebSocket().addConversationInfo(conversation, mCore.getUserId(), new AddConversationCallback() {
             @Override
             public void onSuccess(ConcreteConversationInfo conversationInfo) {
                 JLogger.i("CONV-Create", "success");
