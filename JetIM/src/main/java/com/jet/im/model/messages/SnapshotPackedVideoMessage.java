@@ -67,7 +67,7 @@ public class SnapshotPackedVideoMessage extends MediaMessageContent {
                 jsonObject.put(EXTRA, mExtra);
             }
         } catch (JSONException e) {
-            JLogger.e("SnapshotPackedVideoMessage JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "SnapshotPackedVideoMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -75,7 +75,7 @@ public class SnapshotPackedVideoMessage extends MediaMessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("SnapshotPackedVideoMessage decode data is null");
+            JLogger.e("MSG-Decode", "SnapshotPackedVideoMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -109,7 +109,7 @@ public class SnapshotPackedVideoMessage extends MediaMessageContent {
                 mExtra = jsonObject.optString(EXTRA);
             }
         } catch (JSONException e) {
-            JLogger.e("SnapshotPackedVideoMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "SnapshotPackedVideoMessage decode JSONException " + e.getMessage());
         }
     }
 

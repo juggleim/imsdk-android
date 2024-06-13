@@ -25,13 +25,13 @@ public class QiNiuUploader extends BaseUploader {
     public void start() {
         //判空文件地址
         if (TextUtils.isEmpty(mLocalPath)) {
-            JLogger.e("J-Uploader, QiNiuUploader error, mLocalPath is empty");
+            JLogger.e("J-Uploader", "QiNiuUploader error, mLocalPath is empty");
             notifyFail();
             return;
         }
         //判空mQiNiuCred
         if (mQiNiuCred == null || TextUtils.isEmpty(mQiNiuCred.getToken()) || TextUtils.isEmpty(mQiNiuCred.getDomain())) {
-            JLogger.e("J-Uploader, QiNiuUploader error, mQiNiuCred is null or empty");
+            JLogger.e("J-Uploader", "QiNiuUploader error, mQiNiuCred is null or empty");
             notifyFail();
             return;
         }
@@ -39,7 +39,7 @@ public class QiNiuUploader extends BaseUploader {
         String fileName = FileUtil.getFileName(mLocalPath);
         //判空文件名
         if (TextUtils.isEmpty(fileName)) {
-            JLogger.e("J-Uploader, QiNiuUploader error, fileName is empty");
+            JLogger.e("J-Uploader", "QiNiuUploader error, fileName is empty");
             notifyFail();
             return;
         }
@@ -48,7 +48,7 @@ public class QiNiuUploader extends BaseUploader {
             if (!fileName.equals(key)) return;
 
             if (info.isCancelled()) {
-                JLogger.i("J-Uploader, QiNiuUploader canceled");
+                JLogger.i("J-Uploader", "QiNiuUploader canceled");
                 notifyCancel();
                 return;
             }
@@ -59,7 +59,7 @@ public class QiNiuUploader extends BaseUploader {
                     notifySuccess(url);
                     return;
                 } catch (Exception e) {
-                    JLogger.e("J-Uploader, QiNiuUploader error, exception is " + e.getMessage());
+                    JLogger.e("J-Uploader", "QiNiuUploader error, exception is " + e.getMessage());
                 }
             }
             notifyFail();
