@@ -45,7 +45,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             @Override
             public void onSuccess(ConcreteConversationInfo conversationInfo) {
                 JLogger.i("CONV-Create", "success");
-                ConcreteConversationInfo added = doConversationsAdd(conversationInfo, false);
+                ConcreteConversationInfo added = doConversationsAdd(conversationInfo);
                 if (callback != null) {
                     callback.onSuccess(added);
                 }
@@ -396,7 +396,7 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void onConversationsAdd(ConcreteConversationInfo conversationInfo) {
-        doConversationsAdd(conversationInfo, true);
+        doConversationsAdd(conversationInfo);
     }
 
     @Override
@@ -739,7 +739,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
-    private ConcreteConversationInfo doConversationsAdd(ConcreteConversationInfo conversationInfo, boolean needNotify) {
+    private ConcreteConversationInfo doConversationsAdd(ConcreteConversationInfo conversationInfo) {
         if (conversationInfo == null || conversationInfo.getConversation() == null) return null;
 
         List<ConcreteConversationInfo> convList = new ArrayList<>();
@@ -750,7 +750,6 @@ public class ConversationManager implements IConversationManager, MessageManager
         ConcreteConversationInfo old = mCore.getDbManager().getConversationInfo(conversationInfo.getConversation());
         if (old == null) {
             mCore.getDbManager().insertConversations(convList, (insertList, updateList) -> {
-                if (!needNotify) return;
                 if (insertList.size() > 0) {
                     if (mListenerMap != null) {
                         List<ConversationInfo> l = new ArrayList<>(insertList);
@@ -766,7 +765,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             mCore.getDbManager().updateSortTime(conversationInfo.getConversation(), conversationInfo.getSortTime());
             old.setSortTime(conversationInfo.getSortTime());
             old.setSyncTime(conversationInfo.getSyncTime());
-            if (needNotify && mListenerMap != null) {
+            if (mListenerMap != null) {
                 List<ConversationInfo> l = new ArrayList<>();
                 l.add(old);
                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
