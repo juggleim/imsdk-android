@@ -54,7 +54,7 @@ public class UserInfoManager implements IUserInfoManager {
         return groupInfoDB;
     }
 
-    public void insertUserInfoList(List<UserInfo> list) {
+    void insertUserInfoList(List<UserInfo> list) {
         //判空
         if (list == null || list.isEmpty()) {
             return;
@@ -65,7 +65,7 @@ public class UserInfoManager implements IUserInfoManager {
         mCore.getUserInfoCache().insertUserInfoList(list);
     }
 
-    public void insertGroupInfoList(List<GroupInfo> list) {
+    void insertGroupInfoList(List<GroupInfo> list) {
         //判空
         if (list == null || list.isEmpty()) {
             return;
