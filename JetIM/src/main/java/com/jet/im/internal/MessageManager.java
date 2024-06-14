@@ -314,7 +314,7 @@ public class MessageManager implements IMessageManager {
             return message;
         }
         mCore.getDbManager().deleteMessageByClientMsgNo(message.getClientMsgNo());
-        return sendMediaMessage((MediaMessageContent) message.getContent(), message.getConversation(), callback);
+        return sendMediaMessage((MediaMessageContent) message.getContent(), message.getConversation(), message.getMessageOptions(), callback);
     }
 
     @Override
