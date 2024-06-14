@@ -55,6 +55,7 @@ public class JetIMCore {
         }
         return JUtility.getCarrier(mContext);
     }
+
     public List<String> getNaviUrls() {
         if (mNaviUrls == null) {
             mNaviUrls = new ArrayList<>();

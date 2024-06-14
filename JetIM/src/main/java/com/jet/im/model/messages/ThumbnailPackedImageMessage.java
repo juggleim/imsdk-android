@@ -68,7 +68,7 @@ public class ThumbnailPackedImageMessage extends MediaMessageContent {
             }
             jsonObject.put(SIZE, mSize);
         } catch (JSONException e) {
-            JLogger.e("ThumbnailPackedImageMessage JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "ThumbnailPackedImageMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -76,7 +76,7 @@ public class ThumbnailPackedImageMessage extends MediaMessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            JLogger.e("ThumbnailPackedImageMessage decode data is null");
+            JLogger.e("MSG-Decode", "ThumbnailPackedImageMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -104,7 +104,7 @@ public class ThumbnailPackedImageMessage extends MediaMessageContent {
                 mSize = jsonObject.optLong(SIZE);
             }
         } catch (JSONException e) {
-            JLogger.e("ThumbnailPackedImageMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "ThumbnailPackedImageMessage decode JSONException " + e.getMessage());
         }
     }
 

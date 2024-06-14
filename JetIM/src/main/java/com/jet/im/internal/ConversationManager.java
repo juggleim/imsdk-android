@@ -34,8 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConversationManager implements IConversationManager, MessageManager.ISendReceiveListener {
 
-    public ConversationManager(JetIMCore core) {
+    public ConversationManager(JetIMCore core, UserInfoManager userInfoManager) {
         this.mCore = core;
+        this.mUserInfoManager = userInfoManager;
         this.mCachedSyncTime = -1;
     }
 
@@ -732,8 +733,8 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
         }
-        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
-        mCore.getDbManager().insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
+        mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mUserInfoManager.insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
     }
 
     private void noticeTotalUnreadCountChange() {
@@ -786,6 +787,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     private final JetIMCore mCore;
+    private final UserInfoManager mUserInfoManager;
     private ConcurrentHashMap<String, IConversationListener> mListenerMap;
     private ConcurrentHashMap<String, IConversationSyncListener> mSyncListenerMap;
     private boolean mSyncProcessing;

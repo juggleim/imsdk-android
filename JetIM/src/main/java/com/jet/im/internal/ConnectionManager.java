@@ -27,13 +27,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             mCore.setToken(token);
             mCore.setUserId("");
         }
-        if (!mCore.getDbManager().isOpen()) {
-            if (!TextUtils.isEmpty(mCore.getUserId())) {
-                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
-                    dbStatusNotice(true);
-                }
-            }
-        }
+        openDB();
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
 
         NaviTask task = new NaviTask(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
@@ -108,25 +102,20 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         }
     }
 
-    public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {
+    public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager, UserInfoManager userInfoManager) {
         this.mCore = core;
         this.mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.IDLE);
         this.mCore.getWebSocket().setConnectionListener(this);
         this.mConversationManager = conversationManager;
         this.mMessageManager = messageManager;
+        this.mUserInfoManager = userInfoManager;
     }
 
     @Override
     public void onConnectComplete(int errorCode, String userId, String session, String extra) {
         if (errorCode == ConstInternal.ErrorCode.NONE) {
             mCore.setUserId(userId);
-            if (!mCore.getDbManager().isOpen()) {
-                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
-                    dbStatusNotice(true);
-                } else {
-                    JLogger.e("CON-Db","open db fail");
-                }
-            }
+            openDB();
             changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
             mConversationManager.syncConversations(mMessageManager::syncMessage);
             PushManager.getInstance().getToken(mCore.getContext());
@@ -283,14 +272,29 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         }
     }
 
+    private void openDB() {
+        if (!mCore.getDbManager().isOpen()) {
+            mUserInfoManager.clearCache();
+            if (!TextUtils.isEmpty(mCore.getUserId())) {
+                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
+                    dbStatusNotice(true);
+                } else {
+                    JLogger.e("CON-Db", "open db fail");
+                }
+            }
+        }
+    }
+
     private void closeDB() {
         mCore.getDbManager().closeDB();
+        mUserInfoManager.clearCache();
         dbStatusNotice(false);
     }
 
     private final JetIMCore mCore;
     private final ConversationManager mConversationManager;
     private final MessageManager mMessageManager;
+    private final UserInfoManager mUserInfoManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
     private PushChannel mPushChannel;

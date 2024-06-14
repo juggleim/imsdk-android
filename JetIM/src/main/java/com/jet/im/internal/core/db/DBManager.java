@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DBManager {
+
     public boolean openIMDB(Context context, String appKey, String userId) {
         String path = getOrCreateDbPath(context, appKey, userId);
         closeDB();
@@ -607,6 +608,17 @@ public class DBManager {
         return info;
     }
 
+    public void insertUserInfoList(List<UserInfo> userInfoList) {
+        mDb.beginTransaction();
+        for (UserInfo info : userInfoList) {
+            String extra = UserInfoSql.stringFromMap(info.getExtra());
+            String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), extra};
+            execSQL(UserInfoSql.SQL_INSERT_USER_INFO, args);
+        }
+        mDb.setTransactionSuccessful();
+        mDb.endTransaction();
+    }
+
     public GroupInfo getGroupInfo(String groupId) {
         if (TextUtils.isEmpty(groupId)) {
             return null;
@@ -621,17 +633,6 @@ public class DBManager {
             cursor.close();
         }
         return info;
-    }
-
-    public void insertUserInfoList(List<UserInfo> userInfoList) {
-        mDb.beginTransaction();
-        for (UserInfo info : userInfoList) {
-            String extra = UserInfoSql.stringFromMap(info.getExtra());
-            String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), extra};
-            execSQL(UserInfoSql.SQL_INSERT_USER_INFO, args);
-        }
-        mDb.setTransactionSuccessful();
-        mDb.endTransaction();
     }
 
     public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
