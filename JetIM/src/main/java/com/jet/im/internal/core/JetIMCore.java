@@ -23,7 +23,6 @@ public class JetIMCore {
         sendThread.start();
         mSendHandler = new Handler(sendThread.getLooper());
         mWebSocket = new JWebSocket(mSendHandler);
-        mUserInfoCache = new UserInfoCache(mDbManager);
     }
 
     public JWebSocket getWebSocket() {
@@ -219,7 +218,7 @@ public class JetIMCore {
     private Context mContext;
     private int mConnectionStatus;
     private final DBManager mDbManager = new DBManager();
-    private final UserInfoCache mUserInfoCache;
+    private final UserInfoCache mUserInfoCache = new UserInfoCache();
     private long mConversationSyncTime;
     private long mMessageSendSyncTime;
     private long mMessageReceiveTime;

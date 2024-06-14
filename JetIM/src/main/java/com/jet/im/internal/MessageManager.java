@@ -57,9 +57,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageManager implements IMessageManager {
-
-    public MessageManager(JetIMCore core) {
+    public MessageManager(JetIMCore core, UserInfoManager userInfoManager) {
         this.mCore = core;
+        this.mUserInfoManager = userInfoManager;
         ContentTypeCenter.getInstance().registerContentType(TextMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ImageMessage.class);
         ContentTypeCenter.getInstance().registerContentType(FileMessage.class);
@@ -80,8 +80,6 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(ThumbnailPackedImageMessage.class);
         ContentTypeCenter.getInstance().registerContentType(SnapshotPackedVideoMessage.class);
     }
-
-    private final JetIMCore mCore;
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
                                                    Conversation conversation,
@@ -1279,7 +1277,7 @@ public class MessageManager implements IMessageManager {
                 }
             }
         }
-        mCore.getUserInfoCache().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
         ////直发的消息，而且正在同步中，不直接更新 sync time
         if (!isSync && mSyncProcessing) {
             if (sendTime > 0) {
@@ -1400,8 +1398,8 @@ public class MessageManager implements IMessageManager {
                 userInfoMap.put(message.getTargetUserInfo().getUserId(), message.getTargetUserInfo());
             }
         }
-        mCore.getUserInfoCache().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
-        mCore.getUserInfoCache().insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
+        mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mUserInfoManager.insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
     }
 
     private String createClientUid() {
@@ -1411,6 +1409,8 @@ public class MessageManager implements IMessageManager {
         return Long.toString(result);
     }
 
+    private final JetIMCore mCore;
+    private final UserInfoManager mUserInfoManager;
     private int mIncreaseId = 0;
     private boolean mSyncProcessing = false;
     private long mCachedReceiveTime = -1;

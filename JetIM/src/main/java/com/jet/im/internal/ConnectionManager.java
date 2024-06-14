@@ -27,14 +27,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             mCore.setToken(token);
             mCore.setUserId("");
         }
-        if (!mCore.getDbManager().isOpen()) {
-            if (!TextUtils.isEmpty(mCore.getUserId())) {
-                mCore.getUserInfoCache().clearCache();
-                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
-                    dbStatusNotice(true);
-                }
-            }
-        }
+        openDB();
         changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
 
         NaviTask task = new NaviTask(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
@@ -121,14 +114,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     public void onConnectComplete(int errorCode, String userId, String session, String extra) {
         if (errorCode == ConstInternal.ErrorCode.NONE) {
             mCore.setUserId(userId);
-            if (!mCore.getDbManager().isOpen()) {
-                mCore.getUserInfoCache().clearCache();
-                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
-                    dbStatusNotice(true);
-                } else {
-                    JLogger.e("CON-Db", "open db fail");
-                }
-            }
+            openDB();
             changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
             mConversationManager.syncConversations(mMessageManager::syncMessage);
             PushManager.getInstance().getToken(mCore.getContext());
@@ -281,6 +267,19 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             for (Map.Entry<String, IConnectionStatusListener> entry :
                     mConnectionStatusListenerMap.entrySet()) {
                 entry.getValue().onDbClose();
+            }
+        }
+    }
+
+    private void openDB() {
+        if (!mCore.getDbManager().isOpen()) {
+            mCore.getUserInfoCache().clearCache();
+            if (!TextUtils.isEmpty(mCore.getUserId())) {
+                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
+                    dbStatusNotice(true);
+                } else {
+                    JLogger.e("CON-Db", "open db fail");
+                }
             }
         }
     }

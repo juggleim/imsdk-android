@@ -3,7 +3,6 @@ package com.jet.im.internal.core.cache;
 import android.text.TextUtils;
 import android.util.LruCache;
 
-import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.UserInfo;
 
@@ -13,14 +12,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class UserInfoCache {
     private static final int MAX_CACHED_COUNT = 100;
-    private final DBManager mDBManager;
     private final Lock mLock = new ReentrantLock();
     private final LruCache<String, UserInfo> mUserInfoCache = new LruCache<>(MAX_CACHED_COUNT);
     private final LruCache<String, GroupInfo> mGroupInfoCache = new LruCache<>(MAX_CACHED_COUNT);
-
-    public UserInfoCache(DBManager core) {
-        this.mDBManager = core;
-    }
 
     //清空缓存
     public void clearCache() {
@@ -33,7 +27,7 @@ public class UserInfoCache {
         }
     }
 
-    //获取userInfo
+    //获取userInfo缓存
     public UserInfo getUserInfo(String userId) {
         mLock.lock();
         try {
@@ -42,25 +36,28 @@ public class UserInfoCache {
                 return null;
             }
             //从缓存中查找
-            UserInfo userInfo = mUserInfoCache.get(userId);
-            //缓存命中，直接返回缓存数据
-            if (userInfo != null) {
-                return userInfo;
-            }
-            //缓存未命中，从数据库中查询
-            UserInfo userInfoDB = mDBManager.getUserInfo(userId);
-            //更新缓存
-            if (userInfoDB != null) {
-                mUserInfoCache.put(userId, userInfoDB);
-            }
-            //返回数据
-            return userInfoDB;
+            return mUserInfoCache.get(userId);
         } finally {
             mLock.unlock();
         }
     }
 
-    //更新userInfo
+    //更新userInfo缓存
+    public void insertUserInfo(UserInfo userInfo) {
+        mLock.lock();
+        try {
+            //判空
+            if (userInfo == null || TextUtils.isEmpty(userInfo.getUserId())) {
+                return;
+            }
+            //更新缓存
+            mUserInfoCache.put(userInfo.getUserId(), userInfo);
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    //更新userInfoList缓存
     public void insertUserInfoList(List<UserInfo> list) {
         mLock.lock();
         try {
@@ -68,8 +65,6 @@ public class UserInfoCache {
             if (list == null || list.isEmpty()) {
                 return;
             }
-            //更新数据库
-            mDBManager.insertUserInfoList(list);
             //更新缓存
             for (UserInfo userInfo : list) {
                 mUserInfoCache.put(userInfo.getUserId(), userInfo);
@@ -79,7 +74,7 @@ public class UserInfoCache {
         }
     }
 
-    //获取groupInfo
+    //获取groupInfo缓存
     public GroupInfo getGroupInfo(String groupId) {
         mLock.lock();
         try {
@@ -88,25 +83,28 @@ public class UserInfoCache {
                 return null;
             }
             //从缓存中查找
-            GroupInfo groupInfo = mGroupInfoCache.get(groupId);
-            //缓存命中，直接返回缓存数据
-            if (groupInfo != null) {
-                return groupInfo;
-            }
-            //GroupInfo，从数据库中查询
-            GroupInfo groupInfoDB = mDBManager.getGroupInfo(groupId);
-            //更新缓存
-            if (groupInfoDB != null) {
-                mGroupInfoCache.put(groupId, groupInfoDB);
-            }
-            //返回数据
-            return groupInfoDB;
+            return mGroupInfoCache.get(groupId);
         } finally {
             mLock.unlock();
         }
     }
 
-    //更新groupInfo
+    //更新groupInfo缓存
+    public void insertGroupInfo(GroupInfo groupInfo) {
+        mLock.lock();
+        try {
+            //判空
+            if (groupInfo == null || TextUtils.isEmpty(groupInfo.getGroupId())) {
+                return;
+            }
+            //更新缓存
+            mGroupInfoCache.put(groupInfo.getGroupId(), groupInfo);
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    //更新groupInfoList缓存
     public void insertGroupInfoList(List<GroupInfo> list) {
         mLock.lock();
         try {
@@ -114,8 +112,6 @@ public class UserInfoCache {
             if (list == null || list.isEmpty()) {
                 return;
             }
-            //更新数据库
-            mDBManager.insertGroupInfoList(list);
             //更新缓存
             for (GroupInfo groupInfo : list) {
                 mGroupInfoCache.put(groupInfo.getGroupId(), groupInfo);

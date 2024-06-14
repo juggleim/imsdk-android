@@ -89,11 +89,11 @@ public class JetIM {
     private JetIM() {
         JetIMCore core = new JetIMCore();
         mCore = core;
-        mMessageManager = new MessageManager(core);
-        mConversationManager = new ConversationManager(core);
+        mUserInfoManager = new UserInfoManager(core);
+        mMessageManager = new MessageManager(core, mUserInfoManager);
+        mConversationManager = new ConversationManager(core, mUserInfoManager);
         mMessageManager.setSendReceiveListener(mConversationManager);
         mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager);
-        mUserInfoManager = new UserInfoManager(core);
         mUploadManager = new UploadManager(core);
         mMessageManager.setDefaultMessageUploadProvider(mUploadManager);
     }
