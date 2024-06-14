@@ -8,7 +8,6 @@ import android.os.HandlerThread;
 import androidx.annotation.NonNull;
 
 import com.jet.im.internal.ConstInternal;
-import com.jet.im.internal.core.cache.UserInfoCache;
 import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.util.JUtility;
@@ -149,10 +148,6 @@ public class JetIMCore {
         mConnectionStatus = connectionStatus;
     }
 
-    public UserInfoCache getUserInfoCache() {
-        return mUserInfoCache;
-    }
-
     public DBManager getDbManager() {
         return mDbManager;
     }
@@ -218,7 +213,6 @@ public class JetIMCore {
     private Context mContext;
     private int mConnectionStatus;
     private final DBManager mDbManager = new DBManager();
-    private final UserInfoCache mUserInfoCache = new UserInfoCache();
     private long mConversationSyncTime;
     private long mMessageSendSyncTime;
     private long mMessageReceiveTime;

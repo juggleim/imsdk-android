@@ -1,4 +1,4 @@
-package com.jet.im.internal.core.cache;
+package com.jet.im.internal;
 
 import android.text.TextUtils;
 import android.util.LruCache;

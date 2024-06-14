@@ -93,7 +93,7 @@ public class JetIM {
         mMessageManager = new MessageManager(core, mUserInfoManager);
         mConversationManager = new ConversationManager(core, mUserInfoManager);
         mMessageManager.setSendReceiveListener(mConversationManager);
-        mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager);
+        mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager, mUserInfoManager);
         mUploadManager = new UploadManager(core);
         mMessageManager.setDefaultMessageUploadProvider(mUploadManager);
     }

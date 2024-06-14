@@ -21,7 +21,7 @@ public class UserInfoManager implements IUserInfoManager {
             return null;
         }
         //从缓存中查找
-        UserInfo userInfoCache = mCore.getUserInfoCache().getUserInfo(userId);
+        UserInfo userInfoCache = mUserInfoCache.getUserInfo(userId);
         //缓存命中，直接返回缓存数据
         if (userInfoCache != null) {
             return userInfoCache;
@@ -29,7 +29,7 @@ public class UserInfoManager implements IUserInfoManager {
         //缓存未命中，从数据库中查询
         UserInfo userInfoDB = mCore.getDbManager().getUserInfo(userId);
         //更新缓存
-        mCore.getUserInfoCache().insertUserInfo(userInfoDB);
+        mUserInfoCache.insertUserInfo(userInfoDB);
         //返回数据
         return userInfoDB;
     }
@@ -41,7 +41,7 @@ public class UserInfoManager implements IUserInfoManager {
             return null;
         }
         //从缓存中查找
-        GroupInfo groupInfoCache = mCore.getUserInfoCache().getGroupInfo(groupId);
+        GroupInfo groupInfoCache = mUserInfoCache.getGroupInfo(groupId);
         //缓存命中，直接返回缓存数据
         if (groupInfoCache != null) {
             return groupInfoCache;
@@ -49,9 +49,13 @@ public class UserInfoManager implements IUserInfoManager {
         //缓存未命中，从数据库中查询
         GroupInfo groupInfoDB = mCore.getDbManager().getGroupInfo(groupId);
         //更新缓存
-        mCore.getUserInfoCache().insertGroupInfo(groupInfoDB);
+        mUserInfoCache.insertGroupInfo(groupInfoDB);
         //返回数据
         return groupInfoDB;
+    }
+
+    void clearCache() {
+        mUserInfoCache.clearCache();
     }
 
     void insertUserInfoList(List<UserInfo> list) {
@@ -62,7 +66,7 @@ public class UserInfoManager implements IUserInfoManager {
         //更新数据库
         mCore.getDbManager().insertUserInfoList(list);
         //更新缓存
-        mCore.getUserInfoCache().insertUserInfoList(list);
+        mUserInfoCache.insertUserInfoList(list);
     }
 
     void insertGroupInfoList(List<GroupInfo> list) {
@@ -73,8 +77,9 @@ public class UserInfoManager implements IUserInfoManager {
         //更新数据库
         mCore.getDbManager().insertGroupInfoList(list);
         //更新缓存
-        mCore.getUserInfoCache().insertGroupInfoList(list);
+        mUserInfoCache.insertGroupInfoList(list);
     }
 
     private final JetIMCore mCore;
+    private final UserInfoCache mUserInfoCache = new UserInfoCache();
 }

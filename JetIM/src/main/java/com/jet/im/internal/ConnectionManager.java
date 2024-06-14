@@ -102,12 +102,13 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         }
     }
 
-    public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {
+    public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager, UserInfoManager userInfoManager) {
         this.mCore = core;
         this.mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.IDLE);
         this.mCore.getWebSocket().setConnectionListener(this);
         this.mConversationManager = conversationManager;
         this.mMessageManager = messageManager;
+        this.mUserInfoManager = userInfoManager;
     }
 
     @Override
@@ -273,7 +274,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
 
     private void openDB() {
         if (!mCore.getDbManager().isOpen()) {
-            mCore.getUserInfoCache().clearCache();
+            mUserInfoManager.clearCache();
             if (!TextUtils.isEmpty(mCore.getUserId())) {
                 if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
                     dbStatusNotice(true);
@@ -286,13 +287,14 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
 
     private void closeDB() {
         mCore.getDbManager().closeDB();
-        mCore.getUserInfoCache().clearCache();
+        mUserInfoManager.clearCache();
         dbStatusNotice(false);
     }
 
     private final JetIMCore mCore;
     private final ConversationManager mConversationManager;
     private final MessageManager mMessageManager;
+    private final UserInfoManager mUserInfoManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
     private PushChannel mPushChannel;
