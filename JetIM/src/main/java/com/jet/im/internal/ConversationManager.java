@@ -695,8 +695,8 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
         }
-        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
-        mCore.getDbManager().insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
+        mCore.getUserInfoCache().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mCore.getUserInfoCache().insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
     }
 
     private void noticeTotalUnreadCountChange() {

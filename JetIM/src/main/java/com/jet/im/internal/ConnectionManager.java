@@ -29,6 +29,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         }
         if (!mCore.getDbManager().isOpen()) {
             if (!TextUtils.isEmpty(mCore.getUserId())) {
+                mCore.getUserInfoCache().clearCache();
                 if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
                     dbStatusNotice(true);
                 }
@@ -121,10 +122,11 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         if (errorCode == ConstInternal.ErrorCode.NONE) {
             mCore.setUserId(userId);
             if (!mCore.getDbManager().isOpen()) {
+                mCore.getUserInfoCache().clearCache();
                 if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
                     dbStatusNotice(true);
                 } else {
-                    JLogger.e("CON-Db","open db fail");
+                    JLogger.e("CON-Db", "open db fail");
                 }
             }
             changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
@@ -285,6 +287,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
 
     private void closeDB() {
         mCore.getDbManager().closeDB();
+        mCore.getUserInfoCache().clearCache();
         dbStatusNotice(false);
     }
 

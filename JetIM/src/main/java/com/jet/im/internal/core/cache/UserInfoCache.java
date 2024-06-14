@@ -1,7 +1,9 @@
-package com.jet.im.internal.core.db;
+package com.jet.im.internal.core.cache;
 
+import android.text.TextUtils;
 import android.util.LruCache;
 
+import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.UserInfo;
 
@@ -35,6 +37,10 @@ public class UserInfoCache {
     public UserInfo getUserInfo(String userId) {
         mLock.lock();
         try {
+            //判空
+            if (TextUtils.isEmpty(userId)) {
+                return null;
+            }
             //从缓存中查找
             UserInfo userInfo = mUserInfoCache.get(userId);
             //缓存命中，直接返回缓存数据
@@ -42,7 +48,7 @@ public class UserInfoCache {
                 return userInfo;
             }
             //缓存未命中，从数据库中查询
-            UserInfo userInfoDB = mDBManager.getUserInfoInDB(userId);
+            UserInfo userInfoDB = mDBManager.getUserInfo(userId);
             //更新缓存
             if (userInfoDB != null) {
                 mUserInfoCache.put(userId, userInfoDB);
@@ -58,8 +64,12 @@ public class UserInfoCache {
     public void insertUserInfoList(List<UserInfo> list) {
         mLock.lock();
         try {
+            //判空
+            if (list == null || list.isEmpty()) {
+                return;
+            }
             //更新数据库
-            mDBManager.insertUserInfoListInDB(list);
+            mDBManager.insertUserInfoList(list);
             //更新缓存
             for (UserInfo userInfo : list) {
                 mUserInfoCache.put(userInfo.getUserId(), userInfo);
@@ -73,6 +83,10 @@ public class UserInfoCache {
     public GroupInfo getGroupInfo(String groupId) {
         mLock.lock();
         try {
+            //判空
+            if (TextUtils.isEmpty(groupId)) {
+                return null;
+            }
             //从缓存中查找
             GroupInfo groupInfo = mGroupInfoCache.get(groupId);
             //缓存命中，直接返回缓存数据
@@ -80,7 +94,7 @@ public class UserInfoCache {
                 return groupInfo;
             }
             //GroupInfo，从数据库中查询
-            GroupInfo groupInfoDB = mDBManager.getGroupInfoInDB(groupId);
+            GroupInfo groupInfoDB = mDBManager.getGroupInfo(groupId);
             //更新缓存
             if (groupInfoDB != null) {
                 mGroupInfoCache.put(groupId, groupInfoDB);
@@ -96,8 +110,12 @@ public class UserInfoCache {
     public void insertGroupInfoList(List<GroupInfo> list) {
         mLock.lock();
         try {
+            //判空
+            if (list == null || list.isEmpty()) {
+                return;
+            }
             //更新数据库
-            mDBManager.insertGroupInfoListInDB(list);
+            mDBManager.insertGroupInfoList(list);
             //更新缓存
             for (GroupInfo groupInfo : list) {
                 mGroupInfoCache.put(groupInfo.getGroupId(), groupInfo);

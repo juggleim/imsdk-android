@@ -28,10 +28,6 @@ import java.util.Map;
 
 public class DBManager {
 
-    public DBManager() {
-        mUserInfoCache = new UserInfoCache(this);
-    }
-
     public boolean openIMDB(Context context, String appKey, String userId) {
         String path = getOrCreateDbPath(context, appKey, userId);
         closeDB();
@@ -45,7 +41,6 @@ public class DBManager {
 
     public void closeDB() {
         JLogger.i("DB-Close", "close db");
-        mUserInfoCache.clearCache();
         if (mDBHelper != null) {
             mDb = null;
             mDBHelper.close();
@@ -597,20 +592,6 @@ public class DBManager {
         if (TextUtils.isEmpty(userId)) {
             return null;
         }
-        return mUserInfoCache.getUserInfo(userId);
-    }
-
-    public void insertUserInfoList(List<UserInfo> userInfoList) {
-        if (userInfoList == null || userInfoList.isEmpty()) {
-            return;
-        }
-        mUserInfoCache.insertUserInfoList(userInfoList);
-    }
-
-    UserInfo getUserInfoInDB(String userId) {
-        if (TextUtils.isEmpty(userId)) {
-            return null;
-        }
         UserInfo info = null;
         String[] args = new String[]{userId};
         Cursor cursor = rawQuery(UserInfoSql.SQL_GET_USER_INFO, args);
@@ -623,7 +604,7 @@ public class DBManager {
         return info;
     }
 
-    void insertUserInfoListInDB(List<UserInfo> userInfoList) {
+    public void insertUserInfoList(List<UserInfo> userInfoList) {
         mDb.beginTransaction();
         for (UserInfo info : userInfoList) {
             String extra = UserInfoSql.stringFromMap(info.getExtra());
@@ -634,22 +615,7 @@ public class DBManager {
         mDb.endTransaction();
     }
 
-
     public GroupInfo getGroupInfo(String groupId) {
-        if (TextUtils.isEmpty(groupId)) {
-            return null;
-        }
-        return mUserInfoCache.getGroupInfo(groupId);
-    }
-
-    public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
-        if (groupInfoList == null || groupInfoList.isEmpty()) {
-            return;
-        }
-        mUserInfoCache.insertGroupInfoList(groupInfoList);
-    }
-
-    GroupInfo getGroupInfoInDB(String groupId) {
         if (TextUtils.isEmpty(groupId)) {
             return null;
         }
@@ -665,7 +631,7 @@ public class DBManager {
         return info;
     }
 
-    void insertGroupInfoListInDB(List<GroupInfo> groupInfoList) {
+    public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
         mDb.beginTransaction();
         for (GroupInfo info : groupInfoList) {
             String extra = UserInfoSql.stringFromMap(info.getExtra());
@@ -743,7 +709,6 @@ public class DBManager {
 
     private DBHelper mDBHelper;
     private SQLiteDatabase mDb;
-    private final UserInfoCache mUserInfoCache;
     private static final String PATH_JET_IM = "jet_im";
     private static final String DB_NAME = "jetimdb";
 }

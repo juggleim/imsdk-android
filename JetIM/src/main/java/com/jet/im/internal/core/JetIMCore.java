@@ -8,6 +8,7 @@ import android.os.HandlerThread;
 import androidx.annotation.NonNull;
 
 import com.jet.im.internal.ConstInternal;
+import com.jet.im.internal.core.cache.UserInfoCache;
 import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.util.JUtility;
@@ -22,6 +23,7 @@ public class JetIMCore {
         sendThread.start();
         mSendHandler = new Handler(sendThread.getLooper());
         mWebSocket = new JWebSocket(mSendHandler);
+        mUserInfoCache = new UserInfoCache(mDbManager);
     }
 
     public JWebSocket getWebSocket() {
@@ -55,6 +57,7 @@ public class JetIMCore {
         }
         return JUtility.getCarrier(mContext);
     }
+
     public List<String> getNaviUrls() {
         if (mNaviUrls == null) {
             mNaviUrls = new ArrayList<>();
@@ -147,6 +150,10 @@ public class JetIMCore {
         mConnectionStatus = connectionStatus;
     }
 
+    public UserInfoCache getUserInfoCache() {
+        return mUserInfoCache;
+    }
+
     public DBManager getDbManager() {
         return mDbManager;
     }
@@ -212,6 +219,7 @@ public class JetIMCore {
     private Context mContext;
     private int mConnectionStatus;
     private final DBManager mDbManager = new DBManager();
+    private final UserInfoCache mUserInfoCache;
     private long mConversationSyncTime;
     private long mMessageSendSyncTime;
     private long mMessageReceiveTime;

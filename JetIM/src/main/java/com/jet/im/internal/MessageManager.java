@@ -1279,7 +1279,7 @@ public class MessageManager implements IMessageManager {
                 }
             }
         }
-        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mCore.getUserInfoCache().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
         ////直发的消息，而且正在同步中，不直接更新 sync time
         if (!isSync && mSyncProcessing) {
             if (sendTime > 0) {
@@ -1400,8 +1400,8 @@ public class MessageManager implements IMessageManager {
                 userInfoMap.put(message.getTargetUserInfo().getUserId(), message.getTargetUserInfo());
             }
         }
-        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
-        mCore.getDbManager().insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
+        mCore.getUserInfoCache().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mCore.getUserInfoCache().insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
     }
 
     private String createClientUid() {
