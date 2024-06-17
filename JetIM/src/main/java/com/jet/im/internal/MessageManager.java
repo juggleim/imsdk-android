@@ -216,6 +216,10 @@ public class MessageManager implements IMessageManager {
             return null;
         }
         ConcreteMessage message = saveMessageWithContent(content, conversation, options, Message.MessageState.UPLOADING, Message.MessageDirection.SEND, false);
+        return sendMediaMessage(message, callback);
+    }
+
+    private Message sendMediaMessage(Message message, ISendMediaMessageCallback callback) {
         IMessageUploadProvider.UploadCallback uploadCallback = new IMessageUploadProvider.UploadCallback() {
             @Override
             public void onProgress(int progress) {
@@ -290,14 +294,23 @@ public class MessageManager implements IMessageManager {
         if (message.getClientMsgNo() <= 0
                 || message.getContent() == null
                 || message.getConversation() == null
-                || message.getConversation().getConversationId() == null) {
+                || message.getConversation().getConversationId() == null
+                || !(message instanceof ConcreteMessage)) {
             if (callback != null) {
                 callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM);
             }
             return message;
         }
-        mCore.getDbManager().deleteMessageByClientMsgNo(message.getClientMsgNo());
-        return sendMessage(message.getContent(), message.getConversation(), message.getMessageOptions(), callback);
+        if (message.getClientMsgNo() > 0) {
+            if (message.getState() != Message.MessageState.SENDING) {
+                message.setState(Message.MessageState.SENDING);
+                mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
+            }
+            sendWebSocketMessage((ConcreteMessage) message, false, callback);
+            return message;
+        } else {
+            return sendMessage(message.getContent(), message.getConversation(), message.getMessageOptions(), callback);
+        }
     }
 
     @Override
@@ -307,14 +320,22 @@ public class MessageManager implements IMessageManager {
                 || message.getContent() == null
                 || !(message.getContent() instanceof MediaMessageContent)
                 || message.getConversation() == null
-                || message.getConversation().getConversationId() == null) {
+                || message.getConversation().getConversationId() == null
+                || !(message instanceof ConcreteMessage)) {
             if (callback != null) {
                 callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM);
             }
             return message;
         }
-        mCore.getDbManager().deleteMessageByClientMsgNo(message.getClientMsgNo());
-        return sendMediaMessage((MediaMessageContent) message.getContent(), message.getConversation(), message.getMessageOptions(), callback);
+        if (message.getClientMsgNo() > 0) {
+            if (message.getState() != Message.MessageState.SENDING) {
+                message.setState(Message.MessageState.SENDING);
+                mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
+            }
+            return sendMediaMessage(message, callback);
+        } else {
+            return sendMediaMessage((MediaMessageContent) message.getContent(), message.getConversation(), message.getMessageOptions(), callback);
+        }
     }
 
     @Override
