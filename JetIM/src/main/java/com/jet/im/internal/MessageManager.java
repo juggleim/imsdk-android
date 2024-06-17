@@ -1134,14 +1134,16 @@ public class MessageManager implements IMessageManager {
         updateUserInfo(messagesToSave);
     }
 
-    private Message handleRecallCmdMessage(String messageId, Map<String, String> extra) {
+    private Message handleRecallCmdMessage(Conversation conversation,String messageId, Map<String, String> extra) {
         RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
         recallInfoMessage.setExtra(extra);
         mCore.getDbManager().updateMessageContentWithMessageId(recallInfoMessage, RecallInfoMessage.CONTENT_TYPE, messageId);
         List<String> ids = new ArrayList<>(1);
         ids.add(messageId);
-        List<Message> messages = mCore.getDbManager().getMessagesByMessageIds(ids);
+        List<ConcreteMessage> messages = mCore.getDbManager().getConcreteMessagesByMessageIds(ids);
         if (messages.size() > 0) {
+            //通知会话更新
+            notifyMessageRemoved(conversation, messages);
             return messages.get(0);
         }
         return null;
@@ -1165,7 +1167,7 @@ public class MessageManager implements IMessageManager {
             //recall message
             if (message.getContentType().equals(RecallCmdMessage.CONTENT_TYPE)) {
                 RecallCmdMessage cmd = (RecallCmdMessage) message.getContent();
-                Message recallMessage = handleRecallCmdMessage(cmd.getOriginalMessageId(), cmd.getExtra());
+                Message recallMessage = handleRecallCmdMessage(message.getConversation(),cmd.getOriginalMessageId(), cmd.getExtra());
                 //recallMessage 为空表示被撤回的消息本地不存在，不需要回调
                 if (recallMessage != null) {
                     if (mListenerMap != null) {
