@@ -101,21 +101,6 @@ public class UIKitFragmentFactory {
         return FragmentProviders.getInviteUser().provide(channelUrl, args);
     }
 
-    /**
-     * Returns the RegisterOperatorFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link RegisterOperatorFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getRegisterOperator()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newRegisterOperatorFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getRegisterOperator().provide(channelUrl, args);
-    }
 
     /**
      * Returns the MessageSearchFragment.
@@ -134,22 +119,6 @@ public class UIKitFragmentFactory {
     }
 
     /**
-     * Returns the ModerationFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link ModerationFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getModeration()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newModerationFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getModeration().provide(channelUrl, args);
-    }
-
-    /**
      * Returns the MemberListFragment.
      *
      * @param channelUrl the channel url for the target channel.
@@ -164,71 +133,6 @@ public class UIKitFragmentFactory {
     public Fragment newMemberListFragment(@NonNull String channelUrl, @NonNull Bundle args) {
         return FragmentProviders.getMemberList().provide(channelUrl, args);
     }
-
-    /**
-     * Returns the BannedUserListFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link BannedUserListFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getBannedUserList()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newBannedUserListFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getBannedUserList().provide(channelUrl, args);
-    }
-
-    /**
-     * Returns the OperatorListFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link OperatorListFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getOperatorList()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newOperatorListFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getOperatorList().provide(channelUrl, args);
-    }
-
-    /**
-     * Returns the MutedMemberListFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link MutedMemberListFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getMutedMemberList()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newMutedMemberListFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getMutedMemberList().provide(channelUrl, args);
-    }
-
-    /**
-     * Returns the OpenChannelSettingsFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link ChannelPushSettingFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getChannelPushSetting()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newChannelPushSettingFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getChannelPushSetting().provide(channelUrl, args);
-    }
-
 
     /**
      * Returns the MessageThreadFragment.

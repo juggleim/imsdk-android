@@ -19,15 +19,6 @@ object AdapterProviders {
     lateinit var messageList: MessageListAdapterProvider
 
     /**
-     * Returns the BannedUserListAdapter provider.
-     *
-     * @return The [BannedUserListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var bannedUserList: BannedUserListAdapterProvider
-
-    /**
      * Returns the ChannelListAdapter provider.
      *
      * @return The [ChannelListAdapterProvider].
@@ -73,24 +64,6 @@ object AdapterProviders {
     lateinit var messageSearch: MessageSearchAdapterProvider
 
     /**
-     * Returns the MutedMemberListAdapter provider.
-     *
-     * @return The [MutedMemberListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var mutedMemberList: MutedMemberListAdapterProvider
-
-    /**
-     * Returns the OperatorListAdapter provider.
-     *
-     * @return The [OperatorListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var operatorList: OperatorListAdapterProvider
-
-    /**
      * Returns the ParticipantListAdapter provider.
      *
      * @return The [ParticipantListAdapterProvider].
@@ -98,15 +71,6 @@ object AdapterProviders {
      */
     @JvmStatic
     lateinit var participantList: ParticipantListAdapterProvider
-
-    /**
-     * Returns the RegisterOperatorListAdapter provider.
-     *
-     * @return The [RegisterOperatorListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var registerOperatorList: RegisterOperatorListAdapterProvider
 
     /**
      * Returns the ThreadListAdapter provider.
@@ -127,8 +91,6 @@ object AdapterProviders {
         this.messageList = MessageListAdapterProvider { channel, messageListUIParams ->
             MessageListAdapter(channel, messageListUIParams)
         }
-        this.bannedUserList = BannedUserListAdapterProvider { BannedUserListAdapter() }
-
         this.channelList = ChannelListAdapterProvider { uiParams ->
             ChannelListAdapter(null, uiParams)
         }
@@ -141,13 +103,7 @@ object AdapterProviders {
 
         this.messageSearch = MessageSearchAdapterProvider { MessageSearchAdapter() }
 
-        this.mutedMemberList = MutedMemberListAdapterProvider { MutedMemberListAdapter() }
-
-        this.operatorList = OperatorListAdapterProvider { OperatorListAdapter() }
-
         this.participantList = ParticipantListAdapterProvider { ParticipantListAdapter() }
-
-        this.registerOperatorList = RegisterOperatorListAdapterProvider { RegisterOperatorListAdapter() }
 
         this.threadList = ThreadListAdapterProvider { messageListUIParams ->
             ThreadListAdapter(null, messageListUIParams)

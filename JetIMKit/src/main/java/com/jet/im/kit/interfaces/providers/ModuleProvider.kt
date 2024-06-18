@@ -100,36 +100,6 @@ fun interface InviteUserModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when RegisterOperatorModule is created.
- * @see [ModuleProviders.registerOperator]
- * @since 3.9.0
- */
-fun interface RegisterOperatorModuleProvider {
-    /**
-     * Returns the RegisterOperatorModule.
-     *
-     * @return The [RegisterOperatorModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): RegisterOperatorModule
-}
-
-/**
- * Interface definition to be invoked when ModerationModule is created.
- * @see [ModuleProviders.moderation]
- * @since 3.9.0
- */
-fun interface ModerationModuleProvider {
-    /**
-     * Returns the ModerationModule.
-     *
-     * @return The [ModerationModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): ModerationModule
-}
-
-/**
  * Interface definition to be invoked when MemberListModule is created.
  * @see [ModuleProviders.memberList]
  * @since 3.9.0
@@ -142,51 +112,6 @@ fun interface MemberListModuleProvider {
      * @since 3.9.0
      */
     fun provide(context: Context, args: Bundle): MemberListModule
-}
-
-/**
- * Interface definition to be invoked when BannedUserListModule is created.
- * @see [ModuleProviders.bannedUserList]
- * @since 3.9.0
- */
-fun interface BannedUserListModuleProvider {
-    /**
-     * Returns the BannedUserListModule.
-     *
-     * @return The [BannedUserListModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): BannedUserListModule
-}
-
-/**
- * Interface definition to be invoked when MutedMemberListModule is created.
- * @see [ModuleProviders.mutedMemberList]
- * @since 3.9.0
- */
-fun interface MutedMemberListModuleProvider {
-    /**
-     * Returns the MutedMemberListModule.
-     *
-     * @return The [MutedMemberListModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): MutedMemberListModule
-}
-
-/**
- * Interface definition to be invoked when OperatorListModule is created.
- * @see [ModuleProviders.operatorList]
- * @since 3.9.0
- */
-fun interface OperatorListModuleProvider {
-    /**
-     * Returns the OperatorListModule.
-     *
-     * @return The [OperatorListModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): OperatorListModule
 }
 
 /**
@@ -205,21 +130,6 @@ fun interface MessageSearchModuleProvider {
  */
 fun interface ParticipantListModuleProvider {
     fun provide(context: Context, args: Bundle): ParticipantListModule
-}
-
-/**
- * Interface definition to be invoked when ChannelPushSettingModule is created.
- * @see [ModuleProviders.channelPushSetting]
- * @since 3.9.0
- */
-fun interface ChannelPushSettingModuleProvider {
-    /**
-     * Returns the ChannelPushSettingModule.
-     *
-     * @return The [ChannelPushSettingModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): ChannelPushSettingModule
 }
 
 /**

@@ -21,10 +21,8 @@ import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.params.GroupChannelUpdateParams;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.kit.activities.ChannelPushSettingActivity;
 import com.jet.im.kit.activities.MemberListActivity;
 import com.jet.im.kit.activities.MessageSearchActivity;
-import com.jet.im.kit.activities.ModerationActivity;
 import com.jet.im.kit.consts.DialogEditTextParams;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.interfaces.CustomParamsHandler;
@@ -202,11 +200,7 @@ public class ChannelSettingsFragment extends BaseModuleFragment<ChannelSettingsM
         Logger.d(">> ChannelSettingsFragment::onBindSettingsMenuComponent()");
 
         menuComponent.setOnMenuClickListener(menuItemClickListener != null ? menuItemClickListener : (view, position, menu) -> {
-            if (menu == ChannelSettingsMenuComponent.Menu.MODERATIONS) {
-                startModerationsActivity();
-            } else if (menu == ChannelSettingsMenuComponent.Menu.NOTIFICATIONS) {
-                startChannelPushSettingActivity();
-            } else if (menu == ChannelSettingsMenuComponent.Menu.MEMBERS) {
+           if (menu == ChannelSettingsMenuComponent.Menu.MEMBERS) {
                 startMemberListActivity();
             } else if (menu == ChannelSettingsMenuComponent.Menu.LEAVE_CHANNEL) {
                 leaveChannel();
@@ -215,18 +209,6 @@ public class ChannelSettingsFragment extends BaseModuleFragment<ChannelSettingsM
             }
         });
         viewModel.getChannelUpdated().observe(getViewLifecycleOwner(), menuComponent::notifyChannelChanged);
-    }
-
-    private void startModerationsActivity() {
-        if (isFragmentAlive()) {
-            startActivity(ModerationActivity.newIntent(requireContext(), getViewModel().getChannelUrl()));
-        }
-    }
-
-    private void startChannelPushSettingActivity() {
-        if (isFragmentAlive()) {
-            startActivity(ChannelPushSettingActivity.newIntent(requireContext(), getViewModel().getChannelUrl()));
-        }
     }
 
     private void startMessageSearchActivity() {

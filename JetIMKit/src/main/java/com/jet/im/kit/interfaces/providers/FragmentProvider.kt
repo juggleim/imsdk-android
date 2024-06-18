@@ -91,41 +91,6 @@ fun interface InviteUserFragmentProvider {
     fun provide(channelUrl: String, args: Bundle): InviteUserFragment
 }
 
-/**
- * Interface definition to be invoked when RegisterOperatorFragment is created.
- * @see [FragmentProviders.registerOperator]
- * @since 3.9.0
- */
-fun interface RegisterOperatorFragmentProvider {
-    /**
-     * Returns the RegisterOperatorFragment.
-     *
-     * @return The [RegisterOperatorFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): RegisterOperatorFragment
-}
-
-/**
- * Interface definition to be invoked when OpenChannelRegisterOperatorFragment is created.
- * @see [FragmentProviders.openChannelRegisterOperator]
- * @since 3.9.0
- */
-
-/**
- * Interface definition to be invoked when ModerationFragment is created.
- * @see [FragmentProviders.moderation]
- * @since 3.9.0
- */
-fun interface ModerationFragmentProvider {
-    /**
-     * Returns the ModerationFragment.
-     *
-     * @return The [ModerationFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): ModerationFragment
-}
 
 
 
@@ -145,54 +110,6 @@ fun interface MemberListFragmentProvider {
 }
 
 /**
- * Interface definition to be invoked when BannedUserListFragment is created.
- * @see [FragmentProviders.bannedUserList]
- * @since 3.9.0
- */
-fun interface BannedUserListFragmentProvider {
-    /**
-     * Returns the BannedUserListFragment.
-     *
-     * @return The [BannedUserListFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): BannedUserListFragment
-}
-
-
-/**
- * Interface definition to be invoked when MutedMemberListFragment is created.
- * @see [FragmentProviders.mutedMemberList]
- * @since 3.9.0
- */
-fun interface MutedMemberListFragmentProvider {
-    /**
-     * Returns the MutedMemberListFragment.
-     *
-     * @return The [MutedMemberListFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): MutedMemberListFragment
-}
-
-
-/**
- * Interface definition to be invoked when OperatorListFragment is created.
- * @see [FragmentProviders.operatorList]
- * @since 3.9.0
- */
-fun interface OperatorListFragmentProvider {
-    /**
-     * Returns the OperatorListFragment.
-     *
-     * @return The [OperatorListFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): OperatorListFragment
-}
-
-
-/**
  * Interface definition to be invoked when MessageSearchFragment is created.
  * @see [FragmentProviders.messageSearch]
  * @since 3.9.0
@@ -206,22 +123,6 @@ fun interface MessageSearchFragmentProvider {
      */
     fun provide(channelUrl: String, args: Bundle): MessageSearchFragment
 }
-
-/**
- * Interface definition to be invoked when ChannelPushSettingFragment is created.
- * @see [FragmentProviders.channelPushSetting]
- * @since 3.9.0
- */
-fun interface ChannelPushSettingFragmentProvider {
-    /**
-     * Returns the ChannelPushSettingFragment.
-     *
-     * @return The [ChannelPushSettingFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): ChannelPushSettingFragment
-}
-
 
 /**
  * Interface definition to be invoked when MessageThreadFragment is created.
