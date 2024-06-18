@@ -15,7 +15,6 @@ import androidx.appcompat.app.AlertDialog;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.kit.activities.CreateChannelActivity;
 import com.jet.im.kit.activities.adapter.ChannelListAdapter;
 import com.jet.im.kit.consts.CreatableChannelType;
 import com.jet.im.kit.consts.StringSet;
@@ -147,25 +146,26 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
     }
 
     private void showChannelTypeSelectDialog() {
-        if (getContext() == null) return;
-        if (Available.isSupportSuper() || Available.isSupportBroadcast()) {
-            final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(getContext(), getModule().getParams().getTheme(), R.attr.sb_component_header);
-            final SelectChannelTypeView layout = new SelectChannelTypeView(contextThemeWrapper);
-            layout.canCreateSuperGroupChannel(Available.isSupportSuper());
-            layout.canCreateBroadcastGroupChannel(Available.isSupportBroadcast());
-            final AlertDialog dialog = DialogUtils.showContentTopDialog(requireContext(), layout);
-            layout.setOnItemClickListener((itemView, position, channelType) -> {
-                dialog.dismiss();
-                Logger.dev("++ channelType : " + channelType);
-                if (isFragmentAlive()) {
-                    onSelectedChannelType(channelType);
-                }
-            });
-        } else {
-            if (isFragmentAlive()) {
-                onSelectedChannelType(CreatableChannelType.Normal);
-            }
-        }
+        //todo 创建群组忽略
+//        if (getContext() == null) return;
+//        if (Available.isSupportSuper() || Available.isSupportBroadcast()) {
+//            final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(getContext(), getModule().getParams().getTheme(), R.attr.sb_component_header);
+//            final SelectChannelTypeView layout = new SelectChannelTypeView(contextThemeWrapper);
+//            layout.canCreateSuperGroupChannel(Available.isSupportSuper());
+//            layout.canCreateBroadcastGroupChannel(Available.isSupportBroadcast());
+//            final AlertDialog dialog = DialogUtils.showContentTopDialog(requireContext(), layout);
+//            layout.setOnItemClickListener((itemView, position, channelType) -> {
+//                dialog.dismiss();
+//                Logger.dev("++ channelType : " + channelType);
+//                if (isFragmentAlive()) {
+//                    onSelectedChannelType(channelType);
+//                }
+//            });
+//        } else {
+//            if (isFragmentAlive()) {
+//                onSelectedChannelType(CreatableChannelType.Normal);
+//            }
+//        }
     }
 
     private void startChannelActivity(@NonNull ConversationInfo channel) {
@@ -208,16 +208,6 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
 //        }
     }
 
-    /**
-     * A callback that selected channel types.
-     *
-     * @param channelType selected channel type.
-     * @see CreatableChannelType
-     * since 1.2.0
-     */
-    protected void onSelectedChannelType(@NonNull CreatableChannelType channelType) {
-        startActivity(CreateChannelActivity.newIntent(requireContext(), channelType));
-    }
 
     /**
      * Leaves this channel.

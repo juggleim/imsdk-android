@@ -9,7 +9,6 @@ import com.jet.im.kit.providers.ModuleProviders
 import com.jet.im.kit.vm.ChannelListViewModel
 import com.jet.im.kit.vm.ChannelViewModel
 import com.jet.im.kit.vm.ChatNotificationChannelViewModel
-import com.jet.im.kit.vm.CreateChannelViewModel
 import com.jet.im.kit.vm.FeedNotificationChannelViewModel
 import com.jet.im.kit.vm.InviteUserViewModel
 import com.jet.im.kit.vm.MessageThreadViewModel
@@ -50,21 +49,6 @@ fun interface ChannelViewModelProvider {
         params: MessageListParams?,
         config: ChannelConfig
     ): ChannelViewModel
-}
-
-/**
- * Interface definition to be invoked when CreateChannelViewModel is created.
- * @see [ModuleProviders.createChannel]
- * @since 3.9.0
- */
-fun interface CreateChannelViewModelProvider {
-    /**
-     * Returns the CreateChannelViewModel.
-     *
-     * @return The [CreateChannelViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, queryHandler: PagedQueryHandler<UserInfo>?): CreateChannelViewModel
 }
 
 /**

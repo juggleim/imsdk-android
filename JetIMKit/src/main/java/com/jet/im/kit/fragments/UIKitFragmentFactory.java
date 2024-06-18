@@ -54,22 +54,6 @@ public class UIKitFragmentFactory {
     }
 
     /**
-     * Returns the CreateChannelFragment.
-     *
-     * @param channelType the channel type to be created.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link CreateChannelFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getCreateChannel()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newCreateChannelFragment(@NonNull CreatableChannelType channelType, @NonNull Bundle args) {
-        return FragmentProviders.getCreateChannel().provide(channelType, args);
-    }
-
-    /**
      * Returns the InviteUserFragment.
      *
      * @param channelUrl the channel url for the target channel.
