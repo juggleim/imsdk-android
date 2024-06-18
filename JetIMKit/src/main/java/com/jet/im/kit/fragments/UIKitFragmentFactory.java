@@ -101,23 +101,6 @@ public class UIKitFragmentFactory {
         return FragmentProviders.getInviteUser().provide(channelUrl, args);
     }
 
-
-    /**
-     * Returns the MessageSearchFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link MessageSearchFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getMessageSearch()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newMessageSearchFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getMessageSearch().provide(channelUrl, args);
-    }
-
     /**
      * Returns the MessageThreadFragment.
      *

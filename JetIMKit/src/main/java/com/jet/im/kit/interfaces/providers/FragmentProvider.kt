@@ -92,21 +92,6 @@ fun interface InviteUserFragmentProvider {
 }
 
 /**
- * Interface definition to be invoked when MessageSearchFragment is created.
- * @see [FragmentProviders.messageSearch]
- * @since 3.9.0
- */
-fun interface MessageSearchFragmentProvider {
-    /**
-     * Returns the MessageSearchFragment.
-     *
-     * @return The [MessageSearchFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): MessageSearchFragment
-}
-
-/**
  * Interface definition to be invoked when MessageThreadFragment is created.
  * @see [FragmentProviders.messageThread]
  * @since 3.9.0

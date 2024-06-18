@@ -13,7 +13,6 @@ import com.jet.im.kit.vm.ChatNotificationChannelViewModel
 import com.jet.im.kit.vm.CreateChannelViewModel
 import com.jet.im.kit.vm.FeedNotificationChannelViewModel
 import com.jet.im.kit.vm.InviteUserViewModel
-import com.jet.im.kit.vm.MessageSearchViewModel
 import com.jet.im.kit.vm.MessageThreadViewModel
 import com.sendbird.android.message.BaseMessage
 import com.sendbird.android.message.query.MessageSearchQuery
@@ -105,20 +104,6 @@ fun interface InviteUserViewModelProvider {
     ): InviteUserViewModel
 }
 
-/**
- * Interface definition to be invoked when MessageSearchViewModel is created.
- * @see [ModuleProviders.messageSearch]
- * @since 3.9.0
- */
-fun interface MessageSearchViewModelProvider {
-    /**
-     * Returns the MessageSearchViewModel.
-     *
-     * @return The [MessageSearchViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String, query: MessageSearchQuery?): MessageSearchViewModel
-}
 
 /**
  * Interface definition to be invoked when MessageThreadViewModel is created.
