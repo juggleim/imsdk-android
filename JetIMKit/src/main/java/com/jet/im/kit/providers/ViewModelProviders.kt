@@ -39,15 +39,6 @@ object ViewModelProviders {
     lateinit var createChannel: CreateChannelViewModelProvider
 
     /**
-     * Returns the ChannelSettingsViewModel provider.
-     *
-     * @return The [ChannelSettingsViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var channelSettings: ChannelSettingsViewModelProvider
-
-    /**
      * Returns the InviteUserViewModel provider.
      *
      * @return The [InviteUserViewModelProvider].
@@ -106,13 +97,6 @@ object ViewModelProviders {
                 owner,
                 ViewModelFactory(pagedQueryHandler)
             )[CreateChannelViewModel::class.java]
-        }
-
-        this.channelSettings = ChannelSettingsViewModelProvider { owner, channelUrl ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl)
-            )[channelUrl, ChannelSettingsViewModel::class.java]
         }
 
         this.inviteUser = InviteUserViewModelProvider { owner, channelUrl, pagedQueryHandler ->

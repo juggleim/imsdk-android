@@ -52,15 +52,6 @@ object ModuleProviders {
     lateinit var createOpenChannel: CreateOpenChannelModuleProvider
 
     /**
-     * Returns the ChannelSettingsModule provider.
-     *
-     * @return The [ChannelSettingsModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var channelSettings: ChannelSettingsModuleProvider
-
-    /**
      * Returns the InviteUserModule provider.
      *
      * @return The [InviteUserModuleProvider].
@@ -119,8 +110,6 @@ object ModuleProviders {
         this.createChannel = CreateChannelModuleProvider { context, _ -> CreateChannelModule(context) }
 
         this.createOpenChannel = CreateOpenChannelModuleProvider { context, _ -> CreateOpenChannelModule(context) }
-
-        this.channelSettings = ChannelSettingsModuleProvider { context, _ -> ChannelSettingsModule(context) }
 
         this.inviteUser = InviteUserModuleProvider { context, _ -> InviteUserModule(context) }
 

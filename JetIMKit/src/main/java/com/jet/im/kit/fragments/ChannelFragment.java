@@ -34,7 +34,6 @@ import com.sendbird.android.user.MutedState;
 import com.sendbird.android.user.User;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.kit.activities.ChannelSettingsActivity;
 import com.jet.im.kit.activities.MessageThreadActivity;
 import com.jet.im.kit.activities.adapter.MessageListAdapter;
 import com.jet.im.kit.activities.adapter.SuggestedMentionListAdapter;
@@ -227,9 +226,10 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         Logger.d(">> ChannelFragment::onBindChannelHeaderComponent()");
         headerComponent.setOnLeftButtonClickListener(headerLeftButtonClickListener != null ? headerLeftButtonClickListener : v -> shouldActivityFinish());
         headerComponent.setOnRightButtonClickListener(headerRightButtonClickListener != null ? headerRightButtonClickListener : v -> {
-            if (channel == null) return;
-            Intent intent = ChannelSettingsActivity.newIntent(requireContext(), channel.getUrl());
-            startActivity(intent);
+            //todo 注释跳转
+//            if (channel == null) return;
+//            Intent intent = ChannelSettingsActivity.newIntent(requireContext(), channel.getUrl());
+//            startActivity(intent);
         });
 
         if (channelConfig.getEnableTypingIndicator() && channelConfig.getTypingIndicatorTypes().contains(TypingIndicatorType.TEXT)) {
