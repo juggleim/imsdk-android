@@ -1,6 +1,7 @@
 package com.jet.im;
 
 import android.content.Context;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.jet.im.interfaces.IConnectionManager;
@@ -15,6 +16,7 @@ import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.logger.JLogConfig;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JThreadPoolExecutor;
 import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
 
@@ -64,6 +66,10 @@ public class JetIM {
 
     public void setServer(List<String> serverUrls) {
         mCore.setNaviUrl(serverUrls);
+    }
+
+    public void setDelegateQueue(Looper delegateLooper) {
+        JThreadPoolExecutor.setDelegateLooper(delegateLooper);
     }
 
     public IConnectionManager getConnectionManager() {

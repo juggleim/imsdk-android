@@ -1,7 +1,5 @@
 package com.jet.im.internal.uploader;
 
-import com.jet.im.internal.util.JThreadPoolExecutor;
-
 /**
  * @author Ye_Guli
  * @create 2024-05-29 9:04
@@ -21,36 +19,28 @@ public abstract class BaseUploader implements IUploader {
     protected void notifyProgress(int progress) {
         long currentTime = System.currentTimeMillis();
         if (currentTime - mLastProgressCallbackTime >= PROGRESS_CALLBACK_INTERVAL) {
-            JThreadPoolExecutor.runOnMainThread(() -> {
-                if (mUploaderCallback != null) {
-                    mUploaderCallback.onProgress(progress);
-                }
-            });
+            if (mUploaderCallback != null) {
+                mUploaderCallback.onProgress(progress);
+            }
             mLastProgressCallbackTime = currentTime;
         }
     }
 
     protected void notifySuccess(String url) {
-        JThreadPoolExecutor.runOnMainThread(() -> {
-            if (mUploaderCallback != null) {
-                mUploaderCallback.onSuccess(url);
-            }
-        });
+        if (mUploaderCallback != null) {
+            mUploaderCallback.onSuccess(url);
+        }
     }
 
     protected void notifyFail() {
-        JThreadPoolExecutor.runOnMainThread(() -> {
-            if (mUploaderCallback != null) {
-                mUploaderCallback.onError();
-            }
-        });
+        if (mUploaderCallback != null) {
+            mUploaderCallback.onError();
+        }
     }
 
     protected void notifyCancel() {
-        JThreadPoolExecutor.runOnMainThread(() -> {
-            if (mUploaderCallback != null) {
-                mUploaderCallback.onCancel();
-            }
-        });
+        if (mUploaderCallback != null) {
+            mUploaderCallback.onCancel();
+        }
     }
 }

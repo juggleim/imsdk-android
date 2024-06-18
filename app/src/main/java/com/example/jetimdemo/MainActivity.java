@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
@@ -64,7 +65,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        HandlerThread sendThread = new HandlerThread("DEMO_TEST");
+        sendThread.start();
+        JetIM.getInstance().setDelegateQueue(sendThread.getLooper());
         JetIM.getInstance().getConnectionManager().addConnectionStatusListener("mainActivity", new IConnectionManager.IConnectionStatusListener() {
             @Override
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code, String extra) {
@@ -611,22 +614,13 @@ public class MainActivity extends AppCompatActivity {
         JetIM.getInstance().getConversationManager().createConversationInfo(conversation, new IConversationManager.ICreateConversationInfoCallback() {
             @Override
             public void onSuccess(ConversationInfo conversationInfo) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(), "createConversationInfo success", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                Toast.makeText(getApplicationContext(), "createConversationInfo success", Toast.LENGTH_SHORT).show();
+
             }
 
             @Override
             public void onError(int errorCode) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(), "createConversationInfo error", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                Toast.makeText(getApplicationContext(), "createConversationInfo error", Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -8,6 +8,7 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JThreadPoolExecutor;
 import com.jet.im.push.PushChannel;
 import com.jet.im.push.PushManager;
 
@@ -221,10 +222,14 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
                     break;
             }
             mCore.setConnectionStatus(status);
+
             if (mConnectionStatusListenerMap != null) {
+                JetIMConst.ConnectionStatus finalOutStatus = outStatus;
                 for (Map.Entry<String, IConnectionStatusListener> entry :
                         mConnectionStatusListenerMap.entrySet()) {
-                    entry.getValue().onStatusChange(outStatus, errorCode, extra);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> {
+                        entry.getValue().onStatusChange(finalOutStatus, errorCode, extra);
+                    });
                 }
             }
         });
@@ -262,12 +267,16 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             mCore.getSyncTimeFromDB();
             for (Map.Entry<String, IConnectionStatusListener> entry :
                     mConnectionStatusListenerMap.entrySet()) {
-                entry.getValue().onDbOpen();
+                JThreadPoolExecutor.runOnDelegateThread(() -> {
+                    entry.getValue().onDbOpen();
+                });
             }
         } else {
             for (Map.Entry<String, IConnectionStatusListener> entry :
                     mConnectionStatusListenerMap.entrySet()) {
-                entry.getValue().onDbClose();
+                JThreadPoolExecutor.runOnDelegateThread(() -> {
+                    entry.getValue().onDbClose();
+                });
             }
         }
     }

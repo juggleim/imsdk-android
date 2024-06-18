@@ -28,6 +28,7 @@ import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.internal.model.messages.TopConvMessage;
 import com.jet.im.internal.model.messages.UnDisturbConvMessage;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JThreadPoolExecutor;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
@@ -162,7 +163,7 @@ public class MessageManager implements IMessageManager {
                 }
 
                 if (callback != null) {
-                    callback.onSuccess(message);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(message));
                 }
             }
 
@@ -173,7 +174,7 @@ public class MessageManager implements IMessageManager {
                 mCore.getDbManager().messageSendFail(clientMsgNo);
                 if (callback != null) {
                     message.setClientMsgNo(clientMsgNo);
-                    callback.onError(message, errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(message, errorCode));
                 }
             }
         };
@@ -211,7 +212,7 @@ public class MessageManager implements IMessageManager {
     public Message sendMediaMessage(MediaMessageContent content, Conversation conversation, MessageOptions options, ISendMediaMessageCallback callback) {
         if (content == null) {
             if (callback != null) {
-                callback.onError(null, JErrorCode.INVALID_PARAM);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(null, JErrorCode.INVALID_PARAM));
             }
             return null;
         }
@@ -224,7 +225,7 @@ public class MessageManager implements IMessageManager {
             @Override
             public void onProgress(int progress) {
                 if (callback != null) {
-                    callback.onProgress(progress, message);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onProgress(progress, message));
                 }
             }
 
@@ -234,7 +235,7 @@ public class MessageManager implements IMessageManager {
                     uploadMessage.setState(Message.MessageState.FAIL);
                     mCore.getDbManager().setMessageState(uploadMessage.getClientMsgNo(), Message.MessageState.FAIL);
                     if (callback != null) {
-                        callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
+                        JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
                     }
                     return;
                 }
@@ -246,14 +247,14 @@ public class MessageManager implements IMessageManager {
                     @Override
                     public void onSuccess(Message message1) {
                         if (callback != null) {
-                            callback.onSuccess(message1);
+                            JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(message1));
                         }
                     }
 
                     @Override
                     public void onError(Message message1, int errorCode) {
                         if (callback != null) {
-                            callback.onError(message1, errorCode);
+                            JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(message1, errorCode));
                         }
                     }
                 });
@@ -264,7 +265,7 @@ public class MessageManager implements IMessageManager {
                 message.setState(Message.MessageState.FAIL);
                 mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
                 if (callback != null) {
-                    callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
                 }
             }
 
@@ -273,7 +274,7 @@ public class MessageManager implements IMessageManager {
                 message.setState(Message.MessageState.FAIL);
                 mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
                 if (callback != null) {
-                    callback.onCancel(message);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onCancel(message));
                 }
             }
         };
@@ -283,7 +284,7 @@ public class MessageManager implements IMessageManager {
             mDefaultMessageUploadProvider.uploadMessage(message, uploadCallback);
         } else {
             if (callback != null) {
-                callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
             }
         }
         return message;
@@ -297,7 +298,7 @@ public class MessageManager implements IMessageManager {
                 || message.getConversation().getConversationId() == null
                 || !(message instanceof ConcreteMessage)) {
             if (callback != null) {
-                callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM));
             }
             return message;
         }
@@ -323,7 +324,7 @@ public class MessageManager implements IMessageManager {
                 || message.getConversation().getConversationId() == null
                 || !(message instanceof ConcreteMessage)) {
             if (callback != null) {
-                callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM));
             }
             return message;
         }
@@ -367,7 +368,7 @@ public class MessageManager implements IMessageManager {
     public void getMessagesByMessageIds(Conversation conversation, List<String> messageIds, IGetMessagesCallback callback) {
         if (messageIds.size() == 0) {
             if (callback != null) {
-                callback.onError(JErrorCode.INVALID_PARAM);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(JErrorCode.INVALID_PARAM));
             }
             return;
         }
@@ -415,7 +416,7 @@ public class MessageManager implements IMessageManager {
                         }
                     }
                     if (callback != null) {
-                        callback.onSuccess(result);
+                        JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(result));
                     }
                 }
 
@@ -424,11 +425,11 @@ public class MessageManager implements IMessageManager {
                     JLogger.e("MSG-Get", "by id, fail, errorCode is " + errorCode);
                     if (localMessages.size() > 0) {
                         if (callback != null) {
-                            callback.onSuccess(localMessages);
+                            JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(localMessages));
                         }
                     } else {
                         if (callback != null) {
-                            callback.onError(errorCode);
+                            JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                         }
                     }
 
@@ -436,7 +437,7 @@ public class MessageManager implements IMessageManager {
             });
         } else {
             if (callback != null) {
-                callback.onSuccess(localMessages);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(localMessages));
             }
         }
     }
@@ -471,7 +472,7 @@ public class MessageManager implements IMessageManager {
         //判空
         if (conversation == null || messageIds == null || messageIds.isEmpty()) {
             if (callback != null) {
-                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
             }
             return;
         }
@@ -490,7 +491,7 @@ public class MessageManager implements IMessageManager {
         //判空
         if (deleteList.isEmpty()) {
             if (callback != null) {
-                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
             }
             return;
         }
@@ -506,7 +507,7 @@ public class MessageManager implements IMessageManager {
                 notifyMessageRemoved(conversation, deleteList);
                 //执行回调
                 if (callback != null) {
-                    callback.onSuccess();
+                    JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
                 }
             }
 
@@ -514,7 +515,7 @@ public class MessageManager implements IMessageManager {
             public void onError(int errorCode) {
                 JLogger.e("MSG-Delete", "by messageId, fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -525,7 +526,7 @@ public class MessageManager implements IMessageManager {
         //判空
         if (conversation == null || clientMsgNos == null || clientMsgNos.isEmpty()) {
             if (callback != null) {
-                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
             }
             return;
         }
@@ -553,7 +554,7 @@ public class MessageManager implements IMessageManager {
         //判空
         if (deleteClientMsgNoList.isEmpty()) {
             if (callback != null) {
-                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
             }
             return;
         }
@@ -565,7 +566,7 @@ public class MessageManager implements IMessageManager {
             //通知会话更新
             notifyMessageRemoved(conversation, deleteLocalList);
             if (callback != null) {
-                callback.onSuccess();
+                JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
             }
             return;
         }
@@ -581,7 +582,7 @@ public class MessageManager implements IMessageManager {
                 notifyMessageRemoved(conversation, deleteLocalList);
                 //执行回调
                 if (callback != null) {
-                    callback.onSuccess();
+                    JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
                 }
             }
 
@@ -589,7 +590,7 @@ public class MessageManager implements IMessageManager {
             public void onError(int errorCode) {
                 JLogger.e("MSG-Delete", "by clientMsgNo, fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -610,7 +611,7 @@ public class MessageManager implements IMessageManager {
                 notifyMessageCleared(conversation, finalStartTime, null);
                 //执行回调
                 if (callback != null) {
-                    callback.onSuccess();
+                    JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
                 }
             }
 
@@ -618,7 +619,7 @@ public class MessageManager implements IMessageManager {
             public void onError(int errorCode) {
                 JLogger.e("MSG-Clear", "fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -634,7 +635,7 @@ public class MessageManager implements IMessageManager {
 
             if (m.getContentType().equals(RecallInfoMessage.CONTENT_TYPE)) {
                 if (callback != null) {
-                    callback.onError(JErrorCode.MESSAGE_ALREADY_RECALLED);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(JErrorCode.MESSAGE_ALREADY_RECALLED));
                 }
                 return;
             }
@@ -657,7 +658,7 @@ public class MessageManager implements IMessageManager {
                     messageList.add((ConcreteMessage) m);
                     notifyMessageRemoved(m.getConversation(), messageList);
                     if (callback != null) {
-                        callback.onSuccess(m);
+                        JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(m));
                     }
                 }
 
@@ -665,13 +666,13 @@ public class MessageManager implements IMessageManager {
                 public void onError(int errorCode) {
                     JLogger.e("MSG-Recall", "fail, code is " + errorCode);
                     if (callback != null) {
-                        callback.onError(errorCode);
+                        JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                     }
                 }
             });
         } else {
             if (callback != null) {
-                callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
             }
         }
     }
@@ -688,7 +689,7 @@ public class MessageManager implements IMessageManager {
                 mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
-                    callback.onSuccess(result);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(result));
                 }
             }
 
@@ -696,7 +697,7 @@ public class MessageManager implements IMessageManager {
             public void onError(int errorCode) {
                 JLogger.e("MSG-Get", "getRemoteMessages, fail, errorCode is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -706,7 +707,7 @@ public class MessageManager implements IMessageManager {
     public void getLocalAndRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetLocalAndRemoteMessagesCallback callback) {
         if (count <= 0) {
             if (callback != null) {
-                callback.onGetLocalList(new ArrayList<>(), false);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onGetLocalList(new ArrayList<>(), false));
             }
             return;
         }
@@ -723,7 +724,8 @@ public class MessageManager implements IMessageManager {
             needRemote = isRemoteMessagesNeeded(localMessages, count, firstMessageSeqNo);
         }
         if (callback != null) {
-            callback.onGetLocalList(localMessages, needRemote);
+            boolean finalNeedRemote = needRemote;
+            JThreadPoolExecutor.runOnDelegateThread(() -> callback.onGetLocalList(localMessages, finalNeedRemote));
         }
         if (needRemote) {
             getRemoteMessages(conversation, count, startTime, direction, new IGetMessagesCallback() {
@@ -741,7 +743,7 @@ public class MessageManager implements IMessageManager {
                     });
                     //返回合并后的消息列表
                     if (callback != null) {
-                        callback.onGetRemoteList(mergeList);
+                        JThreadPoolExecutor.runOnDelegateThread(() -> callback.onGetRemoteList(mergeList));
                     }
                 }
 
@@ -749,7 +751,7 @@ public class MessageManager implements IMessageManager {
                 public void onError(int errorCode) {
                     JLogger.e("MSG-Get", "getLocalAndRemoteMessages, fail, errorCode is " + errorCode);
                     if (callback != null) {
-                        callback.onGetRemoteListError(errorCode);
+                        JThreadPoolExecutor.runOnDelegateThread(() -> callback.onGetRemoteListError(errorCode));
                     }
                 }
             });
@@ -801,7 +803,7 @@ public class MessageManager implements IMessageManager {
                 JLogger.i("MSG-ReadReceipt", "sendReadReceipt, success");
                 mCore.getDbManager().setMessagesRead(messageIds);
                 if (callback != null) {
-                    callback.onSuccess();
+                    JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
                 }
             }
 
@@ -809,7 +811,7 @@ public class MessageManager implements IMessageManager {
             public void onError(int errorCode) {
                 JLogger.e("MSG-ReadReceipt", "sendReadReceipt, fail, errorCode is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -830,7 +832,7 @@ public class MessageManager implements IMessageManager {
                     }
                 });
                 if (callback != null) {
-                    callback.onSuccess(readMembers, unreadMembers);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(readMembers, unreadMembers));
                 }
             }
 
@@ -838,7 +840,7 @@ public class MessageManager implements IMessageManager {
             public void onError(int errorCode) {
                 JLogger.e("MSG-GroupReadDetail", "fail, errorCode is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -853,7 +855,7 @@ public class MessageManager implements IMessageManager {
                 mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
-                    callback.onSuccess(result);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(result));
                 }
             }
 
@@ -861,7 +863,7 @@ public class MessageManager implements IMessageManager {
             public void onError(int errorCode) {
                 JLogger.e("MSG-GetMerge", "fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -876,7 +878,7 @@ public class MessageManager implements IMessageManager {
                 mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
-                    callback.onSuccess(result);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(result));
                 }
             }
 
@@ -884,7 +886,7 @@ public class MessageManager implements IMessageManager {
             public void onError(int errorCode) {
                 JLogger.e("MSG-GetMention", "fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -914,7 +916,7 @@ public class MessageManager implements IMessageManager {
     public void broadcastMessage(MessageContent content, List<Conversation> conversations, IBroadcastMessageCallback callback) {
         if (conversations.size() == 0) {
             if (callback != null) {
-                callback.onComplete();
+                JThreadPoolExecutor.runOnDelegateThread(callback::onComplete);
             }
             return;
         }
@@ -928,7 +930,7 @@ public class MessageManager implements IMessageManager {
                                       IBroadcastMessageCallback callback) {
         if (conversations.size() == 0) {
             if (callback != null) {
-                callback.onComplete();
+                JThreadPoolExecutor.runOnDelegateThread(callback::onComplete);
             }
             return;
         }
@@ -952,11 +954,11 @@ public class MessageManager implements IMessageManager {
                                               int totalCount,
                                               IBroadcastMessageCallback callback) {
         if (callback != null) {
-            callback.onProgress(message, errorCode, processCount, totalCount);
+            JThreadPoolExecutor.runOnDelegateThread(() -> callback.onProgress(message, errorCode, processCount, totalCount));
         }
         if (conversations.size() <= 1) {
             if (callback != null) {
-                callback.onComplete();
+                JThreadPoolExecutor.runOnDelegateThread(callback::onComplete);
             }
         } else {
             conversations.remove(0);
@@ -1097,7 +1099,7 @@ public class MessageManager implements IMessageManager {
                             }
                             if (mSyncListenerMap != null) {
                                 for (Map.Entry<String, IMessageSyncListener> entry : mSyncListenerMap.entrySet()) {
-                                    entry.getValue().onMessageSyncComplete();
+                                    JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onMessageSyncComplete());
                                 }
                             }
                         }
@@ -1155,7 +1157,7 @@ public class MessageManager implements IMessageManager {
         updateUserInfo(messagesToSave);
     }
 
-    private Message handleRecallCmdMessage(Conversation conversation,String messageId, Map<String, String> extra) {
+    private Message handleRecallCmdMessage(Conversation conversation, String messageId, Map<String, String> extra) {
         RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
         recallInfoMessage.setExtra(extra);
         mCore.getDbManager().updateMessageContentWithMessageId(recallInfoMessage, RecallInfoMessage.CONTENT_TYPE, messageId);
@@ -1188,12 +1190,12 @@ public class MessageManager implements IMessageManager {
             //recall message
             if (message.getContentType().equals(RecallCmdMessage.CONTENT_TYPE)) {
                 RecallCmdMessage cmd = (RecallCmdMessage) message.getContent();
-                Message recallMessage = handleRecallCmdMessage(message.getConversation(),cmd.getOriginalMessageId(), cmd.getExtra());
+                Message recallMessage = handleRecallCmdMessage(message.getConversation(), cmd.getOriginalMessageId(), cmd.getExtra());
                 //recallMessage 为空表示被撤回的消息本地不存在，不需要回调
                 if (recallMessage != null) {
                     if (mListenerMap != null) {
                         for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
-                            entry.getValue().onMessageRecall(recallMessage);
+                            JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onMessageRecall(recallMessage));
                         }
                     }
                 }
@@ -1218,7 +1220,7 @@ public class MessageManager implements IMessageManager {
                 mCore.getDbManager().setMessagesRead(readNtfMessage.getMessageIds());
                 if (mReadReceiptListenerMap != null) {
                     for (Map.Entry<String, IMessageReadReceiptListener> entry : mReadReceiptListenerMap.entrySet()) {
-                        entry.getValue().onMessagesRead(message.getConversation(), readNtfMessage.getMessageIds());
+                        JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onMessagesRead(message.getConversation(), readNtfMessage.getMessageIds()));
                     }
                 }
                 continue;
@@ -1230,7 +1232,7 @@ public class MessageManager implements IMessageManager {
                 mCore.getDbManager().setGroupMessageReadInfo(groupReadNtfMessage.getMessages());
                 if (mReadReceiptListenerMap != null) {
                     for (Map.Entry<String, IMessageReadReceiptListener> entry : mReadReceiptListenerMap.entrySet()) {
-                        entry.getValue().onGroupMessagesRead(message.getConversation(), groupReadNtfMessage.getMessages());
+                        JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onGroupMessagesRead(message.getConversation(), groupReadNtfMessage.getMessages()));
                     }
                 }
                 continue;
@@ -1307,7 +1309,7 @@ public class MessageManager implements IMessageManager {
 
             if (mListenerMap != null) {
                 for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
-                    entry.getValue().onMessageReceive(message);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onMessageReceive(message));
                 }
             }
         }
@@ -1336,8 +1338,9 @@ public class MessageManager implements IMessageManager {
         mCore.getDbManager().clearMessages(conversation, startTime, senderId);
         //通知消息回调
         if (mListenerMap != null) {
+            long finalStartTime = startTime;
             for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
-                entry.getValue().onMessageClear(conversation, startTime, senderId);
+                JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onMessageClear(conversation, finalStartTime, senderId));
             }
         }
         //通知会话更新
@@ -1357,7 +1360,7 @@ public class MessageManager implements IMessageManager {
                 messageClientMsgNos.add(messages.get(i).getClientMsgNo());
             }
             for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
-                entry.getValue().onMessageDelete(conversation, messageClientMsgNos);
+                JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onMessageDelete(conversation, messageClientMsgNos));
             }
         }
         //通知会话更新

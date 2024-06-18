@@ -16,6 +16,7 @@ import com.jet.im.internal.model.messages.ClearUnreadMessage;
 import com.jet.im.internal.model.messages.TopConvMessage;
 import com.jet.im.internal.model.messages.UnDisturbConvMessage;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JThreadPoolExecutor;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.ConversationMentionInfo;
@@ -48,7 +49,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 JLogger.i("CONV-Create", "success");
                 ConcreteConversationInfo added = doConversationsAdd(conversationInfo);
                 if (callback != null) {
-                    callback.onSuccess(added);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onSuccess(added));
                 }
             }
 
@@ -56,7 +57,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onError(int errorCode) {
                 JLogger.e("CONV-Create", "fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -91,13 +92,13 @@ public class ConversationManager implements IConversationManager, MessageManager
                 ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
                 mCore.getDbManager().deleteConversationInfo(conversation);
                 if (callback != null) {
-                    callback.onSuccess();
+                    JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
                 }
                 if (conversationInfo != null && mListenerMap != null) {
                     List<ConversationInfo> list = new ArrayList<>();
                     list.add(conversationInfo);
                     for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                        entry.getValue().onConversationInfoDelete(list);
+                        JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoDelete(list));
                     }
                 }
             }
@@ -106,7 +107,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onError(int errorCode) {
                 JLogger.e("CONV-Delete", "fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -120,7 +121,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             List<ConversationInfo> l = new ArrayList<>();
             l.add(info);
             for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                entry.getValue().onConversationInfoUpdate(l);
+                JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoUpdate(l));
             }
         }
     }
@@ -138,14 +139,14 @@ public class ConversationManager implements IConversationManager, MessageManager
                 JLogger.i("CONV-Mute", "success");
                 mCore.getDbManager().setMute(conversation, isMute);
                 if (callback != null) {
-                    callback.onSuccess();
+                    JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
                 }
                 ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
                 if (conversationInfo != null && mListenerMap != null) {
                     List<ConversationInfo> list = new ArrayList<>();
                     list.add(conversationInfo);
                     for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                        entry.getValue().onConversationInfoUpdate(list);
+                        JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoUpdate(list));
                     }
                 }
             }
@@ -154,7 +155,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onError(int errorCode) {
                 JLogger.e("CONV-Mute", "fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -168,14 +169,14 @@ public class ConversationManager implements IConversationManager, MessageManager
                 JLogger.i("CONV-Top", "success");
                 mCore.getDbManager().setTop(conversation, isTop, timestamp);
                 if (callback != null) {
-                    callback.onSuccess();
+                    JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
                 }
                 ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
                 if (conversationInfo != null && mListenerMap != null) {
                     List<ConversationInfo> list = new ArrayList<>();
                     list.add(conversationInfo);
                     for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                        entry.getValue().onConversationInfoUpdate(list);
+                        JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoUpdate(list));
                     }
                 }
             }
@@ -184,7 +185,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onError(int errorCode) {
                 JLogger.e("CONV-Top", "fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -205,7 +206,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         ConcreteConversationInfo info = mCore.getDbManager().getConversationInfo(conversation);
         if (info == null) {
             if (callback != null) {
-                callback.onError(JErrorCode.INVALID_PARAM);
+                JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(JErrorCode.INVALID_PARAM));
             }
             return;
         }
@@ -217,7 +218,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 mCore.getDbManager().setMentionInfo(conversation, "");
                 noticeTotalUnreadCountChange();
                 if (callback != null) {
-                    callback.onSuccess();
+                    JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
                 }
             }
 
@@ -225,7 +226,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onError(int errorCode) {
                 JLogger.e("CONV-ClearUnread", "fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -242,7 +243,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 mCore.getDbManager().clearMentionInfo();
                 noticeTotalUnreadCountChange();
                 if (callback != null) {
-                    callback.onSuccess();
+                    JThreadPoolExecutor.runOnDelegateThread(callback::onSuccess);
                 }
             }
 
@@ -250,7 +251,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onError(int errorCode) {
                 JLogger.e("CONV-ClearTotal", "fail, code is " + errorCode);
                 if (callback != null) {
-                    callback.onError(errorCode);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> callback.onError(errorCode));
                 }
             }
         });
@@ -314,7 +315,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                             if (mListenerMap != null) {
                                 List<ConversationInfo> l = new ArrayList<>(insertList);
                                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                                    entry.getValue().onConversationInfoAdd(l);
+                                    JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoAdd(l));
                                 }
                             }
                         }
@@ -322,7 +323,8 @@ public class ConversationManager implements IConversationManager, MessageManager
                             if (mListenerMap != null) {
                                 List<ConversationInfo> l = new ArrayList<>(updateList);
                                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                                    entry.getValue().onConversationInfoUpdate(l);
+                                    JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoUpdate(l));
+
                                 }
                             }
                         }
@@ -341,7 +343,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     List<ConversationInfo> l = new ArrayList<>(deleteConversationInfoList);
                     if (mListenerMap != null) {
                         for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                            entry.getValue().onConversationInfoDelete(l);
+                            JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoDelete(l));
                         }
                     }
                 }
@@ -358,7 +360,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     }
                     if (mSyncListenerMap != null) {
                         for (Map.Entry<String, IConversationSyncListener> entry : mSyncListenerMap.entrySet()) {
-                            entry.getValue().onConversationSyncComplete();
+                            JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationSyncComplete());
                         }
                     }
                     if (callback != null) {
@@ -420,7 +422,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         if (mListenerMap != null) {
             for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                entry.getValue().onConversationInfoDelete(results);
+                JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoDelete(results));
             }
         }
     }
@@ -465,7 +467,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         //通知更新会话
         if (!infoList.isEmpty() && mListenerMap != null) {
             for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                entry.getValue().onConversationInfoUpdate(infoList);
+                JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoUpdate(infoList));
             }
         }
         //通知更新总未读数
@@ -529,7 +531,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             if (mListenerMap != null) {
                 List<ConversationInfo> result = new ArrayList<>(l);
                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                    entry.getValue().onConversationInfoAdd(result);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoAdd(result));
                 }
             }
         } else {
@@ -559,7 +561,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 List<ConversationInfo> result = new ArrayList<>();
                 result.add(info);
                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                    entry.getValue().onConversationInfoUpdate(result);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoUpdate(result));
                 }
             }
         }
@@ -671,7 +673,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             List<ConversationInfo> result = new ArrayList<>();
             result.add(info);
             for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                entry.getValue().onConversationInfoUpdate(result);
+                JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoUpdate(result));
             }
         }
     }
@@ -700,7 +702,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             List<ConversationInfo> result = new ArrayList<>();
             result.add(info);
             for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                entry.getValue().onConversationInfoUpdate(result);
+                JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoUpdate(result));
             }
         }
     }
@@ -744,7 +746,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         if (mListenerMap != null) {
             for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                entry.getValue().onTotalUnreadMessageCountUpdate(count);
+                JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onTotalUnreadMessageCountUpdate(count));
             }
         }
     }
@@ -764,7 +766,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     if (mListenerMap != null) {
                         List<ConversationInfo> l = new ArrayList<>(insertList);
                         for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                            entry.getValue().onConversationInfoAdd(l);
+                            JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoAdd(l));
                         }
                     }
                 }
@@ -779,7 +781,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 List<ConversationInfo> l = new ArrayList<>();
                 l.add(old);
                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                    entry.getValue().onConversationInfoUpdate(l);
+                    JThreadPoolExecutor.runOnDelegateThread(() -> entry.getValue().onConversationInfoUpdate(l));
                 }
             }
         }
