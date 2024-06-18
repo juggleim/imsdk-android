@@ -41,16 +41,6 @@ object FragmentProviders {
     lateinit var createChannel: CreateChannelFragmentProvider
 
     /**
-     * Returns the ChannelSettingsFragment provider.
-     *
-     * @return The [ChannelSettingsFragmentProvider]
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var channelSettings: ChannelSettingsFragmentProvider
-
-
-    /**
      * Returns the InviteUserFragment provider.
      *
      * @return The [InviteUserFragmentProvider]
@@ -110,15 +100,6 @@ object FragmentProviders {
                 .setUseHeader(true)
                 .build()
         }
-
-
-        this.channelSettings = ChannelSettingsFragmentProvider { channelUrl, args ->
-            ChannelSettingsFragment.Builder(channelUrl).withArguments(args)
-                .setUseHeader(true)
-                .build()
-        }
-
-
 
         this.inviteUser = InviteUserFragmentProvider { channelUrl, args ->
             InviteUserFragment.Builder(channelUrl).withArguments(args)

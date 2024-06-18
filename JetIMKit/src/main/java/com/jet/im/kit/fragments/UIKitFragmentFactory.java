@@ -54,22 +54,6 @@ public class UIKitFragmentFactory {
     }
 
     /**
-     * Returns the ChannelSettingsFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link ChannelSettingsFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getChannelSettings()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newChannelSettingsFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getChannelSettings().provide(channelUrl, args);
-    }
-
-    /**
      * Returns the CreateChannelFragment.
      *
      * @param channelType the channel type to be created.

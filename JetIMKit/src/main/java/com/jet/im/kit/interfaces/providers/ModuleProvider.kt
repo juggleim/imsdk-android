@@ -70,21 +70,6 @@ fun interface CreateOpenChannelModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when ChannelSettingsModule is created.
- * @see [ModuleProviders.channelSettings]
- * @since 3.9.0
- */
-fun interface ChannelSettingsModuleProvider {
-    /**
-     * Returns the ChannelSettingsModule.
-     *
-     * @return The [ChannelSettingsModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): ChannelSettingsModule
-}
-
-/**
  * Interface definition to be invoked when InviteUserModule is created.
  * @see [ModuleProviders.inviteUser]
  * @since 3.9.0

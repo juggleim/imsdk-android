@@ -7,7 +7,6 @@ import com.jet.im.kit.interfaces.UserInfo
 import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.providers.ModuleProviders
 import com.jet.im.kit.vm.ChannelListViewModel
-import com.jet.im.kit.vm.ChannelSettingsViewModel
 import com.jet.im.kit.vm.ChannelViewModel
 import com.jet.im.kit.vm.ChatNotificationChannelViewModel
 import com.jet.im.kit.vm.CreateChannelViewModel
@@ -15,7 +14,6 @@ import com.jet.im.kit.vm.FeedNotificationChannelViewModel
 import com.jet.im.kit.vm.InviteUserViewModel
 import com.jet.im.kit.vm.MessageThreadViewModel
 import com.sendbird.android.message.BaseMessage
-import com.sendbird.android.message.query.MessageSearchQuery
 import com.sendbird.android.params.MessageListParams
 import com.sendbird.android.params.ThreadMessageListParams
 
@@ -67,22 +65,6 @@ fun interface CreateChannelViewModelProvider {
      * @since 3.9.0
      */
     fun provide(owner: ViewModelStoreOwner, queryHandler: PagedQueryHandler<UserInfo>?): CreateChannelViewModel
-}
-
-
-/**
- * Interface definition to be invoked when ChannelSettingsViewModel is created.
- * @see [ModuleProviders.channelSettings]
- * @since 3.9.0
- */
-fun interface ChannelSettingsViewModelProvider {
-    /**
-     * Returns the ChannelSettingsViewModel.
-     *
-     * @return The [ChannelSettingsViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String): ChannelSettingsViewModel
 }
 
 /**

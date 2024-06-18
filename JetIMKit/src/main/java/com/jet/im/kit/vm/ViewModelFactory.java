@@ -37,9 +37,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new ChannelViewModel((String) Objects.requireNonNull(params)[0], params.length > 1 ? (MessageListParams) params[1] : null, params.length > 2 ? (ChannelConfig) params[2] : UIKitConfig.getGroupChannelConfig());
         } else if (modelClass.isAssignableFrom(ChannelListViewModel.class)) {
             return (T) new ChannelListViewModel(params != null && params.length > 0 ? (IConversationManager) params[0] : null);
-        } else if (modelClass.isAssignableFrom(ChannelSettingsViewModel.class)) {
-            return (T) new ChannelSettingsViewModel((String) Objects.requireNonNull(params)[0]);
-        }  else if (modelClass.isAssignableFrom(CreateChannelViewModel.class)) {
+        } else if (modelClass.isAssignableFrom(CreateChannelViewModel.class)) {
             return (T) new CreateChannelViewModel(params != null && params.length > 0 ? (PagedQueryHandler<UserInfo>) params[0] : null);
         } else if (modelClass.isAssignableFrom(InviteUserViewModel.class)) {
             return (T) new InviteUserViewModel((String) Objects.requireNonNull(params)[0], params.length > 1 ? (PagedQueryHandler<UserInfo>) params[1] : null);
