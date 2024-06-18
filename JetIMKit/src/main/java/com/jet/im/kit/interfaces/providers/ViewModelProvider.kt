@@ -6,9 +6,7 @@ import com.jet.im.kit.interfaces.PagedQueryHandler
 import com.jet.im.kit.interfaces.UserInfo
 import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.providers.ModuleProviders
-import com.jet.im.kit.vm.BannedUserListViewModel
 import com.jet.im.kit.vm.ChannelListViewModel
-import com.jet.im.kit.vm.ChannelPushSettingViewModel
 import com.jet.im.kit.vm.ChannelSettingsViewModel
 import com.jet.im.kit.vm.ChannelViewModel
 import com.jet.im.kit.vm.ChatNotificationChannelViewModel
@@ -18,17 +16,10 @@ import com.jet.im.kit.vm.InviteUserViewModel
 import com.jet.im.kit.vm.MemberListViewModel
 import com.jet.im.kit.vm.MessageSearchViewModel
 import com.jet.im.kit.vm.MessageThreadViewModel
-import com.jet.im.kit.vm.ModerationViewModel
-import com.jet.im.kit.vm.MutedMemberListViewModel
-import com.jet.im.kit.vm.OperatorListViewModel
-import com.jet.im.kit.vm.RegisterOperatorViewModel
-import com.sendbird.android.channel.ChannelType
 import com.sendbird.android.message.BaseMessage
 import com.sendbird.android.message.query.MessageSearchQuery
 import com.sendbird.android.params.MessageListParams
 import com.sendbird.android.params.ThreadMessageListParams
-import com.sendbird.android.user.Member
-import com.sendbird.android.user.User
 
 /**
  * Interface definition to be invoked when ChannelListViewModel is created.
@@ -116,40 +107,6 @@ fun interface InviteUserViewModelProvider {
 }
 
 /**
- * Interface definition to be invoked when RegisterOperatorViewModel is created.
- * @see [ModuleProviders.registerOperator]
- * @since 3.9.0
- */
-fun interface RegisterOperatorViewModelProvider {
-    /**
-     * Returns the RegisterOperatorViewModel.
-     *
-     * @return The [RegisterOperatorViewModel].
-     * @since 3.9.0
-     */
-    fun provide(
-        owner: ViewModelStoreOwner,
-        channelUrl: String,
-        queryHandler: PagedQueryHandler<Member>?
-    ): RegisterOperatorViewModel
-}
-
-/**
- * Interface definition to be invoked when ModerationViewModel is created.
- * @see [ModuleProviders.moderation]
- * @since 3.9.0
- */
-fun interface ModerationViewModelProvider {
-    /**
-     * Returns the ModerationViewModel.
-     *
-     * @return The [ModerationViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String): ModerationViewModel
-}
-
-/**
  * Interface definition to be invoked when MemberListViewModel is created.
  * @see [ModuleProviders.memberList]
  * @since 3.9.0
@@ -162,56 +119,6 @@ fun interface MemberListViewModelProvider {
      * @since 3.9.0
      */
     fun provide(owner: ViewModelStoreOwner, channelUrl: String): MemberListViewModel
-}
-
-/**
- * Interface definition to be invoked when BannedUserListViewModel is created.
- * @see [ModuleProviders.bannedUserList]
- * @since 3.9.0
- */
-fun interface BannedUserListViewModelProvider {
-    /**
-     * Returns the BannedUserListViewModel.
-     *
-     * @return The [BannedUserListViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String, channelType: ChannelType?): BannedUserListViewModel
-}
-
-/**
- * Interface definition to be invoked when MutedMemberListViewModel is created.
- * @see [ModuleProviders.mutedMemberList]
- * @since 3.9.0
- */
-fun interface MutedMemberListViewModelProvider {
-    /**
-     * Returns the MutedMemberListViewModel.
-     *
-     * @return The [MutedMemberListViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String): MutedMemberListViewModel
-}
-
-/**
- * Interface definition to be invoked when OperatorListViewModel is created.
- * @see [ModuleProviders.operatorList]
- * @since 3.9.0
- */
-fun interface OperatorListViewModelProvider {
-    /**
-     * Returns the OperatorListViewModel.
-     *
-     * @return The [OperatorListViewModel].
-     * @since 3.9.0
-     */
-    fun provide(
-        owner: ViewModelStoreOwner,
-        channelUrl: String,
-        channelType: ChannelType?,
-        queryHandler: PagedQueryHandler<User>?
-    ): OperatorListViewModel
 }
 
 /**
@@ -247,21 +154,6 @@ fun interface MessageThreadViewModelProvider {
         message: BaseMessage,
         params: ThreadMessageListParams?
     ): MessageThreadViewModel
-}
-
-/**
- * Interface definition to be invoked when ChannelPushSettingViewModel is created.
- * @see [ModuleProviders.channelPushSetting]
- * @since 3.9.0
- */
-fun interface ChannelPushSettingViewModelProvider {
-    /**
-     * Returns the ChannelPushSettingViewModel.
-     *
-     * @return The [ChannelPushSettingViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String): ChannelPushSettingViewModel
 }
 
 /**

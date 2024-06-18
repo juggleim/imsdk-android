@@ -10,13 +10,10 @@ import com.jet.im.kit.interfaces.PagedQueryHandler;
 import com.jet.im.kit.interfaces.UserInfo;
 import com.jet.im.kit.model.configurations.ChannelConfig;
 import com.jet.im.kit.model.configurations.UIKitConfig;
-import com.sendbird.android.channel.ChannelType;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.query.MessageSearchQuery;
 import com.sendbird.android.params.MessageListParams;
 import com.sendbird.android.params.ThreadMessageListParams;
-import com.sendbird.android.user.Member;
-import com.sendbird.android.user.User;
 
 import java.util.Objects;
 
@@ -44,32 +41,13 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new MessageSearchViewModel((String) Objects.requireNonNull(params)[0], params.length > 1 ? (MessageSearchQuery) params[1] : null);
         } else if (modelClass.isAssignableFrom(ChannelSettingsViewModel.class)) {
             return (T) new ChannelSettingsViewModel((String) Objects.requireNonNull(params)[0]);
-        } else if (modelClass.isAssignableFrom(ModerationViewModel.class)) {
-            return (T) new ModerationViewModel((String) Objects.requireNonNull(params)[0]);
-        } else if (modelClass.isAssignableFrom(BannedUserListViewModel.class)) {
-            return (T) new BannedUserListViewModel((String) Objects.requireNonNull(params)[0], params.length > 1 ? (ChannelType) params[1] : null);
-        } else if (modelClass.isAssignableFrom(CreateChannelViewModel.class)) {
+        }  else if (modelClass.isAssignableFrom(CreateChannelViewModel.class)) {
             return (T) new CreateChannelViewModel(params != null && params.length > 0 ? (PagedQueryHandler<UserInfo>) params[0] : null);
         } else if (modelClass.isAssignableFrom(InviteUserViewModel.class)) {
             return (T) new InviteUserViewModel((String) Objects.requireNonNull(params)[0], params.length > 1 ? (PagedQueryHandler<UserInfo>) params[1] : null);
         } else if (modelClass.isAssignableFrom(MemberListViewModel.class)) {
             return (T) new MemberListViewModel((String) Objects.requireNonNull(params)[0]);
-        } else if (modelClass.isAssignableFrom(MutedMemberListViewModel.class)) {
-            return (T) new MutedMemberListViewModel((String) Objects.requireNonNull(params)[0], params.length > 1 ? (PagedQueryHandler<Member>) params[1] : null);
-        } else if (modelClass.isAssignableFrom(OperatorListViewModel.class)) {
-            switch (Objects.requireNonNull(params).length) {
-                case 2:
-                    return (T) new OperatorListViewModel((String) params[0], (ChannelType) params[1], null);
-                case 3:
-                    return (T) new OperatorListViewModel((String) params[0], (ChannelType) params[1], (PagedQueryHandler<User>) params[2]);
-                default:
-                    return (T) new OperatorListViewModel((String) params[0], null, null);
-            }
-        } else if (modelClass.isAssignableFrom(RegisterOperatorViewModel.class)) {
-            return (T) new RegisterOperatorViewModel((String) Objects.requireNonNull(params)[0], params.length > 1 ? (PagedQueryHandler<Member>) params[1] : null);
-        } else if (modelClass.isAssignableFrom(ChannelPushSettingViewModel.class)) {
-            return (T) new ChannelPushSettingViewModel((String) Objects.requireNonNull(params)[0]);
-        } else if (modelClass.isAssignableFrom(MessageThreadViewModel.class)) {
+        }  else if (modelClass.isAssignableFrom(MessageThreadViewModel.class)) {
             return (T) new MessageThreadViewModel((String) Objects.requireNonNull(params)[0], (BaseMessage) Objects.requireNonNull(params)[1], params.length > 2 ? (ThreadMessageListParams) params[2] : null);
         } else {
             throw new IllegalArgumentException("Unknown ViewModel class");

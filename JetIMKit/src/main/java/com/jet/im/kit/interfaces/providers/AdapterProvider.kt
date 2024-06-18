@@ -22,20 +22,6 @@ fun interface MessageListAdapterProvider {
     fun provide(channel: GroupChannel, uiParams: MessageListUIParams): MessageListAdapter
 }
 
-/**
- * Interface definition to be invoked when banned user list adapter is created.
- * @see [AdapterProviders.bannedUserList]
- * @since 3.9.0
- */
-fun interface BannedUserListAdapterProvider {
-    /**
-     * Returns the BannedUserListAdapter.
-     *
-     * @return The [BannedUserListAdapter].
-     * @since 3.9.0
-     */
-    fun provide(): BannedUserListAdapter
-}
 
 /**
  * Interface definition to be invoked when channel list adapter is created.
@@ -112,35 +98,6 @@ fun interface MessageSearchAdapterProvider {
     fun provide(): MessageSearchAdapter
 }
 
-/**
- * Interface definition to be invoked when muted member list adapter is created.
- * @see [AdapterProviders.mutedMemberList]
- * @since 3.9.0
- */
-fun interface MutedMemberListAdapterProvider {
-    /**
-     * Returns the MutedMemberListAdapter.
-     *
-     * @return The [MutedMemberListAdapter].
-     * @since 3.9.0
-     */
-    fun provide(): MutedMemberListAdapter
-}
-
-/**
- * Interface definition to be invoked when operator list adapter is created.
- * @see [AdapterProviders.operatorList]
- * @since 3.9.0
- */
-fun interface OperatorListAdapterProvider {
-    /**
-     * Returns the OperatorListAdapter.
-     *
-     * @return The [OperatorListAdapter].
-     * @since 3.9.0
-     */
-    fun provide(): OperatorListAdapter
-}
 
 /**
  * Interface definition to be invoked when participant list adapter is created.
@@ -155,21 +112,6 @@ fun interface ParticipantListAdapterProvider {
      * @since 3.9.0
      */
     fun provide(): ParticipantListAdapter
-}
-
-/**
- * Interface definition to be invoked when register operator list adapter is created.
- * @see [AdapterProviders.registerOperatorList]
- * @since 3.9.0
- */
-fun interface RegisterOperatorListAdapterProvider {
-    /**
-     * Returns the RegisterOperatorListAdapter.
-     *
-     * @return The [RegisterOperatorListAdapter].
-     * @since 3.9.0
-     */
-    fun provide(): RegisterOperatorListAdapter
 }
 
 /**

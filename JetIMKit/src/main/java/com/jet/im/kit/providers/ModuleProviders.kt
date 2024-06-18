@@ -70,24 +70,6 @@ object ModuleProviders {
     lateinit var inviteUser: InviteUserModuleProvider
 
     /**
-     * Returns the RegisterOperatorModule provider.
-     *
-     * @return The [RegisterOperatorModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var registerOperator: RegisterOperatorModuleProvider
-
-    /**
-     * Returns the ModerationModule provider.
-     *
-     * @return The [ModerationModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var moderation: ModerationModuleProvider
-
-    /**
      * Returns the MemberListModule provider.
      *
      * @return The [MemberListModuleProvider].
@@ -95,33 +77,6 @@ object ModuleProviders {
      */
     @JvmStatic
     lateinit var memberList: MemberListModuleProvider
-
-    /**
-     * Returns the BannedUserListModule provider.
-     *
-     * @return The [BannedUserListModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var bannedUserList: BannedUserListModuleProvider
-
-    /**
-     * Returns the MutedMemberListModule provider.
-     *
-     * @return The [MutedMemberListModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var mutedMemberList: MutedMemberListModuleProvider
-
-    /**
-     * Returns the OperatorListModule provider.
-     *
-     * @return The [OperatorListModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var operatorList: OperatorListModuleProvider
 
     /**
      * Returns the MessageSearchModule provider.
@@ -149,15 +104,6 @@ object ModuleProviders {
      */
     @JvmStatic
     lateinit var participantList: ParticipantListModuleProvider
-
-    /**
-     * Returns the ChannelPushSettingModule provider.
-     *
-     * @return The [ChannelPushSettingModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var channelPushSetting: ChannelPushSettingModuleProvider
 
     /**
      * Returns the OpenChannelParticipantListModule provider.
@@ -196,25 +142,14 @@ object ModuleProviders {
 
         this.inviteUser = InviteUserModuleProvider { context, _ -> InviteUserModule(context) }
 
-        this.registerOperator = RegisterOperatorModuleProvider { context, _ -> RegisterOperatorModule(context) }
-
-        this.moderation = ModerationModuleProvider { context, _ -> ModerationModule(context) }
-
         this.memberList = MemberListModuleProvider { context, _ -> MemberListModule(context) }
 
-        this.bannedUserList = BannedUserListModuleProvider { context, _ -> BannedUserListModule(context) }
-
-        this.mutedMemberList = MutedMemberListModuleProvider { context, _ -> MutedMemberListModule(context) }
-
-        this.operatorList = OperatorListModuleProvider { context, _ -> OperatorListModule(context) }
 
         this.messageSearch = MessageSearchModuleProvider { context, _ -> MessageSearchModule(context) }
 
         this.messageThread = MessageThreadModuleProvider { context, _, message -> MessageThreadModule(context, message) }
 
         this.participantList = ParticipantListModuleProvider { context, _ -> ParticipantListModule(context) }
-
-        this.channelPushSetting = ChannelPushSettingModuleProvider { context, _ -> ChannelPushSettingModule(context) }
 
         this.feedNotificationChannel = FeedNotificationChannelModuleProvider { context, _, config ->
             FeedNotificationChannelModule(context, config)
