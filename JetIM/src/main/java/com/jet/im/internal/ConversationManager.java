@@ -16,7 +16,6 @@ import com.jet.im.internal.model.messages.ClearUnreadMessage;
 import com.jet.im.internal.model.messages.TopConvMessage;
 import com.jet.im.internal.model.messages.UnDisturbConvMessage;
 import com.jet.im.internal.util.JLogger;
-import com.jet.im.internal.util.JThreadPoolExecutor;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.ConversationMentionInfo;

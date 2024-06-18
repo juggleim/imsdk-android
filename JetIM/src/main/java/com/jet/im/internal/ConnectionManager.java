@@ -8,7 +8,6 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.util.JLogger;
-import com.jet.im.internal.util.JThreadPoolExecutor;
 import com.jet.im.push.PushChannel;
 import com.jet.im.push.PushManager;
 
