@@ -91,24 +91,6 @@ fun interface InviteUserFragmentProvider {
     fun provide(channelUrl: String, args: Bundle): InviteUserFragment
 }
 
-
-
-
-/**
- * Interface definition to be invoked when MemberListFragment is created.
- * @see [FragmentProviders.memberList]
- * @since 3.9.0
- */
-fun interface MemberListFragmentProvider {
-    /**
-     * Returns the MemberListFragment.
-     *
-     * @return The [MemberListFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelUrl: String, args: Bundle): MemberListFragment
-}
-
 /**
  * Interface definition to be invoked when MessageSearchFragment is created.
  * @see [FragmentProviders.messageSearch]

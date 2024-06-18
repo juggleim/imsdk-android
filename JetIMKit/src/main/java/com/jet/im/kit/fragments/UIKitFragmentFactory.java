@@ -119,22 +119,6 @@ public class UIKitFragmentFactory {
     }
 
     /**
-     * Returns the MemberListFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link MemberListFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getMemberList()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newMemberListFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getMemberList().provide(channelUrl, args);
-    }
-
-    /**
      * Returns the MessageThreadFragment.
      *
      * @param channelUrl the channel url for the target channel.

@@ -21,7 +21,6 @@ import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.params.GroupChannelUpdateParams;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.kit.activities.MemberListActivity;
 import com.jet.im.kit.activities.MessageSearchActivity;
 import com.jet.im.kit.consts.DialogEditTextParams;
 import com.jet.im.kit.consts.StringSet;
@@ -200,9 +199,7 @@ public class ChannelSettingsFragment extends BaseModuleFragment<ChannelSettingsM
         Logger.d(">> ChannelSettingsFragment::onBindSettingsMenuComponent()");
 
         menuComponent.setOnMenuClickListener(menuItemClickListener != null ? menuItemClickListener : (view, position, menu) -> {
-           if (menu == ChannelSettingsMenuComponent.Menu.MEMBERS) {
-                startMemberListActivity();
-            } else if (menu == ChannelSettingsMenuComponent.Menu.LEAVE_CHANNEL) {
+            if (menu == ChannelSettingsMenuComponent.Menu.LEAVE_CHANNEL) {
                 leaveChannel();
             } else {
                 startMessageSearchActivity();
@@ -214,12 +211,6 @@ public class ChannelSettingsFragment extends BaseModuleFragment<ChannelSettingsM
     private void startMessageSearchActivity() {
         if (isFragmentAlive()) {
             startActivity(MessageSearchActivity.newIntent(requireContext(), getViewModel().getChannelUrl()));
-        }
-    }
-
-    private void startMemberListActivity() {
-        if (isFragmentAlive()) {
-            startActivity(MemberListActivity.newIntent(requireContext(), getViewModel().getChannelUrl()));
         }
     }
 

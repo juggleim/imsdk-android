@@ -45,8 +45,6 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new CreateChannelViewModel(params != null && params.length > 0 ? (PagedQueryHandler<UserInfo>) params[0] : null);
         } else if (modelClass.isAssignableFrom(InviteUserViewModel.class)) {
             return (T) new InviteUserViewModel((String) Objects.requireNonNull(params)[0], params.length > 1 ? (PagedQueryHandler<UserInfo>) params[1] : null);
-        } else if (modelClass.isAssignableFrom(MemberListViewModel.class)) {
-            return (T) new MemberListViewModel((String) Objects.requireNonNull(params)[0]);
         }  else if (modelClass.isAssignableFrom(MessageThreadViewModel.class)) {
             return (T) new MessageThreadViewModel((String) Objects.requireNonNull(params)[0], (BaseMessage) Objects.requireNonNull(params)[1], params.length > 2 ? (ThreadMessageListParams) params[2] : null);
         } else {
