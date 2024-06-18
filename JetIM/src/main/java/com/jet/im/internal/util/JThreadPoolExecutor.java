@@ -77,43 +77,11 @@ public class JThreadPoolExecutor {
 
     private static final Thread mMainThread;
     private static final Handler mMainHandler;
-    public static Thread mDelegateThread;
-    public static Handler mDelegateHandler;
 
     static {
         Looper mainLooper = Looper.getMainLooper();
         mMainThread = mainLooper.getThread();
         mMainHandler = new Handler(mainLooper);
-    }
-
-    public static void setDelegateLooper(Looper delegateLooper) {
-        if (delegateLooper == null) return;
-        mDelegateThread = delegateLooper.getThread();
-        mDelegateHandler = new Handler(delegateLooper);
-    }
-
-    public static boolean isOnDelegateThread() {
-        return mDelegateThread != null && mDelegateThread == Thread.currentThread();
-    }
-
-    public static void runOnDelegateThread(Runnable r) {
-        if (isOnDelegateThread()) {
-            r.run();
-        } else if (mDelegateHandler != null) {
-            mDelegateHandler.post(r);
-        } else {
-            runOnMainThread(r);
-        }
-    }
-
-    public static void runOnDelegateThread(Runnable r, long delayMillis) {
-        if (delayMillis <= 0) {
-            runOnDelegateThread(r);
-        } else if (mDelegateHandler != null) {
-            mDelegateHandler.postDelayed(r, delayMillis);
-        } else {
-            mMainHandler.postDelayed(r, delayMillis);
-        }
     }
 
     public static boolean isOnMainThread() {

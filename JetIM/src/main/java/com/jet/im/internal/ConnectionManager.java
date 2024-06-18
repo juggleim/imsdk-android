@@ -227,7 +227,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
                 JetIMConst.ConnectionStatus finalOutStatus = outStatus;
                 for (Map.Entry<String, IConnectionStatusListener> entry :
                         mConnectionStatusListenerMap.entrySet()) {
-                    JThreadPoolExecutor.runOnDelegateThread(() -> {
+                    mCore.getCallbackHandler().post(() -> {
                         entry.getValue().onStatusChange(finalOutStatus, errorCode, extra);
                     });
                 }
@@ -267,14 +267,14 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             mCore.getSyncTimeFromDB();
             for (Map.Entry<String, IConnectionStatusListener> entry :
                     mConnectionStatusListenerMap.entrySet()) {
-                JThreadPoolExecutor.runOnDelegateThread(() -> {
+                mCore.getCallbackHandler().post(() -> {
                     entry.getValue().onDbOpen();
                 });
             }
         } else {
             for (Map.Entry<String, IConnectionStatusListener> entry :
                     mConnectionStatusListenerMap.entrySet()) {
-                JThreadPoolExecutor.runOnDelegateThread(() -> {
+                mCore.getCallbackHandler().post(() -> {
                     entry.getValue().onDbClose();
                 });
             }

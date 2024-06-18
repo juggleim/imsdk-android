@@ -33,8 +33,6 @@ import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
-import com.jet.im.model.MessageOptions;
-import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
@@ -67,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         HandlerThread sendThread = new HandlerThread("DEMO_TEST");
         sendThread.start();
-        JetIM.getInstance().setDelegateQueue(sendThread.getLooper());
+        JetIM.getInstance().setCallbackHandler(new Handler(sendThread.getLooper()));
         JetIM.getInstance().getConnectionManager().addConnectionStatusListener("mainActivity", new IConnectionManager.IConnectionStatusListener() {
             @Override
             public void onStatusChange(JetIMConst.ConnectionStatus status, int code, String extra) {

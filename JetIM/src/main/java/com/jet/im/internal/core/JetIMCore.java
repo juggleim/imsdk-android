@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
@@ -21,6 +22,7 @@ public class JetIMCore {
         HandlerThread sendThread = new HandlerThread("JET_SEND");
         sendThread.start();
         mSendHandler = new Handler(sendThread.getLooper());
+        mCallbackHandler = new Handler(Looper.getMainLooper());
         mWebSocket = new JWebSocket(mSendHandler);
     }
 
@@ -195,6 +197,15 @@ public class JetIMCore {
         return mSendHandler;
     }
 
+    public void setCallbackHandler(Handler callbackHandler) {
+        if (callbackHandler == null) return;
+        this.mCallbackHandler = callbackHandler;
+    }
+
+    public Handler getCallbackHandler() {
+        return mCallbackHandler;
+    }
+
     public static class ConnectionStatusInternal {
         public static final int IDLE = 0;
         public static final int CONNECTED = 1;
@@ -216,8 +227,8 @@ public class JetIMCore {
     private long mConversationSyncTime;
     private long mMessageSendSyncTime;
     private long mMessageReceiveTime;
+    private Handler mCallbackHandler;
     private final Handler mSendHandler;
-
     private final String APP_KEY = "AppKey";
     private final String TOKEN = "Token";
     private final String USER_ID = "UserId";
