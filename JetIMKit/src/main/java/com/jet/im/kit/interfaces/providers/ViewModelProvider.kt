@@ -13,7 +13,6 @@ import com.jet.im.kit.vm.ChatNotificationChannelViewModel
 import com.jet.im.kit.vm.CreateChannelViewModel
 import com.jet.im.kit.vm.FeedNotificationChannelViewModel
 import com.jet.im.kit.vm.InviteUserViewModel
-import com.jet.im.kit.vm.MemberListViewModel
 import com.jet.im.kit.vm.MessageSearchViewModel
 import com.jet.im.kit.vm.MessageThreadViewModel
 import com.sendbird.android.message.BaseMessage
@@ -104,21 +103,6 @@ fun interface InviteUserViewModelProvider {
         channelUrl: String,
         queryHandler: PagedQueryHandler<UserInfo>?
     ): InviteUserViewModel
-}
-
-/**
- * Interface definition to be invoked when MemberListViewModel is created.
- * @see [ModuleProviders.memberList]
- * @since 3.9.0
- */
-fun interface MemberListViewModelProvider {
-    /**
-     * Returns the MemberListViewModel.
-     *
-     * @return The [MemberListViewModel].
-     * @since 3.9.0
-     */
-    fun provide(owner: ViewModelStoreOwner, channelUrl: String): MemberListViewModel
 }
 
 /**

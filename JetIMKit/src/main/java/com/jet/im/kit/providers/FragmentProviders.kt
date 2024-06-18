@@ -60,15 +60,6 @@ object FragmentProviders {
     lateinit var inviteUser: InviteUserFragmentProvider
 
     /**
-     * Returns the MemberListFragment provider.
-     *
-     * @return The [MemberListFragmentProvider]
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var memberList: MemberListFragmentProvider
-
-    /**
      * Returns the MessageSearchFragment provider.
      *
      * @return The [MessageSearchFragmentProvider]
@@ -141,14 +132,6 @@ object FragmentProviders {
         this.inviteUser = InviteUserFragmentProvider { channelUrl, args ->
             InviteUserFragment.Builder(channelUrl).withArguments(args)
                 .setUseHeader(true)
-                .build()
-        }
-
-
-        this.memberList = MemberListFragmentProvider { channelUrl, args ->
-            MemberListFragment.Builder(channelUrl).withArguments(args)
-                .setUseHeader(true)
-                .setUseHeaderRightButton(true)
                 .build()
         }
 

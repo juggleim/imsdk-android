@@ -70,15 +70,6 @@ object ModuleProviders {
     lateinit var inviteUser: InviteUserModuleProvider
 
     /**
-     * Returns the MemberListModule provider.
-     *
-     * @return The [MemberListModuleProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var memberList: MemberListModuleProvider
-
-    /**
      * Returns the MessageSearchModule provider.
      *
      * @return The [MessageSearchModuleProvider].
@@ -141,9 +132,6 @@ object ModuleProviders {
         this.channelSettings = ChannelSettingsModuleProvider { context, _ -> ChannelSettingsModule(context) }
 
         this.inviteUser = InviteUserModuleProvider { context, _ -> InviteUserModule(context) }
-
-        this.memberList = MemberListModuleProvider { context, _ -> MemberListModule(context) }
-
 
         this.messageSearch = MessageSearchModuleProvider { context, _ -> MessageSearchModule(context) }
 

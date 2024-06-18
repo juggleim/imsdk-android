@@ -100,21 +100,6 @@ fun interface InviteUserModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when MemberListModule is created.
- * @see [ModuleProviders.memberList]
- * @since 3.9.0
- */
-fun interface MemberListModuleProvider {
-    /**
-     * Returns the MemberListModule.
-     *
-     * @return The [MemberListModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): MemberListModule
-}
-
-/**
  * Interface definition to be invoked when MessageSearchModule is created.
  * @see [ModuleProviders.messageSearch]
  * @since 3.9.0
