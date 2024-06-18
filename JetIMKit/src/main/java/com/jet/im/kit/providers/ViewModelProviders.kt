@@ -57,15 +57,6 @@ object ViewModelProviders {
     lateinit var inviteUser: InviteUserViewModelProvider
 
     /**
-     * Returns the MessageSearchViewModel provider.
-     *
-     * @return The [MessageSearchViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var messageSearch: MessageSearchViewModelProvider
-
-    /**
      * Returns the MessageThreadViewModel provider.
      *
      * @return The [MessageThreadViewModelProvider].
@@ -129,13 +120,6 @@ object ViewModelProviders {
                 owner,
                 ViewModelFactory(channelUrl, pagedQueryHandler)
             )[InviteUserViewModel::class.java]
-        }
-
-        this.messageSearch = MessageSearchViewModelProvider { owner, channelUrl, query ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl, query)
-            )[channelUrl, MessageSearchViewModel::class.java]
         }
 
         this.messageThread = MessageThreadViewModelProvider { owner, channelUrl, parentMessage, params ->

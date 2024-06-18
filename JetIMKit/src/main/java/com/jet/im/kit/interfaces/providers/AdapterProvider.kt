@@ -68,21 +68,6 @@ fun interface InviteUserListAdapterProvider {
     fun provide(): InviteUserListAdapter
 }
 
-/**
- * Interface definition to be invoked when message search adapter is created.
- * @see [AdapterProviders.messageSearch]
- * @since 3.9.0
- */
-fun interface MessageSearchAdapterProvider {
-    /**
-     * Returns the MessageSearchAdapter.
-     *
-     * @return The [MessageSearchAdapter].
-     * @since 3.9.0
-     */
-    fun provide(): MessageSearchAdapter
-}
-
 
 /**
  * Interface definition to be invoked when participant list adapter is created.

@@ -100,15 +100,6 @@ fun interface InviteUserModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when MessageSearchModule is created.
- * @see [ModuleProviders.messageSearch]
- * @since 3.9.0
- */
-fun interface MessageSearchModuleProvider {
-    fun provide(context: Context, args: Bundle): MessageSearchModule
-}
-
-/**
  * Interface definition to be invoked when ParticipantListModule is created.
  * @see [ModuleProviders.participantList]
  * @since 3.9.0

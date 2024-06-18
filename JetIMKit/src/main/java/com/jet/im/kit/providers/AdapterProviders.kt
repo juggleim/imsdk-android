@@ -46,15 +46,6 @@ object AdapterProviders {
     lateinit var inviteUserList: InviteUserListAdapterProvider
 
     /**
-     * Returns the MessageSearchAdapter provider.
-     *
-     * @return The [MessageSearchAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var messageSearch: MessageSearchAdapterProvider
-
-    /**
      * Returns the ParticipantListAdapter provider.
      *
      * @return The [ParticipantListAdapterProvider].
@@ -89,8 +80,6 @@ object AdapterProviders {
         this.createChannelUserList = CreateChannelUserListAdapterProvider { CreateChannelUserListAdapter() }
 
         this.inviteUserList = InviteUserListAdapterProvider { InviteUserListAdapter() }
-
-        this.messageSearch = MessageSearchAdapterProvider { MessageSearchAdapter() }
 
         this.participantList = ParticipantListAdapterProvider { ParticipantListAdapter() }
 
