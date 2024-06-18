@@ -40,36 +40,6 @@ fun interface ChannelModuleProvider {
 }
 
 /**
- * Interface definition to be invoked when CreateChannelModule is created.
- * @see [ModuleProviders.createChannel]
- * @since 3.9.0
- */
-fun interface CreateChannelModuleProvider {
-    /**
-     * Returns the CreateChannelModule.
-     *
-     * @return The [CreateChannelModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): CreateChannelModule
-}
-
-/**
- * Interface definition to be invoked when CreateOpenChannelModule is created.
- * @see [ModuleProviders.createOpenChannel]
- * @since 3.9.0
- */
-fun interface CreateOpenChannelModuleProvider {
-    /**
-     * Returns the CreateOpenChannelModule.
-     *
-     * @return The [CreateOpenChannelModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): CreateOpenChannelModule
-}
-
-/**
  * Interface definition to be invoked when InviteUserModule is created.
  * @see [ModuleProviders.inviteUser]
  * @since 3.9.0

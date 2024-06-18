@@ -36,13 +36,6 @@ object UIKitConfig {
     val groupChannelListConfig: ChannelListConfig = config.uikitConfig.group.channelList
 
     /**
-     * Returns the channel settings configuration for the UIKit.
-     * @since 3.6.0
-     */
-    @JvmStatic
-    val groupChannelSettingConfig: ChannelSettingConfig = config.uikitConfig.group.setting
-
-    /**
      * Returns the open channel configuration for the UIKit.
      * @since 3.6.0
      */

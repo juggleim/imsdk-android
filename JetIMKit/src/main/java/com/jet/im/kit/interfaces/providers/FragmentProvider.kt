@@ -37,31 +37,6 @@ fun interface ChannelFragmentProvider {
 }
 
 /**
- * Interface definition to be invoked when OpenChannelFragment is created.
- * @see [FragmentProviders.openChannel]
- * @since 3.9.0
- */
-/**
- * Interface definition to be invoked when CreateChannelFragment is created.
- * @see [FragmentProviders.createChannel]
- * @since 3.9.0
- */
-fun interface CreateChannelFragmentProvider {
-    /**
-     * Returns the CreateChannelFragment.
-     *
-     * @return The [CreateChannelFragment].
-     * @since 3.9.0
-     */
-    fun provide(channelType: CreatableChannelType, args: Bundle): CreateChannelFragment
-}
-
-/**
- * Interface definition to be invoked when OpenChannelSettingsFragment is created.
- * @see [FragmentProviders.openChannelSettings]
- * @since 3.9.0
- */
-/**
  * Interface definition to be invoked when InviteUserFragment is created.
  * @see [FragmentProviders.inviteUser]
  * @since 3.9.0

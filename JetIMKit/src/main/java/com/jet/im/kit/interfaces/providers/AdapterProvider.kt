@@ -1,11 +1,14 @@
 package com.jet.im.kit.interfaces.providers
 
-import com.sendbird.android.channel.GroupChannel
-import com.sendbird.android.channel.OpenChannel
-import com.jet.im.kit.activities.adapter.*
+import com.jet.im.kit.activities.adapter.ChannelListAdapter
+import com.jet.im.kit.activities.adapter.InviteUserListAdapter
+import com.jet.im.kit.activities.adapter.MessageListAdapter
+import com.jet.im.kit.activities.adapter.ParticipantListAdapter
+import com.jet.im.kit.activities.adapter.ThreadListAdapter
 import com.jet.im.kit.model.ChannelListUIParams
 import com.jet.im.kit.model.MessageListUIParams
-import com.jet.im.kit.providers.*
+import com.jet.im.kit.providers.AdapterProviders
+import com.sendbird.android.channel.GroupChannel
 
 /**
  * Interface definition to be invoked when message list adapter is created.
@@ -36,21 +39,6 @@ fun interface ChannelListAdapterProvider {
      * @since 3.9.0
      */
     fun provide(uiParams: ChannelListUIParams): ChannelListAdapter
-}
-
-/**
- * Interface definition to be invoked when create channel user list adapter is created.
- * @see [AdapterProviders.createChannelUserList]
- * @since 3.9.0
- */
-fun interface CreateChannelUserListAdapterProvider {
-    /**
-     * Returns the CreateChannelUserListAdapter.
-     *
-     * @return The [CreateChannelUserListAdapter].
-     * @since 3.9.0
-     */
-    fun provide(): CreateChannelUserListAdapter
 }
 
 /**

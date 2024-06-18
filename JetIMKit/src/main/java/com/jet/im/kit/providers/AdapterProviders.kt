@@ -28,15 +28,6 @@ object AdapterProviders {
     lateinit var channelList: ChannelListAdapterProvider
 
     /**
-     * Returns the CreateChannelUserListAdapter provider.
-     *
-     * @return The [CreateChannelUserListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var createChannelUserList: CreateChannelUserListAdapterProvider
-
-    /**
      * Returns the InviteChannelFragment provider.
      *
      * @return The [InviteUserListAdapterProvider].
@@ -76,8 +67,6 @@ object AdapterProviders {
         this.channelList = ChannelListAdapterProvider { uiParams ->
             ChannelListAdapter(null, uiParams)
         }
-
-        this.createChannelUserList = CreateChannelUserListAdapterProvider { CreateChannelUserListAdapter() }
 
         this.inviteUserList = InviteUserListAdapterProvider { InviteUserListAdapter() }
 
