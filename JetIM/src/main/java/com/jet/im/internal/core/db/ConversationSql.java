@@ -80,7 +80,7 @@ class ConversationSql {
         Object[] args = new Object[21];
 
         args[0] = info.getSortTime();
-        args[1] = info.getLastMessage().getMessageId();
+        args[1] = lastMessage == null ? null : lastMessage.getMessageId();;
         args[2] = info.getLastReadMessageIndex();
         args[3] = info.getLastMessageIndex();
         args[4] = info.isTop();
@@ -91,25 +91,25 @@ class ConversationSql {
         } else {
             args[7] = "";
         }
-        args[8] = lastMessage.getContentType();
-        args[9] = lastMessage.getClientUid();
-        args[10] = lastMessage.getClientMsgNo();
-        args[11] = lastMessage.getDirection().getValue();
-        args[12] = lastMessage.getState().getValue();
-        args[13] = lastMessage.isHasRead();
-        args[14] = lastMessage.getTimestamp();
-        args[15] = lastMessage.getSenderUserId();
-        if (lastMessage.getContent() != null) {
+        args[8] = lastMessage == null ? null : lastMessage.getContentType();
+        args[9] = lastMessage == null ? null : lastMessage.getClientUid();
+        args[10] = lastMessage == null ? 0 : lastMessage.getClientMsgNo();
+        args[11] = (lastMessage == null || lastMessage.getDirection() == null) ? 0 : lastMessage.getDirection().getValue();
+        args[12] = (lastMessage == null || lastMessage.getState() == null) ? 0 : lastMessage.getState().getValue();
+        args[13] = lastMessage == null ? 0 : lastMessage.isHasRead();
+        args[14] = lastMessage == null ? 0 : lastMessage.getTimestamp();
+        args[15] = lastMessage == null ? null : lastMessage.getSenderUserId();
+        if (lastMessage != null && lastMessage.getContent() != null) {
             args[16] = new String(lastMessage.getContent().encode());
         } else {
             args[16] = "";
         }
-        if (lastMessage.hasMentionInfo()) {
+        if (lastMessage != null && lastMessage.hasMentionInfo()) {
             args[17] = lastMessage.getMessageOptions().getMentionInfo().encodeToJson();
         } else {
             args[17] = "";
         }
-        args[18] = lastMessage.getSeqNo();
+        args[18] = lastMessage == null ? 0 : lastMessage.getSeqNo();
         args[19] = info.getConversation().getConversationType().getValue();
         args[20] = info.getConversation().getConversationId();
         return args;
@@ -121,7 +121,7 @@ class ConversationSql {
         args[0] = info.getConversation().getConversationType().getValue();
         args[1] = info.getConversation().getConversationId();
         args[2] = info.getSortTime();
-        args[3] = info.getLastMessage().getMessageId();
+        args[3] = lastMessage == null ? null : lastMessage.getMessageId();
         args[4] = info.getLastReadMessageIndex();
         args[5] = info.getLastMessageIndex();
         args[6] = info.isTop();
@@ -132,25 +132,25 @@ class ConversationSql {
         } else {
             args[9] = "";
         }
-        args[10] = lastMessage.getContentType();
-        args[11] = lastMessage.getClientUid();
-        args[12] = lastMessage.getClientMsgNo();
-        args[13] = lastMessage.getDirection().getValue();
-        args[14] = lastMessage.getState().getValue();
-        args[15] = lastMessage.isHasRead();
-        args[16] = lastMessage.getTimestamp();
-        args[17] = lastMessage.getSenderUserId();
-        if (lastMessage.getContent() != null) {
+        args[10] = lastMessage == null ? null : lastMessage.getContentType();
+        args[11] = lastMessage == null ? null : lastMessage.getClientUid();
+        args[12] = lastMessage == null ? 0 : lastMessage.getClientMsgNo();
+        args[13] = (lastMessage == null || lastMessage.getDirection() == null) ? 0 : lastMessage.getDirection().getValue();
+        args[14] = (lastMessage == null || lastMessage.getState() == null) ? 0 : lastMessage.getState().getValue();
+        args[15] = lastMessage == null ? 0 : lastMessage.isHasRead();
+        args[16] = lastMessage == null ? 0 : lastMessage.getTimestamp();
+        args[17] = lastMessage == null ? null : lastMessage.getSenderUserId();
+        if (lastMessage != null && lastMessage.getContent() != null) {
             args[18] = new String(lastMessage.getContent().encode());
         } else {
             args[18] = "";
         }
-        if (lastMessage.hasMentionInfo()) {
+        if (lastMessage != null && lastMessage.hasMentionInfo()) {
             args[19] = lastMessage.getMessageOptions().getMentionInfo().encodeToJson();
         } else {
             args[19] = "";
         }
-        args[20] = lastMessage.getSeqNo();
+        args[20] = lastMessage == null ? 0 : lastMessage.getSeqNo();
         return args;
     }
 
