@@ -138,7 +138,7 @@ public class MessageManager implements IMessageManager {
             }
         }
         //保存消息
-        mCore.getDbManager().updateMessages(message);
+        mCore.getDbManager().updateMessage(message);
     }
 
     private Message sendMessage(MessageContent content,

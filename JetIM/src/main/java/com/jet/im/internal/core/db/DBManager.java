@@ -510,7 +510,7 @@ public class DBManager {
         mDb.endTransaction();
     }
 
-    public void updateMessages(ConcreteMessage message) {
+    public void updateMessage(ConcreteMessage message) {
         if (mDb == null) {
             return;
         }
