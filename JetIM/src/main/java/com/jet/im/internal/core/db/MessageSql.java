@@ -116,6 +116,29 @@ class MessageSql {
         return cv;
     }
 
+    static ContentValues getMessageUpdateCV(Message message) {
+        ContentValues cv = new ContentValues();
+        if (message == null) {
+            return cv;
+        }
+        cv.put(COL_CONTENT_TYPE, message.getContentType());
+        if (message.getContent() != null) {
+            cv.put(COL_CONTENT, new String(message.getContent().encode()));
+            cv.put(COL_SEARCH_CONTENT, message.getContent().getSearchContent());
+        }
+        if (message.getLocalAttribute() != null) {
+            cv.put(COL_LOCAL_ATTRIBUTE, message.getLocalAttribute());
+        }
+        if (message.hasMentionInfo()) {
+            cv.put(COL_MENTION_INFO, message.getMessageOptions().getMentionInfo().encodeToJson());
+        }
+        if (message.hasReferredInfo()) {
+            cv.put(COL_REFER_MSG_ID, message.getMessageOptions().getReferredInfo().getMessageId());
+            cv.put(COL_REFER_SENDER_ID, message.getMessageOptions().getReferredInfo().getSenderId());
+        }
+        return cv;
+    }
+
     static final String SQL_CREATE_TABLE = "CREATE TABLE IF NOT EXISTS message ("
             + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             + "conversation_type SMALLINT,"

@@ -510,6 +510,18 @@ public class DBManager {
         mDb.endTransaction();
     }
 
+    public void updateMessages(ConcreteMessage message) {
+        if (mDb == null) {
+            return;
+        }
+        mDb.beginTransaction();
+        ContentValues cv = MessageSql.getMessageUpdateCV(message);
+        update(message.getClientMsgNo(), MessageSql.TABLE, cv);
+        mDb.setTransactionSuccessful();
+        mDb.endTransaction();
+    }
+
+
     public void updateMessageAfterSend(long clientMsgNo,
                                        String msgId,
                                        long timestamp,
@@ -672,6 +684,15 @@ public class DBManager {
             return -1;
         }
         return mDb.insertWithOnConflict(table, "", cv, SQLiteDatabase.CONFLICT_IGNORE);
+    }
+
+    private long update(long msgClientNo, String table, ContentValues cv) {
+        if (mDb == null) {
+            return -1;
+        }
+        String whereCase = MessageSql.COL_MESSAGE_ID + " = ?";
+        String[] whereArgs = {String.valueOf(msgClientNo)};
+        return mDb.updateWithOnConflict(table, cv, whereCase, whereArgs, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
     private String getOrCreateDbPath(Context context, String appKey, String userId) {

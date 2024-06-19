@@ -125,6 +125,22 @@ public class MessageManager implements IMessageManager {
         return message;
     }
 
+    private void updateMessageWithContent(ConcreteMessage message) {
+        if (message.getContent() != null) {
+            message.setContentType(message.getContent().getContentType());
+        }
+        if (message.getMessageOptions() != null && message.getMessageOptions().getReferredInfo() != null) {
+            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(message.getMessageOptions().getReferredInfo().getMessageId());
+            if (referMsg != null) {
+                message.setReferMsg(referMsg);
+                message.getMessageOptions().getReferredInfo().setSenderId(referMsg.getSenderUserId());
+                message.getMessageOptions().getReferredInfo().setContent(referMsg.getContent());
+            }
+        }
+        //保存消息
+        mCore.getDbManager().updateMessages(message);
+    }
+
     private Message sendMessage(MessageContent content,
                                 Conversation conversation,
                                 MessageOptions options,
@@ -292,6 +308,7 @@ public class MessageManager implements IMessageManager {
     @Override
     public Message resendMessage(Message message, ISendMessageCallback callback) {
         if (message.getClientMsgNo() <= 0
+                || !TextUtils.isEmpty(message.getMessageId())//已发送的消息不允许重发
                 || message.getContent() == null
                 || message.getConversation() == null
                 || message.getConversation().getConversationId() == null
@@ -306,6 +323,7 @@ public class MessageManager implements IMessageManager {
                 message.setState(Message.MessageState.SENDING);
                 mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
             }
+            updateMessageWithContent((ConcreteMessage) message);
             sendWebSocketMessage((ConcreteMessage) message, false, callback);
             return message;
         } else {
@@ -317,6 +335,7 @@ public class MessageManager implements IMessageManager {
     public Message resendMediaMessage(Message message,
                                       ISendMediaMessageCallback callback) {
         if (message.getClientMsgNo() <= 0
+                || !TextUtils.isEmpty(message.getMessageId())//已发送的消息不允许重发
                 || message.getContent() == null
                 || !(message.getContent() instanceof MediaMessageContent)
                 || message.getConversation() == null
@@ -332,6 +351,7 @@ public class MessageManager implements IMessageManager {
                 message.setState(Message.MessageState.SENDING);
                 mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
             }
+            updateMessageWithContent((ConcreteMessage) message);
             return sendMediaMessage(message, callback);
         } else {
             return sendMediaMessage((MediaMessageContent) message.getContent(), message.getConversation(), message.getMessageOptions(), callback);
