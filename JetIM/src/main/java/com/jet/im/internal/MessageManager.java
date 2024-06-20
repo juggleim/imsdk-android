@@ -620,6 +620,9 @@ public class MessageManager implements IMessageManager {
         if (startTime <= 0){
             startTime = Math.max(mCore.getMessageSendSyncTime(), mCore.getMessageReceiveTime());
         }
+        if (startTime <= 0) {
+            startTime = System.currentTimeMillis();
+        }
         //调用接口
         long finalStartTime = startTime;
         mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, new WebSocketSimpleCallback() {
