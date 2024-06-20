@@ -1,5 +1,7 @@
 package com.jet.im.model.messages;
 
+import android.text.TextUtils;
+
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.MergeMessagePreviewUnit;
 import com.jet.im.model.MessageContent;
@@ -58,6 +60,9 @@ public class MergeMessage extends MessageContent {
                 }
             }
             jsonObject.putOpt(PREVIEW_LIST, previewListJson);
+            if (!TextUtils.isEmpty(mExtra)) {
+                jsonObject.put(EXTRA, mExtra);
+            }
         } catch (JSONException e) {
             JLogger.e("MSG-Encode", "MergeMessage JSONException " + e.getMessage());
         }
@@ -102,6 +107,9 @@ public class MergeMessage extends MessageContent {
                 }
                 mPreviewList = previewList;
             }
+            if (jsonObject.has(EXTRA)) {
+                mExtra = jsonObject.optString(EXTRA);
+            }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "ImageMessage decode JSONException " + e.getMessage());
         }
@@ -124,9 +132,18 @@ public class MergeMessage extends MessageContent {
         return mPreviewList;
     }
 
+    public String getExtra() {
+        return mExtra;
+    }
+
+    public void setExtra(String extra) {
+        mExtra = extra;
+    }
+
     private String mTitle;
     private List<String> mMessageIdList;
     private List<MergeMessagePreviewUnit> mPreviewList;
+    private String mExtra;
     private static final String TITLE = "title";
     private static final String MESSAGE_ID_LIST = "messageIdList";
     private static final String PREVIEW_LIST = "previewList";
@@ -134,5 +151,6 @@ public class MergeMessage extends MessageContent {
     private static final String USER_ID = "userId";
     private static final String NAME = "name";
     private static final String PORTRAIT = "portrait";
+    private static final String EXTRA = "extra";
     private static final String DIGEST = "[Merge]";
 }
