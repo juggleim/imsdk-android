@@ -617,7 +617,9 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback) {
-        if (startTime <= 0) startTime = System.currentTimeMillis();
+        if (startTime <= 0){
+            startTime = Math.max(mCore.getMessageSendSyncTime(), mCore.getMessageReceiveTime());
+        }
         //调用接口
         long finalStartTime = startTime;
         mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, new WebSocketSimpleCallback() {
