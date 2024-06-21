@@ -39,10 +39,6 @@ public enum MessageType {
      */
     VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER(7),
     /**
-     * Message type sent by the administrator.
-     */
-    VIEW_TYPE_ADMIN_MESSAGE(8),
-    /**
      * Message type that displays the date.
      */
     VIEW_TYPE_TIME_LINE(9),
@@ -54,25 +50,6 @@ public enum MessageType {
      * Type of unknown message sent by users other than the current user.
      */
     VIEW_TYPE_UNKNOWN_MESSAGE_OTHER(11),
-    /**
-     * Type of a parent message info in thread list.
-     * This type is only used in <code>ThreadListAdapter</code>
-     *
-     * since 3.3.0
-     */
-    VIEW_TYPE_PARENT_MESSAGE_INFO(12),
-    /**
-     * Type of chat notification channel's message sent by the administrator.
-     *
-     * since 3.5.0
-     */
-    VIEW_TYPE_CHAT_NOTIFICATION(13),
-    /**
-     * Type of feed notification channel's message sent by the administrator.
-     *
-     * since 3.5.0
-     */
-    VIEW_TYPE_FEED_NOTIFICATION(14),
     /**
      * Type of voice message sent by the current user.
      *
@@ -98,13 +75,7 @@ public enum MessageType {
      *
      * since 3.9.0
      */
-    VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER(18),
-    /**
-     * Type of typing indicator.
-     *
-     * since 3.11.0
-     */
-    VIEW_TYPE_TYPING_INDICATOR(21);
+    VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER(18);
     final int value;
 
     MessageType(int value) {
@@ -122,6 +93,6 @@ public enum MessageType {
                 return type;
             }
         }
-        return VIEW_TYPE_ADMIN_MESSAGE;
+        return VIEW_TYPE_UNKNOWN_MESSAGE_ME;
     }
 }

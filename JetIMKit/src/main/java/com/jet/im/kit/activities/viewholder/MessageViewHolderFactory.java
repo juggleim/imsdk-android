@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.jet.im.kit.consts.StringSet;
-import com.jet.im.kit.databinding.SbViewAdminMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileImageMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileVideoMessageBinding;
@@ -19,11 +18,8 @@ import com.jet.im.kit.databinding.SbViewOtherFileVideoMessageBinding;
 import com.jet.im.kit.databinding.SbViewOtherMultipleFilesMessageBinding;
 import com.jet.im.kit.databinding.SbViewOtherUserMessageBinding;
 import com.jet.im.kit.databinding.SbViewOtherVoiceMessageBinding;
-import com.jet.im.kit.databinding.SbViewParentMessageInfoHolderBinding;
 import com.jet.im.kit.databinding.SbViewTimeLineMessageBinding;
-import com.jet.im.kit.databinding.SbViewTypingIndicatorMessageBinding;
 import com.jet.im.kit.internal.extensions.MessageExtensionsKt;
-import com.jet.im.kit.internal.ui.viewholders.AdminMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyImageFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyMultipleFilesMessageViewHolder;
@@ -36,14 +32,10 @@ import com.jet.im.kit.internal.ui.viewholders.OtherMultipleFilesMessageViewHolde
 import com.jet.im.kit.internal.ui.viewholders.OtherUserMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.OtherVideoFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.OtherVoiceMessageViewHolder;
-import com.jet.im.kit.internal.ui.viewholders.ParentMessageInfoViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.TimelineViewHolder;
-import com.jet.im.kit.internal.ui.viewholders.TypingIndicatorViewHolder;
 import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.model.TimelineMessage;
-import com.jet.im.kit.model.TypingIndicatorMessage;
 import com.jet.im.kit.utils.MessageUtils;
-import com.sendbird.android.message.AdminMessage;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FileMessage;
 import com.sendbird.android.message.MultipleFilesMessage;
@@ -58,9 +50,9 @@ public class MessageViewHolderFactory {
     /**
      * Create a view holder that matches {@link MessageType} for {@code GroupChannel}.
      *
-     * @param inflater Inflater that creates a view
-     * @param parent The parent view to which the view holder is attached
-     * @param viewType The type of message you want to create
+     * @param inflater          Inflater that creates a view
+     * @param parent            The parent view to which the view holder is attached
+     * @param viewType          The type of message you want to create
      * @param useMessageGroupUI Whether to show the view holder as a grouped message UI
      * @return Returns {@link MessageViewHolder} that matches {@link MessageType}.
      * @deprecated 3.3.0
@@ -72,19 +64,19 @@ public class MessageViewHolderFactory {
                                                      @NonNull MessageType viewType,
                                                      boolean useMessageGroupUI) {
         return createViewHolder(
-            inflater,
-            parent,
-            viewType,
-            new MessageListUIParams.Builder().setUseMessageGroupUI(useMessageGroupUI).build()
+                inflater,
+                parent,
+                viewType,
+                new MessageListUIParams.Builder().setUseMessageGroupUI(useMessageGroupUI).build()
         );
     }
 
     /**
      * Create a view holder that matches {@link MessageType} for {@code GroupChannel}.
      *
-     * @param inflater Inflater that creates a view
-     * @param parent The parent view to which the view holder is attached
-     * @param viewType The type of message you want to create
+     * @param inflater            Inflater that creates a view
+     * @param parent              The parent view to which the view holder is attached
+     * @param viewType            The type of message you want to create
      * @param messageListUIParams The {@link MessageListUIParams} that contains drawing parameters
      * @return Returns {@link MessageViewHolder} that matches {@link MessageType}.
      * since 3.3.0
@@ -129,20 +121,11 @@ public class MessageViewHolderFactory {
             case VIEW_TYPE_TIME_LINE:
                 holder = new TimelineViewHolder(SbViewTimeLineMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
-            case VIEW_TYPE_ADMIN_MESSAGE:
-                holder = new AdminMessageViewHolder(SbViewAdminMessageBinding.inflate(inflater, parent, false), new MessageListUIParams.Builder().setUseMessageGroupUI(false).build());
-                break;
-            case VIEW_TYPE_PARENT_MESSAGE_INFO:
-                holder = new ParentMessageInfoViewHolder(SbViewParentMessageInfoHolderBinding.inflate(inflater, parent, false));
-                break;
             case VIEW_TYPE_VOICE_MESSAGE_ME:
                 holder = new MyVoiceMessageViewHolder(SbViewMyVoiceMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
             case VIEW_TYPE_VOICE_MESSAGE_OTHER:
                 holder = new OtherVoiceMessageViewHolder(SbViewOtherVoiceMessageBinding.inflate(inflater, parent, false), messageListUIParams);
-                break;
-            case VIEW_TYPE_TYPING_INDICATOR:
-                holder = new TypingIndicatorViewHolder(SbViewTypingIndicatorMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
             default:
                 // unknown message type
@@ -225,10 +208,6 @@ public class MessageViewHolderFactory {
             }
         } else if (message instanceof TimelineMessage) {
             type = MessageType.VIEW_TYPE_TIME_LINE;
-        } else if (message instanceof AdminMessage) {
-            type = MessageType.VIEW_TYPE_ADMIN_MESSAGE;
-        } else if (message instanceof TypingIndicatorMessage) {
-            type = MessageType.VIEW_TYPE_TYPING_INDICATOR;
         } else {
             if (MessageUtils.isMine(message)) {
                 type = MessageType.VIEW_TYPE_UNKNOWN_MESSAGE_ME;
