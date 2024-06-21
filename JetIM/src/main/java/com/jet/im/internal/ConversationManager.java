@@ -34,9 +34,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConversationManager implements IConversationManager, MessageManager.ISendReceiveListener {
 
-    public ConversationManager(JetIMCore core, UserInfoManager userInfoManager) {
+    public ConversationManager(JetIMCore core, UserInfoManager userInfoManager,MessageManager messageManager) {
         this.mCore = core;
         this.mUserInfoManager = userInfoManager;
+        this.mMessageManager = messageManager;
         this.mCachedSyncTime = -1;
     }
 
@@ -84,10 +85,11 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void deleteConversationInfo(Conversation conversation, ISimpleCallback callback) {
-        mCore.getWebSocket().deleteConversationInfo(conversation, mCore.getUserId(), new WebSocketSimpleCallback() {
+        mCore.getWebSocket().deleteConversationInfo(conversation, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("CONV-Delete", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
                 ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
                 mCore.getDbManager().deleteConversationInfo(conversation);
                 if (callback != null) {
@@ -789,6 +791,7 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     private final JetIMCore mCore;
     private final UserInfoManager mUserInfoManager;
+    private final MessageManager mMessageManager;
     private ConcurrentHashMap<String, IConversationListener> mListenerMap;
     private ConcurrentHashMap<String, IConversationSyncListener> mSyncListenerMap;
     private boolean mSyncProcessing;

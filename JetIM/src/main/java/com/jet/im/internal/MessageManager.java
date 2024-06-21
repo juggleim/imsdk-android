@@ -947,6 +947,26 @@ public class MessageManager implements IMessageManager {
         loopBroadcastMessage(content, conversations, 0, conversations.size(), callback);
     }
 
+    public void updateMessageSendSyncTime(long timestamp) {
+        if (mSyncProcessing) {
+            if (timestamp > mCachedSendTime) {
+                mCachedSendTime = timestamp;
+            }
+        } else {
+            mCore.setMessageSendSyncTime(timestamp);
+        }
+    }
+
+    public void updateMessageReceiveTime(long timestamp) {
+        if (mSyncProcessing) {
+            if (timestamp > mCachedReceiveTime) {
+                mCachedReceiveTime = timestamp;
+            }
+        } else {
+            mCore.setMessageReceiveTime(timestamp);
+        }
+    }
+
     private void loopBroadcastMessage(MessageContent content,
                                       List<Conversation> conversations,
                                       int processCount,

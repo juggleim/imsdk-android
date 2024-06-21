@@ -96,7 +96,7 @@ public class JetIM {
         mCore = core;
         mUserInfoManager = new UserInfoManager(core);
         mMessageManager = new MessageManager(core, mUserInfoManager);
-        mConversationManager = new ConversationManager(core, mUserInfoManager);
+        mConversationManager = new ConversationManager(core, mUserInfoManager, mMessageManager);
         mMessageManager.setSendReceiveListener(mConversationManager);
         mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager, mUserInfoManager);
         mUploadManager = new UploadManager(core);

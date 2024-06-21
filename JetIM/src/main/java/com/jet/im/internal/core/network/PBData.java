@@ -1288,7 +1288,7 @@ class PBData {
             put(G_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(C_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(RECALL_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
-            put(DEL_CONV, PBRcvObj.PBRcvType.simpleQryAck);
+            put(DEL_CONV, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(CLEAR_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
             put(CLEAR_TOTAL_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
             put(MARK_READ, PBRcvObj.PBRcvType.simpleQryAck);

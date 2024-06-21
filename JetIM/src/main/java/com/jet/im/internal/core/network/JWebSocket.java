@@ -153,7 +153,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public void deleteConversationInfo(Conversation conversation,
                                        String userId,
-                                       WebSocketSimpleCallback callback) {
+                                       WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.deleteConversationData(conversation, userId, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
