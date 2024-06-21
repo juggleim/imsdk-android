@@ -17,7 +17,6 @@ import com.sendbird.android.user.UnreadMessageCount
 import com.sendbird.android.user.User
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.activities.ChannelActivity
-import com.jet.im.kit.activities.ChatNotificationChannelActivity
 import com.jet.im.kit.providers.FragmentProviders
 import com.example.demo.R
 import com.example.demo.common.SampleSettingsFragment
@@ -105,19 +104,14 @@ class GroupChannelMainActivity : AppCompatActivity() {
         if (intent.hasExtra(StringSet.PUSH_REDIRECT_CHANNEL)) {
             val channelUrl = intent.getStringExtra(StringSet.PUSH_REDIRECT_CHANNEL)
                 ?: return
-            val channelType = intent.getStringExtra(StringSet.PUSH_REDIRECT_CHANNEL_TYPE)
-            if (channelType == StringSet.notification_chat) {
-                startActivity(ChatNotificationChannelActivity.newIntent(this, channelUrl))
-            } else {
-                if (intent.hasExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID)) {
-                    val messageId = intent.getLongExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID, 0L)
-                    if (messageId > 0L) {
-                        startActivity(ChannelActivity.newRedirectToMessageThreadIntent(this, channelUrl, messageId))
-                        intent.removeExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID)
-                    }
-                } else {
-                    startActivity(ChannelActivity.newIntent(this, channelUrl))
+            if (intent.hasExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID)) {
+                val messageId = intent.getLongExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID, 0L)
+                if (messageId > 0L) {
+                    startActivity(ChannelActivity.newRedirectToMessageThreadIntent(this, channelUrl, messageId))
+                    intent.removeExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID)
                 }
+            } else {
+                startActivity(ChannelActivity.newIntent(this, channelUrl))
             }
             intent.removeExtra(StringSet.PUSH_REDIRECT_CHANNEL)
         }

@@ -2,11 +2,8 @@ package com.jet.im.kit.interfaces.providers
 
 import android.content.Context
 import android.os.Bundle
-import com.sendbird.android.message.BaseMessage
-import com.jet.im.kit.internal.model.notifications.NotificationConfig
-import com.jet.im.kit.internal.ui.notifications.ChatNotificationChannelModule
-import com.jet.im.kit.internal.ui.notifications.FeedNotificationChannelModule
-import com.jet.im.kit.modules.*
+import com.jet.im.kit.modules.ChannelListModule
+import com.jet.im.kit.modules.ChannelModule
 import com.jet.im.kit.providers.ModuleProviders
 
 /**
@@ -39,49 +36,4 @@ fun interface ChannelModuleProvider {
     fun provide(context: Context, args: Bundle): ChannelModule
 }
 
-/**
- * Interface definition to be invoked when InviteUserModule is created.
- * @see [ModuleProviders.inviteUser]
- * @since 3.9.0
- */
-fun interface InviteUserModuleProvider {
-    /**
-     * Returns the InviteUserModule.
-     *
-     * @return The [InviteUserModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle): InviteUserModule
-}
 
-/**
- * Interface definition to be invoked when ParticipantListModule is created.
- * @see [ModuleProviders.participantList]
- * @since 3.9.0
- */
-fun interface ParticipantListModuleProvider {
-    fun provide(context: Context, args: Bundle): ParticipantListModule
-}
-
-/**
- * Interface definition to be invoked when MessageThreadModule is created.
- * @see [ModuleProviders.messageThread]
- * @since 3.9.0
- */
-fun interface MessageThreadModuleProvider {
-    /**
-     * Returns the MessageThreadModule.
-     *
-     * @return The [MessageThreadModule].
-     * @since 3.9.0
-     */
-    fun provide(context: Context, args: Bundle, message: BaseMessage): MessageThreadModule
-}
-
-internal fun interface FeedNotificationChannelModuleProvider {
-    fun provide(context: Context, args: Bundle, config: NotificationConfig?): FeedNotificationChannelModule
-}
-
-internal fun interface ChatNotificationChannelModuleProvider {
-    fun provide(context: Context, args: Bundle, config: NotificationConfig?): ChatNotificationChannelModule
-}
