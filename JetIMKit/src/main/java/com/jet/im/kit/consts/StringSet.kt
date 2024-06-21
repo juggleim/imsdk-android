@@ -132,8 +132,6 @@ object StringSet {
     const val photos = "photos"
     const val Chat = "Chat"
     const val Profile = "Profile"
-    const val QuoteReply = "QuoteReply"
-    const val ThreadInfo = "ThreadInfo"
     const val ParentMessageMenu = "ParentMessageMenu"
     const val _AT = "@"
     const val disable_chat_input = "disable_chat_input"

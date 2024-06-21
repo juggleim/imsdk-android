@@ -93,12 +93,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     @Nullable
     private View.OnClickListener headerRightButtonClickListener;
     @Nullable
-    private OnItemClickListener<BaseMessage> quoteReplyMessageClickListener;
-    @Nullable
-    private OnItemLongClickListener<BaseMessage> quoteReplyMessageLongClickListener;
-    @Nullable
-    private OnItemClickListener<BaseMessage> threadInfoClickListener;
-    @Nullable
     private View.OnClickListener replyModeCloseButtonClickListener;
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Nullable
@@ -138,16 +132,11 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     private final AtomicBoolean anchorDialogShowing = new AtomicBoolean(false);
     @NonNull
     private final AtomicBoolean isInitCallFinished = new AtomicBoolean(false);
-    @NonNull
-    private final AtomicBoolean isThreadRedirected = new AtomicBoolean(false);
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final Bundle args = getArguments();
-        if (args != null && args.containsKey(StringSet.KEY_ANCHOR_MESSAGE_ID)) {
-            isThreadRedirected.set(true);
-        }
     }
 
     @NonNull
@@ -268,14 +257,8 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         messageListComponent.setOnEmojiReactionClickListener(emojiReactionClickListener != null ? emojiReactionClickListener : (view, position, message, reactionKey) -> toggleReaction(view, message, reactionKey));
         messageListComponent.setOnEmojiReactionLongClickListener(emojiReactionLongClickListener != null ? emojiReactionLongClickListener : (view, position, message, reactionKey) -> showEmojiReactionDialog(message, position));
         messageListComponent.setOnEmojiReactionMoreButtonClickListener(emojiReactionMoreButtonClickListener != null ? emojiReactionMoreButtonClickListener : (view, position, message) -> showEmojiListDialog(message));
-        messageListComponent.setSuggestedRepliesClickListener((view, position, data) -> onSuggestedRepliesClicked(data));
-        messageListComponent.setFormSubmitButtonClickListener(this::onFormSubmitButtonClicked);
         messageListComponent.setOnFeedbackRatingClickListener(this::onFeedbackRatingClicked);
         messageListComponent.setOnTooltipClickListener(tooltipClickListener != null ? tooltipClickListener : this::onMessageTooltipClicked);
-
-        messageListComponent.setOnQuoteReplyMessageLongClickListener(this::onQuoteReplyMessageLongClicked);
-        messageListComponent.setOnQuoteReplyMessageClickListener(this::onQuoteReplyMessageClicked);
-        messageListComponent.setOnThreadInfoClickListener(this::onThreadInfoClicked);
         messageListComponent.setOnScrollBottomButtonClickListener(scrollBottomButtonClickListener);
         messageListComponent.setOnScrollFirstButtonClickListener(scrollFirstButtonClickListener != null ? scrollFirstButtonClickListener : view -> {
             if (viewModel.hasNext()) {
@@ -291,10 +274,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             if (!isInitialCallFinished && isFragmentAlive()) {
                 shouldDismissLoadingDialog();
             }
-            if (isThreadRedirected.get() && isFragmentAlive()) {
-                redirectMessageThreadIfNeeded(getArguments());
-            }
-
             final List<BaseMessage> messageList = receivedMessageData.getMessages();
             Logger.d("++ result messageList size : %s, source = %s", messageList.size(), receivedMessageData.getTraceName());
 
@@ -500,82 +479,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             shouldAuthenticate();
         });
         viewModel.getStatusFrame().observe(getViewLifecycleOwner(), statusComponent::notifyStatusChanged);
-    }
-
-    /**
-     * Called when the quoted message of the message is clicked.
-     *
-     * @param view     The View clicked
-     * @param position The position clicked
-     * @param message  The message that the clicked item displays
-     * since 3.0.0
-     */
-    protected void onQuoteReplyMessageClicked(@NonNull View view, int position, @NonNull BaseMessage message) {
-        if (quoteReplyMessageClickListener != null) {
-            quoteReplyMessageClickListener.onItemClick(view, position, message);
-            return;
-        }
-        if (channelConfig.getReplyType() == ReplyType.THREAD &&
-            channelConfig.getThreadReplySelectType() == ThreadReplySelectType.THREAD) {
-            startMessageThreadActivity(message);
-        } else {
-            jumpToParentMessage(message);
-        }
-    }
-
-    /**
-     * Called when the quoted message of the message is long-clicked.
-     *
-     * @param view     The View long-clicked
-     * @param position The position long-clicked
-     * @param message  The message that the long-clicked item displays
-     * since 3.0.0
-     */
-    protected void onQuoteReplyMessageLongClicked(@NonNull View view, int position, @NonNull BaseMessage message) {
-        if (quoteReplyMessageLongClickListener != null)
-            quoteReplyMessageLongClickListener.onItemLongClick(view, position, message);
-    }
-
-    /**
-     * Called when the thread info of the message is clicked.
-     *
-     * @param view     The View clicked
-     * @param position The position clicked
-     * @param message  The message that the clicked item displays
-     * since 3.3.0
-     */
-    protected void onThreadInfoClicked(@NonNull View view, int position, @NonNull BaseMessage message) {
-        if (threadInfoClickListener != null) {
-            threadInfoClickListener.onItemClick(view, position, message);
-            return;
-        }
-        startMessageThreadActivity(message);
-    }
-
-    /**
-     * Called when the a suggested replies view is clicked
-     *
-     * @param suggestedReply Clicked suggested reply data.
-     * since 3.10.0
-     */
-    protected void onSuggestedRepliesClicked(@NonNull String suggestedReply) {
-        UserMessageCreateParams params = new UserMessageCreateParams(suggestedReply);
-        sendUserMessage(params);
-    }
-
-    /**
-     * Called when the Form submit button is clicked.
-     *
-     * @param message The message that contains the form
-     * @param form The form to be submitted
-     * since 3.12.1
-     */
-    protected void onFormSubmitButtonClicked(@NonNull BaseMessage message, @NonNull Form form) {
-        message.submitForm(form, (e) -> {
-            if (e != null) {
-                showConfirmDialog(getString(R.string.sb_forms_submit_failed));
-            }
-        });
     }
 
     /**
@@ -801,9 +704,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             this.targetMessage = message;
             inputComponent.requestInputMode(MessageInputView.Mode.QUOTE_REPLY);
             return true;
-        } else if (key == R.string.sb_text_channel_anchor_reply_in_thread) {
-            startMessageThreadActivity(message);
-            return true;
         } else if (key == R.string.sb_text_channel_anchor_retry) {
             resendMessage(message);
             return true;
@@ -844,63 +744,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             loadInitial(Long.MAX_VALUE);
         } else {
             messageListComponent.scrollToFirst();
-        }
-    }
-
-    private void jumpToParentMessage(@NonNull BaseMessage message) {
-        // ClickableViewType.Reply
-
-        final BaseMessage parentMessage = message.getParentMessage();
-        final long parentMessageCreatedAt = parentMessage == null ? 0L : parentMessage.getCreatedAt();
-        if (parentMessageCreatedAt > 0) {
-            final MessageListComponent messageListComponent = getModule().getMessageListComponent();
-            if (getViewModel().hasMessageById(message.getParentMessageId())) {
-                messageListComponent.moveToFocusedMessage(parentMessageCreatedAt, parentMessage);
-            } else {
-                tryAnimateWhenMessageLoaded.set(true);
-                loadInitial(parentMessageCreatedAt);
-            }
-        } else {
-            toastError(R.string.sb_text_error_original_message_not_found);
-        }
-    }
-
-    private void startMessageThreadActivity(@NonNull BaseMessage message) {
-        BaseMessage parentMessage;
-        long startingPoint = 0;
-        if (MessageUtils.hasParentMessage(message) && message.getParentMessage() != null) {
-            parentMessage = getViewModel().getMessageById(message.getParentMessageId());
-            startingPoint = message.getCreatedAt();
-            if (parentMessage == null) {
-                parentMessage = message.getParentMessage();
-            }
-        } else {
-            parentMessage = message;
-        }
-
-        final GroupChannel channel = getViewModel().getChannel();
-        if (channel != null && parentMessage.getCreatedAt() < channel.getMessageOffsetTimestamp()) {
-            toastError(R.string.sb_text_error_original_message_not_found);
-        } else {
-            startActivity(new MessageThreadActivity
-                .IntentBuilder(requireContext(), getChannelUrl(), parentMessage)
-                .setStartingPoint(startingPoint)
-                .build(), ActivityOptions.makeSceneTransitionAnimation(getActivity()).toBundle());
-        }
-    }
-
-    private void redirectMessageThreadIfNeeded(@Nullable Bundle args) {
-        if (args == null || channelConfig.getReplyType() != ReplyType.THREAD) return;
-
-        if (args.containsKey(StringSet.KEY_ANCHOR_MESSAGE_ID)) {
-            long messageId = args.getLong(StringSet.KEY_ANCHOR_MESSAGE_ID);
-            final BaseMessage anchorMessage = getViewModel().getMessageById(messageId);
-            if (anchorMessage != null && MessageUtils.hasParentMessage(anchorMessage)) {
-                Logger.i(">> ChannelFragment::redirectMessageThreadIfNeeded(), startMessageThreadActivity()");
-                isThreadRedirected.set(false);
-                args.remove(StringSet.KEY_ANCHOR_MESSAGE_ID);
-                startMessageThreadActivity(anchorMessage);
-            }
         }
     }
 
@@ -948,13 +791,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         @Nullable
         private OnItemClickListener<User> emojiReactionUserListProfileClickListener;
         @Nullable
-        private OnItemClickListener<BaseMessage> quoteReplyMessageClickListener;
-        @Nullable
         private OnItemLongClickListener<BaseMessage> messageLongClickListener;
         @Nullable
         private OnItemLongClickListener<BaseMessage> messageProfileLongClickListener;
-        @Nullable
-        private OnItemLongClickListener<BaseMessage> quoteReplyMessageLongClickListener;
         @Nullable
         private View.OnClickListener inputLeftButtonListener;
         @Nullable
@@ -990,8 +829,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         private View.OnClickListener scrollBottomButtonClickListener;
         @Nullable
         private OnConsumableClickListener scrollFirstButtonClickListener;
-        @Nullable
-        private OnItemClickListener<BaseMessage> threadInfoClickListener;
         @Nullable
         private View.OnClickListener voiceRecorderButtonClickListener;
         @Nullable
@@ -1349,44 +1186,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             return this;
         }
 
-        /**
-         * Sets the click listener on the item of message list.
-         *
-         * @param quoteReplyMessageClickListener The callback that will run.
-         * @return This Builder object to allow for chaining of calls to set methods.
-         * since 3.0.0
-         */
-        @NonNull
-        public Builder setOnQuoteReplyMessageClickListener(@NonNull OnItemClickListener<BaseMessage> quoteReplyMessageClickListener) {
-            this.quoteReplyMessageClickListener = quoteReplyMessageClickListener;
-            return this;
-        }
-
-        /**
-         * Sets the long click listener on the item of message list.
-         *
-         * @param quoteReplyMessageLongClickListener The callback that will run.
-         * @return This Builder object to allow for chaining of calls to set methods.
-         * since 3.0.0
-         */
-        @NonNull
-        public Builder setOnQuoteReplyMessageLongClickListener(@NonNull OnItemLongClickListener<BaseMessage> quoteReplyMessageLongClickListener) {
-            this.quoteReplyMessageLongClickListener = quoteReplyMessageLongClickListener;
-            return this;
-        }
-
-        /**
-         * Sets the click listener on the item of message list.
-         *
-         * @param threadInfoClickListener The callback that will run.
-         * @return This Builder object to allow for chaining of calls to set methods.
-         * since 3.3.0
-         */
-        @NonNull
-        public Builder setOnThreadInfoClickListener(@NonNull OnItemClickListener<BaseMessage> threadInfoClickListener) {
-            this.threadInfoClickListener = threadInfoClickListener;
-            return this;
-        }
 
         /**
          * Sets the click listener on the left button of the input.
@@ -2049,8 +1848,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             fragment.setOnLoadingDialogHandler(loadingDialogHandler);
             fragment.inputTextChangedListener = inputTextChangedListener;
             fragment.editModeTextChangedListener = editModeTextChangedListener;
-            fragment.quoteReplyMessageClickListener = quoteReplyMessageClickListener;
-            fragment.quoteReplyMessageLongClickListener = quoteReplyMessageLongClickListener;
             fragment.setSuggestedMentionListAdapter(suggestedMentionListAdapter);
             fragment.inputRightButtonClickListener = inputRightButtonClickListener;
             fragment.editModeCancelButtonClickListener = editModeCancelButtonClickListener;
@@ -2062,7 +1859,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             fragment.scrollFirstButtonClickListener = scrollFirstButtonClickListener;
             fragment.setAdapter(adapter);
             fragment.params = params;
-            fragment.threadInfoClickListener = threadInfoClickListener;
             fragment.onVoiceRecorderButtonClickListener = voiceRecorderButtonClickListener;
             fragment.setOnMessageMentionClickListener(messageMentionClickListener);
 

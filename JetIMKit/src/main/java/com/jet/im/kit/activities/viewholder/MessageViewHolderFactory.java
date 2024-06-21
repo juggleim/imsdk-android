@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.databinding.SbViewAdminMessageBinding;
-import com.jet.im.kit.databinding.SbViewFormMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileImageMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileVideoMessageBinding;
@@ -21,12 +20,10 @@ import com.jet.im.kit.databinding.SbViewOtherMultipleFilesMessageBinding;
 import com.jet.im.kit.databinding.SbViewOtherUserMessageBinding;
 import com.jet.im.kit.databinding.SbViewOtherVoiceMessageBinding;
 import com.jet.im.kit.databinding.SbViewParentMessageInfoHolderBinding;
-import com.jet.im.kit.databinding.SbViewSuggestedRepliesMessageBinding;
 import com.jet.im.kit.databinding.SbViewTimeLineMessageBinding;
 import com.jet.im.kit.databinding.SbViewTypingIndicatorMessageBinding;
 import com.jet.im.kit.internal.extensions.MessageExtensionsKt;
 import com.jet.im.kit.internal.ui.viewholders.AdminMessageViewHolder;
-import com.jet.im.kit.internal.ui.viewholders.FormMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyImageFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyMultipleFilesMessageViewHolder;
@@ -40,15 +37,12 @@ import com.jet.im.kit.internal.ui.viewholders.OtherUserMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.OtherVideoFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.OtherVoiceMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.ParentMessageInfoViewHolder;
-import com.jet.im.kit.internal.ui.viewholders.SuggestedRepliesViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.TimelineViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.TypingIndicatorViewHolder;
 import com.jet.im.kit.model.MessageListUIParams;
-import com.jet.im.kit.model.SuggestedRepliesMessage;
 import com.jet.im.kit.model.TimelineMessage;
 import com.jet.im.kit.model.TypingIndicatorMessage;
 import com.jet.im.kit.utils.MessageUtils;
-import com.sendbird.android.channel.ChannelType;
 import com.sendbird.android.message.AdminMessage;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FileMessage;
@@ -147,12 +141,6 @@ public class MessageViewHolderFactory {
             case VIEW_TYPE_VOICE_MESSAGE_OTHER:
                 holder = new OtherVoiceMessageViewHolder(SbViewOtherVoiceMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
-            case VIEW_TYPE_SUGGESTED_REPLIES:
-                holder = new SuggestedRepliesViewHolder(SbViewSuggestedRepliesMessageBinding.inflate(inflater, parent, false), messageListUIParams);
-                break;
-            case VIEW_TYPE_FORM_TYPE_MESSAGE:
-                holder = new FormMessageViewHolder(SbViewFormMessageBinding.inflate(inflater, parent, false), messageListUIParams);
-                break;
             case VIEW_TYPE_TYPING_INDICATOR:
                 holder = new TypingIndicatorViewHolder(SbViewTypingIndicatorMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
@@ -186,11 +174,6 @@ public class MessageViewHolderFactory {
     @NonNull
     public static MessageType getMessageType(@NonNull BaseMessage message) {
         MessageType type;
-
-        if (message.getChannelType() == ChannelType.GROUP && !message.getForms().isEmpty()) {
-            return MessageType.VIEW_TYPE_FORM_TYPE_MESSAGE;
-        }
-
         if (message instanceof UserMessage) {
             if (MessageUtils.isMine(message)) {
                 type = MessageType.VIEW_TYPE_USER_MESSAGE_ME;
@@ -244,9 +227,7 @@ public class MessageViewHolderFactory {
             type = MessageType.VIEW_TYPE_TIME_LINE;
         } else if (message instanceof AdminMessage) {
             type = MessageType.VIEW_TYPE_ADMIN_MESSAGE;
-        } else if (message instanceof SuggestedRepliesMessage) {
-            type = MessageType.VIEW_TYPE_SUGGESTED_REPLIES;
-        }  else if (message instanceof TypingIndicatorMessage) {
+        } else if (message instanceof TypingIndicatorMessage) {
             type = MessageType.VIEW_TYPE_TYPING_INDICATOR;
         } else {
             if (MessageUtils.isMine(message)) {
