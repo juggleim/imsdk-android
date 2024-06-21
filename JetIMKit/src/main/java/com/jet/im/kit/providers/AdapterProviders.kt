@@ -28,33 +28,6 @@ object AdapterProviders {
     lateinit var channelList: ChannelListAdapterProvider
 
     /**
-     * Returns the InviteChannelFragment provider.
-     *
-     * @return The [InviteUserListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var inviteUserList: InviteUserListAdapterProvider
-
-    /**
-     * Returns the ParticipantListAdapter provider.
-     *
-     * @return The [ParticipantListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var participantList: ParticipantListAdapterProvider
-
-    /**
-     * Returns the ThreadListAdapter provider.
-     *
-     * @return The [ThreadListAdapterProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var threadList: ThreadListAdapterProvider
-
-    /**
      * Reset all providers to default provider.
      *
      * @since 3.10.1
@@ -66,14 +39,6 @@ object AdapterProviders {
         }
         this.channelList = ChannelListAdapterProvider { uiParams ->
             ChannelListAdapter(null, uiParams)
-        }
-
-        this.inviteUserList = InviteUserListAdapterProvider { InviteUserListAdapter() }
-
-        this.participantList = ParticipantListAdapterProvider { ParticipantListAdapter() }
-
-        this.threadList = ThreadListAdapterProvider { messageListUIParams ->
-            ThreadListAdapter(null, messageListUIParams)
         }
     }
 
