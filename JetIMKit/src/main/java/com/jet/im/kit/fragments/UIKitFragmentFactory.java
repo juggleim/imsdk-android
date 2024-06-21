@@ -5,8 +5,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.sendbird.android.message.BaseMessage;
-import com.jet.im.kit.consts.CreatableChannelType;
 import com.jet.im.kit.providers.FragmentProviders;
 
 /**
@@ -51,68 +49,5 @@ public class UIKitFragmentFactory {
     @NonNull
     public Fragment newChannelFragment(@NonNull String channelUrl, @NonNull Bundle args) {
         return FragmentProviders.getChannel().provide(channelUrl, args);
-    }
-
-    /**
-     * Returns the InviteUserFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link InviteUserFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getInviteUser()} instead.</p>
-     * since 3.0.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newInviteUserFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getInviteUser().provide(channelUrl, args);
-    }
-
-    /**
-     * Returns the MessageThreadFragment.
-     *
-     * @param channelUrl the channel url for the target channel.
-     * @param parentMessage the parent message of the message thread fragment.
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link MessageThreadFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getMessageThread()} instead.</p>
-     * since 3.3.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newMessageThreadFragment(@NonNull String channelUrl, @NonNull BaseMessage parentMessage, @NonNull Bundle args) {
-        return FragmentProviders.getMessageThread().provide(channelUrl, parentMessage, args);
-    }
-
-    /**
-     * Returns the FeedNotificationChannelFragment.
-     *
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link FeedNotificationChannelFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getFeedNotificationChannel()} instead.</p>
-     * since 3.5.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newFeedNotificationChannelFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getFeedNotificationChannel().provide(channelUrl, args);
-    }
-
-    /**
-     * Returns the ChatNotificationChannelFragment.
-     *
-     * @param args the arguments supplied when the fragment was instantiated.
-     * @return The {@link FeedNotificationChannelFragment}
-     * @deprecated 3.9.0
-     * <p> Use {@link FragmentProviders#getChatNotificationChannel()} instead.</p>
-     * since 3.5.0
-     */
-    @Deprecated
-    @NonNull
-    public Fragment newChatNotificationChannelFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getChatNotificationChannel().provide(channelUrl, args);
     }
 }

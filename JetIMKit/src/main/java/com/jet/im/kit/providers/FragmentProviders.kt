@@ -30,42 +30,6 @@ object FragmentProviders {
     lateinit var channel: ChannelFragmentProvider
 
     /**
-     * Returns the InviteUserFragment provider.
-     *
-     * @return The [InviteUserFragmentProvider]
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var inviteUser: InviteUserFragmentProvider
-
-    /**
-     * Returns the MessageThreadFragment provider.
-     *
-     * @return The [MessageThreadFragmentProvider]
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var messageThread: MessageThreadFragmentProvider
-
-    /**
-     * Returns the FeedNotificationChannelFragment provider.
-     *
-     * @return The [FeedNotificationChannelFragmentProvider]
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var feedNotificationChannel: FeedNotificationChannelFragmentProvider
-
-    /**
-     * Returns the ChatNotificationChannelFragment provider.
-     *
-     * @return The [ChatNotificationChannelFragmentProvider]
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var chatNotificationChannel: ChatNotificationChannelFragmentProvider
-
-    /**
      * Reset all providers to default provider.
      *
      * @since 3.10.1
@@ -79,33 +43,6 @@ object FragmentProviders {
         this.channel = ChannelFragmentProvider { channelUrl, args ->
             ChannelFragment.Builder(channelUrl).withArguments(args)
                 .setUseHeader(true)
-                .build()
-        }
-
-        this.inviteUser = InviteUserFragmentProvider { channelUrl, args ->
-            InviteUserFragment.Builder(channelUrl).withArguments(args)
-                .setUseHeader(true)
-                .build()
-        }
-
-        this.messageThread = MessageThreadFragmentProvider { channelUrl, message, args ->
-            MessageThreadFragment.Builder(channelUrl, message).setStartingPoint(0L)
-                .setUseHeader(true)
-                .withArguments(args)
-                .build()
-        }
-
-        this.feedNotificationChannel = FeedNotificationChannelFragmentProvider { channelUrl, args ->
-            FeedNotificationChannelFragment.Builder(channelUrl)
-                .withArguments(args)
-                .setUseHeaderLeftButton(true)
-                .build()
-        }
-
-        this.chatNotificationChannel = ChatNotificationChannelFragmentProvider { channelUrl, args ->
-            ChatNotificationChannelFragment.Builder(channelUrl)
-                .withArguments(args)
-                .setUseHeaderLeftButton(true)
                 .build()
         }
     }

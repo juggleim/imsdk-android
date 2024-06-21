@@ -13,7 +13,6 @@ import androidx.fragment.app.FragmentManager;
 
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.kit.activities.MessageThreadActivity;
 import com.jet.im.kit.consts.StringSet;
 
 /**

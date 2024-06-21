@@ -29,42 +29,6 @@ object ViewModelProviders {
     lateinit var channel: ChannelViewModelProvider
 
     /**
-     * Returns the InviteUserViewModel provider.
-     *
-     * @return The [InviteUserViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var inviteUser: InviteUserViewModelProvider
-
-    /**
-     * Returns the MessageThreadViewModel provider.
-     *
-     * @return The [MessageThreadViewModelProvider].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    lateinit var messageThread: MessageThreadViewModelProvider
-
-    /**
-     * Returns the FeedNotificationChannelViewModel provider.
-     *
-     * @return The [FeedNotificationChannelViewModel].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    internal lateinit var feedNotificationChannel: FeedNotificationChannelViewModelProvider
-
-    /**
-     * Returns the ChatNotificationChannelViewModel provider.
-     *
-     * @return The [ChatNotificationChannelViewModel].
-     * @since 3.9.0
-     */
-    @JvmStatic
-    internal lateinit var chatNotificationChannel: ChatNotificationChannelViewModelProvider
-
-    /**
      * Reset all providers to default provider.
      *
      * @since 3.10.1
@@ -82,33 +46,6 @@ object ViewModelProviders {
             )[channelUrl, ChannelViewModel::class.java]
         }
 
-        this.inviteUser = InviteUserViewModelProvider { owner, channelUrl, pagedQueryHandler ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl, pagedQueryHandler)
-            )[InviteUserViewModel::class.java]
-        }
-
-        this.messageThread = MessageThreadViewModelProvider { owner, channelUrl, parentMessage, params ->
-            ViewModelProvider(
-                owner,
-                ViewModelFactory(channelUrl, parentMessage, params)
-            )[channelUrl, MessageThreadViewModel::class.java]
-        }
-
-        this.feedNotificationChannel = FeedNotificationChannelViewModelProvider { owner, channelUrl, params ->
-            ViewModelProvider(
-                owner,
-                NotificationViewModelFactory(channelUrl, params)
-            )[channelUrl, FeedNotificationChannelViewModel::class.java]
-        }
-
-        this.chatNotificationChannel = ChatNotificationChannelViewModelProvider { owner, channelUrl, params ->
-            ViewModelProvider(
-                owner,
-                NotificationViewModelFactory(channelUrl, params)
-            )[channelUrl, ChatNotificationChannelViewModel::class.java]
-        }
     }
 
     init {
