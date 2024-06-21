@@ -1247,11 +1247,20 @@ public class MessageManager implements IMessageManager {
             //delete conversation
             if (message.getContentType().equals(DeleteConvMessage.CONTENT_TYPE)) {
                 DeleteConvMessage deleteConvMessage = (DeleteConvMessage) message.getContent();
+
+                List<Conversation> deletedList = new ArrayList<>();
                 for (Conversation deleteConv : deleteConvMessage.getConversations()) {
+                    //从消息表中获取指定会话的最新一条消息
+                    Message lastMessage = mCore.getDbManager().getLastMessage(deleteConv);
+                    //当DeleteConvMessage的时间戳小于它指定的会话的最后一条消息的时间戳时，进行抛弃处理
+                    if (message.getTimestamp() <= lastMessage.getTimestamp()) continue;
+                    //进行删除操作
                     mCore.getDbManager().deleteConversationInfo(deleteConv);
+                    deletedList.add(deleteConv);
                 }
+
                 if (mSendReceiveListener != null) {
-                    mSendReceiveListener.onConversationsDelete(deleteConvMessage.getConversations());
+                    mSendReceiveListener.onConversationsDelete(deletedList);
                 }
                 continue;
             }
