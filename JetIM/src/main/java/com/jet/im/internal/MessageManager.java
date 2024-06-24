@@ -1259,7 +1259,7 @@ public class MessageManager implements IMessageManager {
                     deletedList.add(deleteConv);
                 }
 
-                if (mSendReceiveListener != null) {
+                if (deletedList.size() > 0 && mSendReceiveListener != null) {
                     mSendReceiveListener.onConversationsDelete(deletedList);
                 }
                 continue;
