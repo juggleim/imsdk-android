@@ -676,9 +676,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     private void sendWhenOpen(byte[] bytes) {
         mSendHandler.post(() -> {
-            if (mWebSocketClient != null) {
+            if (mWebSocketClient != null && mWebSocketClient.isOpen()) {
                 mWebSocketClient.send(bytes);
+                return;
             }
+            JLogger.e("WS-Send", mWebSocketClient == null ? "mWebSocketClient is null" : "mWebSocketClient is not open");
+            mConnectListener.onWebSocketClose();
         });
     }
 
