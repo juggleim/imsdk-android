@@ -154,7 +154,7 @@ internal class ChannelPreview @JvmOverloads constructor(
         tvMemberCount.visibility = if (memberCount > 2) VISIBLE else GONE
 //        tvMemberCount.text = ChannelUtils.makeMemberCountText(channel.memberCount)
         tvUpdatedAt.text = DateUtils.formatDateTime(
-            context, lastMessage?.timestamp ?: channel.updateTime
+            context, lastMessage?.timestamp ?: channel.sortTime
         )
 
         setLastMessage(tvLastMessage, channel, useTypingIndicator)

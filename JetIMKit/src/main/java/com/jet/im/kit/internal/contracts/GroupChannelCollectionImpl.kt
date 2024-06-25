@@ -18,7 +18,7 @@ internal class GroupChannelCollectionImpl(query: IConversationManager) :
 
     override fun loadMore(handler: ConversationCallbackHandler) {
         val timestamp: Long =
-            if (collection.isEmpty()) 0 else collection[collection.size - 1].updateTime;
+            if (collection.isEmpty()) 0 else collection[collection.size - 1].sortTime;
         val conversationInfoList = conversationManager.getConversationInfoList(
             10,
             timestamp,

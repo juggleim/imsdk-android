@@ -53,7 +53,11 @@ internal class SendbirdChatImpl : SendbirdChatContract {
             override fun onConnected(user: User?, e: SendbirdException?) {
                 mUser = user
                 val listener = object : IConnectionStatusListener {
-                    override fun onStatusChange(status: JetIMConst.ConnectionStatus?, code: Int) {
+                    override fun onStatusChange(
+                        status: JetIMConst.ConnectionStatus?,
+                        code: Int,
+                        extra: String
+                    ) {
                         if (status == JetIMConst.ConnectionStatus.CONNECTED) {
                             handler?.onConnected(user, null);
                             JetIM.getInstance().connectionManager.removeConnectionStatusListener("kit")
@@ -64,6 +68,10 @@ internal class SendbirdChatImpl : SendbirdChatContract {
                     }
 
                     override fun onDbOpen() {
+//                        TODO("Not yet implemented")
+                    }
+
+                    override fun onDbClose() {
 //                        TODO("Not yet implemented")
                     }
                 }

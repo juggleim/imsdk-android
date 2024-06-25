@@ -4,8 +4,6 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="testRunner" value="GRADLE" />
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleJvm" value="jbr-17" />
         <option name="modules">
@@ -15,17 +13,18 @@
             <option value="$PROJECT_DIR$/HWPlugin" />
             <option value="$PROJECT_DIR$/JGPlugin" />
             <option value="$PROJECT_DIR$/JetIM" />
+            <option value="$PROJECT_DIR$/JetIMKit" />
             <option value="$PROJECT_DIR$/OPPOPlugin" />
             <option value="$PROJECT_DIR$/OPPOPlugin/sdk" />
             <option value="$PROJECT_DIR$/VIVOPlugin" />
             <option value="$PROJECT_DIR$/VIVOPlugin/sdk" />
-            <option value="$PROJECT_DIR$/JetIMKit" />
             <option value="$PROJECT_DIR$/XMPlugin" />
             <option value="$PROJECT_DIR$/XMPlugin/sdk" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/demo" />
           </set>
         </option>
+        <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
     </option>
   </component>
