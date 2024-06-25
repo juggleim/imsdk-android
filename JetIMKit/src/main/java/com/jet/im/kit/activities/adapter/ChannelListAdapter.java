@@ -274,7 +274,7 @@ public class ChannelListAdapter extends BaseAdapter<ConversationInfo, BaseViewHo
             conversationType = channel.getConversation().getConversationType();
             conversationId = channel.getConversation().getConversationId();
             unreadCount = channel.getUnreadCount();
-            updateTime = channel.getUpdateTime();
+            updateTime = channel.getSortTime();
             lastMessage = channel.getLastMessage();
             isTop = channel.isTop();
             topTime = channel.getTopTime();
