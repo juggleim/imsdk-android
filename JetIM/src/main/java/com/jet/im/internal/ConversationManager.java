@@ -520,9 +520,11 @@ public class ConversationManager implements IConversationManager, MessageManager
                 addInfo.setSortTime(message.getTimestamp());
             }
             addInfo.setLastMessage(message);
-            addInfo.setLastMessageIndex(message.getMsgIndex());
-            addInfo.setLastReadMessageIndex(message.getMsgIndex() - 1);
-            addInfo.setUnreadCount(1);
+            if (message.getMsgIndex() > 0) {
+                addInfo.setLastMessageIndex(message.getMsgIndex());
+                addInfo.setLastReadMessageIndex(message.getMsgIndex() - 1);
+                addInfo.setUnreadCount(1);
+            }
             if (mentionInfo != null) {
                 addInfo.setMentionInfo(mentionInfo);
             }
