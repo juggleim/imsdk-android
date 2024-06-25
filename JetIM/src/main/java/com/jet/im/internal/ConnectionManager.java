@@ -1,7 +1,5 @@
 package com.jet.im.internal;
 
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.text.TextUtils;
 
 import com.jet.im.JetIMConst;
@@ -9,80 +7,79 @@ import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.push.PushChannel;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.push.PushManager;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConnectionManager implements IConnectionManager {
+public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSocketConnectListener {
     @Override
     public void connect(String token) {
-        LoggerUtils.i("connect, token is " + token);
+        JLogger.i("CON-Connect", "token is " + token);
         //todo 校验，是否有连接
 
         if (!mCore.getToken().equals(token)) {
             mCore.setToken(token);
             mCore.setUserId("");
         }
-        if (!mCore.getDbManager().isOpen()) {
-            if (!TextUtils.isEmpty(mCore.getUserId())) {
-                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
-                    dbStatusNotice(JetIMCore.DbStatus.OPEN);
-                }
-            }
-        }
-        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE);
+        openDB();
+        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
 
-        mNaviHandler.post(() -> NaviManager.request(mCore.getNaviUrl(), mCore.getAppKey(), mCore.getToken(), new NaviManager.IRequestCallback() {
+        NaviTask task = new NaviTask(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
             @Override
             public void onSuccess(String userId, List<String> servers) {
-                mCore.setServers(servers);
-                connectWebSocket(token);
+                mCore.getSendHandler().post(() -> {
+                    JLogger.i("CON-Navi", "success, servers is " + servers);
+                    mCore.setServers(servers);
+                    connectWebSocket(token);
+                });
             }
 
             @Override
             public void onError(int errorCode) {
+                JLogger.i("CON-Navi", "fail, errorCode is " + errorCode);
                 if (errorCode == ConstInternal.ErrorCode.TOKEN_ILLEGAL) {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);
+                    changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
                 } else {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode);
+                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
                 }
             }
-        }));
+        });
+
+        task.start();
     }
 
     @Override
     public void disconnect(boolean receivePush) {
-        LoggerUtils.i("user disconnect receivePush is " + receivePush);
-        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE);
-        mCore.getDbManager().closeDB();
-        dbStatusNotice(JetIMCore.DbStatus.CLOSED);
+        JLogger.i("CON-Disconnect", "user disconnect receivePush is " + receivePush);
         if (mCore.getWebSocket() != null) {
             mCore.getWebSocket().disconnect(receivePush);
         }
+        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE, "");
     }
 
     @Override
     public void registerPushToken(PushChannel channel, String token) {
+        JLogger.i("CON-Push", "registerPushToken, channel is " + channel.getName() + ", token is " + token);
         mPushChannel = channel;
         mPushToken = token;
         if (mCore.getWebSocket() == null) {
             return;
         }
-        mCore.getWebSocket().registerPushToken(channel, token, mCore.getUserId(), new WebSocketSimpleCallback() {
+        mCore.getWebSocket().registerPushToken(channel, token, mCore.getDeviceId(), mCore.getPackageName(), mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
-                LoggerUtils.i("register push token success");
+                JLogger.i("CON-Push", "registerPushToken success");
             }
 
             @Override
             public void onError(int errorCode) {
-                LoggerUtils.e("register push token error, code is " + errorCode);
+                JLogger.w("CON-Push", "registerPushToken error, errorCode is " + errorCode);
             }
         });
     }
@@ -105,79 +102,62 @@ public class ConnectionManager implements IConnectionManager {
         }
     }
 
-    public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager) {
+    public ConnectionManager(JetIMCore core, ConversationManager conversationManager, MessageManager messageManager, UserInfoManager userInfoManager) {
         this.mCore = core;
         this.mCore.setConnectionStatus(JetIMCore.ConnectionStatusInternal.IDLE);
+        this.mCore.getWebSocket().setConnectionListener(this);
         this.mConversationManager = conversationManager;
         this.mMessageManager = messageManager;
-        this.mHeartBeatManager = new HeartBeatManager(core);
+        this.mUserInfoManager = userInfoManager;
+    }
 
-        HandlerThread thread = new HandlerThread("JET_NAVI");
-        thread.start();
-        this.mNaviHandler = new Handler(thread.getLooper());
+    @Override
+    public void onConnectComplete(int errorCode, String userId, String session, String extra) {
+        if (errorCode == ConstInternal.ErrorCode.NONE) {
+            mCore.setUserId(userId);
+            openDB();
+            changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
+            mConversationManager.syncConversations(mMessageManager::syncMessage);
+            PushManager.getInstance().getToken(mCore.getContext());
+        } else {
+            if (checkConnectionFailure(errorCode)) {
+                changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode, extra);
+            } else {
+                changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, extra);
+            }
+        }
+    }
+
+    @Override
+    public void onDisconnect(int errorCode, String extra) {
+        changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode, extra);
+    }
+
+    @Override
+    public void onWebSocketFail() {
+        handleWebsocketFail();
+    }
+
+    @Override
+    public void onWebSocketClose() {
+        handleWebsocketFail();
+    }
+
+    @Override
+    public void onTimeOut() {
+        handleWebsocketFail();
     }
 
     private void connectWebSocket(String token) {
-        if (mCore.getWebSocket() == null) {
-            URI uri = JWebSocket.createWebSocketUri(mCore.getServers().get(0));
-            mCore.setWebSocket(new JWebSocket(mCore.getAppKey(), token, uri, mCore.getContext()));
-            mCore.getWebSocket().setConnectionListener(new JWebSocket.IWebSocketConnectListener() {
-                @Override
-                public void onConnectComplete(int errorCode, String userId) {
-                    if (errorCode == ConstInternal.ErrorCode.NONE) {
-                        mCore.setUserId(userId);
-                        if (!mCore.getDbManager().isOpen()) {
-                            if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), userId)) {
-                                dbStatusNotice(JetIMCore.DbStatus.OPEN);
-                            } else {
-                                LoggerUtils.e("open db fail");
-                            }
-                        }
-                        changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE);
-                        mConversationManager.syncConversations(mMessageManager::syncMessage);
-                    } else {
-                        if (checkConnectionFailure(errorCode)) {
-                            changeStatus(JetIMCore.ConnectionStatusInternal.FAILURE, errorCode);
-                        } else {
-                            changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
-                        }
+        mCore.getWebSocket().connect(mCore.getAppKey(), token, mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getServers());
+    }
 
-                    }
-                }
-
-                @Override
-                public void onDisconnect(int errorCode) {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode);
-                }
-
-                @Override
-                public void onWebSocketFail() {
-                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
-                }
-
-                @Override
-                public void onWebSocketClose() {
-                    if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.DISCONNECTED
-                            || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.FAILURE) {
-                        return;
-                    }
-                    changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE);
-                }
-            });
-            mCore.getWebSocket().setPushChannel(mPushChannel);
-            if (!TextUtils.isEmpty(mPushToken)) {
-                mCore.getWebSocket().setPushToken(mPushToken);
-            }
-            mCore.getWebSocket().connect();
-        } else {
-            mCore.getWebSocket().setAppKey(mCore.getAppKey());
-            mCore.getWebSocket().setToken(token);
-            mCore.getWebSocket().setPushChannel(mPushChannel);
-            if (!TextUtils.isEmpty(mPushToken)) {
-                mCore.getWebSocket().setPushToken(mPushToken);
-            }
-            mCore.getWebSocket().reconnect();
+    private void handleWebsocketFail() {
+        if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.DISCONNECTED
+                || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.FAILURE) {
+            return;
         }
+        changeStatus(JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, "");
     }
 
     private boolean checkConnectionFailure(int errorCode) {
@@ -193,9 +173,9 @@ public class ConnectionManager implements IConnectionManager {
                 || errorCode == ConstInternal.ErrorCode.USER_LOG_OUT;
     }
 
-    private void changeStatus(int status, int errorCode) {
+    private void changeStatus(int status, int errorCode, String extra) {
         mCore.getSendHandler().post(() -> {
-            LoggerUtils.i("connection status " + status);
+            JLogger.i("CON-Status", "status is " + status + ", code is " + errorCode + ", extra is " + extra);
             if (status == mCore.getConnectionStatus()) {
                 return;
             }
@@ -205,11 +185,12 @@ public class ConnectionManager implements IConnectionManager {
             }
             if (status == JetIMCore.ConnectionStatusInternal.CONNECTED
                     && mCore.getConnectionStatus() != JetIMCore.ConnectionStatusInternal.CONNECTED) {
-                mHeartBeatManager.start();
+                mCore.getWebSocket().startHeartbeat();
             }
             if (status != JetIMCore.ConnectionStatusInternal.CONNECTED
                     && mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED) {
-                mHeartBeatManager.stop();
+                mCore.getWebSocket().stopHeartbeat();
+                mCore.getWebSocket().pushRemainCmdAndCallbackError();
             }
             JetIMConst.ConnectionStatus outStatus = JetIMConst.ConnectionStatus.IDLE;
             switch (status) {
@@ -217,6 +198,8 @@ public class ConnectionManager implements IConnectionManager {
                     outStatus = JetIMConst.ConnectionStatus.CONNECTED;
                     break;
                 case JetIMCore.ConnectionStatusInternal.DISCONNECTED:
+                    closeDB();
+                    stopReconnectTimer();
                     outStatus = JetIMConst.ConnectionStatus.DISCONNECTED;
                     break;
 
@@ -238,13 +221,24 @@ public class ConnectionManager implements IConnectionManager {
                     break;
             }
             mCore.setConnectionStatus(status);
+
             if (mConnectionStatusListenerMap != null) {
+                JetIMConst.ConnectionStatus finalOutStatus = outStatus;
                 for (Map.Entry<String, IConnectionStatusListener> entry :
                         mConnectionStatusListenerMap.entrySet()) {
-                    entry.getValue().onStatusChange(outStatus, errorCode);
+                    mCore.getCallbackHandler().post(() -> {
+                        entry.getValue().onStatusChange(finalOutStatus, errorCode, extra);
+                    });
                 }
             }
         });
+    }
+
+    private void stopReconnectTimer() {
+        if (mReconnectTimer != null) {
+            mReconnectTimer.cancel();
+            mReconnectTimer = null;
+        }
     }
 
     public JetIMConst.ConnectionStatus getConnectionStatus() {
@@ -271,7 +265,7 @@ public class ConnectionManager implements IConnectionManager {
     }
 
     private void reconnect() {
-        LoggerUtils.i("reconnect");
+        JLogger.i("CON-Reconnect", "reconnect");
         //todo 线程控制，间隔控制
         if (mReconnectTimer != null) {
             return;
@@ -280,41 +274,61 @@ public class ConnectionManager implements IConnectionManager {
         mReconnectTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (mReconnectTimer != null) {
-                    mReconnectTimer.cancel();
-                    mReconnectTimer = null;
-                }
+                stopReconnectTimer();
                 //todo 重连整理
-                if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTED
-                        || mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.CONNECTING) {
-                    return;
+                if (mCore.getConnectionStatus() == JetIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
+                    connect(mCore.getToken());
                 }
-                connect(mCore.getToken());
             }
         }, RECONNECT_INTERVAL);
-
     }
 
-    private void dbStatusNotice(int status) {
-        mCore.setDbStatus(status);
-        if (status == JetIMCore.DbStatus.OPEN) {
+    private void dbStatusNotice(boolean isOpen) {
+        JLogger.i("CON-Db", "db notice, isOpen is " + isOpen);
+        if (isOpen) {
             mCore.getSyncTimeFromDB();
             for (Map.Entry<String, IConnectionStatusListener> entry :
                     mConnectionStatusListenerMap.entrySet()) {
-                entry.getValue().onDbOpen();
+                mCore.getCallbackHandler().post(() -> {
+                    entry.getValue().onDbOpen();
+                });
+            }
+        } else {
+            for (Map.Entry<String, IConnectionStatusListener> entry :
+                    mConnectionStatusListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> {
+                    entry.getValue().onDbClose();
+                });
             }
         }
     }
 
+    private void openDB() {
+        if (!mCore.getDbManager().isOpen()) {
+            mUserInfoManager.clearCache();
+            if (!TextUtils.isEmpty(mCore.getUserId())) {
+                if (mCore.getDbManager().openIMDB(mCore.getContext(), mCore.getAppKey(), mCore.getUserId())) {
+                    dbStatusNotice(true);
+                } else {
+                    JLogger.e("CON-Db", "open db fail");
+                }
+            }
+        }
+    }
+
+    private void closeDB() {
+        mCore.getDbManager().closeDB();
+        mUserInfoManager.clearCache();
+        dbStatusNotice(false);
+    }
 
     private final JetIMCore mCore;
     private final ConversationManager mConversationManager;
     private final MessageManager mMessageManager;
-    private final HeartBeatManager mHeartBeatManager;
+    private final UserInfoManager mUserInfoManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
     private PushChannel mPushChannel;
     private String mPushToken;
-    private final Handler mNaviHandler;
     private static final int RECONNECT_INTERVAL = 5 * 1000;
 }

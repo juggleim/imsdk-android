@@ -15,6 +15,10 @@ enum PushChannel{
     Apple = 1;
     Huawei = 2;
     Xiaomi = 3;
+    Oppo = 4;
+    Vivo = 5;
+    FCM = 6;
+    JPush = 7;
 }
 
 message RegPushTokenReq{

@@ -10,19 +10,28 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.upload.UploadFileType;
+import com.jet.im.internal.model.upload.UploadOssType;
+import com.jet.im.internal.model.upload.UploadPreSignCred;
+import com.jet.im.internal.model.upload.UploadQiNiuCred;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationMentionInfo;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.MessageMentionInfo;
+import com.jet.im.model.MessageOptions;
+import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.push.PushChannel;
-import com.jet.im.utils.LoggerUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import app_messages.Appmessages;
@@ -100,10 +109,13 @@ class PBData {
                            int flags,
                            String clientUid,
                            List<ConcreteMessage> mergedMsgList,
+                           boolean isBroadcast,
                            String userId,
                            int index,
                            Conversation.ConversationType conversationType,
-                           String conversationId) {
+                           String conversationId,
+                           MessageMentionInfo mentionInfo,
+                           ConcreteMessage referMsg) {
         ByteString byteString = ByteString.copyFrom(msgData);
         Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
         upMsgBuilder.setMsgType(contentType)
@@ -112,12 +124,15 @@ class PBData {
                 .setClientUid(clientUid);
 
         if (mergedMsgList != null && mergedMsgList.size() > 0) {
-            upMsgBuilder.setFlags(flags | MessageContent.MessageFlag.IS_MERGED.getValue());
-            Appmessages.MergedMsgs.Builder mergedMsgsBuilder = Appmessages.MergedMsgs.newBuilder();
-            mergedMsgsBuilder.setChannelTypeValue(conversationType.getValue())
-                    .setUserId(userId)
-                    .setTargetId(conversationId);
+            flags |= MessageContent.MessageFlag.IS_MERGED.getValue();
+            upMsgBuilder.setFlags(flags);
 
+            int channelType = mergedMsgList.get(0).getConversation().getConversationType().getValue();
+            String targetId = mergedMsgList.get(0).getConversation().getConversationId();
+            Appmessages.MergedMsgs.Builder mergedMsgsBuilder = Appmessages.MergedMsgs.newBuilder();
+            mergedMsgsBuilder.setChannelTypeValue(channelType)
+                    .setUserId(userId)
+                    .setTargetId(targetId);
             for (ConcreteMessage msg : mergedMsgList) {
                 Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
                         .setMsgId(msg.getMessageId())
@@ -127,6 +142,27 @@ class PBData {
                 mergedMsgsBuilder.addMsgs(simpleMsg);
             }
             upMsgBuilder.setMergedMsgs(mergedMsgsBuilder.build());
+        }
+        if (isBroadcast) {
+            flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
+            upMsgBuilder.setFlags(flags);
+        }
+        if (mentionInfo != null) {
+            Appmessages.MentionInfo.Builder pbMentionBuilder = Appmessages.MentionInfo.newBuilder();
+            pbMentionBuilder.setMentionTypeValue(mentionInfo.getType().getValue());
+            if (mentionInfo.getTargetUsers() != null) {
+                for (UserInfo userInfo : mentionInfo.getTargetUsers()) {
+                    Appmessages.UserInfo pbUser = Appmessages.UserInfo.newBuilder()
+                            .setUserId(userInfo.getUserId())
+                            .build();
+                    pbMentionBuilder.addTargetUsers(pbUser);
+                }
+            }
+            upMsgBuilder.setMentionInfo(pbMentionBuilder);
+        }
+        if (referMsg != null) {
+            Appmessages.DownMsg downMsg = downMsgWithMessage(referMsg);
+            upMsgBuilder.setReferMsg(downMsg);
         }
         Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
@@ -159,15 +195,25 @@ class PBData {
         return msg.toByteArray();
     }
 
-    byte[] recallMessageData(String messageId, Conversation conversation, long timestamp, int index) {
-        Appmessages.RecallMsgReq req = Appmessages.RecallMsgReq.newBuilder()
+    byte[] recallMessageData(String messageId, Conversation conversation, long timestamp, Map<String, String> extras, int index) {
+        Appmessages.RecallMsgReq.Builder builder = Appmessages.RecallMsgReq.newBuilder()
                 .setMsgId(messageId)
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
-                .setMsgTime(timestamp)
-                .build();
+                .setMsgTime(timestamp);
+        if (extras != null) {
+            for (Map.Entry<String, String> entry : extras.entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) continue;
+                Appmessages.KvItem kvItem = Appmessages.KvItem.newBuilder()
+                        .setKey(entry.getKey())
+                        .setValue(entry.getValue())
+                        .build();
+                builder.addExts(kvItem);
+            }
+        }
+        Appmessages.RecallMsgReq req = builder.build();
 
-        Connect.PublishMsgBody publishMsg = Connect.PublishMsgBody.newBuilder()
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(RECALL_MSG)
                 .setTargetId(conversation.getConversationId())
@@ -176,7 +222,7 @@ class PBData {
 
         mMsgCmdMap.put(index, RECALL_MSG);
 
-        Connect.ImWebsocketMsg msg = createImWebsocketMsgWithPublishMsg(publishMsg);
+        Connect.ImWebsocketMsg msg = createImWebsocketMsgWithQueryMsg(body);
         return msg.toByteArray();
     }
 
@@ -227,6 +273,38 @@ class PBData {
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(CLEAR_UNREAD)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] clearTotalUnreadCountData(String userId, long time, int index) {
+        Appmessages.QryTotalUnreadCountReq req = Appmessages.QryTotalUnreadCountReq.newBuilder()
+                .setTime(time)
+                .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(CLEAR_TOTAL_UNREAD)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    public byte[] addConversationInfo(Conversation conversation, String userId, Integer index) {
+        Appmessages.Conversation req = pbConversationFromConversation(conversation).build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(ADD_CONVERSATION)
                 .setTargetId(userId)
                 .setData(req.toByteString())
                 .build();
@@ -342,12 +420,34 @@ class PBData {
                 .setUndisturbType(isMute ? 1 : 0)
                 .build();
         Appmessages.UndisturbConversReq req = Appmessages.UndisturbConversReq.newBuilder()
-                .setUserId(userId)
                 .addItems(item)
                 .build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(UNDISTURB_CONVERS)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] topConversationData(Conversation conversation,
+                               String userId,
+                               boolean isTop,
+                               int index) {
+        Appmessages.Conversation pbConversation = Appmessages.Conversation.newBuilder()
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setTargetId(conversation.getConversationId())
+                .setIsTop(isTop ? 1 : 0)
+                .build();
+        Appmessages.ConversationsReq req = Appmessages.ConversationsReq.newBuilder()
+                .addConversations(pbConversation)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(TOP_CONVERS)
                 .setTargetId(userId)
                 .setData(req.toByteString())
                 .build();
@@ -400,7 +500,92 @@ class PBData {
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
+    }
 
+    byte[] getMentionMessages(Conversation conversation,
+                              long timestamp,
+                              int count,
+                              JetIMConst.PullDirection direction,
+                              int index) {
+        int order = direction == JetIMConst.PullDirection.OLDER ? 0 : 1;
+        Appmessages.QryMentionMsgsReq req = Appmessages.QryMentionMsgsReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setStartTime(timestamp)
+                .setCount(count)
+                .setOrder(order)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_MENTION_MSGS)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] clearHistoryMessage(Conversation conversation, long time, int scope, int index) {
+        Appmessages.CleanHisMsgReq req = Appmessages.CleanHisMsgReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setCleanMsgTime(time)
+                .setCleanScope(scope)
+                .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(CLEAR_HIS_MSG)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, int index) {
+        Appmessages.DelHisMsgsReq.Builder builder = Appmessages.DelHisMsgsReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setDelScope(0);
+        for (ConcreteMessage msg : msgList) {
+            Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
+                    .setMsgId(msg.getMessageId())
+                    .setMsgTime(msg.getTimestamp())
+                    .build();
+            builder.addMsgs(simpleMsg);
+        }
+        Appmessages.DelHisMsgsReq req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(DELETE_MSG)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    public byte[] getUploadFileCred(String userId, UploadFileType fileType, String ext, Integer index) {
+        Appmessages.QryFileCredReq req = Appmessages.QryFileCredReq.newBuilder()
+                .setFileTypeValue(fileType.getValue())
+                .setExt(ext == null ? "" : ext)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_FILE_CRED)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
     }
 
     byte[] pingData() {
@@ -431,13 +616,12 @@ class PBData {
         try {
             Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.parseFrom(byteBuffer);
             if (msg == null) {
-                LoggerUtils.e("rcvObjWithBytes msg is null");
+                JLogger.e("PB-Parse", "rcvObjWithBytes msg is null");
                 obj.setRcvType(PBRcvObj.PBRcvType.parseError);
                 return obj;
             }
             if (msg.getCmd() == CmdType.pong) {
                 obj.setRcvType(PBRcvObj.PBRcvType.pong);
-                LoggerUtils.d("mMsgCmdMap size is " + mMsgCmdMap.size());
                 return obj;
             }
             switch (msg.getTestofCase()) {
@@ -446,6 +630,8 @@ class PBData {
                     PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
                     ack.code = msg.getConnectAckMsgBody().getCode();
                     ack.userId = msg.getConnectAckMsgBody().getUserId();
+                    ack.session = msg.getConnectAckMsgBody().getSession();
+                    ack.extra = msg.getConnectAckMsgBody().getExt();
                     obj.mConnectAck = ack;
                     break;
 
@@ -460,7 +646,7 @@ class PBData {
                     a.code = msg.getPubAckMsgBody().getCode();
                     a.msgId = msg.getPubAckMsgBody().getMsgId();
                     a.timestamp = msg.getPubAckMsgBody().getTimestamp();
-                    a.seqNo = msg.getPubAckMsgBody().getMsgIndex();
+                    a.seqNo = msg.getPubAckMsgBody().getMsgSeqNo();
                     obj.mPublishMsgAck = a;
                 }
                 break;
@@ -485,6 +671,18 @@ class PBData {
                         case PBRcvObj.PBRcvType.simpleQryAck:
                             obj = simpleQryAckWithImWebsocketMsg(msg);
                             break;
+                        case PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp:
+                            obj = simpleQryAckCallbackTimestampWithImWebsocketMsg(msg);
+                            break;
+                        case PBRcvObj.PBRcvType.conversationSetTopAck:
+                            obj = conversationSetTopAckWithImWebsocketMsg(msg);
+                            break;
+                        case PBRcvObj.PBRcvType.qryFileCredAck:
+                            obj = qryFileCredAckWithImWebsocketMsg(msg);
+                            break;
+                        case PBRcvObj.PBRcvType.addConversationAck:
+                            obj = addConversationAckWithImWebsocketMsg(msg);
+                            break;
                         default:
                             break;
                     }
@@ -492,7 +690,6 @@ class PBData {
 
                 case PUBLISHMSGBODY:
                     if (msg.getPublishMsgBody().getTopic().equals(NTF)) {
-                        LoggerUtils.d("publish msg notify");
                         Appmessages.Notify ntf = Appmessages.Notify.parseFrom(msg.getPublishMsgBody().getData());
                         if (ntf.getType() == Appmessages.NotifyType.Msg) {
                             obj.setRcvType(PBRcvObj.PBRcvType.publishMsgNtf);
@@ -501,7 +698,6 @@ class PBData {
                             obj.mPublishMsgNtf = n;
                         }
                     } else if (msg.getPublishMsgBody().getTopic().equals(MSG)) {
-                        LoggerUtils.d("publish msg directly");
                         Appmessages.DownMsg downMsg = Appmessages.DownMsg.parseFrom(msg.getPublishMsgBody().getData());
                         PBRcvObj.PublishMsgBody body = new PBRcvObj.PublishMsgBody();
                         body.rcvMessage = messageWithDownMsg(downMsg);
@@ -518,11 +714,13 @@ class PBData {
                     PBRcvObj.DisconnectMsg m = new PBRcvObj.DisconnectMsg();
                     m.code = msg.getDisconnectMsgBody().getCode();
                     m.timestamp = msg.getDisconnectMsgBody().getTimestamp();
+                    m.extra = msg.getDisconnectMsgBody().getExt();
                     obj.mDisconnectMsg = m;
                     break;
 
             }
         } catch (InvalidProtocolBufferException e) {
+            JLogger.e("PB-Parse", "rcvObjWithBytes msg parse error, msgType is " + obj.getRcvType() + ", exception is " + e.getMessage());
             obj.setRcvType(PBRcvObj.PBRcvType.parseError);
         }
         return obj;
@@ -591,6 +789,23 @@ class PBData {
         return obj;
     }
 
+    private PBRcvObj simpleQryAckCallbackTimestampWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(msg.getQryAckMsgBody());
+        return obj;
+    }
+
+    private PBRcvObj conversationSetTopAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.conversationSetTopAck);
+        Appmessages.TopConversResp resp = Appmessages.TopConversResp.parseFrom(msg.getQryAckMsgBody().getData());
+        PBRcvObj.TimestampQryAck a = new PBRcvObj.TimestampQryAck(msg.getQryAckMsgBody());
+        a.operationTime = resp.getOptTime();
+        obj.mTimestampQryAck = a;
+        return obj;
+    }
+
     private PBRcvObj qryReadDetailAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.QryReadDetailResp resp = Appmessages.QryReadDetailResp.parseFrom(msg.getQryAckMsgBody().getData());
@@ -609,6 +824,37 @@ class PBData {
         a.readMembers = readMembers;
         a.unreadMembers = unreadMembers;
         obj.mQryReadDetailAck = a;
+        return obj;
+    }
+
+    private PBRcvObj qryFileCredAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.qryFileCredAck);
+        Appmessages.QryFileCredResp resp = Appmessages.QryFileCredResp.parseFrom(msg.getQryAckMsgBody().getData());
+        PBRcvObj.QryFileCredAck a = new PBRcvObj.QryFileCredAck(msg.getQryAckMsgBody());
+        a.ossType = UploadOssType.setValue(resp.getOssType().getNumber());
+        if (resp.getQiNiuCred() != null) {
+            UploadQiNiuCred qiNiuCred = new UploadQiNiuCred();
+            qiNiuCred.setDomain(resp.getQiNiuCred().getDomain());
+            qiNiuCred.setToken(resp.getQiNiuCred().getToken());
+            a.qiNiuCred = qiNiuCred;
+        }
+        if (resp.getPreSignResp() != null) {
+            UploadPreSignCred preSignCred = new UploadPreSignCred();
+            preSignCred.setUrl(resp.getPreSignResp().getUrl());
+            a.preSignCred = preSignCred;
+        }
+        obj.mQryFileCredAck = a;
+        return obj;
+    }
+
+    private PBRcvObj addConversationAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.addConversationAck);
+        Appmessages.Conversation resp = Appmessages.Conversation.parseFrom(msg.getQryAckMsgBody().getData());
+        PBRcvObj.ConversationInfoAck a = new PBRcvObj.ConversationInfoAck(msg.getQryAckMsgBody());
+        a.conversationInfo = conversationInfoWithPBConversation(resp);
+        obj.mConversationInfoAck = a;
         return obj;
     }
 
@@ -643,9 +889,9 @@ class PBData {
         message.setState(Message.MessageState.SENT);
         message.setTimestamp(downMsg.getMsgTime());
         message.setSenderUserId(downMsg.getSenderId());
-        message.setSeqNo(downMsg.getMsgIndex());
+        message.setSeqNo(downMsg.getMsgSeqNo());
         message.setMsgIndex(downMsg.getUnreadIndex());
-        message.setContent(ContentTypeCenter.getInstance().getContent(downMsg.getMsgContent().toByteArray(), downMsg.getMsgType()));
+        MessageContent messageContent = ContentTypeCenter.getInstance().getContent(downMsg.getMsgContent().toByteArray(), downMsg.getMsgType());
         int flags = ContentTypeCenter.getInstance().flagsWithType(downMsg.getMsgType());
         if (flags < 0) {
             message.setFlags(downMsg.getFlags());
@@ -658,7 +904,86 @@ class PBData {
         message.setGroupMessageReadInfo(info);
         message.setGroupInfo(groupInfoWithPBGroupInfo(downMsg.getGroupInfo()));
         message.setTargetUserInfo(userInfoWithPBUserInfo(downMsg.getTargetUserInfo()));
+        message.setMessageOptions(new MessageOptions());
+        if (downMsg.hasMentionInfo() && Appmessages.MentionType.MentionDefault != downMsg.getMentionInfo().getMentionType()) {
+            MessageMentionInfo mentionInfo = new MessageMentionInfo();
+            mentionInfo.setType(mentionTypeFromPbMentionType(downMsg.getMentionInfo().getMentionType()));
+            List<UserInfo> mentionUserList = new ArrayList<>();
+            for (Appmessages.UserInfo pbUserInfo : downMsg.getMentionInfo().getTargetUsersList()) {
+                UserInfo user = userInfoWithPBUserInfo(pbUserInfo);
+                if (user != null) {
+                    mentionUserList.add(user);
+                }
+            }
+            mentionInfo.setTargetUsers(mentionUserList);
+            message.getMessageOptions().setMentionInfo(mentionInfo);
+        }
+        if (downMsg.hasReferMsg()) {
+            ConcreteMessage referMsg = messageWithDownMsg(downMsg.getReferMsg());
+            message.setReferMsg(referMsg);
+
+            MessageReferredInfo referredInfo = new MessageReferredInfo();
+            referredInfo.setMessageId(referMsg.getMessageId());
+            referredInfo.setSenderId(referMsg.getSenderUserId());
+            referredInfo.setContent(referMsg.getContent());
+            message.getMessageOptions().setReferredInfo(referredInfo);
+        }
+        message.setContent(messageContent);
         return message;
+    }
+
+    private Appmessages.DownMsg downMsgWithMessage(ConcreteMessage message) {
+        if (message.getContent() == null) return null;
+        if (message.getConversation() == null) return null;
+
+        Appmessages.DownMsg.Builder downMsgBuilder = Appmessages.DownMsg.newBuilder()
+                .setTargetId(message.getConversation().getConversationId())
+                .setChannelType(channelTypeFromConversationType(message.getConversation().getConversationType()))
+                .setMsgType(message.getContentType())
+                .setSenderId(message.getSenderUserId())
+                .setMsgId(message.getMessageId())
+                .setMsgSeqNo(message.getSeqNo())
+                .setMsgContent(ByteString.copyFrom(message.getContent().encode()))
+                .setMsgTime(message.getTimestamp())
+                .setFlags(message.getFlags())
+                .setIsSend(Message.MessageDirection.SEND == message.getDirection())
+//                .setPlatform("")
+                .setClientUid(message.getClientUid())
+//                .setPushData()
+                .setIsRead(message.isHasRead())
+//                .setMergedMsgs()
+//                .setUndisturbType()
+                .setUnreadIndex(message.getMsgIndex());
+
+        if (message.getGroupMessageReadInfo() != null) {
+            downMsgBuilder
+                    .setReadCount(message.getGroupMessageReadInfo().getReadCount())
+                    .setMemberCount(message.getGroupMessageReadInfo().getMemberCount());
+        }
+        if (message.getGroupInfo() != null) {
+            downMsgBuilder
+                    .setGroupInfo(pbGroupInfoWithGroupInfo(message.getGroupInfo()));
+        }
+        if (message.getTargetUserInfo() != null) {
+            downMsgBuilder
+                    .setTargetUserInfo(pbUserInfoWithUserInfo(message.getTargetUserInfo()));
+        }
+        if (message.hasMentionInfo()) {
+            Appmessages.MentionInfo.Builder pbMentionInfo = Appmessages.MentionInfo.newBuilder()
+                    .setMentionType(pbMentionTypeFromMentionType(message.getMessageOptions().getMentionInfo().getType()));
+            if (message.getMessageOptions().getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo targetUser : message.getMessageOptions().getMentionInfo().getTargetUsers()) {
+                    pbMentionInfo.addTargetUsers(pbUserInfoWithUserInfo(targetUser));
+                }
+            }
+            downMsgBuilder
+                    .setMentionInfo(pbMentionInfo.build());
+        }
+        if (message.getReferMsg() != null) {
+            downMsgBuilder
+                    .setReferMsg(downMsgWithMessage(message.getReferMsg()));
+        }
+        return downMsgBuilder.build();
     }
 
     private ConcreteConversationInfo conversationInfoWithPBConversation(Appmessages.Conversation conversation) {
@@ -666,15 +991,42 @@ class PBData {
         Conversation c = new Conversation(conversationTypeFromChannelType(conversation.getChannelType()), conversation.getTargetId());
         info.setConversation(c);
         info.setUnreadCount((int) conversation.getUnreadCount());
-        info.setUpdateTime(conversation.getUpdateTime());
+        info.setSortTime(conversation.getSortTime());
         info.setLastMessage(messageWithDownMsg(conversation.getMsg()));
         info.setLastReadMessageIndex(conversation.getLatestReadIndex());
         info.setLastMessageIndex(conversation.getLatestUnreadIndex());
         info.setSyncTime(conversation.getSyncTime());
         info.setMute(conversation.getUndisturbType() == 1);
+        info.setTop(conversation.getIsTop() == 1);
+        info.setTopTime(conversation.getTopUpdatedTime());
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
         info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
-        //todo mention
+        if (conversation.getMentions() != null && conversation.getMentions().getIsMentioned()) {
+            ConversationMentionInfo mentionInfo = new ConversationMentionInfo();
+            //解析@消息列表
+            if (conversation.getMentions().getMentionMsgsList() != null) {
+                List<ConversationMentionInfo.MentionMsg> mentionMsgList = new ArrayList<>();
+                for (Appmessages.MentionMsg pbMentionMsg : conversation.getMentions().getMentionMsgsList()) {
+                    ConversationMentionInfo.MentionMsg mentionMsg = mentionMsgWithPBMentionMsg(pbMentionMsg);
+                    if (mentionMsg != null) {
+                        mentionMsgList.add(mentionMsg);
+                    }
+                }
+                mentionInfo.setMentionMsgList(mentionMsgList);
+            }
+            info.setMentionInfo(mentionInfo);
+            //解析用户信息列表
+            if (conversation.getMentions().getSendersList() != null) {
+                List<UserInfo> mentionUserList = new ArrayList<>();
+                for (Appmessages.UserInfo pbUserInfo : conversation.getMentions().getSendersList()) {
+                    UserInfo user = userInfoWithPBUserInfo(pbUserInfo);
+                    if (user != null) {
+                        mentionUserList.add(user);
+                    }
+                }
+                info.setMentionUserList(mentionUserList);
+            }
+        }
         return info;
     }
 
@@ -683,6 +1035,13 @@ class PBData {
         userInfo.setUserId(item.getMember().getUserId());
         userInfo.setUserName(item.getMember().getNickname());
         userInfo.setPortrait(item.getMember().getUserPortrait());
+        if (item.getMember().getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem it : item.getMember().getExtFieldsList()) {
+                extra.put(it.getKey(), it.getValue());
+            }
+            userInfo.setExtra(extra);
+        }
         return userInfo;
     }
 
@@ -694,7 +1053,35 @@ class PBData {
         result.setUserId(pbUserInfo.getUserId());
         result.setUserName(pbUserInfo.getNickname());
         result.setPortrait(pbUserInfo.getUserPortrait());
+        if (pbUserInfo.getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem item : pbUserInfo.getExtFieldsList()) {
+                extra.put(item.getKey(), item.getValue());
+            }
+            result.setExtra(extra);
+        }
         return result;
+    }
+
+    private Appmessages.UserInfo pbUserInfoWithUserInfo(UserInfo userInfo) {
+        if (userInfo == null) {
+            return null;
+        }
+        Appmessages.UserInfo.Builder pbUserInfoBuilder = Appmessages.UserInfo.newBuilder()
+                .setUserId(userInfo.getUserId())
+                .setNickname(userInfo.getUserName())
+                .setUserPortrait(userInfo.getPortrait());
+        if (userInfo.getExtra() != null) {
+            for (Map.Entry<String, String> entry : userInfo.getExtra().entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) continue;
+                Appmessages.KvItem kvItem = Appmessages.KvItem.newBuilder()
+                        .setKey(entry.getKey())
+                        .setValue(entry.getValue())
+                        .build();
+                pbUserInfoBuilder.addExtFields(kvItem);
+            }
+        }
+        return pbUserInfoBuilder.build();
     }
 
     private GroupInfo groupInfoWithPBGroupInfo(Appmessages.GroupInfo pbGroupInfo) {
@@ -705,6 +1092,46 @@ class PBData {
         result.setGroupId(pbGroupInfo.getGroupId());
         result.setGroupName(pbGroupInfo.getGroupName());
         result.setPortrait(pbGroupInfo.getGroupPortrait());
+        if (pbGroupInfo.getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem item : pbGroupInfo.getExtFieldsList()) {
+                extra.put(item.getKey(), item.getValue());
+            }
+            result.setExtra(extra);
+        }
+        return result;
+    }
+
+    private Appmessages.GroupInfo pbGroupInfoWithGroupInfo(GroupInfo groupInfo) {
+        if (groupInfo == null) {
+            return null;
+        }
+        Appmessages.GroupInfo.Builder pbGroupInfoBuilder = Appmessages.GroupInfo.newBuilder()
+                .setGroupId(groupInfo.getGroupId())
+                .setGroupName(groupInfo.getGroupName())
+                .setGroupPortrait(groupInfo.getPortrait());
+
+        if (groupInfo.getExtra() != null) {
+            for (Map.Entry<String, String> entry : groupInfo.getExtra().entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) continue;
+                Appmessages.KvItem kvItem = Appmessages.KvItem.newBuilder()
+                        .setKey(entry.getKey())
+                        .setValue(entry.getValue())
+                        .build();
+                pbGroupInfoBuilder.addExtFields(kvItem);
+            }
+        }
+        return pbGroupInfoBuilder.build();
+    }
+
+    private ConversationMentionInfo.MentionMsg mentionMsgWithPBMentionMsg(Appmessages.MentionMsg pbMentionMsg) {
+        if (pbMentionMsg == null) {
+            return null;
+        }
+        ConversationMentionInfo.MentionMsg result = new ConversationMentionInfo.MentionMsg();
+        result.setSenderId(pbMentionMsg.getSenderId());
+        result.setMsgId(pbMentionMsg.getMsgId());
+        result.setMsgTime(pbMentionMsg.getMsgTime());
         return result;
     }
 
@@ -729,6 +1156,63 @@ class PBData {
         return result;
     }
 
+    private Appmessages.ChannelType channelTypeFromConversationType(Conversation.ConversationType conversationType) {
+        Appmessages.ChannelType result = Appmessages.ChannelType.Unknown;
+        switch (conversationType) {
+            case PRIVATE:
+                result = Appmessages.ChannelType.Private;
+                break;
+            case GROUP:
+                result = Appmessages.ChannelType.Group;
+                break;
+            case CHATROOM:
+                result = Appmessages.ChannelType.Chatroom;
+                break;
+            case SYSTEM:
+                result = Appmessages.ChannelType.System;
+                break;
+            default:
+                break;
+        }
+        return result;
+    }
+
+    private MessageMentionInfo.MentionType mentionTypeFromPbMentionType(Appmessages.MentionType pbMentionType) {
+        MessageMentionInfo.MentionType type = MessageMentionInfo.MentionType.DEFAULT;
+        switch (pbMentionType) {
+            case All:
+                type = MessageMentionInfo.MentionType.ALL;
+                break;
+            case Someone:
+                type = MessageMentionInfo.MentionType.SOMEONE;
+                break;
+            case AllAndSomeone:
+                type = MessageMentionInfo.MentionType.ALL_AND_SOMEONE;
+                break;
+            default:
+                break;
+        }
+        return type;
+    }
+
+    private Appmessages.MentionType pbMentionTypeFromMentionType(MessageMentionInfo.MentionType mentionType) {
+        Appmessages.MentionType type = Appmessages.MentionType.MentionDefault;
+        switch (mentionType) {
+            case ALL:
+                type = Appmessages.MentionType.All;
+                break;
+            case SOMEONE:
+                type = Appmessages.MentionType.Someone;
+                break;
+            case ALL_AND_SOMEONE:
+                type = Appmessages.MentionType.AllAndSomeone;
+                break;
+            default:
+                break;
+        }
+        return type;
+    }
+
     private Appmessages.Conversation.Builder pbConversationFromConversation(Conversation conversation) {
         return Appmessages.Conversation.newBuilder()
                 .setTargetId(conversation.getConversationId())
@@ -738,12 +1222,12 @@ class PBData {
     private int getTypeInCmdMap(Integer index) {
         String cachedCmd = mMsgCmdMap.remove(index);
         if (TextUtils.isEmpty(cachedCmd)) {
-            LoggerUtils.e("rcvObjWithBytes ack can't match a cached cmd");
+            JLogger.w("PB-Match", "rcvObjWithBytes ack can't match a cached cmd");
             return PBRcvObj.PBRcvType.cmdMatchError;
         }
         Integer type = sCmdAckMap.get(cachedCmd);
         if (type == null) {
-            LoggerUtils.e("rcvObjWithBytes ack cmd match error, cmd is " + cachedCmd);
+            JLogger.w("PB-Match", "rcvObjWithBytes ack cmd match error, cmd is " + cachedCmd);
             return PBRcvObj.PBRcvType.cmdMatchError;
         }
         return type;
@@ -779,10 +1263,17 @@ class PBData {
     private static final String RECALL_MSG = "recall_msg";
     private static final String DEL_CONV = "del_convers";
     private static final String CLEAR_UNREAD = "clear_unread";
+    private static final String CLEAR_TOTAL_UNREAD = "clear_total_unread";
     private static final String QRY_READ_DETAIL = "qry_read_detail";
     private static final String UNDISTURB_CONVERS = "undisturb_convers";
+    private static final String TOP_CONVERS = "top_convers";
     private static final String QRY_MERGED_MSGS = "qry_merged_msgs";
     private static final String REG_PUSH_TOKEN = "reg_push_token";
+    private static final String QRY_MENTION_MSGS = "qry_mention_msgs";
+    private static final String CLEAR_HIS_MSG = "clean_hismsg";
+    private static final String DELETE_MSG = "del_msg";
+    private static final String QRY_FILE_CRED = "file_cred";
+    private static final String ADD_CONVERSATION = "add_conver";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -796,15 +1287,22 @@ class PBData {
             put(P_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(G_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(C_MSG, PBRcvObj.PBRcvType.publishMsgAck);
-            put(RECALL_MSG, PBRcvObj.PBRcvType.recall);
-            put(DEL_CONV, PBRcvObj.PBRcvType.simpleQryAck);
+            put(RECALL_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(DEL_CONV, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(CLEAR_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
+            put(CLEAR_TOTAL_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
             put(MARK_READ, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(TOP_CONVERS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
+            put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
+            put(CLEAR_HIS_MSG, PBRcvObj.PBRcvType.simpleQryAck);
+            put(DELETE_MSG, PBRcvObj.PBRcvType.simpleQryAck);
+            put(QRY_FILE_CRED, PBRcvObj.PBRcvType.qryFileCredAck);
+            put(ADD_CONVERSATION, PBRcvObj.PBRcvType.addConversationAck);
         }
     };
 

@@ -1,9 +1,9 @@
 package com.jet.im.push;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.jet.im.JetIM;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.internal.util.JUtility;
 
 import java.util.ArrayList;
@@ -15,8 +15,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class PushManager implements IPush.Callback {
-    private static final String TAG = "PushManager";
-    private ThreadPoolExecutor pushExecutor;
+    private static final String TAG = "CON-Push";
+    private final ThreadPoolExecutor pushExecutor;
+    private PushConfig mConfig;
+    private boolean mHasRegister = false;
     Map<PushChannel, IPush> iPushMap = new HashMap<>();
 
     public static PushManager getInstance() {
@@ -28,16 +30,33 @@ public class PushManager implements IPush.Callback {
         pushExecutor.allowCoreThreadTimeOut(true);
     }
 
-    public void init(Context context, PushConfig config) {
+    public void init(PushConfig config) {
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                mConfig = config;
+                mHasRegister = false;
                 init("com.jet.im.push.hw.HWPush");
                 init("com.jet.im.push.xm.XMPush");
+                init("com.jet.im.push.vivo.VIVOPush");
+                init("com.jet.im.push.oppo.OPPOPush");
+                init("com.jet.im.push.jg.JGPush");
                 init("com.jet.im.push.google.GooglePush");
+            }
+        });
+    }
+
+    public void getToken(Context context) {
+        pushExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (mConfig == null) return;
+                if (mHasRegister) return;
+                mHasRegister = true;
+
                 List<IPush> pushList = getRegisterPush();
                 for (IPush item : pushList) {
-                    item.getToken(context, config, PushManager.this);
+                    item.getToken(context, mConfig, PushManager.this);
                 }
             }
         });
@@ -46,11 +65,11 @@ public class PushManager implements IPush.Callback {
     /**
      * 获取适合的推送类型 根据手机机型和用户 enable 适配的推送类型
      */
-    public List<IPush> getRegisterPush() {
+    private List<IPush> getRegisterPush() {
         List<IPush> result = new ArrayList<>();
         String os = JUtility.getDeviceManufacturer().toLowerCase();
         for (Map.Entry<PushChannel, IPush> item : iPushMap.entrySet()) {
-            if (item.getKey() == PushChannel.GOOGLE) {
+            if (item.getKey() == PushChannel.JIGUANG || item.getKey() == PushChannel.GOOGLE) {
                 result.add(item.getValue());
                 continue;
             }
@@ -68,7 +87,7 @@ public class PushManager implements IPush.Callback {
             IPush push = (IPush) aClass.newInstance();
             iPushMap.put(push.getType(), push);
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-            Log.d(TAG, "not register " + className);
+            JLogger.w(TAG, "not register " + className);
         }
     }
 
@@ -78,6 +97,7 @@ public class PushManager implements IPush.Callback {
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
+                JLogger.i(TAG, "on push token received, channel= " + type.getName() + ", token= " + token);
                 JetIM.getInstance().getConnectionManager().registerPushToken(type, token);
             }
         });
@@ -86,6 +106,13 @@ public class PushManager implements IPush.Callback {
     @Override
     public void onError(PushChannel type, int code, String msg) {
         //todo 处理 onError
+        pushExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                JLogger.e(TAG, "on push token error, channel= " + type.getName() + ", code= " + code + ", msg= " + msg);
+                mHasRegister = false;
+            }
+        });
     }
 
     private static class SingletonHolder {

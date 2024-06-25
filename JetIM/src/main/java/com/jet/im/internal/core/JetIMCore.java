@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
@@ -21,26 +22,52 @@ public class JetIMCore {
         HandlerThread sendThread = new HandlerThread("JET_SEND");
         sendThread.start();
         mSendHandler = new Handler(sendThread.getLooper());
+        mCallbackHandler = new Handler(Looper.getMainLooper());
+        mWebSocket = new JWebSocket(mSendHandler);
     }
 
     public JWebSocket getWebSocket() {
         return mWebSocket;
     }
 
-    public void setWebSocket(JWebSocket ws) {
-        ws.setSendHandler(mSendHandler);
-        this.mWebSocket = ws;
-    }
-
-    public String getNaviUrl() {
-        if (mNaviUrl == null) {
-            mNaviUrl = ConstInternal.NAVI_URL;
+    public String getDeviceId() {
+        if (mContext == null) {
+            return "";
         }
-        return mNaviUrl;
+        return JUtility.getDeviceId(mContext);
     }
 
-    public void setNaviUrl(@NonNull String naviUrl) {
-        this.mNaviUrl = naviUrl;
+    public String getPackageName() {
+        if (mContext == null) {
+            return "";
+        }
+        return mContext.getPackageName();
+    }
+
+    public String getNetworkType() {
+        if (mContext == null) {
+            return "";
+        }
+        return JUtility.getNetworkType(mContext);
+    }
+
+    public String getCarrier() {
+        if (mContext == null) {
+            return "";
+        }
+        return JUtility.getCarrier(mContext);
+    }
+
+    public List<String> getNaviUrls() {
+        if (mNaviUrls == null) {
+            mNaviUrls = new ArrayList<>();
+            mNaviUrls.add(ConstInternal.NAVI_URL);
+        }
+        return mNaviUrls;
+    }
+
+    public void setNaviUrl(@NonNull List<String> naviUrls) {
+        this.mNaviUrls = naviUrls;
     }
 
     public List<String> getServers() {
@@ -123,14 +150,6 @@ public class JetIMCore {
         mConnectionStatus = connectionStatus;
     }
 
-    public int getDbStatus() {
-        return mDbStatus;
-    }
-
-    public void setDbStatus(int dbStatus) {
-        mDbStatus = dbStatus;
-    }
-
     public DBManager getDbManager() {
         return mDbManager;
     }
@@ -178,6 +197,15 @@ public class JetIMCore {
         return mSendHandler;
     }
 
+    public void setCallbackHandler(Handler callbackHandler) {
+        if (callbackHandler == null) return;
+        this.mCallbackHandler = callbackHandler;
+    }
+
+    public Handler getCallbackHandler() {
+        return mCallbackHandler;
+    }
+
     public static class ConnectionStatusInternal {
         public static final int IDLE = 0;
         public static final int CONNECTED = 1;
@@ -187,13 +215,8 @@ public class JetIMCore {
         public static final int WAITING_FOR_CONNECTING = 5;
     }
 
-    public static class DbStatus {
-        public static final int CLOSED = 0;
-        public static final int OPEN = 1;
-    }
-
-    private JWebSocket mWebSocket;
-    private String mNaviUrl;
+    private final JWebSocket mWebSocket;
+    private List<String> mNaviUrls;
     private List<String> mServers;
     private String mAppKey;
     private String mToken;
@@ -201,12 +224,11 @@ public class JetIMCore {
     private Context mContext;
     private int mConnectionStatus;
     private final DBManager mDbManager = new DBManager();
-    private int mDbStatus;
     private long mConversationSyncTime;
     private long mMessageSendSyncTime;
     private long mMessageReceiveTime;
-    private Handler mSendHandler;
-
+    private Handler mCallbackHandler;
+    private final Handler mSendHandler;
     private final String APP_KEY = "AppKey";
     private final String TOKEN = "Token";
     private final String USER_ID = "UserId";

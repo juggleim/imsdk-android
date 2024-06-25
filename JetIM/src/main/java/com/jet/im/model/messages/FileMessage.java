@@ -2,15 +2,15 @@ package com.jet.im.model.messages;
 
 import android.text.TextUtils;
 
-import com.jet.im.model.MessageContent;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MediaMessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
-public class FileMessage extends MessageContent {
+public class FileMessage extends MediaMessageContent {
     public FileMessage() {
         mContentType = "jg:file";
     }
@@ -22,8 +22,8 @@ public class FileMessage extends MessageContent {
             if (!TextUtils.isEmpty(mName)) {
                 jsonObject.put(NAME, mName);
             }
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             jsonObject.put(SIZE, mSize);
             if (!TextUtils.isEmpty(mType)) {
@@ -33,7 +33,7 @@ public class FileMessage extends MessageContent {
                 jsonObject.put(EXTRA, mExtra);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("FileMessage JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "FileMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -41,7 +41,7 @@ public class FileMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("FileMessage decode data is null");
+            JLogger.e("MSG-Decode", "FileMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -49,7 +49,7 @@ public class FileMessage extends MessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(NAME)) {
                 mName = jsonObject.optString(NAME);
@@ -63,8 +63,8 @@ public class FileMessage extends MessageContent {
             if (jsonObject.has(EXTRA)) {
                 mExtra = jsonObject.optString(EXTRA);
             }
-         } catch (JSONException e) {
-            LoggerUtils.e("FileMessage decode JSONException " + e.getMessage());
+        } catch (JSONException e) {
+            JLogger.e("MSG-Decode", "FileMessage decode JSONException " + e.getMessage());
         }
     }
 
@@ -79,14 +79,6 @@ public class FileMessage extends MessageContent {
 
     public void setName(String name) {
         this.mName = name;
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        this.mUrl = url;
     }
 
     public long getSize() {
@@ -113,8 +105,12 @@ public class FileMessage extends MessageContent {
         mExtra = extra;
     }
 
+    @Override
+    public String getSearchContent() {
+        return TextUtils.isEmpty(mName) ? "" : mName;
+    }
+
     private String mName;
-    private String mUrl;
     private long mSize;
     private String mType;
     private String mExtra;

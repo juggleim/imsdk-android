@@ -1,6 +1,7 @@
 package com.jet.im;
 
 import android.content.Context;
+import android.os.Handler;
 import android.text.TextUtils;
 
 import com.jet.im.interfaces.IConnectionManager;
@@ -10,11 +11,15 @@ import com.jet.im.interfaces.IUserInfoManager;
 import com.jet.im.internal.ConnectionManager;
 import com.jet.im.internal.ConversationManager;
 import com.jet.im.internal.MessageManager;
+import com.jet.im.internal.UploadManager;
 import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
+import com.jet.im.internal.logger.JLogConfig;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
-import com.jet.im.utils.LoggerUtils;
+
+import java.util.List;
 
 public class JetIM {
 
@@ -23,7 +28,7 @@ public class JetIM {
     }
 
     public void init(Context context, String appKey) {
-        init(context, appKey, new InitConfig());
+        init(context, appKey, new InitConfig.Builder().build());
     }
 
     public void init(Context context, String appKey, InitConfig initConfig) {
@@ -33,9 +38,23 @@ public class JetIM {
         if (TextUtils.isEmpty(appKey)) {
             throw new IllegalArgumentException("app key is empty");
         }
-        LoggerUtils.i("init, appKey is " + appKey);
+        if (initConfig == null) {
+            throw new IllegalArgumentException("initConfig is null");
+        }
+        if (initConfig.getJLogConfig() == null) {
+            initConfig.setJLogConfig(new JLogConfig.Builder(context).build());
+        }
+        if (initConfig.getPushConfig() == null) {
+            initConfig.setPushConfig(new PushConfig.Builder().build());
+        }
+        //保存context
         mCore.setContext(context);
-        PushManager.getInstance().init(context, initConfig.getPushConfig());
+        //初始化日志
+        JLogger.getInstance().init(initConfig.getJLogConfig());
+        //初始化push
+        PushManager.getInstance().init(initConfig.getPushConfig());
+        //初始化appKey
+        JLogger.i("J-Init", "appKey is " + appKey);
         if (appKey.equals(mCore.getAppKey())) {
             return;
         }
@@ -44,8 +63,12 @@ public class JetIM {
         mCore.setToken("");
     }
 
-    public void setServer(String serverUrl) {
-        mCore.setNaviUrl(serverUrl);
+    public void setServer(List<String> serverUrls) {
+        mCore.setNaviUrl(serverUrls);
+    }
+
+    public void setCallbackHandler(Handler callbackHandler) {
+        mCore.setCallbackHandler(callbackHandler);
     }
 
     public IConnectionManager getConnectionManager() {
@@ -74,28 +97,67 @@ public class JetIM {
     private JetIM() {
         JetIMCore core = new JetIMCore();
         mCore = core;
-        mMessageManager = new MessageManager(core);
-        mConversationManager = new ConversationManager(core);
-        mMessageManager.setSendReceiveListener(mConversationManager);
-        mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager);
         mUserInfoManager = new UserInfoManager(core);
+        mMessageManager = new MessageManager(core, mUserInfoManager);
+        mConversationManager = new ConversationManager(core, mUserInfoManager, mMessageManager);
+        mMessageManager.setSendReceiveListener(mConversationManager);
+        mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager, mUserInfoManager);
+        mUploadManager = new UploadManager(core);
+        mMessageManager.setDefaultMessageUploadProvider(mUploadManager);
     }
 
     private final ConnectionManager mConnectionManager;
     private final MessageManager mMessageManager;
     private final ConversationManager mConversationManager;
     private final UserInfoManager mUserInfoManager;
+    private final UploadManager mUploadManager;
     private final JetIMCore mCore;
 
     public static class InitConfig {
-        private PushConfig pushConfig=new PushConfig();
+        private JLogConfig mJLogConfig;
+        private PushConfig mPushConfig;
 
-        public PushConfig getPushConfig() {
-            return pushConfig;
+        public InitConfig(Builder builder) {
+            this.mJLogConfig = builder.mJLogConfig;
+            this.mPushConfig = builder.mPushConfig;
+        }
+
+        public void setJLogConfig(JLogConfig jLogConfig) {
+            this.mJLogConfig = jLogConfig;
         }
 
         public void setPushConfig(PushConfig pushConfig) {
-            this.pushConfig = pushConfig;
+            this.mPushConfig = pushConfig;
+        }
+
+        public PushConfig getPushConfig() {
+            return mPushConfig;
+        }
+
+        public JLogConfig getJLogConfig() {
+            return mJLogConfig;
+        }
+
+        public static class Builder {
+            private JLogConfig mJLogConfig;
+            private PushConfig mPushConfig;
+
+            public Builder() {
+            }
+
+            public Builder setJLogConfig(JLogConfig mJLogConfig) {
+                this.mJLogConfig = mJLogConfig;
+                return this;
+            }
+
+            public Builder setPushConfig(PushConfig mPushConfig) {
+                this.mPushConfig = mPushConfig;
+                return this;
+            }
+
+            public InitConfig build() {
+                return new InitConfig(this);
+            }
         }
     }
 }

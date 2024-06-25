@@ -2,25 +2,26 @@ package com.jet.im.model.messages;
 
 import android.text.TextUtils;
 
-import com.jet.im.model.MessageContent;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MediaMessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
-public class VideoMessage extends MessageContent {
+public class VideoMessage extends MediaMessageContent {
 
     public VideoMessage() {
         this.mContentType = "jg:video";
     }
+
     @Override
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
         try {
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             if (!TextUtils.isEmpty(mSnapshotUrl)) {
                 jsonObject.put(POSTER, mSnapshotUrl);
@@ -33,7 +34,7 @@ public class VideoMessage extends MessageContent {
             jsonObject.put(DURATION, mDuration);
             jsonObject.put(SIZE, mSize);
         } catch (JSONException e) {
-            LoggerUtils.e("VideoMessage JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "VideoMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -41,7 +42,7 @@ public class VideoMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("VideoMessage decode data is null");
+            JLogger.e("MSG-Decode", "VideoMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -49,7 +50,7 @@ public class VideoMessage extends MessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(POSTER)) {
                 mSnapshotUrl = jsonObject.optString(POSTER);
@@ -70,7 +71,7 @@ public class VideoMessage extends MessageContent {
                 mExtra = jsonObject.optString(EXTRA);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("VideoMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "VideoMessage decode JSONException " + e.getMessage());
         }
     }
 
@@ -79,12 +80,12 @@ public class VideoMessage extends MessageContent {
         return DIGEST;
     }
 
-    public String getUrl() {
-        return mUrl;
+    public String getSnapshotLocalPath() {
+        return mSnapshotLocalPath;
     }
 
-    public void setUrl(String url) {
-        mUrl = url;
+    public void setSnapshotLocalPath(String snapshotLocalPath) {
+        this.mSnapshotLocalPath = snapshotLocalPath;
     }
 
     public String getSnapshotUrl() {
@@ -134,13 +135,15 @@ public class VideoMessage extends MessageContent {
     public void setExtra(String extra) {
         mExtra = extra;
     }
-    private String mUrl;
+
+    private String mSnapshotLocalPath;
     private String mSnapshotUrl;
     private int mHeight;
     private int mWidth;
     private long mSize;
     private int mDuration;
     private String mExtra;
+
     private static final String URL = "url";
     private static final String POSTER = "poster";
     private static final String HEIGHT = "height";

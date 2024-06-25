@@ -3,7 +3,13 @@ package com.jet.im.internal;
 public class ConstInternal {
     public static final String WEB_SOCKET_URL = "120.48.178.248:9002";
     public static final String NAVI_URL = "http://120.48.178.248:8083";
+    public static final String LOG_UPLOAD_URL = "https://imlog.gxjipei.com/api/upload-log";
     public static final String PLATFORM = "Android";
+    public static final String LOG_UPLOAD_HEADER_APP_KEY = "x-appkey";
+    public static final String LOG_UPLOAD_HEADER_TOKEN = "x-token";
+    public static final int THUMBNAIL_WIDTH = 240;
+    public static final int THUMBNAIL_HEIGHT = 240;
+    public static final int THUMBNAIL_QUALITY = 30;
 
     static class ErrorCode {
         static final int NONE = 0;
@@ -36,6 +42,9 @@ public class ConstInternal {
         static final int WEB_SOCKET_FAILURE = 21001;
         static final int NAVI_FAILURE = 21002;
         static final int INVALID_PARAM = 21003;
+        static final int OPERATION_TIMEOUT = 21004;
+        static final int CONNECTION_UNAVAILABLE = 21005;
+        static final int SERVER_SET_ERROR = 21006;
 
         static final int MESSAGE_NOT_EXIST = 22001;
         static final int MESSAGE_ALREADY_RECALLED = 22002;

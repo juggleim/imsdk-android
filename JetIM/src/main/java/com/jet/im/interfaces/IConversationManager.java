@@ -10,8 +10,17 @@ public interface IConversationManager {
 
     interface ISimpleCallback {
         void onSuccess();
+
         void onError(int errorCode);
     }
+
+    interface ICreateConversationInfoCallback {
+        void onSuccess(ConversationInfo conversationInfo);
+
+        void onError(int errorCode);
+    }
+
+    void createConversationInfo(Conversation conversation, ICreateConversationInfoCallback callback);
 
     List<ConversationInfo> getConversationInfoList();
 
@@ -26,7 +35,7 @@ public interface IConversationManager {
 
     ConversationInfo getConversationInfo(Conversation conversation);
 
-    void deleteConversationInfo(Conversation conversation);
+    void deleteConversationInfo(Conversation conversation, ISimpleCallback callback);
 
     void setDraft(Conversation conversation, String draft);
 
@@ -36,9 +45,17 @@ public interface IConversationManager {
                  boolean isMute,
                  ISimpleCallback callback);
 
+    void setTop(Conversation conversation, boolean isTop, ISimpleCallback callback);
+
+    List<ConversationInfo> getTopConversationInfoList(int count,
+                                                      long timestamp,
+                                                      JetIMConst.PullDirection direction);
+
     int getTotalUnreadCount();
 
-    void clearUnreadCount(Conversation conversation);
+    void clearUnreadCount(Conversation conversation, ISimpleCallback callback);
+
+    void clearTotalUnreadCount(ISimpleCallback callback);
 
     void addListener(String key, IConversationListener listener);
 
@@ -50,8 +67,11 @@ public interface IConversationManager {
 
     interface IConversationListener {
         void onConversationInfoAdd(List<ConversationInfo> conversationInfoList);
+
         void onConversationInfoUpdate(List<ConversationInfo> conversationInfoList);
+
         void onConversationInfoDelete(List<ConversationInfo> conversationInfoList);
+
         void onTotalUnreadMessageCountUpdate(int count);
     }
 

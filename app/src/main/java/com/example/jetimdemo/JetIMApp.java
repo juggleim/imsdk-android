@@ -3,6 +3,8 @@ package com.example.jetimdemo;
 import android.app.Application;
 
 import com.jet.im.JetIM;
+import com.jet.im.internal.logger.JLogConfig;
+import com.jet.im.internal.logger.JLogLevel;
 import com.jet.im.push.PushConfig;
 
 public class JetIMApp extends Application {
@@ -10,7 +12,10 @@ public class JetIMApp extends Application {
     public void onCreate() {
         super.onCreate();
 //        JetIM.getInstance().setServer("https://nav.gxjipei.com");
-        PushConfig pushConfig = new PushConfig();
-        JetIM.getInstance().init(this, "appkey");
+        JetIM.InitConfig initConfig = new JetIM.InitConfig.Builder()
+                .setPushConfig(new PushConfig.Builder().build())
+                .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build())
+                .build();
+        JetIM.getInstance().init(this, "appkey", initConfig);
     }
 }

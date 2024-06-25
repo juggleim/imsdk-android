@@ -15,3 +15,8 @@ JetIM/build
 .externalNativeBuild
 .cxx
 local.properties
+OPPOPlugin/sdk/build
+XMPlugin/sdk/build
+VIVOPlugin/sdk/build
+
+

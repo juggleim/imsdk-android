@@ -5,9 +5,11 @@ public class Message {
     public enum MessageDirection {
         SEND(1),
         RECEIVE(2);
+
         MessageDirection(int value) {
             this.mValue = value;
         }
+
         public static MessageDirection setValue(int value) {
             for (MessageDirection d : MessageDirection.values()) {
                 if (value == d.mValue) {
@@ -16,9 +18,11 @@ public class Message {
             }
             return SEND;
         }
+
         public int getValue() {
             return mValue;
         }
+
         private final int mValue;
     }
 
@@ -29,9 +33,11 @@ public class Message {
         SENT(2),
         FAIL(3),
         UPLOADING(4);
+
         MessageState(int value) {
             this.mValue = value;
         }
+
         public static MessageState setValue(int value) {
             for (MessageState s : MessageState.values()) {
                 if (value == s.mValue) {
@@ -40,9 +46,11 @@ public class Message {
             }
             return UNKNOWN;
         }
+
         public int getValue() {
             return mValue;
         }
+
         private final int mValue;
     }
 
@@ -133,6 +141,31 @@ public class Message {
     public void setGroupMessageReadInfo(GroupMessageReadInfo groupMessageReadInfo) {
         mGroupMessageReadInfo = groupMessageReadInfo;
     }
+
+    public MessageOptions getMessageOptions() {
+        return mMessageOptions;
+    }
+
+    public void setMessageOptions(MessageOptions messageOptions) {
+        this.mMessageOptions = messageOptions;
+    }
+
+    public boolean hasMentionInfo() {
+        return mMessageOptions != null && mMessageOptions.getMentionInfo() != null;
+    }
+
+    public boolean hasReferredInfo() {
+        return mMessageOptions != null && mMessageOptions.getReferredInfo() != null;
+    }
+
+    public String getLocalAttribute() {
+        return localAttribute;
+    }
+
+    public void setLocalAttribute(String localAttribute) {
+        this.localAttribute = localAttribute;
+    }
+
     private Conversation mConversation;
     /// 消息类型
     private String mContentType;
@@ -153,5 +186,6 @@ public class Message {
     /// 消息内容
     private MessageContent content;
     private GroupMessageReadInfo mGroupMessageReadInfo;
-
+    private MessageOptions mMessageOptions;
+    private String localAttribute;
 }

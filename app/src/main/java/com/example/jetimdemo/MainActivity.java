@@ -1,16 +1,20 @@
 package com.example.jetimdemo;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import android.view.View;
-
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -22,21 +26,24 @@ import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.interfaces.IMessageManager;
+import com.jet.im.internal.uploader.FileUtil;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
+import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
+import com.jet.im.model.messages.SnapshotPackedVideoMessage;
 import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.ThumbnailPackedImageMessage;
 import com.jet.im.model.messages.VideoMessage;
 import com.jet.im.model.messages.VoiceMessage;
-import com.jet.im.push.PushChannel;
 
-import android.view.Menu;
-import android.view.MenuItem;
-
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -56,12 +63,111 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        HandlerThread sendThread = new HandlerThread("DEMO_TEST");
+        sendThread.start();
+        JetIM.getInstance().setCallbackHandler(new Handler(sendThread.getLooper()));
         JetIM.getInstance().getConnectionManager().addConnectionStatusListener("mainActivity", new IConnectionManager.IConnectionStatusListener() {
             @Override
-            public void onStatusChange(JetIMConst.ConnectionStatus status, int code) {
+            public void onStatusChange(JetIMConst.ConnectionStatus status, int code, String extra) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            UserInfo u1 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid1");
+                            UserInfo u2 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid2");
+                            UserInfo u3 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid3");
+                            UserInfo u5 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid5");
+                            GroupInfo g = JetIM.getInstance().getUserInfoManager().getGroupInfo("groupid1");
+                            Log.i("lifei", "");
+
+//                            JetIM.getInstance().getConnectionManager().disconnect(false);
+//                            JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+
+//                            TextMessage text = new TextMessage("Android broadcast");
+//                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+//                            JetIM.getInstance().getConversationManager().setTop(c1, true, new IConversationManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    Log.d("zzb", "setTop success");
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//                                    Log.d("zzb", "setTop fail, errorCode is " + errorCode);
+//                                }
+//                            });
+
+//                            Conversation c2 = new Conversation(Conversation.ConversationType.PRIVATE, "userid2");
+//                            Conversation c3 = new Conversation(Conversation.ConversationType.PRIVATE, "userid3");
+//                            Conversation c4 = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                            List<Conversation> conversations = new ArrayList<>();
+//                            conversations.add(c1);
+//                            conversations.add(c2);
+//                            conversations.add(c3);
+//                            conversations.add(c4);
+//                            JetIM.getInstance().getMessageManager().sendMessage(text, c1, new IMessageManager.ISendMessageCallback() {
+//                                @Override
+//                                public void onSuccess(Message message) {
+//                                    JetIM.getInstance().getMessageManager().recallMessage(message.getMessageId(), new IMessageManager.IRecallMessageCallback() {
+//                                        @Override
+//                                        public void onSuccess(Message message) {
+//
+//                                        }
+//
+//                                        @Override
+//                                        public void onError(int errorCode) {
+//
+//                                        }
+//                                    });
+//                                }
+//
+//                                @Override
+//                                public void onError(Message message, int errorCode) {
+//
+//                                }
+//                            });
+//                            JetIM.getInstance().getMessageManager().broadcastMessage(text, conversations, new IMessageManager.IBroadcastMessageCallback() {
+//                                @Override
+//                                public void onProgress(Message message, int errorCode, int processCount, int totalCount) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onComplete() {
+//
+//                                }
+//                            });
+
+                        }
+                    }, 1000);
+
+                    //send mention message
+//                    Handler mainHandler = new Handler(Looper.getMainLooper());
+//                    mainHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            TextMessage t = new TextMessage("test mention");
+//                            MessageMentionInfo mentionInfo = new MessageMentionInfo();
+//                            mentionInfo.setType(MessageMentionInfo.MentionType.ALL);
+//                            t.setMentionInfo(mentionInfo);
+//                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+//                            JetIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
+//                                @Override
+//                                public void onSuccess(Message message) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onError(Message message, int errorCode) {
+//
+//                                }
+//                            });
+//                        }
+//                    }, 1000);
+
+
                     //push token
 //                    JetIM.getInstance().getConnectionManager().registerPushToken(PushChannel.HUAWEI, "pushToken");
 
@@ -308,7 +414,6 @@ public class MainActivity extends AppCompatActivity {
 //                    JetIM.getInstance().getConversationManager().clearDraft(conversation);
 
 
-
                     //clear messages
 //                    List<Message> messages = JetIM.getInstance().getMessageManager().getMessages(conversation, 100, 0, JetIMConst.PullDirection.OLDER);
 //                    Log.e("lifei", "message count is " + messages.size());
@@ -398,8 +503,13 @@ public class MainActivity extends AppCompatActivity {
             public void onDbOpen() {
 
             }
+
+            @Override
+            public void onDbClose() {
+
+            }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN3);
+        JetIM.getInstance().getConnectionManager().connect(TOKEN5);
         JetIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {
@@ -429,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("lifei", "onMessageReceive type is " + message.getContentType() + " message is " + message);
                 MessageContent c = message.getContent();
                 if (c instanceof TextMessage) {
-                    TextMessage t = (TextMessage)c;
+                    TextMessage t = (TextMessage) c;
                     Log.i("lifei", "text message, extra is " + t.getExtra());
                 } else if (c instanceof ImageMessage) {
                     ImageMessage i = (ImageMessage) c;
@@ -446,6 +556,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onMessageRecall(Message message) {
                 Log.d("lifei", "onMessageRecall, messageId is " + message.getMessageId());
+            }
+
+            @Override
+            public void onMessageDelete(Conversation conversation, List<Long> clientMsgNos) {
+                Log.d("zzb", "onMessageDelete, conversation is " + conversation.getConversationId() + ", clientMsgNo is " + clientMsgNos);
+            }
+
+            @Override
+            public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
+                Log.d("zzb", "onMessageClear, conversation is " + conversation.getConversationId() + ", timestamp is " + timestamp + ", senderId is " + senderId);
             }
         });
         JetIM.getInstance().getConversationManager().addListener("main", new IConversationManager.IConversationListener() {
@@ -482,16 +602,30 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.fab)
-                        .setAction("Action", null).show();
+                createConversation();
             }
         });
     }
 
-    private void sendMessages() throws InterruptedException {
+    private void createConversation() {
+        Conversation conversation = new Conversation(Conversation.ConversationType.GROUP, "test14");
+        JetIM.getInstance().getConversationManager().createConversationInfo(conversation, new IConversationManager.ICreateConversationInfoCallback() {
+            @Override
+            public void onSuccess(ConversationInfo conversationInfo) {
+                Toast.makeText(getApplicationContext(), "createConversationInfo success", Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                Toast.makeText(getApplicationContext(), "createConversationInfo error", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void sendMessages() {
         Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
-        TextMessage t = new TextMessage("sdfasdf");
+        TextMessage t = new TextMessage("111");
         t.setExtra("extra");
         ImageMessage i = new ImageMessage();
         i.setHeight(600);
@@ -541,15 +675,70 @@ public class MainActivity extends AppCompatActivity {
         };
         Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
         Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
-        Thread.sleep(500);
-        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(f, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(v, c, callback);
+//        Thread.sleep(500);
+//        JetIM.getInstance().getMessageManager().sendMessage(video, c, callback);
 
+    }
+
+    private void sendMediaMessage() {
+        String filePath = getFilesDir().getAbsolutePath() + File.separator + "xhup.png";
+        String filePath2 = getFilesDir().getAbsolutePath() + File.separator + "VID_20240129092043475.mp4";
+        Conversation c = new Conversation(Conversation.ConversationType.GROUP, "groupid1");
+        ImageMessage image = new ImageMessage();
+        image.setHeight(600);
+        image.setWidth(800);
+        image.setSize(116 * 1024);
+        image.setLocalPath(filePath);
+        image.setThumbnailLocalPath(filePath);
+        ThumbnailPackedImageMessage tpImage = ThumbnailPackedImageMessage.messageWithImage(filePath);
+        tpImage.setHeight(600);
+        tpImage.setWidth(800);
+        tpImage.setSize(116 * 1024);
+        VideoMessage video = new VideoMessage();
+        video.setHeight(400);
+        video.setWidth(600);
+        video.setLocalPath(filePath2);
+        video.setSnapshotLocalPath(filePath);
+        SnapshotPackedVideoMessage spVideo = SnapshotPackedVideoMessage.messageWithVideo(filePath2, getThumbnailVideoFile(getApplicationContext(), filePath2));
+        spVideo.setHeight(400);
+        spVideo.setWidth(600);
+        spVideo.setName(FileUtil.getFileName(filePath2));
+        FileMessage file = new FileMessage();
+        file.setName("xhup.png");
+        file.setLocalPath(filePath);
+        file.setSize(116 * 1024);
+        file.setType("png");
+        VoiceMessage voice = new VoiceMessage();
+        voice.setLocalPath(filePath);
+        voice.setDuration(15);
+        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(image, c, new IMessageManager.ISendMediaMessageCallback() {
+            @Override
+            public void onProgress(int progress, Message message) {
+                Log.i("sendMediaMessage", "onProgress, clientMsgNo is " + message.getClientMsgNo() + ", progress is " + progress);
+            }
+
+            @Override
+            public void onSuccess(Message message) {
+                Log.i("sendMediaMessage", "onSuccess, clientMsgNo is " + message.getClientMsgNo() + ", messageId is " + message.getMessageId());
+            }
+
+            @Override
+            public void onError(Message message, int errorCode) {
+                Log.i("sendMediaMessage", "onError, clientMsgNo is " + message.getClientMsgNo() + ", errorCode is " + errorCode);
+            }
+
+            @Override
+            public void onCancel(Message message) {
+                Log.i("sendMediaMessage", "onCancel, clientMsgNo is " + message.getClientMsgNo());
+            }
+        });
+        Log.i("sendMediaMessage", "after send, clientMsgNo is " + m.getClientMsgNo());
     }
 
     @Override
@@ -579,5 +768,29 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    public static Bitmap getThumbnailVideoFile(Context context, String videoPath) {
+        if (context == null || TextUtils.isEmpty(videoPath)) return null;
+        File video = new File(videoPath);
+        if (!video.exists()) return null;
+
+        MediaMetadataRetriever mmr = null;
+        try {
+            mmr = new MediaMetadataRetriever();
+            mmr.setDataSource(video.getPath());
+
+            return mmr.getFrameAtTime();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (mmr != null) {
+                try {
+                    mmr.release();
+                } catch (IOException ignore) {
+                }
+            }
+        }
+        return null;
     }
 }

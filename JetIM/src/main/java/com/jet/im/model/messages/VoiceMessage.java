@@ -2,15 +2,15 @@ package com.jet.im.model.messages;
 
 import android.text.TextUtils;
 
-import com.jet.im.model.MessageContent;
-import com.jet.im.utils.LoggerUtils;
+import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.MediaMessageContent;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 
-public class VoiceMessage extends MessageContent {
+public class VoiceMessage extends MediaMessageContent {
     public VoiceMessage() {
         mContentType = "jg:voice";
     }
@@ -19,15 +19,15 @@ public class VoiceMessage extends MessageContent {
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
         try {
-            if (!TextUtils.isEmpty(mUrl)) {
-                jsonObject.put(URL, mUrl);
+            if (!TextUtils.isEmpty(getUrl())) {
+                jsonObject.put(URL, getUrl());
             }
             jsonObject.put(DURATION, mDuration);
             if (!TextUtils.isEmpty(mExtra)) {
                 jsonObject.put(EXTRA, mExtra);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("VoiceMessage JSONException " + e.getMessage());
+            JLogger.e("MSG-Encode", "VoiceMessage JSONException " + e.getMessage());
         }
         return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -35,7 +35,7 @@ public class VoiceMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("VoiceMessage decode data is null");
+            JLogger.e("MSG-Decode", "VoiceMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -43,7 +43,7 @@ public class VoiceMessage extends MessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
-                mUrl = jsonObject.optString(URL);
+                setUrl(jsonObject.optString(URL));
             }
             if (jsonObject.has(DURATION)) {
                 mDuration = jsonObject.optInt(DURATION);
@@ -52,21 +52,13 @@ public class VoiceMessage extends MessageContent {
                 mExtra = jsonObject.optString(EXTRA);
             }
         } catch (JSONException e) {
-            LoggerUtils.e("VoiceMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "VoiceMessage decode JSONException " + e.getMessage());
         }
     }
 
     @Override
     public String conversationDigest() {
         return DIGEST;
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public void setUrl(String url) {
-        mUrl = url;
     }
 
     public int getDuration() {
@@ -85,7 +77,6 @@ public class VoiceMessage extends MessageContent {
         mExtra = extra;
     }
 
-    private String mUrl;
     private int mDuration;
     private String mExtra;
     private static final String URL = "url";

@@ -17,12 +17,12 @@ public class ConversationInfo {
         mUnreadCount = unreadCount;
     }
 
-    public long getUpdateTime() {
-        return mUpdateTime;
+    public long getSortTime() {
+        return mSortTime;
     }
 
-    public void setUpdateTime(long updateTime) {
-        mUpdateTime = updateTime;
+    public void setSortTime(long sortTime) {
+        mSortTime = sortTime;
     }
 
     public Message getLastMessage() {
@@ -65,12 +65,21 @@ public class ConversationInfo {
         mDraft = draft;
     }
 
+    public ConversationMentionInfo getMentionInfo() {
+        return mMentionInfo;
+    }
+
+    public void setMentionInfo(ConversationMentionInfo mentionInfo) {
+        this.mMentionInfo = mentionInfo;
+    }
+
     private Conversation mConversation;
     private int mUnreadCount;
-    private long mUpdateTime;
+    private long mSortTime;
     private Message mLastMessage;
     private boolean mIsTop;
     private long mTopTime;
     private boolean mMute;
     private String mDraft;
+    private ConversationMentionInfo mMentionInfo;
 }

@@ -1,13 +1,15 @@
 package com.jet.im.internal.model.messages;
 
-import com.jet.im.model.Conversation;
+import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.MessageContent;
-import com.jet.im.utils.LoggerUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class RecallCmdMessage extends MessageContent {
     public RecallCmdMessage() {
@@ -23,7 +25,7 @@ public class RecallCmdMessage extends MessageContent {
     @Override
     public void decode(byte[] data) {
         if (data == null) {
-            LoggerUtils.e("RecallCmdMessage decode data is null");
+            JLogger.e("MSG-Decode", "RecallCmdMessage decode data is null");
             return;
         }
         String jsonStr = new String(data, StandardCharsets.UTF_8);
@@ -36,18 +38,28 @@ public class RecallCmdMessage extends MessageContent {
             if (jsonObject.has(MSG_ID)) {
                 mOriginalMessageId = jsonObject.optString(MSG_ID);
             }
-            if (jsonObject.has(SENDER_ID)) {
-                mSenderId = jsonObject.optString(SENDER_ID);
-            }
-            if (jsonObject.has(RECEIVER_ID)) {
-                mReceiverId = jsonObject.optString(RECEIVER_ID);
-            }
-            if (jsonObject.has(CHANNEL_TYPE)) {
-                int type = jsonObject.optInt(CHANNEL_TYPE);
-                mConversationType = Conversation.ConversationType.setValue(type);
-            }
+            decodeExt(jsonObject);
         } catch (JSONException e) {
-            LoggerUtils.e("RecallCmdMessage decode JSONException " + e.getMessage());
+            JLogger.e("MSG-Decode", "RecallCmdMessage decode JSONException " + e.getMessage());
+        }
+    }
+
+    private void decodeExt(JSONObject jsonObject) {
+        if (!jsonObject.has(MSG_EXT)) {
+            return;
+        }
+        JSONObject extJsonObject = jsonObject.optJSONObject(MSG_EXT);
+        if (extJsonObject == null) return;
+
+        mExtra = new HashMap<>();
+        for (Iterator<String> it = extJsonObject.keys(); it.hasNext(); ) {
+            try {
+                String key = it.next();
+                String value = extJsonObject.getString(key);
+                mExtra.put(key, value);
+            } catch (JSONException e) {
+                JLogger.e("MSG-Decode", "RecallCmdMessage decodeExt JSONException " + e.getMessage());
+            }
         }
     }
 
@@ -72,41 +84,21 @@ public class RecallCmdMessage extends MessageContent {
         mOriginalMessageTime = originalMessageTime;
     }
 
-    public String getSenderId() {
-        return mSenderId;
+    public Map<String, String> getExtra() {
+        return mExtra;
     }
 
-    public void setSenderId(String senderId) {
-        mSenderId = senderId;
-    }
-
-    public String getReceiverId() {
-        return mReceiverId;
-    }
-
-    public void setReceiverId(String receiverId) {
-        mReceiverId = receiverId;
-    }
-
-    public Conversation.ConversationType getConversationType() {
-        return mConversationType;
-    }
-
-    public void setConversationType(Conversation.ConversationType conversationType) {
-        mConversationType = conversationType;
+    public void setExtra(Map<String, String> extra) {
+        mExtra = extra;
     }
 
     public static final String CONTENT_TYPE = "jg:recall";
 
     private String mOriginalMessageId;
     private long mOriginalMessageTime;
-    private String mSenderId;
-    private String mReceiverId;//原消息的接收者 id，群聊时为 groupId
-    private Conversation.ConversationType mConversationType;
+    private Map<String, String> mExtra;
 
     private static final String MSG_TIME = "msg_time";
     private static final String MSG_ID = "msg_id";
-    private static final String SENDER_ID = "sender_id";
-    private static final String RECEIVER_ID = "receiver_id";
-    private static final String CHANNEL_TYPE = "channel_type";
+    private static final String MSG_EXT = "exts";
 }
