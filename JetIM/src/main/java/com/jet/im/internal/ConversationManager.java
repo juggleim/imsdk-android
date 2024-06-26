@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConversationManager implements IConversationManager, MessageManager.ISendReceiveListener {
 
-    public ConversationManager(JetIMCore core, UserInfoManager userInfoManager,MessageManager messageManager) {
+    public ConversationManager(JetIMCore core, UserInfoManager userInfoManager, MessageManager messageManager) {
         this.mCore = core;
         this.mUserInfoManager = userInfoManager;
         this.mMessageManager = messageManager;
@@ -620,9 +620,11 @@ public class ConversationManager implements IConversationManager, MessageManager
                 for (int i = info.getMentionInfo().getMentionMsgList().size() - 1; i >= 0; i--) {
                     ConversationMentionInfo.MentionMsg mentionMsg = info.getMentionInfo().getMentionMsgList().get(i);
                     //通过消息发送者ID过滤mentionMsg
-                    if (!TextUtils.isEmpty(sendUserId) && sendUserId.equals(mentionMsg.getSenderId())) {
-                        if (!hasUpdate) hasUpdate = true;
-                        info.getMentionInfo().getMentionMsgList().remove(i);
+                    if (!TextUtils.isEmpty(sendUserId)) {
+                        if (sendUserId.equals(mentionMsg.getSenderId()) && startTime > 0 && mentionMsg.getMsgTime() < startTime) {
+                            if (!hasUpdate) hasUpdate = true;
+                            info.getMentionInfo().getMentionMsgList().remove(i);
+                        }
                         continue;
                     }
                     //通过消息时间过滤mentionMsg
