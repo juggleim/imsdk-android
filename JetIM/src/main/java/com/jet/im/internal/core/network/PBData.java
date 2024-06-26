@@ -454,7 +454,7 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] getMergedMessageList(String messageId,
+    byte[] getMergedMessageList(String containerMsgId,
                                 long timestamp,
                                 int count,
                                 JetIMConst.PullDirection direction,
@@ -468,7 +468,7 @@ class PBData {
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(QRY_MERGED_MSGS)
-                .setTargetId(messageId)
+                .setTargetId(containerMsgId)
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());

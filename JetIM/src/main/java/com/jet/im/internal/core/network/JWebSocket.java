@@ -221,15 +221,15 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void getMergedMessageList(String messageId,
+    public void getMergedMessageList(String containerMsgId,
                                      long timestamp,
                                      int count,
                                      JetIMConst.PullDirection direction,
                                      QryHisMsgCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getMergedMessageList(messageId, timestamp, count, direction, mCmdIndex++);
+        byte[] bytes = mPbData.getMergedMessageList(containerMsgId, timestamp, count, direction, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "getMergedMessageList, messageId is " + messageId + ", timestamp is " + timestamp + ", count is " + count + ", direction is " + direction);
+        JLogger.i("WS-Send", "getMergedMessageList, containerMsgId is " + containerMsgId + ", timestamp is " + timestamp + ", count is " + count + ", direction is " + direction);
         sendWhenOpen(bytes);
     }
 

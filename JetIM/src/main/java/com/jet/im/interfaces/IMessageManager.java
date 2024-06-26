@@ -176,7 +176,7 @@ public interface IMessageManager {
                                    String messageId,
                                    IGetGroupMessageReadDetailCallback callback);
 
-    void getMergedMessageList(String messageId,
+    void getMergedMessageList(String containerMsgId,
                               IGetMessagesCallback callback);
 
     void getMentionMessageList(Conversation conversation,

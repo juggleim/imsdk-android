@@ -883,8 +883,8 @@ public class MessageManager implements IMessageManager {
     }
 
     @Override
-    public void getMergedMessageList(String messageId, IGetMessagesCallback callback) {
-        mCore.getWebSocket().getMergedMessageList(messageId, 0, 100, JetIMConst.PullDirection.OLDER, new QryHisMsgCallback() {
+    public void getMergedMessageList(String containerMsgId, IGetMessagesCallback callback) {
+        mCore.getWebSocket().getMergedMessageList(containerMsgId, 0, 100, JetIMConst.PullDirection.OLDER, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-GetMerge", "success");
