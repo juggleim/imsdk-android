@@ -61,12 +61,12 @@ public class ConcreteMessage extends Message {
         mTargetUserInfo = targetUserInfo;
     }
 
-    public ConcreteMessage getReferMsg() {
-        return mReferMsg;
+    public String getReferMsgId() {
+        return mReferMsgId;
     }
 
-    public void setReferMsg(ConcreteMessage mReferMsg) {
-        this.mReferMsg = mReferMsg;
+    public void setReferMsgId(String referMsgId) {
+        this.mReferMsgId = referMsgId;
     }
 
     private long mSeqNo;
@@ -76,5 +76,5 @@ public class ConcreteMessage extends Message {
     private boolean mExisted;
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;
-    private ConcreteMessage mReferMsg;
+    private String mReferMsgId;
 }

@@ -66,8 +66,7 @@ class ConversationSql {
         }
         String mentionInfoStr = CursorHelper.readString(cursor, COL_LAST_MESSAGE_MENTION_INFO);
         if (!TextUtils.isEmpty(mentionInfoStr)) {
-            lastMessage.setMessageOptions(new MessageOptions());
-            lastMessage.getMessageOptions().setMentionInfo(new MessageMentionInfo(mentionInfoStr));
+            lastMessage.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
         }
         lastMessage.setSeqNo(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_SEQ_NO));
         lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
@@ -105,7 +104,7 @@ class ConversationSql {
             args[16] = "";
         }
         if (lastMessage != null && lastMessage.hasMentionInfo()) {
-            args[17] = lastMessage.getMessageOptions().getMentionInfo().encodeToJson();
+            args[17] = lastMessage.getMentionInfo().encodeToJson();
         } else {
             args[17] = "";
         }
@@ -146,7 +145,7 @@ class ConversationSql {
             args[18] = "";
         }
         if (lastMessage != null && lastMessage.hasMentionInfo()) {
-            args[19] = lastMessage.getMessageOptions().getMentionInfo().encodeToJson();
+            args[19] = lastMessage.getMentionInfo().encodeToJson();
         } else {
             args[19] = "";
         }
@@ -183,7 +182,7 @@ class ConversationSql {
             args[i++] = "";
         }
         if (message.hasMentionInfo()) {
-            args[i++] = message.getMessageOptions().getMentionInfo().encodeToJson();
+            args[i++] = message.getMentionInfo().encodeToJson();
         } else {
             args[i++] = "";
         }

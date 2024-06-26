@@ -5,15 +5,15 @@ package com.jet.im.model;
  * @create 2024-06-11 16:09
  */
 public class MessageOptions {
-    private MessageReferredInfo mReferredInfo;
+    private String mReferredMessageId;
     private MessageMentionInfo mMentionInfo;
 
-    public MessageReferredInfo getReferredInfo() {
-        return mReferredInfo;
+    public String getReferredMessageId() {
+        return mReferredMessageId;
     }
 
-    public void setReferredInfo(MessageReferredInfo referredInfo) {
-        this.mReferredInfo = referredInfo;
+    public void setReferredMessageId(String referredMessageId) {
+        this.mReferredMessageId = referredMessageId;
     }
 
     public MessageMentionInfo getMentionInfo() {

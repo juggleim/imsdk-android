@@ -35,7 +35,6 @@ import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageOptions;
-import com.jet.im.model.MessageReferredInfo;
 import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
@@ -104,15 +103,15 @@ public class MessageManager implements IMessageManager {
             flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
         }
         message.setFlags(flags);
-        if (options != null && options.getReferredInfo() != null) {
-            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(options.getReferredInfo().getMessageId());
+        if (options != null && options.getMentionInfo() != null) {
+            message.setMentionInfo(options.getMentionInfo());
+        }
+        if (options != null && !TextUtils.isEmpty(options.getReferredMessageId())) {
+            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(options.getReferredMessageId());
             if (referMsg != null) {
-                message.setReferMsg(referMsg);
-                options.getReferredInfo().setSenderId(referMsg.getSenderUserId());
-                options.getReferredInfo().setContent(referMsg.getContent());
+                message.setReferredMessage(referMsg);
             }
         }
-        message.setMessageOptions(options);
         //保存消息
         List<ConcreteMessage> list = new ArrayList<>(1);
         list.add(message);
@@ -129,13 +128,9 @@ public class MessageManager implements IMessageManager {
         if (message.getContent() != null) {
             message.setContentType(message.getContent().getContentType());
         }
-        if (message.getMessageOptions() != null && message.getMessageOptions().getReferredInfo() != null) {
-            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(message.getMessageOptions().getReferredInfo().getMessageId());
-            if (referMsg != null) {
-                message.setReferMsg(referMsg);
-                message.getMessageOptions().getReferredInfo().setSenderId(referMsg.getSenderUserId());
-                message.getMessageOptions().getReferredInfo().setContent(referMsg.getContent());
-            }
+        if (message.hasReferredInfo()) {
+            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId());
+            message.setReferredMessage(referMsg);
         }
         //保存消息
         mCore.getDbManager().updateMessage(message);
@@ -199,8 +194,8 @@ public class MessageManager implements IMessageManager {
                     message.getConversation(),
                     message.getClientUid(),
                     mergedMessages,
-                    message.hasMentionInfo() ? message.getMessageOptions().getMentionInfo() : null,
-                    message.getReferMsg(),
+                    message.hasMentionInfo() ? message.getMentionInfo() : null,
+                    (ConcreteMessage) message.getReferredMessage(),
                     isBroadcast,
                     mCore.getUserId(),
                     messageCallback
@@ -327,7 +322,10 @@ public class MessageManager implements IMessageManager {
             sendWebSocketMessage((ConcreteMessage) message, false, callback);
             return message;
         } else {
-            return sendMessage(message.getContent(), message.getConversation(), message.getMessageOptions(), callback);
+            MessageOptions options = new MessageOptions();
+            options.setMentionInfo(message.getMentionInfo());
+            options.setReferredMessageId(message.getReferredMessage() == null ? null : message.getReferredMessage().getMessageId());
+            return sendMessage(message.getContent(), message.getConversation(), options, callback);
         }
     }
 
@@ -354,7 +352,10 @@ public class MessageManager implements IMessageManager {
             updateMessageWithContent((ConcreteMessage) message);
             return sendMediaMessage(message, callback);
         } else {
-            return sendMediaMessage((MediaMessageContent) message.getContent(), message.getConversation(), message.getMessageOptions(), callback);
+            MessageOptions options = new MessageOptions();
+            options.setMentionInfo(message.getMentionInfo());
+            options.setReferredMessageId(message.getReferredMessage() == null ? null : message.getReferredMessage().getMessageId());
+            return sendMediaMessage((MediaMessageContent) message.getContent(), message.getConversation(), options, callback);
         }
     }
 
@@ -1173,27 +1174,17 @@ public class MessageManager implements IMessageManager {
     }
 
     private void saveReferMessages(ConcreteMessage message) {
-        if (message.getReferMsg() == null) return;
-        //构造MessageOptions
-        if (message.getMessageOptions() == null) {
-            message.setMessageOptions(new MessageOptions());
-        }
+        if (message.getReferredMessage() == null) return;
         //查询本地数据库是否已保存该引用消息
-        ConcreteMessage localReferMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferMsg().getMessageId());
+        ConcreteMessage localReferMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId());
         //如果本地数据库已保存该引用消息，直接将消息中原来的引用消息替换为本地保存的引用消息
         if (localReferMsg != null) {
-            message.setReferMsg(localReferMsg);
-
-            MessageReferredInfo referredInfo = new MessageReferredInfo();
-            referredInfo.setMessageId(localReferMsg.getMessageId());
-            referredInfo.setSenderId(localReferMsg.getSenderUserId());
-            referredInfo.setContent(localReferMsg.getContent());
-            message.getMessageOptions().setReferredInfo(referredInfo);
+            message.setReferredMessage(localReferMsg);
             return;
         }
         //如果本地数据库未保存该引用消息，将该引用消息保存到数据库中
         List<ConcreteMessage> list = new ArrayList<>();
-        list.add(message.getReferMsg());
+        list.add((ConcreteMessage) message.getReferredMessage());
         List<ConcreteMessage> messagesToSave = messagesToSave(list);
         mCore.getDbManager().insertMessages(messagesToSave);
         updateUserInfo(messagesToSave);
@@ -1346,9 +1337,8 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
-            if (message.hasMentionInfo()
-                    && message.getMessageOptions().getMentionInfo().getTargetUsers() != null) {
-                for (UserInfo userInfo : message.getMessageOptions().getMentionInfo().getTargetUsers()) {
+            if (message.hasMentionInfo() && message.getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
                     if (userInfo.getUserId() != null) {
                         userInfoMap.put(userInfo.getUserId(), userInfo);
                     }

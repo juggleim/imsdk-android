@@ -289,14 +289,13 @@ public class DBManager {
             return null;
         }
         message = MessageSql.messageWithCursor(cursor);
-        if (!message.hasReferredInfo()) {
+        if (TextUtils.isEmpty(message.getReferMsgId())) {
             return message;
         }
         //查询被引用的消息
-        ConcreteMessage referMsg = getMessageWithMessageId(message.getMessageOptions().getReferredInfo().getMessageId());
+        ConcreteMessage referMsg = getMessageWithMessageId(message.getReferMsgId());
         if (referMsg != null) {
-            message.setReferMsg(referMsg);
-            message.getMessageOptions().getReferredInfo().setContent(referMsg.getContent());
+            message.setReferredMessage(referMsg);
         }
         return message;
     }
