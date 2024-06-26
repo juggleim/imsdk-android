@@ -154,7 +154,6 @@ public class MessageManager implements IMessageManager {
             mergeInfo = new MergeInfo();
             mergeInfo.setConversation(mergeMessage.getConversation());
             mergeInfo.setContainerMsgId(mergeMessage.getContainerMsgId());
-            mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
             mergeInfo.setMessages(mCore.getDbManager().getConcreteMessagesByMessageIds(mergeMessage.getMessageIdList()));
         }
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
