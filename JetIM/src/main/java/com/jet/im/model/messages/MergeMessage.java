@@ -3,6 +3,7 @@ package com.jet.im.model.messages;
 import android.text.TextUtils;
 
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.model.Conversation;
 import com.jet.im.model.MergeMessagePreviewUnit;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
@@ -16,9 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MergeMessage extends MessageContent {
-    public MergeMessage(String title, List<String> messageIdList, List<MergeMessagePreviewUnit> previewList) {
+    public MergeMessage(String title, Conversation conversation, List<String> messageIdList, List<MergeMessagePreviewUnit> previewList) {
         this();
         this.mTitle = title;
+        this.mConversation = conversation;
         if (messageIdList.size() > 100) {
             messageIdList = messageIdList.subList(0, 100);
         }
@@ -38,6 +40,11 @@ public class MergeMessage extends MessageContent {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.putOpt(TITLE, mTitle);
+            jsonObject.putOpt(CONTAINER_MSG_ID, mContainerMsgId);
+            if (mConversation != null) {
+                jsonObject.putOpt(CONVERSATION_ID, mConversation.getConversationId());
+                jsonObject.putOpt(CONVERSATION_TYPE, mConversation.getConversationType());
+            }
             JSONArray messageIdListJson = new JSONArray();
             if (mMessageIdList != null) {
                 for (String messageId : mMessageIdList) {
@@ -80,6 +87,12 @@ public class MergeMessage extends MessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             mTitle = jsonObject.optString(TITLE);
+            mContainerMsgId = jsonObject.optString(CONTAINER_MSG_ID);
+            if (jsonObject.has(CONVERSATION_TYPE) && jsonObject.has(CONVERSATION_ID)) {
+                int type = jsonObject.optInt(CONVERSATION_TYPE);
+                String conversationId = jsonObject.optString(CONVERSATION_ID);
+                mConversation = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
+            }
             JSONArray messageIdListJson = jsonObject.optJSONArray(MESSAGE_ID_LIST);
             if (messageIdListJson != null) {
                 List<String> messageIdList = new ArrayList<>();
@@ -124,6 +137,22 @@ public class MergeMessage extends MessageContent {
         return mTitle;
     }
 
+    public String getContainerMsgId() {
+        return mContainerMsgId;
+    }
+
+    public void setContainerMsgId(String containerMsgId) {
+        this.mContainerMsgId = containerMsgId;
+    }
+
+    public Conversation getConversation() {
+        return mConversation;
+    }
+
+    public void setConversation(Conversation conversation) {
+        this.mConversation = conversation;
+    }
+
     public List<String> getMessageIdList() {
         return mMessageIdList;
     }
@@ -141,10 +170,15 @@ public class MergeMessage extends MessageContent {
     }
 
     private String mTitle;
+    private String mContainerMsgId;
+    private Conversation mConversation;
     private List<String> mMessageIdList;
     private List<MergeMessagePreviewUnit> mPreviewList;
     private String mExtra;
     private static final String TITLE = "title";
+    private static final String CONTAINER_MSG_ID = "containerMsgId";
+    private static final String CONVERSATION_ID = "conversationId";
+    private static final String CONVERSATION_TYPE = "conversationType";
     private static final String MESSAGE_ID_LIST = "messageIdList";
     private static final String PREVIEW_LIST = "previewList";
     private static final String CONTENT = "content";

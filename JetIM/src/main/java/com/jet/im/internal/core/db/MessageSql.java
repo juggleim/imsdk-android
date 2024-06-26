@@ -12,6 +12,7 @@ import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
+import com.jet.im.model.messages.MergeMessage;
 
 import java.nio.charset.StandardCharsets;
 
@@ -39,6 +40,11 @@ class MessageSql {
         if (content != null) {
             messageContent = ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType());
             message.setContent(messageContent);
+            if (messageContent instanceof MergeMessage) {
+                if (TextUtils.isEmpty(((MergeMessage) messageContent).getContainerMsgId())) {
+                    ((MergeMessage) messageContent).setContainerMsgId(message.getMessageId());
+                }
+            }
         }
         message.setSeqNo(CursorHelper.readLong(cursor, COL_SEQ_NO));
         message.setMsgIndex(CursorHelper.readLong(cursor, COL_MESSAGE_INDEX));

@@ -10,6 +10,7 @@ import com.jet.im.JetIMConst;
 import com.jet.im.internal.ContentTypeCenter;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.MergeInfo;
 import com.jet.im.internal.model.upload.UploadFileType;
 import com.jet.im.internal.model.upload.UploadOssType;
 import com.jet.im.internal.model.upload.UploadPreSignCred;
@@ -106,7 +107,7 @@ class PBData {
                            byte[] msgData,
                            int flags,
                            String clientUid,
-                           List<ConcreteMessage> mergedMsgList,
+                           MergeInfo mergeInfo,
                            boolean isBroadcast,
                            String userId,
                            int index,
@@ -120,18 +121,17 @@ class PBData {
                 .setMsgContent(byteString)
                 .setFlags(flags)
                 .setClientUid(clientUid);
-
-        if (mergedMsgList != null && mergedMsgList.size() > 0) {
+        if (mergeInfo != null && TextUtils.isEmpty(mergeInfo.getContainerMsgId()) && mergeInfo.getMessages() != null) {
             flags |= MessageContent.MessageFlag.IS_MERGED.getValue();
             upMsgBuilder.setFlags(flags);
 
-            int channelType = mergedMsgList.get(0).getConversation().getConversationType().getValue();
-            String targetId = mergedMsgList.get(0).getConversation().getConversationId();
+            int channelType = mergeInfo.getConversation().getConversationType().getValue();
+            String targetId = mergeInfo.getConversation().getConversationId();
             Appmessages.MergedMsgs.Builder mergedMsgsBuilder = Appmessages.MergedMsgs.newBuilder();
             mergedMsgsBuilder.setChannelTypeValue(channelType)
                     .setUserId(userId)
                     .setTargetId(targetId);
-            for (ConcreteMessage msg : mergedMsgList) {
+            for (ConcreteMessage msg : mergeInfo.getMessages()) {
                 Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
                         .setMsgId(msg.getMessageId())
                         .setMsgTime(msg.getTimestamp())

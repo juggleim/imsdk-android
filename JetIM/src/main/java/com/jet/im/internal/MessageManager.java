@@ -16,6 +16,7 @@ import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.logger.IJLog;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.MergeInfo;
 import com.jet.im.internal.model.messages.AddConvMessage;
 import com.jet.im.internal.model.messages.CleanMsgMessage;
 import com.jet.im.internal.model.messages.ClearUnreadMessage;
@@ -147,10 +148,14 @@ public class MessageManager implements IMessageManager {
     }
 
     private void sendWebSocketMessage(ConcreteMessage message, boolean isBroadcast, ISendMessageCallback callback) {
-        List mergedMessages = null;
+        MergeInfo mergeInfo = null;
         if (message.getContent() instanceof MergeMessage) {
             MergeMessage mergeMessage = (MergeMessage) message.getContent();
-            mergedMessages = mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
+            mergeInfo = new MergeInfo();
+            mergeInfo.setConversation(mergeMessage.getConversation());
+            mergeInfo.setContainerMsgId(mergeMessage.getContainerMsgId());
+            mCore.getDbManager().getMessagesByMessageIds(mergeMessage.getMessageIdList());
+            mergeInfo.setMessages(mCore.getDbManager().getConcreteMessagesByMessageIds(mergeMessage.getMessageIdList()));
         }
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
@@ -167,6 +172,14 @@ public class MessageManager implements IMessageManager {
                 message.setTimestamp(timestamp);
                 message.setSeqNo(seqNo);
                 message.setState(Message.MessageState.SENT);
+
+                if (message.getContent() instanceof MergeMessage) {
+                    MergeMessage mergeMessage = (MergeMessage) message.getContent();
+                    if (TextUtils.isEmpty(mergeMessage.getContainerMsgId())) {
+                        mergeMessage.setContainerMsgId(message.getMessageId());
+                    }
+                    mCore.getDbManager().updateMessageContentWithMessageId(message.getContent(), message.getContentType(), message.getMessageId());
+                }
 
                 if (mSendReceiveListener != null) {
                     mSendReceiveListener.onMessageSend(message);
@@ -193,7 +206,7 @@ public class MessageManager implements IMessageManager {
                     message.getContent(),
                     message.getConversation(),
                     message.getClientUid(),
-                    mergedMessages,
+                    mergeInfo,
                     message.hasMentionInfo() ? message.getMentionInfo() : null,
                     (ConcreteMessage) message.getReferredMessage(),
                     isBroadcast,

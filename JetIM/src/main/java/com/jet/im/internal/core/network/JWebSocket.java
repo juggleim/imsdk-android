@@ -9,6 +9,7 @@ import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.internal.ConstInternal;
 import com.jet.im.internal.model.ConcreteMessage;
+import com.jet.im.internal.model.MergeInfo;
 import com.jet.im.internal.model.upload.UploadFileType;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
@@ -76,7 +77,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     public void sendIMMessage(MessageContent content,
                               Conversation conversation,
                               String clientUid,
-                              List<ConcreteMessage> mergedMsgList,
+                              MergeInfo mergeInfo,
                               MessageMentionInfo mentionInfo,
                               ConcreteMessage referMsg,
                               boolean isBroadcast,
@@ -87,7 +88,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 content.encode(),
                 content.getFlags(),
                 clientUid,
-                mergedMsgList,
+                mergeInfo,
                 isBroadcast,
                 userId,
                 mCmdIndex++,
