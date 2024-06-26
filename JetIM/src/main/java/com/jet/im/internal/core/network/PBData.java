@@ -24,6 +24,7 @@ import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.UserInfo;
+import com.jet.im.model.messages.MergeMessage;
 import com.jet.im.push.PushChannel;
 
 import java.nio.ByteBuffer;
@@ -890,6 +891,13 @@ class PBData {
         message.setSeqNo(downMsg.getMsgSeqNo());
         message.setMsgIndex(downMsg.getUnreadIndex());
         MessageContent messageContent = ContentTypeCenter.getInstance().getContent(downMsg.getMsgContent().toByteArray(), downMsg.getMsgType());
+        if (messageContent != null) {
+            if (messageContent instanceof MergeMessage) {
+                if (TextUtils.isEmpty(((MergeMessage) messageContent).getContainerMsgId())) {
+                    ((MergeMessage) messageContent).setContainerMsgId(message.getMessageId());
+                }
+            }
+        }
         int flags = ContentTypeCenter.getInstance().flagsWithType(downMsg.getMsgType());
         if (flags < 0) {
             message.setFlags(downMsg.getFlags());
