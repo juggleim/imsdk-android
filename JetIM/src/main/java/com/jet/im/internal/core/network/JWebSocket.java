@@ -681,6 +681,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 return;
             }
             JLogger.e("WS-Send", mWebSocketClient == null ? "mWebSocketClient is null" : "mWebSocketClient is not open");
+            pushRemainCmdAndCallbackError();
             mConnectListener.onWebSocketClose();
         });
     }
