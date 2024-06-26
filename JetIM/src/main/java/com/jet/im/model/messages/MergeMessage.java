@@ -43,7 +43,7 @@ public class MergeMessage extends MessageContent {
             jsonObject.putOpt(CONTAINER_MSG_ID, mContainerMsgId);
             if (mConversation != null) {
                 jsonObject.putOpt(CONVERSATION_ID, mConversation.getConversationId());
-                jsonObject.putOpt(CONVERSATION_TYPE, mConversation.getConversationType());
+                jsonObject.putOpt(CONVERSATION_TYPE, mConversation.getConversationType().getValue());
             }
             JSONArray messageIdListJson = new JSONArray();
             if (mMessageIdList != null) {
