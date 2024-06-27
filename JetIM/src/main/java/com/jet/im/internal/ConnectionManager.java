@@ -2,6 +2,7 @@ package com.jet.im.internal;
 
 import android.text.TextUtils;
 
+import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConnectionManager;
 import com.jet.im.internal.core.JetIMCore;
@@ -69,6 +70,8 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         mPushChannel = channel;
         mPushToken = token;
         if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.w("CON-Push", "registerPushToken error, errorCode is " + errorCode);
             return;
         }
         mCore.getWebSocket().registerPushToken(channel, token, mCore.getDeviceId(), mCore.getPackageName(), mCore.getUserId(), new WebSocketSimpleCallback() {

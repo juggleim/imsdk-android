@@ -200,19 +200,27 @@ public class MessageManager implements IMessageManager {
                 }
             }
         };
-        if (mCore.getWebSocket() != null) {
-            mCore.getWebSocket().sendIMMessage(
-                    message.getContent(),
-                    message.getConversation(),
-                    message.getClientUid(),
-                    mergeInfo,
-                    message.hasMentionInfo() ? message.getMentionInfo() : null,
-                    (ConcreteMessage) message.getReferredMessage(),
-                    isBroadcast,
-                    mCore.getUserId(),
-                    messageCallback
-            );
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Send", "fail, clientMsgNo is " + message.getClientMsgNo() + ", errorCode is " + errorCode);
+            message.setState(Message.MessageState.FAIL);
+            setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(message, errorCode));
+            }
+            return;
         }
+        mCore.getWebSocket().sendIMMessage(
+                message.getContent(),
+                message.getConversation(),
+                message.getClientUid(),
+                mergeInfo,
+                message.hasMentionInfo() ? message.getMentionInfo() : null,
+                (ConcreteMessage) message.getReferredMessage(),
+                isBroadcast,
+                mCore.getUserId(),
+                messageCallback
+        );
     }
 
     @Override
@@ -422,57 +430,71 @@ public class MessageManager implements IMessageManager {
                 }
             }
         }
-        if (notExistList.size() > 0) {
-            mCore.getWebSocket().queryHisMsgByIds(conversation, notExistList, new QryHisMsgCallback() {
-                @Override
-                public void onSuccess(List<ConcreteMessage> remoteMessages, boolean isFinished) {
-                    JLogger.i("MSG-Get", "by id, success");
-                    List<Message> result = new ArrayList<>();
-                    for (String messageId : messageIds) {
-                        boolean isMatch = false;
-                        for (Message localMessage : localMessages) {
-                            if (messageId.equals(localMessage.getMessageId())) {
-                                result.add(localMessage);
-                                isMatch = true;
-                                break;
-                            }
-                        }
-                        if (isMatch) {
-                            continue;
-                        }
-                        for (Message remoteMessage : remoteMessages) {
-                            if (messageId.equals(remoteMessage.getMessageId())) {
-                                result.add(remoteMessage);
-                                break;
-                            }
-                        }
-                    }
-                    if (callback != null) {
-                        mCore.getCallbackHandler().post(() -> callback.onSuccess(result));
-                    }
-                }
-
-                @Override
-                public void onError(int errorCode) {
-                    JLogger.e("MSG-Get", "by id, fail, errorCode is " + errorCode);
-                    if (localMessages.size() > 0) {
-                        if (callback != null) {
-                            mCore.getCallbackHandler().post(() -> callback.onSuccess(localMessages));
-                        }
-                    } else {
-                        if (callback != null) {
-                            mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
-                        }
-                    }
-
-                }
-            });
-        } else {
+        if (notExistList.size() == 0) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onSuccess(localMessages));
             }
+            return;
         }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Get", "by id, fail, errorCode is " + errorCode);
+            if (localMessages.size() > 0) {
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(localMessages));
+                }
+            } else {
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+            return;
+        }
+        mCore.getWebSocket().queryHisMsgByIds(conversation, notExistList, new QryHisMsgCallback() {
+            @Override
+            public void onSuccess(List<ConcreteMessage> remoteMessages, boolean isFinished) {
+                JLogger.i("MSG-Get", "by id, success");
+                List<Message> result = new ArrayList<>();
+                for (String messageId : messageIds) {
+                    boolean isMatch = false;
+                    for (Message localMessage : localMessages) {
+                        if (messageId.equals(localMessage.getMessageId())) {
+                            result.add(localMessage);
+                            isMatch = true;
+                            break;
+                        }
+                    }
+                    if (isMatch) {
+                        continue;
+                    }
+                    for (Message remoteMessage : remoteMessages) {
+                        if (messageId.equals(remoteMessage.getMessageId())) {
+                            result.add(remoteMessage);
+                            break;
+                        }
+                    }
+                }
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(result));
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-Get", "by id, fail, errorCode is " + errorCode);
+                if (localMessages.size() > 0) {
+                    if (callback != null) {
+                        mCore.getCallbackHandler().post(() -> callback.onSuccess(localMessages));
+                    }
+                } else {
+                    if (callback != null) {
+                        mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                    }
+                }
+            }
+        });
     }
+
 
     @Override
     public List<Message> getMessagesByClientMsgNos(long[] clientMsgNos) {
@@ -528,6 +550,14 @@ public class MessageManager implements IMessageManager {
             return;
         }
         JLogger.i("MSG-Delete", "by messageId, count is " + deleteList.size());
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Delete", "by messageId, fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         //调用接口
         mCore.getWebSocket().deleteMessage(conversation, deleteList, new WebSocketSimpleCallback() {
             @Override
@@ -602,6 +632,15 @@ public class MessageManager implements IMessageManager {
             }
             return;
         }
+        //判空
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Delete", "by clientMsgNo, fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         //调用接口
         mCore.getWebSocket().deleteMessage(conversation, deleteRemoteList, new WebSocketSimpleCallback() {
             @Override
@@ -630,6 +669,16 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback) {
+        //判空
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Clear", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        //startTime
         if (startTime <= 0) {
             startTime = Math.max(mCore.getMessageSendSyncTime(), mCore.getMessageReceiveTime());
             startTime = Math.max(System.currentTimeMillis(), startTime);
@@ -665,55 +714,74 @@ public class MessageManager implements IMessageManager {
         List<String> idList = new ArrayList<>(1);
         idList.add(messageId);
         List<Message> messages = getMessagesByMessageIds(idList);
-        if (messages.size() > 0) {
-            Message m = messages.get(0);
-
-            if (m.getContentType().equals(RecallInfoMessage.CONTENT_TYPE)) {
-                if (callback != null) {
-                    mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_ALREADY_RECALLED));
-                }
-                return;
-            }
-            mCore.getWebSocket().recallMessage(messageId, m.getConversation(), m.getTimestamp(), extras, new WebSocketTimestampCallback() {
-                @Override
-                public void onSuccess(long timestamp) {
-                    JLogger.i("MSG-Recall", "success");
-                    if (mSyncProcessing) {
-                        mCachedSendTime = timestamp;
-                    } else {
-                        mCore.setMessageSendSyncTime(timestamp);
-                    }
-                    m.setContentType(RecallInfoMessage.CONTENT_TYPE);
-                    RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
-                    recallInfoMessage.setExtra(extras);
-                    m.setContent(recallInfoMessage);
-                    mCore.getDbManager().updateMessageContentWithMessageId(recallInfoMessage, m.getContentType(), messageId);
-                    //通知会话更新
-                    List<ConcreteMessage> messageList = new ArrayList<>();
-                    messageList.add((ConcreteMessage) m);
-                    notifyMessageRemoved(m.getConversation(), messageList);
-                    if (callback != null) {
-                        mCore.getCallbackHandler().post(() -> callback.onSuccess(m));
-                    }
-                }
-
-                @Override
-                public void onError(int errorCode) {
-                    JLogger.e("MSG-Recall", "fail, code is " + errorCode);
-                    if (callback != null) {
-                        mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
-                    }
-                }
-            });
-        } else {
+        if (messages.size() == 0) {
+            int errorCode = JErrorCode.MESSAGE_NOT_EXIST;
+            JLogger.e("MSG-Recall", "fail, code is " + errorCode);
             if (callback != null) {
-                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
             }
+            return;
         }
+        Message m = messages.get(0);
+        if (m.getContentType().equals(RecallInfoMessage.CONTENT_TYPE)) {
+            int errorCode = JErrorCode.MESSAGE_ALREADY_RECALLED;
+            JLogger.e("MSG-Recall", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Recall", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        mCore.getWebSocket().recallMessage(messageId, m.getConversation(), m.getTimestamp(), extras, new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                JLogger.i("MSG-Recall", "success");
+                if (mSyncProcessing) {
+                    mCachedSendTime = timestamp;
+                } else {
+                    mCore.setMessageSendSyncTime(timestamp);
+                }
+                m.setContentType(RecallInfoMessage.CONTENT_TYPE);
+                RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
+                recallInfoMessage.setExtra(extras);
+                m.setContent(recallInfoMessage);
+                mCore.getDbManager().updateMessageContentWithMessageId(recallInfoMessage, m.getContentType(), messageId);
+                //通知会话更新
+                List<ConcreteMessage> messageList = new ArrayList<>();
+                messageList.add((ConcreteMessage) m);
+                notifyMessageRemoved(m.getConversation(), messageList);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(m));
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-Recall", "fail, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
     }
 
     @Override
     public void getRemoteMessages(Conversation conversation, int count, long startTime, JetIMConst.PullDirection direction, IGetMessagesCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Get", "getRemoteMessages, fail, errorCode is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         if (count > 100) {
             count = 100;
         }
@@ -832,6 +900,14 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void sendReadReceipt(Conversation conversation, List<String> messageIds, ISendReadReceiptCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-ReadReceipt", "sendReadReceipt, fail, errorCode is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         mCore.getWebSocket().sendReadReceipt(conversation, messageIds, new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
@@ -854,6 +930,14 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void getGroupMessageReadDetail(Conversation conversation, String messageId, IGetGroupMessageReadDetailCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-GroupReadDetail", "fail, errorCode is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         mCore.getWebSocket().getGroupMessageReadDetail(conversation, messageId, new QryReadDetailCallback() {
             @Override
             public void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers) {
@@ -883,6 +967,14 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void getMergedMessageList(String containerMsgId, IGetMessagesCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-GetMerge", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         mCore.getWebSocket().getMergedMessageList(containerMsgId, 0, 100, JetIMConst.PullDirection.OLDER, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
@@ -906,6 +998,14 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void getMentionMessageList(Conversation conversation, int count, long time, JetIMConst.PullDirection direction, IGetMessagesCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-GetMention", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         mCore.getWebSocket().getMentionMessageList(conversation, time, count, direction, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
