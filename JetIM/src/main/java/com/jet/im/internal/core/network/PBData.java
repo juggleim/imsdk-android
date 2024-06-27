@@ -898,12 +898,7 @@ class PBData {
                 }
             }
         }
-        int flags = ContentTypeCenter.getInstance().flagsWithType(downMsg.getMsgType());
-        if (flags < 0) {
-            message.setFlags(downMsg.getFlags());
-        } else {
-            message.setFlags(flags);
-        }
+        message.setFlags(downMsg.getFlags());
         GroupMessageReadInfo info = new GroupMessageReadInfo();
         info.setReadCount(downMsg.getReadCount());
         info.setMemberCount(downMsg.getMemberCount());
