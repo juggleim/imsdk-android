@@ -20,7 +20,6 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.ConversationMentionInfo;
 import com.jet.im.model.GroupInfo;
-import com.jet.im.model.GroupMessageReadInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
@@ -400,31 +399,17 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
-    public void onMessagesRead(Conversation conversation, List<String> messageIds, Map<String, GroupMessageReadInfo> groupMessages) {
+    public void onMessagesRead(Conversation conversation, List<String> messageIds) {
         //判空
         if (conversation == null) return;
-        if ((messageIds == null || messageIds.isEmpty()) && (groupMessages == null || groupMessages.isEmpty()))
+        if (messageIds == null || messageIds.isEmpty())
             return;
         //查询会话
         ConversationInfo conversationInfo = getConversationInfo(conversation);
         if (conversationInfo == null || conversationInfo.getLastMessage() == null || TextUtils.isEmpty(conversationInfo.getLastMessage().getMessageId()))
             return;
-        //判断是否需要更新会话
-        boolean shouldUpdate = false;
-        if (messageIds != null && !messageIds.isEmpty()) {
-            //如果已读消息列表中包含会话的最新一条消息，需要更新会话
-            if (messageIds.contains(conversationInfo.getLastMessage().getMessageId())) {
-                shouldUpdate = true;
-            }
-        } else if (groupMessages != null && !groupMessages.isEmpty()) {
-            //如果已读消息集合中包含会话的最新一条消息，且已读人数等于群成员人数，需要更新会话
-            GroupMessageReadInfo groupMessageReadInfo = groupMessages.get(conversationInfo.getLastMessage().getMessageId());
-            if (groupMessageReadInfo != null && groupMessageReadInfo.getReadCount() == groupMessageReadInfo.getMemberCount()) {
-                shouldUpdate = true;
-            }
-        }
-        //执行更新与回调
-        if (shouldUpdate) {
+        //如果已读消息列表中包含会话的最新一条消息，需要更新会话
+        if (messageIds.contains(conversationInfo.getLastMessage().getMessageId())) {
             //更新conversationInfo
             conversationInfo.getLastMessage().setHasRead(true);
             //更新数据库
