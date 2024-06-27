@@ -234,10 +234,6 @@ class MessageSql {
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_ID = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE message_uid = ?";
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_NO = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE id = ?";
 
-    static String sqlMessageSendFail(long clientMsgNo) {
-        return String.format("UPDATE message SET state = %s WHERE id = %s", Message.MessageState.FAIL.getValue(), clientMsgNo);
-    }
-
     static final String SQL_DELETE_MESSAGE = "UPDATE message SET is_deleted = 1 WHERE";
 
     static String sqlDeleteMessagesByMessageId(int count) {

@@ -441,6 +441,32 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void onMessagesSetState(Conversation conversation, long clientMsgNo, Message.MessageState state) {
+        //判空
+        if (conversation == null) return;
+        if (clientMsgNo < 0 || state == null) return;
+        //查询会话
+        ConversationInfo conversationInfo = getConversationInfo(conversation);
+        if (conversationInfo == null || conversationInfo.getLastMessage() == null || conversationInfo.getLastMessage().getClientMsgNo() < 0)
+            return;
+        //判断是否需要更新会话
+        if (clientMsgNo == conversationInfo.getLastMessage().getClientMsgNo()) {
+            //更新conversationInfo
+            conversationInfo.getLastMessage().setState(state);
+            //更新数据库
+            mCore.getDbManager().updateConversationLastMessageState(conversation, conversationInfo.getLastMessage().getClientMsgNo(), state);
+            //执行回调
+            if (mListenerMap != null) {
+                List<ConversationInfo> result = new ArrayList<>();
+                result.add(conversationInfo);
+                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(result));
+                }
+            }
+        }
+    }
+
+    @Override
     public void onMessageRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastMessage) {
         updateConversationAfterRemove(conversation, removedMessages, lastMessage);
     }

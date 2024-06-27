@@ -221,7 +221,11 @@ public class DBManager {
     }
 
     public void updateConversationLastMessageHasRead(Conversation conversation, String messageId, boolean isHasRead) {
-        execSQL(ConversationSql.sqlUpdateHasRead(conversation, messageId, isHasRead));
+        execSQL(ConversationSql.sqlUpdateLastMessageHasRead(conversation, messageId, isHasRead));
+    }
+
+    public void updateConversationLastMessageState(Conversation conversation, long clientMsgNo, Message.MessageState state) {
+        execSQL(ConversationSql.sqlUpdateLastMessageState(conversation, clientMsgNo, state.getValue()));
     }
 
     public int getTotalUnreadCount() {
@@ -560,11 +564,6 @@ public class DBManager {
         args[1] = type;
         args[3] = clientMsgNo;
         execSQL(MessageSql.SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_NO, args);
-    }
-
-    public void messageSendFail(long clientMsgNo) {
-        String sql = MessageSql.sqlMessageSendFail(clientMsgNo);
-        execSQL(sql);
     }
 
     public void setMessageState(long clientMsgNo, Message.MessageState state) {

@@ -193,7 +193,7 @@ public class MessageManager implements IMessageManager {
             public void onError(int errorCode, long clientMsgNo) {
                 JLogger.e("MSG-Send", "fail, clientMsgNo is " + clientMsgNo + ", errorCode is " + errorCode);
                 message.setState(Message.MessageState.FAIL);
-                mCore.getDbManager().messageSendFail(clientMsgNo);
+                setMessageState(clientMsgNo, Message.MessageState.FAIL);
                 if (callback != null) {
                     message.setClientMsgNo(clientMsgNo);
                     mCore.getCallbackHandler().post(() -> callback.onError(message, errorCode));
@@ -255,7 +255,7 @@ public class MessageManager implements IMessageManager {
             public void onSuccess(Message uploadMessage) {
                 if (!(uploadMessage instanceof ConcreteMessage)) {
                     uploadMessage.setState(Message.MessageState.FAIL);
-                    mCore.getDbManager().setMessageState(uploadMessage.getClientMsgNo(), Message.MessageState.FAIL);
+                    setMessageState(uploadMessage.getClientMsgNo(), Message.MessageState.FAIL);
                     if (callback != null) {
                         mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
                     }
@@ -264,7 +264,7 @@ public class MessageManager implements IMessageManager {
                 ConcreteMessage cm = (ConcreteMessage) uploadMessage;
                 mCore.getDbManager().updateMessageContentWithClientMsgNo(cm.getContent(), cm.getContentType(), cm.getClientMsgNo());
                 cm.setState(Message.MessageState.SENDING);
-                mCore.getDbManager().setMessageState(cm.getClientMsgNo(), Message.MessageState.SENDING);
+                setMessageState(cm.getClientMsgNo(), Message.MessageState.SENDING);
                 sendWebSocketMessage(cm, false, new ISendMessageCallback() {
                     @Override
                     public void onSuccess(Message message1) {
@@ -285,7 +285,7 @@ public class MessageManager implements IMessageManager {
             @Override
             public void onError() {
                 message.setState(Message.MessageState.FAIL);
-                mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
                 }
@@ -294,7 +294,7 @@ public class MessageManager implements IMessageManager {
             @Override
             public void onCancel() {
                 message.setState(Message.MessageState.FAIL);
-                mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onCancel(message));
                 }
@@ -328,7 +328,7 @@ public class MessageManager implements IMessageManager {
         if (message.getClientMsgNo() > 0) {
             if (message.getState() != Message.MessageState.SENDING) {
                 message.setState(Message.MessageState.SENDING);
-                mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
+                setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
             }
             updateMessageWithContent((ConcreteMessage) message);
             sendWebSocketMessage((ConcreteMessage) message, false, callback);
@@ -359,7 +359,7 @@ public class MessageManager implements IMessageManager {
         if (message.getClientMsgNo() > 0) {
             if (message.getState() != Message.MessageState.SENDING) {
                 message.setState(Message.MessageState.SENDING);
-                mCore.getDbManager().setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
+                setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
             }
             updateMessageWithContent((ConcreteMessage) message);
             return sendMediaMessage(message, callback);
@@ -1023,7 +1023,14 @@ public class MessageManager implements IMessageManager {
 
     @Override
     public void setMessageState(long clientMsgNo, Message.MessageState state) {
+        //更新消息状态
         mCore.getDbManager().setMessageState(clientMsgNo, state);
+        //查询消息
+        List<Message> messages = getMessagesByClientMsgNos(new long[]{clientMsgNo});
+        //通知会话更新
+        if (mSendReceiveListener != null && messages != null && !messages.isEmpty()) {
+            mSendReceiveListener.onMessagesSetState(messages.get(0).getConversation(), clientMsgNo, state);
+        }
     }
 
     @Override
@@ -1103,6 +1110,8 @@ public class MessageManager implements IMessageManager {
         void onMessageReceive(ConcreteMessage message);
 
         void onMessagesRead(Conversation conversation, List<String> messageIds, Map<String, GroupMessageReadInfo> messages);
+
+        void onMessagesSetState(Conversation conversation, long clientMsgNo, Message.MessageState state);
 
         void onMessageRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastMessage);
 
