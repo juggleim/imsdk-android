@@ -1102,6 +1102,8 @@ public class MessageManager implements IMessageManager {
 
         void onMessageReceive(ConcreteMessage message);
 
+        void onMessagesRead(Conversation conversation, List<String> messageIds, Map<String, GroupMessageReadInfo> messages);
+
         void onMessageRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastMessage);
 
         void onMessageClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastMessage);
@@ -1278,6 +1280,9 @@ public class MessageManager implements IMessageManager {
                         mCore.getCallbackHandler().post(() -> entry.getValue().onMessagesRead(message.getConversation(), readNtfMessage.getMessageIds()));
                     }
                 }
+                if (mSendReceiveListener != null) {
+                    mSendReceiveListener.onMessagesRead(message.getConversation(), readNtfMessage.getMessageIds(), null);
+                }
                 continue;
             }
 
@@ -1289,6 +1294,9 @@ public class MessageManager implements IMessageManager {
                     for (Map.Entry<String, IMessageReadReceiptListener> entry : mReadReceiptListenerMap.entrySet()) {
                         mCore.getCallbackHandler().post(() -> entry.getValue().onGroupMessagesRead(message.getConversation(), groupReadNtfMessage.getMessages()));
                     }
+                }
+                if (mSendReceiveListener != null) {
+                    mSendReceiveListener.onMessagesRead(message.getConversation(), null, groupReadNtfMessage.getMessages());
                 }
                 continue;
             }

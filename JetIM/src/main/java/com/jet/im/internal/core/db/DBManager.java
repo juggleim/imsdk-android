@@ -220,6 +220,10 @@ public class DBManager {
         execSQL(ConversationSql.sqlClearTotalUnreadCount());
     }
 
+    public void updateConversationLastMessageHasRead(Conversation conversation, String messageId, boolean isHasRead) {
+        execSQL(ConversationSql.sqlUpdateHasRead(conversation, messageId, isHasRead));
+    }
+
     public int getTotalUnreadCount() {
         Cursor cursor = rawQuery(ConversationSql.SQL_GET_TOTAL_UNREAD_COUNT, null);
         int count = 0;

@@ -11,7 +11,6 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationMentionInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageMentionInfo;
-import com.jet.im.model.MessageOptions;
 
 import java.nio.charset.StandardCharsets;
 
@@ -79,7 +78,8 @@ class ConversationSql {
         Object[] args = new Object[21];
 
         args[0] = info.getSortTime();
-        args[1] = lastMessage == null ? null : lastMessage.getMessageId();;
+        args[1] = lastMessage == null ? null : lastMessage.getMessageId();
+        ;
         args[2] = info.getLastReadMessageIndex();
         args[3] = info.getLastMessageIndex();
         args[4] = info.isTop();
@@ -216,6 +216,10 @@ class ConversationSql {
 
     static String sqlClearTotalUnreadCount() {
         return "UPDATE conversation_info SET last_read_message_index = last_message_index";
+    }
+
+    static String sqlUpdateHasRead(Conversation conversation, String messageId, boolean isHasRead) {
+        return String.format("UPDATE conversation_info SET last_message_has_read = %s WHERE conversation_type = %s AND conversation_id = '%s' AND last_message_id = '%s'", isHasRead ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId(), messageId);
     }
 
     static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index - last_read_message_index >= 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info";
