@@ -49,7 +49,7 @@ public class AddConvMessage extends MessageContent {
                     conversationInfo.setConversation(new Conversation(Conversation.ConversationType.setValue(type), conversationId));
                 }
                 if (convObj.has(SORT_TIME)) {
-                    conversationInfo.setSortTime(convObj.optLong(CHANNEL_TYPE));
+                    conversationInfo.setSortTime(convObj.optLong(SORT_TIME));
                 }
                 if (convObj.has(SYNC_TIME)) {
                     conversationInfo.setSyncTime(convObj.optLong(SYNC_TIME));
