@@ -267,18 +267,22 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         JLogger.i("CON-Db", "db notice, isOpen is " + isOpen);
         if (isOpen) {
             mCore.getSyncTimeFromDB();
-            for (Map.Entry<String, IConnectionStatusListener> entry :
-                    mConnectionStatusListenerMap.entrySet()) {
-                mCore.getCallbackHandler().post(() -> {
-                    entry.getValue().onDbOpen();
-                });
+            if (mConnectionStatusListenerMap != null) {
+                for (Map.Entry<String, IConnectionStatusListener> entry :
+                        mConnectionStatusListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> {
+                        entry.getValue().onDbOpen();
+                    });
+                }
             }
         } else {
-            for (Map.Entry<String, IConnectionStatusListener> entry :
-                    mConnectionStatusListenerMap.entrySet()) {
-                mCore.getCallbackHandler().post(() -> {
-                    entry.getValue().onDbClose();
-                });
+            if (mConnectionStatusListenerMap != null) {
+                for (Map.Entry<String, IConnectionStatusListener> entry :
+                        mConnectionStatusListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> {
+                        entry.getValue().onDbClose();
+                    });
+                }
             }
         }
     }
