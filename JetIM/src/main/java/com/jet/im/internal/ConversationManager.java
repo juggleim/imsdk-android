@@ -43,6 +43,14 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void createConversationInfo(Conversation conversation, ICreateConversationInfoCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-Create", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         mCore.getWebSocket().addConversationInfo(conversation, mCore.getUserId(), new AddConversationCallback() {
             @Override
             public void onSuccess(ConcreteConversationInfo conversationInfo) {
@@ -85,6 +93,14 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void deleteConversationInfo(Conversation conversation, ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-Delete", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         mCore.getWebSocket().deleteConversationInfo(conversation, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
@@ -134,6 +150,14 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void setMute(Conversation conversation, boolean isMute, ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-Mute", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         mCore.getWebSocket().setMute(conversation, isMute, mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
@@ -164,6 +188,14 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void setTop(Conversation conversation, boolean isTop, ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-Top", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         mCore.getWebSocket().setTop(conversation, isTop, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
@@ -204,10 +236,20 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void clearUnreadCount(Conversation conversation, ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-ClearUnread", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         ConcreteConversationInfo info = mCore.getDbManager().getConversationInfo(conversation);
         if (info == null) {
+            int errorCode = JErrorCode.INVALID_PARAM;
+            JLogger.e("CONV-ClearUnread", "fail, code is " + errorCode);
             if (callback != null) {
-                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
             }
             return;
         }
@@ -235,6 +277,14 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void clearTotalUnreadCount(ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-ClearTotal", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         long time = Math.max(mCore.getMessageSendSyncTime(), mCore.getMessageReceiveTime());
         mCore.getWebSocket().clearTotalUnreadCount(mCore.getUserId(), time, new WebSocketSimpleCallback() {
             @Override
@@ -296,6 +346,11 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     void syncConversations(ICompleteCallback callback) {
         if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-Sync", "fail, code is " + errorCode);
+            if (callback != null) {
+                callback.onComplete();
+            }
             return;
         }
         mSyncProcessing = true;
@@ -402,8 +457,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     public void onMessagesRead(Conversation conversation, List<String> messageIds) {
         //判空
         if (conversation == null) return;
-        if (messageIds == null || messageIds.isEmpty())
-            return;
+        if (messageIds == null || messageIds.isEmpty()) return;
         //查询会话
         ConversationInfo conversationInfo = getConversationInfo(conversation);
         if (conversationInfo == null || conversationInfo.getLastMessage() == null || TextUtils.isEmpty(conversationInfo.getLastMessage().getMessageId()))
@@ -535,13 +589,10 @@ public class ConversationManager implements IConversationManager, MessageManager
     private void addOrUpdateConversationIfNeed(ConcreteMessage message) {
         boolean hasMention = false;
         //接收到的消息才处理 mention
-        if (Message.MessageDirection.RECEIVE == message.getDirection()
-                && message.hasMentionInfo()) {
-            if (MessageMentionInfo.MentionType.ALL == message.getMentionInfo().getType()
-                    || MessageMentionInfo.MentionType.ALL_AND_SOMEONE == message.getMentionInfo().getType()) {
+        if (Message.MessageDirection.RECEIVE == message.getDirection() && message.hasMentionInfo()) {
+            if (MessageMentionInfo.MentionType.ALL == message.getMentionInfo().getType() || MessageMentionInfo.MentionType.ALL_AND_SOMEONE == message.getMentionInfo().getType()) {
                 hasMention = true;
-            } else if (MessageMentionInfo.MentionType.SOMEONE == message.getMentionInfo().getType()
-                    && message.getMentionInfo().getTargetUsers() != null) {
+            } else if (MessageMentionInfo.MentionType.SOMEONE == message.getMentionInfo().getType() && message.getMentionInfo().getTargetUsers() != null) {
                 for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
                     if (userInfo.getUserId() != null && userInfo.getUserId().equals(mCore.getUserId())) {
                         hasMention = true;
@@ -633,8 +684,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             //判断是否需要更新会话
             boolean hasUpdate = false;
             //更新Mention
-            if (removedMessages != null
-                    && info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null && !info.getMentionInfo().getMentionMsgList().isEmpty()) {
+            if (removedMessages != null && info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null && !info.getMentionInfo().getMentionMsgList().isEmpty()) {
                 //遍历被移除消息列表进行过滤
                 for (ConcreteMessage removedMessage : removedMessages) {
                     if (TextUtils.isEmpty(removedMessage.getMessageId())) continue;
@@ -739,9 +789,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     //更新会话的通用方法
     private void updateConversationLastMessage(ConcreteConversationInfo info, ConcreteMessage lastMessage, ConversationUpdater mentionUpdater) {
         //判断会话最新消息是否有变化
-        boolean isLastMessageUpdate = info.getLastMessage() == null
-                || info.getLastMessage().getClientMsgNo() != lastMessage.getClientMsgNo()
-                || !Objects.equals(info.getLastMessage().getContentType(), lastMessage.getContentType());
+        boolean isLastMessageUpdate = info.getLastMessage() == null || info.getLastMessage().getClientMsgNo() != lastMessage.getClientMsgNo() || !Objects.equals(info.getLastMessage().getContentType(), lastMessage.getContentType());
         //会话最新消息有变化，更新会话最新消息
         if (isLastMessageUpdate) {
             mCore.getDbManager().updateLastMessageWithoutIndex(lastMessage);

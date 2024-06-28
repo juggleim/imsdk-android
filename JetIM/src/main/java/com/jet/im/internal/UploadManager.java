@@ -102,6 +102,12 @@ public class UploadManager implements IMessageUploadProvider {
             uploadCallback.onError();
             return;
         }
+        //判空WebSocket
+        if (mCore.getWebSocket() == null) {
+            JLogger.e("J-Uploader", "doRequestUploadFileCred fail, webSocket is null, message= " + message.getClientMsgNo());
+            uploadCallback.onError();
+            return;
+        }
         //调用接口获取文件上传凭证
         mCore.getWebSocket().getUploadFileCred(mCore.getUserId(), fileType, ext, new QryUploadFileCredCallback() {
             @Override
