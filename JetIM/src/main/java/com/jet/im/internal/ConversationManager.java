@@ -616,7 +616,9 @@ public class ConversationManager implements IConversationManager, MessageManager
                 int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
                 info.setUnreadCount(unreadCount);
             }
-            info.setSortTime(message.getTimestamp());
+            if (!isBroadcast || message.getDirection() != Message.MessageDirection.SEND) {
+                info.setSortTime(message.getTimestamp());
+            }
             //更新最新消息
             info.setLastMessage(message);
             mCore.getDbManager().updateLastMessage(message);
