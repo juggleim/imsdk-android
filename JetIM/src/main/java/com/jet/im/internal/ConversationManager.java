@@ -582,6 +582,13 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (totalUnreadCountHasChanged) noticeTotalUnreadCountChange();
     }
 
+    @Override
+    public void onConversationsClearTotalUnread(long clearTime) {
+        mCore.getDbManager().clearTotalUnreadCount();
+        mCore.getDbManager().clearMentionInfo();
+        noticeTotalUnreadCountChange();
+    }
+
     interface ICompleteCallback {
         void onComplete();
     }
@@ -660,7 +667,9 @@ public class ConversationManager implements IConversationManager, MessageManager
                 int unreadCount = (int) (info.getLastMessageIndex() - info.getLastReadMessageIndex());
                 info.setUnreadCount(unreadCount);
             }
-            info.setSortTime(message.getTimestamp());
+            if (!isBroadcast || message.getDirection() != Message.MessageDirection.SEND) {
+                info.setSortTime(message.getTimestamp());
+            }
             //更新最新消息
             info.setLastMessage(message);
             mCore.getDbManager().updateLastMessage(message);
