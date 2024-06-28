@@ -528,6 +528,13 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (totalUnreadCountHasChanged) noticeTotalUnreadCountChange();
     }
 
+    @Override
+    public void onConversationsClearTotalUnread(long clearTime) {
+        mCore.getDbManager().clearTotalUnreadCount();
+        mCore.getDbManager().clearMentionInfo();
+        noticeTotalUnreadCountChange();
+    }
+
     interface ICompleteCallback {
         void onComplete();
     }

@@ -19,6 +19,7 @@ import com.jet.im.internal.model.ConcreteMessage;
 import com.jet.im.internal.model.MergeInfo;
 import com.jet.im.internal.model.messages.AddConvMessage;
 import com.jet.im.internal.model.messages.CleanMsgMessage;
+import com.jet.im.internal.model.messages.ClearTotalUnreadMessage;
 import com.jet.im.internal.model.messages.ClearUnreadMessage;
 import com.jet.im.internal.model.messages.DeleteConvMessage;
 import com.jet.im.internal.model.messages.DeleteMsgMessage;
@@ -81,6 +82,7 @@ public class MessageManager implements IMessageManager {
         ContentTypeCenter.getInstance().registerContentType(ThumbnailPackedImageMessage.class);
         ContentTypeCenter.getInstance().registerContentType(SnapshotPackedVideoMessage.class);
         ContentTypeCenter.getInstance().registerContentType(AddConvMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(ClearTotalUnreadMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -1122,6 +1124,8 @@ public class MessageManager implements IMessageManager {
         void onConversationsDelete(List<Conversation> conversations);
 
         void onConversationsUpdate(String updateType, List<ConcreteConversationInfo> conversations);
+
+        void onConversationsClearTotalUnread(long clearTime);
     }
 
     public void setSendReceiveListener(ISendReceiveListener sendReceiveListener) {
@@ -1328,6 +1332,13 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
+            //clear total unread message
+            if (message.getContentType().equals(ClearTotalUnreadMessage.CONTENT_TYPE)) {
+                ClearTotalUnreadMessage clearTotalUnreadMessage = (ClearTotalUnreadMessage) message.getContent();
+                handleClearTotalUnreadMessageCmdMessage(clearTotalUnreadMessage.getClearTime());
+                continue;
+            }
+
             //top conversation
             if (message.getContentType().equals(TopConvMessage.CONTENT_TYPE)) {
                 TopConvMessage topConvMessage = (TopConvMessage) message.getContent();
@@ -1438,6 +1449,12 @@ public class MessageManager implements IMessageManager {
     private void handleClearUnreadMessageCmdMessage(List<ConcreteConversationInfo> conversations) {
         if (mSendReceiveListener != null) {
             mSendReceiveListener.onConversationsUpdate(ClearUnreadMessage.CONTENT_TYPE, conversations);
+        }
+    }
+
+    private void handleClearTotalUnreadMessageCmdMessage(long clearTime) {
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onConversationsClearTotalUnread(clearTime);
         }
     }
 
