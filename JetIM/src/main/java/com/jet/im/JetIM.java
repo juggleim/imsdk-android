@@ -16,6 +16,7 @@ import com.jet.im.internal.UserInfoManager;
 import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.logger.JLogConfig;
 import com.jet.im.internal.util.JLogger;
+import com.jet.im.internal.util.JUtility;
 import com.jet.im.push.PushConfig;
 import com.jet.im.push.PushManager;
 
@@ -85,6 +86,10 @@ public class JetIM {
 
     public IUserInfoManager getUserInfoManager() {
         return mUserInfoManager;
+    }
+
+    public String getDeviceId(Context context) {
+        return JUtility.getDeviceId(context);
     }
 
     private static class SingletonHolder {
