@@ -791,7 +791,9 @@ public class MessageManager implements IMessageManager {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-Get", "getRemoteMessages, success");
-                mCore.getDbManager().insertMessages(messages);
+                List<ConcreteMessage> messagesToSave = messagesToSave(messages);
+                mCore.getDbManager().insertMessages(messagesToSave);
+                updateUserInfo(messagesToSave);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(result));
