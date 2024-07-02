@@ -560,6 +560,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     mCore.getDbManager().setTop(conversation.getConversation(), conversation.isTop(), conversation.getTopTime());
                     break;
                 case UnDisturbConvMessage.CONTENT_TYPE:
+                    if (!totalUnreadCountHasChanged) totalUnreadCountHasChanged = true;
                     mCore.getDbManager().setMute(conversation.getConversation(), conversation.isMute());
                     break;
                 default:
