@@ -107,7 +107,9 @@ public class ConversationManager implements IConversationManager, MessageManager
                 JLogger.i("CONV-Delete", "success");
                 mMessageManager.updateMessageSendSyncTime(timestamp);
                 ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
-                mCore.getDbManager().deleteConversationInfo(conversation);
+                List<Conversation> deleteList = new ArrayList<>();
+                deleteList.add(conversation);
+                mCore.getDbManager().deleteConversationInfo(deleteList);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
                 }
@@ -394,9 +396,11 @@ public class ConversationManager implements IConversationManager, MessageManager
                     if (last.getSyncTime() > syncTime) {
                         syncTime = last.getSyncTime();
                     }
+                    List<Conversation> deleteConversationList = new ArrayList<>();
                     for (ConcreteConversationInfo info : deleteConversationInfoList) {
-                        mCore.getDbManager().deleteConversationInfo(info.getConversation());
+                        deleteConversationList.add(info.getConversation());
                     }
+                    mCore.getDbManager().deleteConversationInfo(deleteConversationList);
                     List<ConversationInfo> l = new ArrayList<>(deleteConversationInfoList);
                     if (mListenerMap != null) {
                         for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {

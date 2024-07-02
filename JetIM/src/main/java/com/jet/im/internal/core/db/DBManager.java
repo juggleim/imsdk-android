@@ -111,26 +111,25 @@ public class DBManager {
     }
 
     public void insertConversations(List<ConcreteConversationInfo> list, IDbInsertConversationsCallback callback) {
-        if (mDb == null) {
-            return;
-        }
+        if (mDb == null) return;
+
         List<ConcreteConversationInfo> insertConversations = new ArrayList<>();
         List<ConcreteConversationInfo> updateConversations = new ArrayList<>();
-        mDb.beginTransaction();
-        for (ConcreteConversationInfo info : list) {
-            ConcreteConversationInfo dbInfo = getConversationInfo(info.getConversation());
-            if (dbInfo != null) {
-                updateConversations.add(info);
-                Object[] args = ConversationSql.argsWithUpdateConcreteConversationInfo(info);
-                execSQL(ConversationSql.SQL_UPDATE_CONVERSATION, args);
-            } else {
-                insertConversations.add(info);
-                Object[] args = ConversationSql.argsWithInsertConcreteConversationInfo(info);
-                execSQL(ConversationSql.SQL_INSERT_CONVERSATION, args);
+        performTransaction(() -> {
+            if (mDb == null) return;
+            for (ConcreteConversationInfo info : list) {
+                ConcreteConversationInfo dbInfo = getConversationInfo(info.getConversation());
+                if (dbInfo != null) {
+                    updateConversations.add(info);
+                    Object[] args = ConversationSql.argsWithUpdateConcreteConversationInfo(info);
+                    execSQL(ConversationSql.SQL_UPDATE_CONVERSATION, args);
+                } else {
+                    insertConversations.add(info);
+                    Object[] args = ConversationSql.argsWithInsertConcreteConversationInfo(info);
+                    execSQL(ConversationSql.SQL_INSERT_CONVERSATION, args);
+                }
             }
-        }
-        mDb.setTransactionSuccessful();
-        mDb.endTransaction();
+        });
         if (callback != null) {
             callback.onComplete(insertConversations, updateConversations);
         }
@@ -190,6 +189,16 @@ public class DBManager {
     public void deleteConversationInfo(Conversation conversation) {
         String[] args = new String[]{conversation.getConversationId()};
         execSQL(ConversationSql.sqlDeleteConversation(conversation.getConversationType().getValue()), args);
+    }
+
+    public void deleteConversationInfo(List<Conversation> conversations) {
+        performTransaction(() -> {
+            if (mDb == null) return;
+            for (Conversation conversation : conversations) {
+                String[] args = new String[]{conversation.getConversationId()};
+                mDb.execSQL(ConversationSql.sqlDeleteConversation(conversation.getConversationType().getValue()), args);
+            }
+        });
     }
 
     public void setDraft(Conversation conversation, String draft) {
@@ -496,36 +505,30 @@ public class DBManager {
     }
 
     public void insertMessages(List<ConcreteMessage> list) {
-        if (mDb == null) {
-            return;
-        }
-        mDb.beginTransaction();
-        for (ConcreteMessage message : list) {
-            ConcreteMessage m = null;
-            if (!TextUtils.isEmpty(message.getMessageId())) {
-                m = getMessageWithMessageId(message.getMessageId());
+        performTransaction(() -> {
+            if (mDb == null) return;
+            for (ConcreteMessage message : list) {
+                ConcreteMessage m = null;
+                if (!TextUtils.isEmpty(message.getMessageId())) {
+                    m = getMessageWithMessageId(message.getMessageId());
+                }
+                if (m != null) {
+                    message.setClientMsgNo(m.getClientMsgNo());
+                    message.setExisted(true);
+                } else {
+                    long clientMsgNo = insertMessage(message);
+                    message.setClientMsgNo(clientMsgNo);
+                }
             }
-            if (m != null) {
-                message.setClientMsgNo(m.getClientMsgNo());
-                message.setExisted(true);
-            } else {
-                long clientMsgNo = insertMessage(message);
-                message.setClientMsgNo(clientMsgNo);
-            }
-        }
-        mDb.setTransactionSuccessful();
-        mDb.endTransaction();
+        });
     }
 
     public void updateMessage(ConcreteMessage message) {
-        if (mDb == null) {
-            return;
-        }
-        mDb.beginTransaction();
-        ContentValues cv = MessageSql.getMessageUpdateCV(message);
-        update(message.getClientMsgNo(), MessageSql.TABLE, cv);
-        mDb.setTransactionSuccessful();
-        mDb.endTransaction();
+        performTransaction(() -> {
+            if (mDb == null) return;
+            ContentValues cv = MessageSql.getMessageUpdateCV(message);
+            update(message.getClientMsgNo(), MessageSql.TABLE, cv);
+        });
     }
 
 
@@ -576,15 +579,12 @@ public class DBManager {
     }
 
     public void setGroupMessageReadInfo(Map<String, GroupMessageReadInfo> messages) {
-        if (mDb == null) {
-            return;
-        }
-        mDb.beginTransaction();
-        for (Map.Entry<String, GroupMessageReadInfo> entry : messages.entrySet()) {
-            mDb.execSQL(MessageSql.sqlSetGroupReadInfo(entry.getValue().getReadCount(), entry.getValue().getMemberCount(), entry.getKey()));
-        }
-        mDb.setTransactionSuccessful();
-        mDb.endTransaction();
+        performTransaction(() -> {
+            if (mDb == null) return;
+            for (Map.Entry<String, GroupMessageReadInfo> entry : messages.entrySet()) {
+                mDb.execSQL(MessageSql.sqlSetGroupReadInfo(entry.getValue().getReadCount(), entry.getValue().getMemberCount(), entry.getKey()));
+            }
+        });
     }
 
     public void deleteMessageByClientMsgNo(long clientMsgNo) {
@@ -623,14 +623,14 @@ public class DBManager {
     }
 
     public void insertUserInfoList(List<UserInfo> userInfoList) {
-        mDb.beginTransaction();
-        for (UserInfo info : userInfoList) {
-            String extra = UserInfoSql.stringFromMap(info.getExtra());
-            String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), extra};
-            execSQL(UserInfoSql.SQL_INSERT_USER_INFO, args);
-        }
-        mDb.setTransactionSuccessful();
-        mDb.endTransaction();
+        performTransaction(() -> {
+            if (mDb == null) return;
+            for (UserInfo info : userInfoList) {
+                String extra = UserInfoSql.stringFromMap(info.getExtra());
+                String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), extra};
+                execSQL(UserInfoSql.SQL_INSERT_USER_INFO, args);
+            }
+        });
     }
 
     public GroupInfo getGroupInfo(String groupId) {
@@ -650,14 +650,14 @@ public class DBManager {
     }
 
     public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
-        mDb.beginTransaction();
-        for (GroupInfo info : groupInfoList) {
-            String extra = UserInfoSql.stringFromMap(info.getExtra());
-            String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), extra};
-            execSQL(UserInfoSql.SQL_INSERT_GROUP_INFO, args);
-        }
-        mDb.setTransactionSuccessful();
-        mDb.endTransaction();
+        performTransaction(() -> {
+            if (mDb == null) return;
+            for (GroupInfo info : groupInfoList) {
+                String extra = UserInfoSql.stringFromMap(info.getExtra());
+                String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), extra};
+                execSQL(UserInfoSql.SQL_INSERT_GROUP_INFO, args);
+            }
+        });
     }
 
     private Cursor rawQuery(String sql, String[] selectionArgs) {
@@ -686,6 +686,24 @@ public class DBManager {
             return -1;
         }
         return mDb.insertWithOnConflict(table, "", cv, SQLiteDatabase.CONFLICT_IGNORE);
+    }
+
+    //执行事务
+    public boolean performTransaction(TransactionOperation operation) {
+        if (mDb == null) return false;
+
+        boolean success = false;
+        try {
+            mDb.beginTransaction();
+            operation.execute();
+            mDb.setTransactionSuccessful();
+            success = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mDb.endTransaction();
+        }
+        return success;
     }
 
     private long update(long msgClientNo, String table, ContentValues cv) {
@@ -738,4 +756,9 @@ public class DBManager {
     private SQLiteDatabase mDb;
     private static final String PATH_JET_IM = "jet_im";
     private static final String DB_NAME = "jetimdb";
+
+    public interface TransactionOperation {
+        void execute() throws Exception;
+    }
+
 }
