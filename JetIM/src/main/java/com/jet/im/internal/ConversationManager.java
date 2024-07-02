@@ -174,6 +174,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                         mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(list));
                     }
                 }
+                noticeTotalUnreadCountChange();
             }
 
             @Override

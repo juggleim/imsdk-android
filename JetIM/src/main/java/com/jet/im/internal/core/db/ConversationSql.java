@@ -226,7 +226,7 @@ class ConversationSql {
         return String.format("UPDATE conversation_info SET last_message_state = %s WHERE conversation_type = %s AND conversation_id = '%s' AND last_message_client_msg_no = %s", state, conversation.getConversationType().getValue(), conversation.getConversationId(), clientMsgNo);
     }
 
-    static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index - last_read_message_index >= 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info";
+    static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index - last_read_message_index >= 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info WHERE mute = 0";
 
     static String sqlSetMute(Conversation conversation, boolean isMute) {
         return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
