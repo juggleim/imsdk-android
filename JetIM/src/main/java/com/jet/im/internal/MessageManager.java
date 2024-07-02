@@ -1211,7 +1211,7 @@ public class MessageManager implements IMessageManager {
 
         void onMessageSend(ConcreteMessage message);
 
-        void onMessageReceive(ConcreteMessage message);
+        void onMessageReceive(List<ConcreteMessage> messages);
 
         void onMessagesRead(Conversation conversation, List<String> messageIds);
 
@@ -1339,6 +1339,7 @@ public class MessageManager implements IMessageManager {
         mCore.getDbManager().insertMessages(messagesToSave);
         updateUserInfo(messagesToSave);
 
+        List<ConcreteMessage> messagesToUpdateConversation = new ArrayList<>();
         long sendTime = 0;
         long receiveTime = 0;
         Map<String, UserInfo> userInfoMap = new HashMap<>();
@@ -1483,9 +1484,7 @@ public class MessageManager implements IMessageManager {
                 }
             }
 
-            if (mSendReceiveListener != null) {
-                mSendReceiveListener.onMessageReceive(message);
-            }
+            messagesToUpdateConversation.add(message);
 
             if (mListenerMap != null) {
                 for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
@@ -1493,8 +1492,11 @@ public class MessageManager implements IMessageManager {
                 }
             }
         }
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onMessageReceive(messagesToUpdateConversation);
+        }
         mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
-        ////直发的消息，而且正在同步中，不直接更新 sync time
+        //直发的消息，而且正在同步中，不直接更新 sync time
         if (!isSync && mSyncProcessing) {
             if (sendTime > 0) {
                 mCachedSendTime = sendTime;
