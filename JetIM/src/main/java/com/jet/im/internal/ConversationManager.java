@@ -1,6 +1,7 @@
 package com.jet.im.internal;
 
 import android.text.TextUtils;
+import android.util.Pair;
 
 import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
@@ -692,14 +693,19 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     private void addOrUpdateConversationIfNeed(List<ConcreteMessage> messages) {
-        List<String> mentionInfoList = new ArrayList<>();
+        //需要更新的最新消息列表
         List<ConcreteMessage> lastMessageList = new ArrayList<>();
-        List<ConversationInfo> noticeConversationInfoList = new ArrayList<>();
+        //需要更新的@信息列表
+        List<Pair<Conversation, String>> mentionInfoList = new ArrayList<>();
+        //需要更新的会话列表
         List<ConcreteConversationInfo> addConversationInfoList = new ArrayList<>();
+        //需要通知新增回调的会话列表
+        List<ConversationInfo> noticeAddConversationInfoList = new ArrayList<>();
+        //需要通知更新回调的会话列表
+        List<ConversationInfo> noticeUpdateConversationInfoList = new ArrayList<>();
 
-        boolean isAdd = false;
-        boolean hasMention = false;
         for (int i = 0; i < messages.size(); i++) {
+            boolean hasMention = false;
             ConcreteMessage message = messages.get(i);
 
             //接收到的消息才处理 mention
@@ -730,7 +736,6 @@ public class ConversationManager implements IConversationManager, MessageManager
 
             ConcreteConversationInfo info = (ConcreteConversationInfo) getConversationInfo(message.getConversation());
             if (info == null) {
-                isAdd = true;
                 info = new ConcreteConversationInfo();
                 info.setConversation(message.getConversation());
                 if (isBroadcast && message.getDirection() == Message.MessageDirection.SEND) {
@@ -748,9 +753,8 @@ public class ConversationManager implements IConversationManager, MessageManager
                     info.setMentionInfo(mentionInfo);
                 }
                 addConversationInfoList.add(info);
-                noticeConversationInfoList.add(info);
+                noticeAddConversationInfoList.add(info);
             } else {
-                isAdd = false;
                 //更新Mention
                 if (mentionInfo != null && mentionInfo.getMentionMsgList() != null) {
                     if (info.getMentionInfo() != null && info.getMentionInfo().getMentionMsgList() != null) {
@@ -761,7 +765,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                         }
                     }
                     info.setMentionInfo(mentionInfo);
-                    mentionInfoList.add(mentionInfo.encodeToJson());
+                    mentionInfoList.add(new Pair<>(info.getConversation(), mentionInfo.encodeToJson()));
                 }
                 //更新未读数
                 if (message.getMsgIndex() > 0) {
@@ -775,21 +779,22 @@ public class ConversationManager implements IConversationManager, MessageManager
                 //更新最新消息
                 info.setLastMessage(message);
                 lastMessageList.add(message);
-                noticeConversationInfoList.add(info);
+                noticeUpdateConversationInfoList.add(info);
             }
         }
         //统一更新数据库
-//        mCore.getDbManager().addOrUpdateConversation(isAdd, addConversationInfoList, mentionInfoList, lastMessageList);
-
+        mCore.getDbManager().insertOrUpdateConversations(addConversationInfoList, mentionInfoList, lastMessageList);
+        //通知回调
         if (mListenerMap == null) return;
-        if (isAdd) {
+        if (!noticeAddConversationInfoList.isEmpty()) {
             for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoAdd(noticeConversationInfoList));
+                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoAdd(noticeAddConversationInfoList));
             }
-            return;
         }
-        for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-            mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(noticeConversationInfoList));
+        if (!noticeUpdateConversationInfoList.isEmpty()) {
+            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(noticeUpdateConversationInfoList));
+            }
         }
     }
 

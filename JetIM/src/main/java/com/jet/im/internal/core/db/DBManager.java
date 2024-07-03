@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -133,6 +134,23 @@ public class DBManager {
         if (callback != null) {
             callback.onComplete(insertConversations, updateConversations);
         }
+    }
+
+    public void insertOrUpdateConversations(List<ConcreteConversationInfo> addConversationInfoList, List<Pair<Conversation, String>> mentionInfoList, List<ConcreteMessage> lastMessageList) {
+        if (mDb == null) return;
+        performTransaction(() -> {
+            if (mDb == null) return;
+            for (ConcreteConversationInfo info : addConversationInfoList) {
+                Object[] args = ConversationSql.argsWithInsertConcreteConversationInfo(info);
+                execSQL(ConversationSql.SQL_INSERT_CONVERSATION, args);
+            }
+            for (int i = 0; i < mentionInfoList.size(); i++) {
+                execSQL(ConversationSql.sqlSetMention(mentionInfoList.get(i).first, mentionInfoList.get(i).second));
+            }
+            for (int i = 0; i < lastMessageList.size(); i++) {
+                updateLastMessage(lastMessageList.get(i));
+            }
+        });
     }
 
     public List<ConversationInfo> getConversationInfoList() {
