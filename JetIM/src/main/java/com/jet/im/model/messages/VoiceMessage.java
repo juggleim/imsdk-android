@@ -22,6 +22,9 @@ public class VoiceMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(getUrl())) {
                 jsonObject.put(URL, getUrl());
             }
+            if (!TextUtils.isEmpty(getLocalPath())) {
+                jsonObject.put(LOCAL, getLocalPath());
+            }
             jsonObject.put(DURATION, mDuration);
             if (!TextUtils.isEmpty(mExtra)) {
                 jsonObject.put(EXTRA, mExtra);
@@ -44,6 +47,9 @@ public class VoiceMessage extends MediaMessageContent {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
                 setUrl(jsonObject.optString(URL));
+            }
+            if (jsonObject.has(LOCAL)) {
+                setLocalPath(jsonObject.optString(LOCAL));
             }
             if (jsonObject.has(DURATION)) {
                 mDuration = jsonObject.optInt(DURATION);
@@ -80,6 +86,7 @@ public class VoiceMessage extends MediaMessageContent {
     private int mDuration;
     private String mExtra;
     private static final String URL = "url";
+    private static final String LOCAL = "local";
     private static final String DURATION = "duration";
     private static final String EXTRA = "extra";
     private static final String DIGEST = "[Voice]";

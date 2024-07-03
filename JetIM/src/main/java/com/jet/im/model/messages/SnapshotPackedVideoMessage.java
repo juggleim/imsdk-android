@@ -53,6 +53,9 @@ public class SnapshotPackedVideoMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(getUrl())) {
                 jsonObject.put(URL, getUrl());
             }
+            if (!TextUtils.isEmpty(getLocalPath())) {
+                jsonObject.put(LOCAL, getLocalPath());
+            }
             if (!TextUtils.isEmpty(snapshotString)) {
                 jsonObject.put(POSTER, snapshotString);
             }
@@ -84,6 +87,9 @@ public class SnapshotPackedVideoMessage extends MediaMessageContent {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
                 setUrl(jsonObject.optString(URL));
+            }
+            if (jsonObject.has(LOCAL)) {
+                setLocalPath(jsonObject.optString(LOCAL));
             }
             if (jsonObject.has(POSTER)) {
                 String snapshotString = jsonObject.optString(POSTER);
@@ -182,6 +188,7 @@ public class SnapshotPackedVideoMessage extends MediaMessageContent {
     private String mName;
     private String mExtra;
     private static final String URL = "sightUrl";
+    private static final String LOCAL = "local";
     private static final String POSTER = "content";
     private static final String HEIGHT = "height";
     private static final String WIDTH = "width";

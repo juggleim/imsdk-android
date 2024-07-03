@@ -23,6 +23,9 @@ public class ImageMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(getUrl())) {
                 jsonObject.put(URL, getUrl());
             }
+            if (!TextUtils.isEmpty(getLocalPath())) {
+                jsonObject.put(LOCAL, getLocalPath());
+            }
             if (!TextUtils.isEmpty(mThumbnailUrl)) {
                 jsonObject.put(THUMBNAIL, mThumbnailUrl);
             }
@@ -50,6 +53,9 @@ public class ImageMessage extends MediaMessageContent {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
                 setUrl(jsonObject.optString(URL));
+            }
+            if (jsonObject.has(LOCAL)) {
+                setLocalPath(jsonObject.optString(LOCAL));
             }
             if (jsonObject.has(THUMBNAIL)) {
                 mThumbnailUrl = jsonObject.optString(THUMBNAIL);
@@ -131,6 +137,7 @@ public class ImageMessage extends MediaMessageContent {
     private String mExtra;
     private long mSize;
     private static final String URL = "url";
+    private static final String LOCAL = "local";
     private static final String THUMBNAIL = "thumbnail";
     private static final String HEIGHT = "height";
     private static final String WIDTH = "width";

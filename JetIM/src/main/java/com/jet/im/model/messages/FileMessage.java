@@ -25,6 +25,9 @@ public class FileMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(getUrl())) {
                 jsonObject.put(URL, getUrl());
             }
+            if (!TextUtils.isEmpty(getLocalPath())) {
+                jsonObject.put(LOCAL, getLocalPath());
+            }
             jsonObject.put(SIZE, mSize);
             if (!TextUtils.isEmpty(mType)) {
                 jsonObject.put(TYPE, mType);
@@ -50,6 +53,9 @@ public class FileMessage extends MediaMessageContent {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(URL)) {
                 setUrl(jsonObject.optString(URL));
+            }
+            if (jsonObject.has(LOCAL)) {
+                setLocalPath(jsonObject.optString(LOCAL));
             }
             if (jsonObject.has(NAME)) {
                 mName = jsonObject.optString(NAME);
@@ -117,6 +123,7 @@ public class FileMessage extends MediaMessageContent {
 
     private static final String NAME = "name";
     private static final String URL = "url";
+    private static final String LOCAL = "local";
     private static final String SIZE = "size";
     private static final String TYPE = "type";
     private static final String EXTRA = "extra";

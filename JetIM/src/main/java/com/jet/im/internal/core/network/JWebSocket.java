@@ -13,6 +13,7 @@ import com.jet.im.internal.model.MergeInfo;
 import com.jet.im.internal.model.upload.UploadFileType;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
+import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.push.PushChannel;
@@ -84,8 +85,19 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               String userId,
                               SendMessageCallback callback) {
         Integer key = mCmdIndex;
+        byte[] encodeBytes;
+        if (content instanceof MediaMessageContent) {
+            MediaMessageContent mediaContent = (MediaMessageContent) content;
+            String local = mediaContent.getLocalPath();
+            mediaContent.setLocalPath("");
+            encodeBytes = mediaContent.encode();
+            mediaContent.setLocalPath(local);
+        } else {
+            encodeBytes = content.encode();
+        }
+
         byte[] bytes = mPbData.sendMessageData(content.getContentType(),
-                content.encode(),
+                encodeBytes,
                 content.getFlags(),
                 clientUid,
                 mergeInfo,

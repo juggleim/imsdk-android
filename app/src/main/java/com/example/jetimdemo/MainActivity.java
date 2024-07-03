@@ -75,13 +75,20 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            UserInfo u1 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid1");
-                            UserInfo u2 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid2");
-                            UserInfo u3 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid3");
-                            UserInfo u5 = JetIM.getInstance().getUserInfoManager().getUserInfo("userid5");
-                            GroupInfo g = JetIM.getInstance().getUserInfoManager().getGroupInfo("groupid1");
-                            Log.i("lifei", "");
+                            ImageMessage image = new ImageMessage();
+                            image.setLocalPath("asdfasdgasdgasdf");
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+                            JetIM.getInstance().getMessageManager().sendMessage(image, c, new IMessageManager.ISendMessageCallback() {
+                                @Override
+                                public void onSuccess(Message message) {
+                                    int i = 1;
+                                }
 
+                                @Override
+                                public void onError(Message message, int errorCode) {
+
+                                }
+                            });
 //                            JetIM.getInstance().getConnectionManager().disconnect(false);
 //                            JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 
