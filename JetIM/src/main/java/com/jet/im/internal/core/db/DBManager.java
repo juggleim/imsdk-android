@@ -248,24 +248,6 @@ public class DBManager {
         execSQL(ConversationSql.sqlUpdateSortTime(conversation, sortTime));
     }
 
-    public void updateLastMessage(ConcreteMessage message) {
-        String sql = ConversationSql.SQL_UPDATE_LAST_MESSAGE;
-        boolean isUpdateSortTime = true;
-        if (message.getDirection() == Message.MessageDirection.SEND
-                && (message.getFlags() & MessageContent.MessageFlag.IS_BROADCAST.getValue()) != 0) {
-            isUpdateSortTime = false;
-        }
-        if (isUpdateSortTime) {
-            sql = sql + ConversationSql.SQL_TIMESTAMP_EQUALS_QUESTION;
-        }
-        if (Message.MessageDirection.RECEIVE == message.getDirection()) {
-            sql = sql + ConversationSql.SQL_LAST_MESSAGE_EQUALS_QUESTION;
-        }
-        sql = sql + ConversationSql.SQL_WHERE_CONVERSATION_IS;
-        Object[] args = ConversationSql.argsWithUpdateLastMessage(message, isUpdateSortTime, true);
-        execSQL(sql, args);
-    }
-
     public void updateLastMessageWithoutIndex(ConcreteMessage message) {
         String sql = ConversationSql.SQL_UPDATE_LAST_MESSAGE;
         sql = sql + ConversationSql.SQL_WHERE_CONVERSATION_IS;
@@ -296,7 +278,7 @@ public class DBManager {
     }
 
     private ConcreteMessage getMessageWithCursor(Cursor cursor) {
-        ConcreteMessage message = null;
+        ConcreteMessage message;
         if (cursor == null) {
             return null;
         }

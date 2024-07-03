@@ -364,7 +364,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, List<ConcreteConversationInfo> deleteConversationInfoList, boolean isFinished) {
                 JLogger.i("CONV-Sync", "success, conversation count is " + (conversationInfoList == null ? 0 : conversationInfoList.size()) + ", delete count is " + (deleteConversationInfoList == null ? 0 : deleteConversationInfoList.size()));
                 long syncTime = 0;
-                if (conversationInfoList.size() > 0) {
+                if (conversationInfoList != null && conversationInfoList.size() > 0) {
                     updateUserInfo(conversationInfoList);
                     ConcreteConversationInfo last = conversationInfoList.get(conversationInfoList.size() - 1);
                     if (last.getSyncTime() > syncTime) {
@@ -391,7 +391,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     });
                     noticeTotalUnreadCountChange();
                 }
-                if (deleteConversationInfoList.size() > 0) {
+                if (deleteConversationInfoList != null && deleteConversationInfoList.size() > 0) {
                     updateUserInfo(deleteConversationInfoList);
                     ConcreteConversationInfo last = deleteConversationInfoList.get(deleteConversationInfoList.size() - 1);
                     if (last.getSyncTime() > syncTime) {

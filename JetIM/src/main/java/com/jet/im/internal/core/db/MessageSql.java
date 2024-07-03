@@ -36,7 +36,7 @@ class MessageSql {
         message.setTimestamp(CursorHelper.readLong(cursor, COL_TIMESTAMP));
         message.setSenderUserId(CursorHelper.readString(cursor, COL_SENDER));
         String content = CursorHelper.readString(cursor, COL_CONTENT);
-        MessageContent messageContent = null;
+        MessageContent messageContent;
         if (content != null) {
             messageContent = ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), message.getContentType());
             message.setContent(messageContent);
@@ -233,9 +233,6 @@ class MessageSql {
 
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_ID = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE message_uid = ?";
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_NO = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE id = ?";
-
-    static final String SQL_DELETE_MESSAGE = "UPDATE message SET is_deleted = 1 WHERE";
-
     static String sqlDeleteMessagesByMessageId(int count) {
         return "UPDATE message SET is_deleted = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
