@@ -1,12 +1,12 @@
 package com.jet.im.internal;
 
 import android.text.TextUtils;
-import android.util.Pair;
 
 import com.jet.im.JErrorCode;
 import com.jet.im.JetIMConst;
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.internal.core.JetIMCore;
+import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.AddConversationCallback;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
 import com.jet.im.internal.core.network.WebSocketSimpleCallback;
@@ -609,41 +609,47 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     private void addOrUpdateConversationIfNeed(List<ConcreteMessage> messages) {
-        List<ConcreteMessage> lastMessageList = new ArrayList<>();
-        List<Pair<Conversation, String>> mentionInfoList = new ArrayList<>();
-        List<ConcreteConversationInfo> noticeAddConversationInfoList = new ArrayList<>();
-        List<ConcreteConversationInfo> noticeUpdateConversationInfoList = new ArrayList<>();
-
+        //逐条处理消息
+        Map<Conversation, ConcreteConversationInfo> conversationInfoMap = new HashMap<>();
         for (ConcreteMessage message : messages) {
-            processSingleMessage(message, mentionInfoList, lastMessageList, noticeAddConversationInfoList, noticeUpdateConversationInfoList);
+            processSingleMessage(message, conversationInfoMap);
         }
-
+        if (conversationInfoMap.isEmpty()) return;
         //统一更新数据库
-        mCore.getDbManager().insertOrUpdateConversations(noticeAddConversationInfoList, mentionInfoList, lastMessageList);
+        mCore.getDbManager().insertConversations(new ArrayList<>(conversationInfoMap.values()), new DBManager.IDbInsertConversationsCallback() {
+            @Override
+            public void onComplete(List<ConcreteConversationInfo> insertList, List<ConcreteConversationInfo> updateList) {
+                //通知回调
+                if (mListenerMap == null) return;
+                if (!insertList.isEmpty()) {
+                    List<ConversationInfo> l = new ArrayList<>(insertList);
+                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoAdd(l));
+                    }
+                }
+                if (!updateList.isEmpty()) {
+                    List<ConversationInfo> l = new ArrayList<>(updateList);
+                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(l));
 
-        //通知回调
-        if (mListenerMap == null) return;
-        if (!noticeAddConversationInfoList.isEmpty()) {
-            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoAdd(new ArrayList<>(noticeAddConversationInfoList)));
+                    }
+                }
             }
-        }
-        if (!noticeUpdateConversationInfoList.isEmpty()) {
-            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(new ArrayList<>(noticeUpdateConversationInfoList)));
-            }
-        }
+        });
     }
 
-
     //公共的处理单个消息的方法
-    private void processSingleMessage(ConcreteMessage message, List<Pair<Conversation, String>> mentionInfoList, List<ConcreteMessage> lastMessageList, List<ConcreteConversationInfo> noticeAddConversationInfoList, List<ConcreteConversationInfo> noticeUpdateConversationInfoList) {
+    private void processSingleMessage(ConcreteMessage message, Map<Conversation, ConcreteConversationInfo> conversationInfoMap) {
         //提取ConversationMentionInfo
         ConversationMentionInfo mentionInfo = getConversationMentionInfo(message);
         //判断是否是广播消息
         boolean isBroadcast = (message.getFlags() & MessageContent.MessageFlag.IS_BROADCAST.getValue()) != 0;
         //查询会话
-        ConcreteConversationInfo info = (ConcreteConversationInfo) getConversationInfo(message.getConversation());
+        ConcreteConversationInfo info = conversationInfoMap.get(message.getConversation());
+        if (info == null) {
+            info = (ConcreteConversationInfo) getConversationInfo(message.getConversation());
+            if (info != null) conversationInfoMap.put(message.getConversation(), info);
+        }
         //如果会话不存在
         if (info == null) {
             info = new ConcreteConversationInfo();
@@ -662,7 +668,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             if (mentionInfo != null) {
                 info.setMentionInfo(mentionInfo);
             }
-            noticeAddConversationInfoList.add(info);
+            conversationInfoMap.put(message.getConversation(), info);
             return;
         }
         //如果会话存在
@@ -676,7 +682,6 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
             info.setMentionInfo(mentionInfo);
-            mentionInfoList.add(new Pair<>(info.getConversation(), mentionInfo.encodeToJson()));
         }
         //更新未读数
         if (message.getMsgIndex() > 0) {
@@ -690,8 +695,6 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         //更新最新消息
         info.setLastMessage(message);
-        lastMessageList.add(message);
-        noticeUpdateConversationInfoList.add(info);
     }
 
     //提取ConversationMentionInfo

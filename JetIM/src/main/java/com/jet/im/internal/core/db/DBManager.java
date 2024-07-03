@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -29,7 +28,7 @@ import java.util.Map;
 
 public class DBManager {
 
-    public boolean openIMDB(Context context, String appKey, String userId) {
+    public synchronized boolean openIMDB(Context context, String appKey, String userId) {
         String path = getOrCreateDbPath(context, appKey, userId);
         closeDB();
         if (!TextUtils.isEmpty(path)) {
@@ -40,7 +39,7 @@ public class DBManager {
         return true;
     }
 
-    public void closeDB() {
+    public synchronized void closeDB() {
         JLogger.i("DB-Close", "close db");
         if (mDBHelper != null) {
             mDb = null;
@@ -49,7 +48,7 @@ public class DBManager {
         }
     }
 
-    public boolean isOpen() {
+    public synchronized boolean isOpen() {
         return mDb != null;
     }
 
@@ -136,23 +135,6 @@ public class DBManager {
         }
     }
 
-    public void insertOrUpdateConversations(List<ConcreteConversationInfo> addConversationInfoList, List<Pair<Conversation, String>> mentionInfoList, List<ConcreteMessage> lastMessageList) {
-        if (mDb == null) return;
-        performTransaction(() -> {
-            if (mDb == null) return;
-            for (ConcreteConversationInfo info : addConversationInfoList) {
-                Object[] args = ConversationSql.argsWithInsertConcreteConversationInfo(info);
-                execSQL(ConversationSql.SQL_INSERT_CONVERSATION, args);
-            }
-            for (int i = 0; i < mentionInfoList.size(); i++) {
-                execSQL(ConversationSql.sqlSetMention(mentionInfoList.get(i).first, mentionInfoList.get(i).second));
-            }
-            for (int i = 0; i < lastMessageList.size(); i++) {
-                updateLastMessage(lastMessageList.get(i));
-            }
-        });
-    }
-
     public List<ConversationInfo> getConversationInfoList() {
         Cursor cursor = rawQuery(ConversationSql.SQL_GET_CONVERSATIONS, null);
         if (cursor == null) {
@@ -202,11 +184,6 @@ public class DBManager {
             cursor.close();
         }
         return result;
-    }
-
-    public void deleteConversationInfo(Conversation conversation) {
-        String[] args = new String[]{conversation.getConversationId()};
-        execSQL(ConversationSql.sqlDeleteConversation(conversation.getConversationType().getValue()), args);
     }
 
     public void deleteConversationInfo(List<Conversation> conversations) {
@@ -517,11 +494,6 @@ public class DBManager {
         return result;
     }
 
-    public long insertMessage(Message message) {
-        ContentValues cv = MessageSql.getMessageInsertCV(message);
-        return insert(MessageSql.TABLE, cv);
-    }
-
     public void insertMessages(List<ConcreteMessage> list) {
         performTransaction(() -> {
             if (mDb == null) return;
@@ -534,7 +506,8 @@ public class DBManager {
                     message.setClientMsgNo(m.getClientMsgNo());
                     message.setExisted(true);
                 } else {
-                    long clientMsgNo = insertMessage(message);
+                    ContentValues cv = MessageSql.getMessageInsertCV(message);
+                    long clientMsgNo = insert(MessageSql.TABLE, cv);
                     message.setClientMsgNo(clientMsgNo);
                 }
             }
@@ -548,7 +521,6 @@ public class DBManager {
             update(message.getClientMsgNo(), MessageSql.TABLE, cv);
         });
     }
-
 
     public void updateMessageAfterSend(long clientMsgNo,
                                        String msgId,
@@ -603,11 +575,6 @@ public class DBManager {
                 mDb.execSQL(MessageSql.sqlSetGroupReadInfo(entry.getValue().getReadCount(), entry.getValue().getMemberCount(), entry.getKey()));
             }
         });
-    }
-
-    public void deleteMessageByClientMsgNo(long clientMsgNo) {
-        String sql = MessageSql.SQL_DELETE_MESSAGE + MessageSql.SQL_CLIENT_MSG_NO_IS + clientMsgNo;
-        execSQL(sql);
     }
 
     public void deleteMessageByClientMsgNo(List<Long> clientMsgNos) {
@@ -707,7 +674,7 @@ public class DBManager {
     }
 
     //执行事务
-    public boolean performTransaction(TransactionOperation operation) {
+    private boolean performTransaction(TransactionOperation operation) {
         if (mDb == null) return false;
 
         boolean success = false;
@@ -775,8 +742,7 @@ public class DBManager {
     private static final String PATH_JET_IM = "jet_im";
     private static final String DB_NAME = "jetimdb";
 
-    public interface TransactionOperation {
+    private interface TransactionOperation {
         void execute() throws Exception;
     }
-
 }
