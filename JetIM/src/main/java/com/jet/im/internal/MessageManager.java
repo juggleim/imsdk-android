@@ -921,6 +921,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
                 }
+                if (mSendReceiveListener != null) {
+                    mSendReceiveListener.onMessagesRead(conversation, messageIds);
+                }
             }
 
             @Override
