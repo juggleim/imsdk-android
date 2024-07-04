@@ -39,11 +39,11 @@ object ViewModelProviders {
             ViewModelProvider(owner, ViewModelFactory(query))[ChannelListViewModel::class.java]
         }
 
-        this.channel = ChannelViewModelProvider { owner, channelUrl, params, channelConfig ->
+        this.channel = ChannelViewModelProvider { owner, conversation, params, channelConfig ->
             ViewModelProvider(
                 owner,
-                ViewModelFactory(channelUrl, params, channelConfig)
-            )[channelUrl, ChannelViewModel::class.java]
+                ViewModelFactory(conversation, params, channelConfig)
+            )[conversation.toString(), ChannelViewModel::class.java]
         }
 
     }

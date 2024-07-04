@@ -20,6 +20,8 @@ import com.jet.im.kit.model.TextUIConfig
 import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
+import com.jet.im.model.ConversationInfo
+import com.jet.im.model.Message
 
 internal class MyUserMessageView @JvmOverloads internal constructor(
     context: Context,
@@ -52,10 +54,6 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
             val messageBackground =
                 a.getResourceId(R.styleable.MessageView_User_sb_message_me_background, R.drawable.sb_shape_chat_bubble)
             val messageBackgroundTint = a.getColorStateList(R.styleable.MessageView_User_sb_message_me_background_tint)
-            val emojiReactionListBackground = a.getResourceId(
-                R.styleable.MessageView_User_sb_message_emoji_reaction_list_background,
-                R.drawable.sb_shape_chat_bubble_reactions_light
-            )
             val ogtagBackground = a.getResourceId(
                 R.styleable.MessageView_User_sb_message_me_ogtag_background,
                 R.drawable.sb_message_og_background
@@ -89,7 +87,6 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
             binding.tvMessage.setLinkTextColor(linkTextColor)
             binding.contentPanel.background =
                 DrawableUtils.setTintList(context, messageBackground, messageBackgroundTint)
-            binding.emojiReactionListBackground.setBackgroundResource(emojiReactionListBackground)
             binding.ogtagBackground.background =
                 DrawableUtils.setTintList(context, ogtagBackground, ogtagBackgroundTint)
             binding.ovOgtag.background =
@@ -113,11 +110,6 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
         val isSent = message.sendingStatus == SendingStatus.SUCCEEDED
         val enableOgTag = message.ogMetaData != null && ChannelConfig.getEnableOgTag(params.channelConfig)
         val enableMention = params.channelConfig.enableMention
-        val enableReactions =
-            message.reactions.isNotEmpty() && ChannelConfig.getEnableReactions(params.channelConfig, channel)
-
-        binding.emojiReactionListBackground.visibility = if (enableReactions) VISIBLE else GONE
-        binding.rvEmojiReactionList.visibility = if (enableReactions) VISIBLE else GONE
         binding.ogtagBackground.visibility = if (enableOgTag) VISIBLE else GONE
         binding.ovOgtag.visibility = if (enableOgTag) VISIBLE else GONE
         binding.tvSentAt.visibility =
@@ -130,9 +122,6 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
             it.myMentionUIConfig.mergeFromTextAppearance(context, mentionAppearance)
             it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
             it.myMessageBackground?.let { background -> binding.contentPanel.background = background }
-            it.myReactionListBackground?.let { reactionBackground ->
-                binding.emojiReactionListBackground.background = reactionBackground
-            }
             it.myOgtagBackground?.let { ogtagBackground ->
                 binding.ogtagBackground.background = ogtagBackground
                 binding.ovOgtag.background = ogtagBackground
@@ -150,7 +139,6 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
             mentionClickListener?.onItemClick(view, position, user)
         }
         if (enableOgTag) ViewUtils.drawOgtag(binding.ovOgtag, message.ogMetaData)
-        ViewUtils.drawReactionEnabled(binding.rvEmojiReactionList, channel, params.channelConfig)
         ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
 
         val paddingTop =
@@ -158,17 +146,51 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
         val paddingBottom =
             resources.getDimensionPixelSize(if (messageGroupType === MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType === MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
         binding.root.setPadding(binding.root.paddingLeft, paddingTop, binding.root.paddingRight, paddingBottom)
-        if (params.shouldUseQuotedView()) {
-            ViewUtils.drawQuotedMessage(
-                binding.quoteReplyPanel,
-                channel,
-                message,
-                messageUIConfig?.repliedMessageTextUIConfig,
-                params
-            )
-        } else {
-            binding.quoteReplyPanel.visibility = GONE
+    }
+
+    override fun drawMessage(
+        channel: ConversationInfo,
+        message: Message,
+        params: MessageListUIParams
+    ) {
+        val messageGroupType = params.messageGroupType
+        val isSent = message.state == Message.MessageState.SENT
+        val enableOgTag = false
+        val enableMention = params.channelConfig.enableMention
+        binding.ogtagBackground.visibility = if (enableOgTag) VISIBLE else GONE
+        binding.ovOgtag.visibility = if (enableOgTag) VISIBLE else GONE
+        binding.tvSentAt.visibility =
+            if (isSent && (messageGroupType === MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType === MessageGroupType.GROUPING_TYPE_SINGLE)) VISIBLE else GONE
+        binding.ivStatus.drawStatus(message, channel, params.shouldUseMessageReceipt())
+
+        messageUIConfig?.let {
+            it.myMessageTextUIConfig.mergeFromTextAppearance(context, messageTextAppearance)
+            it.myEditedTextMarkUIConfig.mergeFromTextAppearance(context, editedAppearance)
+            it.myMentionUIConfig.mergeFromTextAppearance(context, mentionAppearance)
+            it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
+            it.myMessageBackground?.let { background -> binding.contentPanel.background = background }
+            it.myOgtagBackground?.let { ogtagBackground ->
+                binding.ogtagBackground.background = ogtagBackground
+                binding.ovOgtag.background = ogtagBackground
+            }
+            it.linkedTextColor?.let { linkedTextColor -> binding.tvMessage.setLinkTextColor(linkedTextColor) }
         }
-        ViewUtils.drawThreadInfo(binding.threadInfo, message, params)
+
+        ViewUtils.drawTextMessage(
+            binding.tvMessage,
+            message,
+            messageUIConfig,
+            enableMention,
+            mentionedCurrentUserUIConfig,
+        ) { view, position, user ->
+            mentionClickListener?.onItemClick(view, position, user)
+        }
+        ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
+
+        val paddingTop =
+            resources.getDimensionPixelSize(if (messageGroupType === MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType === MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
+        val paddingBottom =
+            resources.getDimensionPixelSize(if (messageGroupType === MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType === MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
+        binding.root.setPadding(binding.root.paddingLeft, paddingTop, binding.root.paddingRight, paddingBottom)
     }
 }

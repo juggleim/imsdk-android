@@ -5,7 +5,7 @@ import com.jet.im.kit.activities.adapter.MessageListAdapter
 import com.jet.im.kit.model.ChannelListUIParams
 import com.jet.im.kit.model.MessageListUIParams
 import com.jet.im.kit.providers.AdapterProviders
-import com.sendbird.android.channel.GroupChannel
+import com.jet.im.model.ConversationInfo
 
 /**
  * Interface definition to be invoked when message list adapter is created.
@@ -19,7 +19,7 @@ fun interface MessageListAdapterProvider {
      * @return The [MessageListAdapter].
      * @since 3.9.0
      */
-    fun provide(channel: GroupChannel, uiParams: MessageListUIParams): MessageListAdapter
+    fun provide(channel: ConversationInfo, uiParams: MessageListUIParams): MessageListAdapter
 }
 
 

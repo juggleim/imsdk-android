@@ -13,9 +13,6 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
-import com.sendbird.android.message.BaseMessage
-import com.sendbird.android.message.FileMessage
-import com.sendbird.android.message.MultipleFilesMessage
 import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.consts.StringSet
@@ -31,6 +28,9 @@ import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.kit.utils.SoftInputUtils
 import com.jet.im.kit.utils.TextUtils
 import com.jet.im.kit.utils.ViewUtils
+import com.jet.im.model.Message
+import com.sendbird.android.message.FileMessage
+import com.sendbird.android.message.MultipleFilesMessage
 
 class MessageInputView @JvmOverloads constructor(
     context: Context,
@@ -109,11 +109,7 @@ class MessageInputView @JvmOverloads constructor(
                     setVoiceRecorderButtonVisibility(GONE)
                     binding.ibtnAdd.visibility = GONE
                 }
-                Mode.QUOTE_REPLY -> {
-                    setQuoteReplyPanelVisibility(VISIBLE)
-                    setEditPanelVisibility(GONE)
-                    addButtonVisibility = this@MessageInputView.addButtonVisibility
-                }
+
                 else -> {
                     setQuoteReplyPanelVisibility(GONE)
                     setEditPanelVisibility(GONE)
@@ -132,12 +128,7 @@ class MessageInputView @JvmOverloads constructor(
         /**
          * A mode to edit current message.
          */
-        EDIT,
-
-        /**
-         * A mode to send a reply message about current message.
-         */
-        QUOTE_REPLY
+        EDIT
     }
 
     fun showKeyboard() {
@@ -146,52 +137,6 @@ class MessageInputView @JvmOverloads constructor(
         )
     }
 
-    fun drawMessageToReply(message: BaseMessage) {
-        var displayMessage = message.message
-        when (message) {
-            is MultipleFilesMessage -> {
-                val file = message.files.firstOrNull() ?: return
-                ViewUtils.drawFileMessageIconToReply(binding.ivQuoteReplyMessageIcon, file.fileType)
-                ViewUtils.drawThumbnail(
-                    binding.ivQuoteReplyMessageImage,
-                    message.getCacheKey(0),
-                    file.url,
-                    file.plainUrl,
-                    file.fileType,
-                    file.thumbnails,
-                    null,
-                    R.dimen.sb_size_1
-                )
-                binding.ivQuoteReplyMessageIcon.visibility = VISIBLE
-                binding.ivQuoteReplyMessageImage.visibility = VISIBLE
-                displayMessage = "${message.files.size} ${StringSet.photos}"
-            }
-
-            is FileMessage -> {
-                if (MessageUtils.isVoiceMessage(message)) {
-                    binding.ivQuoteReplyMessageIcon.visibility = GONE
-                    binding.ivQuoteReplyMessageImage.visibility = GONE
-                } else {
-                    ViewUtils.drawFileMessageIconToReply(binding.ivQuoteReplyMessageIcon, message)
-                    ViewUtils.drawThumbnail(binding.ivQuoteReplyMessageImage, message)
-                    binding.ivQuoteReplyMessageIcon.visibility = VISIBLE
-                    binding.ivQuoteReplyMessageImage.visibility = VISIBLE
-                }
-                displayMessage = message.toDisplayText(context)
-            }
-
-            else -> {
-                binding.ivQuoteReplyMessageIcon.visibility = GONE
-                binding.ivQuoteReplyMessageImage.visibility = GONE
-            }
-        }
-
-        message.sender?.let {
-            binding.tvQuoteReplyTitle.text =
-                String.format(context.getString(R.string.sb_text_reply_to), it.nickname)
-        }
-        binding.tvQuoteReplyMessage.text = displayMessage
-    }
 
     override fun setEnabled(enabled: Boolean) {
         super.setEnabled(enabled)
@@ -251,11 +196,20 @@ class MessageInputView @JvmOverloads constructor(
     }
 
     init {
-        val a = context.theme.obtainStyledAttributes(attrs, R.styleable.MessageInputComponent, defStyle, 0)
+        val a = context.theme.obtainStyledAttributes(
+            attrs,
+            R.styleable.MessageInputComponent,
+            defStyle,
+            0
+        )
         try {
-            binding = SbViewMessageInputBinding.inflate(LayoutInflater.from(getContext()), this, true)
+            binding =
+                SbViewMessageInputBinding.inflate(LayoutInflater.from(getContext()), this, true)
             val backgroundId =
-                a.getResourceId(R.styleable.MessageInputComponent_sb_message_input_background, R.color.background_50)
+                a.getResourceId(
+                    R.styleable.MessageInputComponent_sb_message_input_background,
+                    R.color.background_50
+                )
             val textBackgroundId = a.getResourceId(
                 R.styleable.MessageInputComponent_sb_message_input_text_background,
                 R.drawable.sb_message_input_text_background_light
@@ -265,7 +219,8 @@ class MessageInputView @JvmOverloads constructor(
                 R.style.SendbirdBody3OnLight01
             )
             val hint = a.getString(R.styleable.MessageInputComponent_sb_message_input_text_hint)
-            val hintColor = a.getColorStateList(R.styleable.MessageInputComponent_sb_message_input_text_hint_color)
+            val hintColor =
+                a.getColorStateList(R.styleable.MessageInputComponent_sb_message_input_text_hint_color)
             val textCursorDrawable = a.getResourceId(
                 R.styleable.MessageInputComponent_sb_message_input_text_cursor_drawable,
                 R.drawable.sb_message_input_cursor_light
@@ -367,17 +322,24 @@ class MessageInputView @JvmOverloads constructor(
                 binding.btnCancel.setTextColor(editCancelButtonTextColor)
             }
             binding.btnCancel.setBackgroundResource(editCancelButtonBackground)
-            binding.ivQuoteReplyMessageImage.radius = resources.getDimensionPixelSize(R.dimen.sb_size_8).toFloat()
+            binding.ivQuoteReplyMessageImage.radius =
+                resources.getDimensionPixelSize(R.dimen.sb_size_8).toFloat()
             binding.tvQuoteReplyTitle.setAppearance(context, replyTitleAppearance)
             binding.tvQuoteReplyMessage.setAppearance(context, replyMessageAppearance)
             binding.ivQuoteReplyClose.setImageResource(replyRightButtonIcon)
             binding.ivQuoteReplyClose.imageTintList = replyRightButtonTint
             binding.ivQuoteReplyClose.setBackgroundResource(replyRightButtonBackground)
-            val dividerColor = if (SendbirdUIKit.isDarkMode()) R.color.ondark_04 else R.color.onlight_04
+            val dividerColor =
+                if (SendbirdUIKit.isDarkMode()) R.color.ondark_04 else R.color.onlight_04
             binding.ivReplyDivider.setBackgroundColor(ContextCompat.getColor(context, dividerColor))
             binding.etInputText.setOnClickListener { showKeyboard() }
             binding.etInputText.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
                     if (!TextUtils.isEmpty(s?.trim()) && Mode.EDIT != inputMode || showSendButtonAlways) {
                         setSendButtonVisibility(VISIBLE)
                         if (useVoiceButton) {
@@ -393,9 +355,19 @@ class MessageInputView @JvmOverloads constructor(
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     if (Mode.EDIT == inputMode) {
-                        onEditModeTextChangedListener?.onInputTextChanged(s ?: "", start, before, count)
+                        onEditModeTextChangedListener?.onInputTextChanged(
+                            s ?: "",
+                            start,
+                            before,
+                            count
+                        )
                     } else {
-                        onInputTextChangedListener?.onInputTextChanged(s ?: "", start, before, count)
+                        onInputTextChangedListener?.onInputTextChanged(
+                            s ?: "",
+                            start,
+                            before,
+                            count
+                        )
                     }
                 }
 
@@ -414,10 +386,10 @@ class MessageInputView @JvmOverloads constructor(
                 }
             })
             binding.etInputText.inputType = (
-                InputType.TYPE_CLASS_TEXT
-                    or InputType.TYPE_TEXT_FLAG_MULTI_LINE
-                    or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-                )
+                    InputType.TYPE_CLASS_TEXT
+                            or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                            or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                    )
         } finally {
             a.recycle()
         }

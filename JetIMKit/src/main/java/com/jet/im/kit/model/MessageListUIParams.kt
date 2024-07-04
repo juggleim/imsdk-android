@@ -41,16 +41,6 @@ data class MessageListUIParams internal constructor(
 ) {
 
     /**
-     * Returns whether the quoted view is used.
-     *
-     * @return `true` if the quoted view is used, `false` otherwise
-     * @since 3.3.0
-     */
-    fun shouldUseQuotedView(): Boolean {
-        return useQuotedView
-    }
-
-    /**
      * Returns whether the message grouping is used.
      *
      * @return `true` if the message grouping is used, `false` otherwise

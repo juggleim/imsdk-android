@@ -7,17 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.google.android.material.tabs.TabLayoutMediator
-import com.sendbird.android.SendbirdChat
-import com.sendbird.android.exception.SendbirdException
-import com.sendbird.android.handler.UnreadMessageCountHandler
-import com.sendbird.android.handler.UserEventHandler
-import com.sendbird.android.params.GroupChannelTotalUnreadMessageCountParams
-import com.sendbird.android.user.UnreadMessageCount
-import com.sendbird.android.user.User
-import com.jet.im.kit.SendbirdUIKit
-import com.jet.im.kit.activities.ChannelActivity
-import com.jet.im.kit.providers.FragmentProviders
 import com.example.demo.R
 import com.example.demo.common.SampleSettingsFragment
 import com.example.demo.common.consts.StringSet
@@ -25,6 +14,17 @@ import com.example.demo.common.extensions.isUsingDarkTheme
 import com.example.demo.common.preferences.PreferenceUtils
 import com.example.demo.common.widgets.CustomTabView
 import com.example.demo.databinding.ActivityGroupChannelMainBinding
+import com.google.android.material.tabs.TabLayoutMediator
+import com.jet.im.kit.SendbirdUIKit
+import com.jet.im.kit.activities.ChannelActivity
+import com.jet.im.kit.providers.FragmentProviders
+import com.sendbird.android.SendbirdChat
+import com.sendbird.android.exception.SendbirdException
+import com.sendbird.android.handler.UnreadMessageCountHandler
+import com.sendbird.android.handler.UserEventHandler
+import com.sendbird.android.params.GroupChannelTotalUnreadMessageCountParams
+import com.sendbird.android.user.UnreadMessageCount
+import com.sendbird.android.user.User
 
 class GroupChannelMainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGroupChannelMainBinding
@@ -36,7 +36,8 @@ class GroupChannelMainActivity : AppCompatActivity() {
             setContentView(root)
             viewPager.adapter = MainAdapter(this@GroupChannelMainActivity)
             val isDarkMode = PreferenceUtils.themeMode.isUsingDarkTheme()
-            val backgroundRedId = if (isDarkMode) com.jet.im.kit.R.color.background_600 else com.jet.im.kit.R.color.background_50
+            val backgroundRedId =
+                if (isDarkMode) com.jet.im.kit.R.color.background_600 else com.jet.im.kit.R.color.background_50
             tabLayout.setBackgroundResource(backgroundRedId)
             TabLayoutMediator(tabLayout, viewPager) { tab, position ->
                 tab.customView = when (position) {
@@ -48,6 +49,7 @@ class GroupChannelMainActivity : AppCompatActivity() {
                         }
                         unreadCountTab
                     }
+
                     else -> {
                         CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
@@ -98,22 +100,34 @@ class GroupChannelMainActivity : AppCompatActivity() {
     private fun redirectChannelIfNeeded(intent: Intent?) {
         if (intent == null) return
         if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) {
-            intent.removeExtra(StringSet.PUSH_REDIRECT_CHANNEL)
-            intent.removeExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID)
+            intent.removeExtra(com.jet.im.kit.consts.StringSet.KEY_CONVERSATION_TYPE)
+            intent.removeExtra(com.jet.im.kit.consts.StringSet.KEY_CONVERSATION_ID)
         }
-        if (intent.hasExtra(StringSet.PUSH_REDIRECT_CHANNEL)) {
-            val channelUrl = intent.getStringExtra(StringSet.PUSH_REDIRECT_CHANNEL)
-                ?: return
+        if (intent.hasExtra(com.jet.im.kit.consts.StringSet.KEY_CONVERSATION_ID)) {
+            val type =
+                intent.getIntExtra(com.jet.im.kit.consts.StringSet.KEY_CONVERSATION_TYPE, 0)
+            val id =
+                intent.getStringExtra(com.jet.im.kit.consts.StringSet.KEY_CONVERSATION_ID)
+                    ?: return
             if (intent.hasExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID)) {
                 val messageId = intent.getLongExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID, 0L)
                 if (messageId > 0L) {
-                    startActivity(ChannelActivity.newRedirectToMessageThreadIntent(this, channelUrl, messageId))
+                    val messageId = intent.getLongExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID, 0L)
+                    startActivity(
+                        ChannelActivity.newRedirectToMessageThreadIntent(
+                            this,
+                            type,
+                            id,
+                            messageId
+                        )
+                    )
                     intent.removeExtra(StringSet.PUSH_REDIRECT_MESSAGE_ID)
                 }
             } else {
-                startActivity(ChannelActivity.newIntent(this, channelUrl))
+                startActivity(ChannelActivity.newIntent(this, type, id))
             }
-            intent.removeExtra(StringSet.PUSH_REDIRECT_CHANNEL)
+            intent.removeExtra(com.jet.im.kit.consts.StringSet.KEY_CONVERSATION_TYPE)
+            intent.removeExtra(com.jet.im.kit.consts.StringSet.KEY_CONVERSATION_ID)
         }
     }
 

@@ -8,20 +8,10 @@ import com.sendbird.android.message.FormField
 import com.sendbird.android.message.MultipleFilesMessage
 import com.jet.im.kit.R
 import com.jet.im.kit.consts.StringSet
-import com.jet.im.kit.internal.singleton.MessageDisplayDataManager
 import com.jet.im.kit.model.UserMessageDisplayData
 import com.jet.im.kit.utils.MessageUtils
 
 internal fun BaseMessage.hasParentMessage() = parentMessageId != 0L
-
-internal fun BaseMessage.getDisplayMessage(): String {
-    return when (val data = MessageDisplayDataManager.getOrNull(this)) {
-        is UserMessageDisplayData -> data.message ?: message
-        else -> {
-            message
-        }
-    }
-}
 
 internal fun MultipleFilesMessage.containsOnlyImageFiles(): Boolean {
     return files.all { it.fileType.contains(StringSet.image) }

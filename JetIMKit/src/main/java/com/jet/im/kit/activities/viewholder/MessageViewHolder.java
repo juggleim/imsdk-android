@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.Message;
 import com.sendbird.android.channel.BaseChannel;
 import com.sendbird.android.message.BaseMessage;
 import com.jet.im.kit.consts.MessageGroupType;
@@ -44,12 +46,12 @@ public abstract class MessageViewHolder extends RecyclerView.ViewHolder {
         this.messageListUIParams = messageListUIParams;
     }
 
-    public void onBindViewHolder(@NonNull BaseChannel channel,
-                                 @Nullable BaseMessage prevMessage,
-                                 @NonNull BaseMessage message,
-                                 @Nullable BaseMessage nextMessage) {
+    public void onBindViewHolder(@NonNull ConversationInfo channel,
+                                 @Nullable Message prevMessage,
+                                 @NonNull Message message,
+                                 @Nullable Message nextMessage) {
         if (prevMessage != null) {
-            this.isNewDate = !DateUtils.hasSameDate(message.getCreatedAt(), prevMessage.getCreatedAt());
+            this.isNewDate = !DateUtils.hasSameDate(message.getTimestamp(), prevMessage.getTimestamp());
         } else {
             this.isNewDate = true;
         }
@@ -68,7 +70,6 @@ public abstract class MessageViewHolder extends RecyclerView.ViewHolder {
         bind(channel, message, messageGroupType);
         itemView.requestLayout();
     }
-
     /**
      * Sets the configurations of the message's properties to highlight text.
      *
@@ -116,12 +117,12 @@ public abstract class MessageViewHolder extends RecyclerView.ViewHolder {
      * @param messageGroupType The type of message group UI.
      * since 1.2.1
      * @deprecated 3.3.0
-     * <p> Use {@link #bind(BaseChannel, BaseMessage, MessageListUIParams)} instead.
+     * <p> Use {@link #bind(ConversationInfo, Message, MessageListUIParams)} instead.
      * When binding view holders, this method is still invoked.
      * We recommend you implement only one bind() method.
      */
     @Deprecated
-    public void bind(@NonNull BaseChannel channel, @NonNull BaseMessage message, @NonNull MessageGroupType messageGroupType) {}
+    public void bind(@NonNull ConversationInfo channel, @NonNull Message message, @NonNull MessageGroupType messageGroupType) {}
 
     /**
      * Binds as item view and data.
@@ -131,7 +132,7 @@ public abstract class MessageViewHolder extends RecyclerView.ViewHolder {
      * @param params  Params used for as item view.
      * since 3.3.0
      */
-    public void bind(@NonNull BaseChannel channel, @NonNull BaseMessage message, @NonNull MessageListUIParams params) {}
+    public void bind(@NonNull ConversationInfo channel, @NonNull Message message, @NonNull MessageListUIParams params) {}
 
     /**
      * Returns a Map containing views to register a click event with an identifier.

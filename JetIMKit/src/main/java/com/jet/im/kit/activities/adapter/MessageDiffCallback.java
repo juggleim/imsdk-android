@@ -146,44 +146,6 @@ class MessageDiffCallback extends DiffUtil.Callback {
         if (oldMessage instanceof TypingIndicatorMessage && newMessage instanceof TypingIndicatorMessage) {
             return ((TypingIndicatorMessage) oldMessage).getTypingUsers().equals(((TypingIndicatorMessage) newMessage).getTypingUsers()) ;
         }
-
-        if (messageListUIParams.shouldUseQuotedView()) {
-            BaseMessage oldParentMessage = oldMessage.getParentMessage();
-            BaseMessage newParentMessage = newMessage.getParentMessage();
-            if (oldParentMessage != null && newParentMessage != null) {
-                if (oldParentMessage.getUpdatedAt() != newParentMessage.getUpdatedAt()) {
-                    return false;
-                }
-            }
-        }
-
-        if (messageListUIParams.getChannelConfig().getReplyType() == ReplyType.THREAD) {
-            if (!(oldMessage instanceof CustomizableMessage) && !(newMessage instanceof CustomizableMessage)) {
-                final ThreadInfo oldThreadInfo = oldMessage.getThreadInfo();
-                final ThreadInfo newThreadInfo = newMessage.getThreadInfo();
-                if (oldThreadInfo.getReplyCount() != newThreadInfo.getReplyCount()) {
-                    return false;
-                }
-
-                if (oldThreadInfo.getMostRepliedUsers().size() != newThreadInfo.getMostRepliedUsers().size()) {
-                    return false;
-                }
-
-                for (int i = 0; i < oldThreadInfo.getMostRepliedUsers().size(); i++) {
-                    final User oldRepliedUser = oldThreadInfo.getMostRepliedUsers().get(i);
-                    final User newRepliedUser = newThreadInfo.getMostRepliedUsers().get(i);
-
-                    if (!oldRepliedUser.getUserId().equals(newRepliedUser.getUserId())) {
-                        return false;
-                    }
-
-                    if (!oldRepliedUser.getProfileUrl().equals(newRepliedUser.getProfileUrl())) {
-                        return false;
-                    }
-                }
-            }
-        }
-
         if (messageListUIParams.shouldUseMessageGroupUI()) {
             BaseMessage oldPrevMessage = oldItemPosition - 1 < 0 ? null : oldMessageList.get(oldItemPosition - 1);
             BaseMessage newPrevMessage = newItemPosition - 1 < 0 ? null : newMessageList.get(newItemPosition - 1);

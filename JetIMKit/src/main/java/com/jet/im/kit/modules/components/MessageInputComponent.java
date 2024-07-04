@@ -15,19 +15,15 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 
-import com.sendbird.android.channel.GroupChannel;
-import com.sendbird.android.channel.Role;
-import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.user.MutedState;
+import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.Message;
 import com.sendbird.android.user.User;
 import com.jet.im.kit.R;
-import com.jet.im.kit.activities.adapter.SuggestedMentionListAdapter;
 import com.jet.im.kit.consts.KeyboardDisplayType;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.interfaces.OnInputModeChangedListener;
 import com.jet.im.kit.interfaces.OnInputTextChangedListener;
 import com.jet.im.kit.interfaces.OnMentionEventListener;
-import com.jet.im.kit.internal.extensions.ChannelExtensionsKt;
 import com.jet.im.kit.internal.ui.widgets.MessageInputDialogWrapper;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.MessageUIConfig;
@@ -201,17 +197,6 @@ public class MessageInputComponent {
         }
     }
 
-    /**
-     * Sets the adapter for suggested mention list.
-     *
-     * @param adapter The adapter to be used in suggested mention list.
-     * since 3.0.0
-     */
-    public void setSuggestedMentionListAdapter(@NonNull SuggestedMentionListAdapter adapter) {
-        if (getEditTextView() instanceof MentionEditText) {
-            ((MentionEditText) getEditTextView()).setSuggestedMentionListAdapter(adapter);
-        }
-    }
 
     /**
      * Sets whether to use divider in suggested mention list.
@@ -430,16 +415,10 @@ public class MessageInputComponent {
      * @param channel The latest group channel
      * since 3.0.0
      */
-    public void notifyChannelChanged(@NonNull GroupChannel channel) {
+    public void notifyChannelChanged(@NonNull ConversationInfo channel) {
         if (messageInputView == null) return;
         final MessageInputView inputView = this.messageInputView;
         setHintMessageTextInternal(inputView, channel);
-
-        boolean isOperator = channel.getMyRole() == Role.OPERATOR;
-        boolean isBroadcastChannel = channel.isBroadcast();
-        if (isBroadcastChannel) {
-            inputView.setVisibility(isOperator ? View.VISIBLE : View.GONE);
-        }
     }
 
     /**
@@ -449,7 +428,7 @@ public class MessageInputComponent {
      * @param channel The latest group channel
      * since 3.0.0
      */
-    public void notifyDataChanged(@Nullable BaseMessage message, @NonNull GroupChannel channel) {
+    public void notifyDataChanged(@Nullable Message message, @NonNull ConversationInfo channel) {
         notifyDataChanged(message, channel, "");
     }
 
@@ -462,8 +441,8 @@ public class MessageInputComponent {
      * since 3.0.0
      */
     public void notifyDataChanged(
-        @Nullable BaseMessage message,
-        @NonNull GroupChannel channel,
+        @Nullable Message message,
+        @NonNull ConversationInfo channel,
         @NonNull String defaultText
     ) {
         if (messageInputView == null) return;
@@ -484,10 +463,7 @@ public class MessageInputComponent {
                 inputView.setInputText(text);
             }
             inputView.showKeyboard();
-        } else if (MessageInputView.Mode.QUOTE_REPLY == mode) {
-            if (message != null) inputView.drawMessageToReply(message);
-            inputView.showKeyboard();
-        } else {
+        }  else {
             inputView.setInputText(defaultText);
             final CharSequence text = inputView.getInputText();
             if (text != null) {
@@ -523,24 +499,13 @@ public class MessageInputComponent {
         this.messageInputView.setInputMode(mode);
     }
 
-    void setHintMessageTextInternal(@NonNull MessageInputView inputView, @NonNull GroupChannel channel) {
-        boolean isOperator = channel.getMyRole() == Role.OPERATOR;
-        boolean isMuted = channel.getMyMutedState() == MutedState.MUTED;
-        boolean isFrozen = channel.isFrozen() && !isOperator;
-        boolean shouldDisableInput = ChannelExtensionsKt.shouldDisableInput(channel, params.channelConfig);
-        inputView.setEnabled(!isMuted && !isFrozen && !shouldDisableInput);
+    void setHintMessageTextInternal(@NonNull MessageInputView inputView, @NonNull ConversationInfo channel) {
+        inputView.setEnabled(true);
 
         final MessageInputView.Mode mode = inputView.getInputMode();
         // set hint
         final Context context = inputView.getContext();
         String hintText = this.hintText != null ? this.hintText.toString() : null;
-        if (isMuted) {
-            hintText = context.getString(R.string.sb_text_channel_input_text_hint_muted);
-        } else if (isFrozen) {
-            hintText = context.getString(R.string.sb_text_channel_input_text_hint_frozen);
-        } else if (MessageInputView.Mode.QUOTE_REPLY == mode) {
-            hintText = context.getString(R.string.sb_text_channel_input_reply_text_hint);
-        }
         Logger.dev("++ hint text : " + hintText);
         inputView.setInputTextHint(hintText);
     }

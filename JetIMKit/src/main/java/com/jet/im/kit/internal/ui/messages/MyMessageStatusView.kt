@@ -12,6 +12,8 @@ import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.databinding.SbViewMyMessageStatusBinding
 import com.jet.im.kit.utils.DrawableUtils
+import com.jet.im.model.ConversationInfo
+import com.jet.im.model.Message
 
 internal class MyMessageStatusView @JvmOverloads constructor(
     context: Context,
@@ -77,6 +79,7 @@ internal class MyMessageStatusView @JvmOverloads constructor(
                 visibility = VISIBLE
                 drawError()
             }
+
             SendingStatus.SUCCEEDED -> {
                 if (channel.isGroupChannel && channel is GroupChannel) {
                     if (!useMessageReceipt || channel.isSuper || channel.isBroadcast) {
@@ -97,7 +100,37 @@ internal class MyMessageStatusView @JvmOverloads constructor(
                     visibility = GONE
                 }
             }
+
             SendingStatus.PENDING -> drawProgress()
+            else -> {}
+        }
+    }
+
+    fun drawStatus(message: Message, channel: ConversationInfo, useMessageReceipt: Boolean) {
+        when (message.state) {
+            Message.MessageState.UNKNOWN, Message.MessageState.FAIL -> {
+                visibility = VISIBLE
+                drawError()
+            }
+
+            Message.MessageState.SENT -> {
+                if (!useMessageReceipt) {
+                    visibility = GONE
+                    return
+                }
+                visibility = VISIBLE
+                val unreadMemberCount = 0
+                val unDeliveredMemberCount = 0
+                if (unreadMemberCount == 0) {
+                    drawRead()
+                } else if (unDeliveredMemberCount == 0) {
+                    drawDelivered()
+                } else {
+                    drawSent()
+                }
+            }
+
+            Message.MessageState.UPLOADING, Message.MessageState.SENDING -> drawProgress()
             else -> {}
         }
     }

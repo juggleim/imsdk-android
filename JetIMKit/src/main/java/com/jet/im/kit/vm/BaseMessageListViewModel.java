@@ -9,6 +9,13 @@ import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.jet.im.JetIM;
+import com.jet.im.interfaces.IMessageManager;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.Message;
+import com.jet.im.model.MessageOptions;
+import com.jet.im.model.messages.TextMessage;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.collection.CollectionEventSource;
 import com.sendbird.android.collection.MessageContext;
@@ -40,30 +47,25 @@ import com.jet.im.kit.model.MutableLiveDataEx;
 import org.jetbrains.annotations.TestOnly;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-abstract public class BaseMessageListViewModel extends BaseViewModel implements OnPagedDataLoader<List<BaseMessage>> {
+abstract public class BaseMessageListViewModel extends BaseViewModel implements OnPagedDataLoader<List<Message>> {
     @Nullable
-    GroupChannel channel;
+    ConversationInfo channel;
     @NonNull
-    private final String channelUrl;
-    @Nullable
-    MemberFinder memberFinder;
+    private final Conversation conversation;
     @NonNull
     final MessageList cachedMessages = new MessageList();
     @NonNull
     final MutableLiveDataEx<ChannelViewModel.ChannelMessageData> messageList = new MutableLiveDataEx<>();
 
-    public BaseMessageListViewModel(@NonNull String channelUrl) {
-        this(channelUrl, new SendbirdUIKitImpl());
-    }
-
     @VisibleForTesting
-    BaseMessageListViewModel(@NonNull String channelUrl, @NonNull SendbirdUIKitContract sendbirdUIKitContract) {
+    BaseMessageListViewModel(@NonNull Conversation conversation, @NonNull SendbirdUIKitContract sendbirdUIKitContract) {
         super(sendbirdUIKitContract);
         this.channel = null;
-        this.channelUrl = channelUrl;
+        this.conversation = conversation;
     }
 
     /**
@@ -73,20 +75,10 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      * since 3.0.0
      */
     @Nullable
-    public GroupChannel getChannel() {
+    public ConversationInfo getChannel() {
         return channel;
     }
 
-    /**
-     * Returns URL of GroupChannel.
-     *
-     * @return The URL of a channel this view model is currently associated with
-     * since 3.0.0
-     */
-    @NonNull
-    public String getChannelUrl() {
-        return channelUrl;
-    }
 
     /**
      * Returns LiveData that can be observed for the list of messages.
@@ -107,8 +99,8 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      */
     @NonNull
     public LiveData<MentionSuggestion> getMentionSuggestion() {
-        if (memberFinder == null) return new MutableLiveData<>();
-        return memberFinder.getMentionSuggestion();
+        //todo mention
+        return new MutableLiveData<>();
     }
 
     @Override
@@ -121,7 +113,6 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     protected void onCleared() {
         super.onCleared();
         Logger.dev("-- onCleared ChannelViewModel");
-        if (memberFinder != null) memberFinder.dispose();
     }
 
     /**
@@ -130,77 +121,61 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      * @param isTyping {@code true} if the current user is typing, {@code false} otherwise
      */
     public void setTyping(boolean isTyping) {
-        if (channel != null) {
-            if (isTyping) {
-                channel.startTyping();
-            } else {
-                channel.endTyping();
-            }
-        }
+//        if (channel != null) {
+//            if (isTyping) {
+//                channel.startTyping();
+//            } else {
+//                channel.endTyping();
+//            }
+//        }
     }
 
     /**
      * Sends a text message to the channel.
      *
      * @param params Parameters to be applied to the message
-     * since 3.0.0
+     *               since 3.0.0
      */
     public void sendUserMessage(@NonNull UserMessageCreateParams params) {
         Logger.i("++ request send message : %s", params);
+        TextMessage textMessage = new TextMessage(params.getMessage());
         if (channel != null) {
-            channel.sendUserMessage(params, (message, e) -> {
-                if (e != null) {
-                    Logger.e(e);
-                    return;
+            JetIM.getInstance().getMessageManager().sendMessage(textMessage, channel.getConversation(), new IMessageManager.ISendMessageCallback() {
+                @Override
+                public void onSuccess(Message message) {
+                    Logger.i("++ sent message : %s", message);
                 }
-                Logger.i("++ sent message : %s", message);
+
+                @Override
+                public void onError(Message message, int errorCode) {
+                    Logger.e("send message error : %s", errorCode);
+                }
             });
         }
+
     }
 
     /**
      * Sends a file message to the channel.
      *
-     * @param params Parameters to be applied to the message
+     * @param params   Parameters to be applied to the message
      * @param fileInfo File information to send to the channel
-     * since 3.0.0
+     *                 since 3.0.0
      */
     public void sendFileMessage(@NonNull FileMessageCreateParams params, @NonNull FileInfo fileInfo) {
         Logger.i("++ request send file message : %s", params);
-        if (channel != null) {
-            FileMessage pendingFileMessage = channel.sendFileMessage(params, (message, ee) -> {
-                if (ee != null) {
-                    Logger.e(ee);
-                    return;
-                }
-                Logger.i("++ sent message : %s", message);
-            });
-            if (pendingFileMessage != null) {
-                PendingMessageRepository.getInstance().addFileInfo(pendingFileMessage, fileInfo);
-            }
-        }
-    }
-
-    /**
-     * Sends multiple files message to the channel.
-     *
-     * @param fileInfos Multiple files information to send to the channel
-     * @param params    Parameters to be applied to the message
-     * since 3.9.0
-     */
-    public void sendMultipleFilesMessage(@NonNull List<FileInfo> fileInfos, @NonNull MultipleFilesMessageCreateParams params) {
-        if (channel != null) {
-            MultipleFilesMessage pendingMultipleFilesMessage = channel.sendMultipleFilesMessage(params, null, (message, e) -> {
-                if (e != null) {
-                    Logger.e(e);
-                    return;
-                }
-                Logger.i("++ sent message : %s", message);
-            });
-            if (pendingMultipleFilesMessage != null) {
-                PendingMessageRepository.getInstance().addFileInfos(pendingMultipleFilesMessage, fileInfos);
-            }
-        }
+//        if (channel != null) {
+//            FileMessage pendingFileMessage = channel.sendFileMessage(params, (message, ee) -> {
+//                if (ee != null) {
+//                    Logger.e(ee);
+//                    return;
+//                }
+//                Logger.i("++ sent message : %s", message);
+//            });
+//            if (pendingFileMessage != null) {
+//                PendingMessageRepository.getInstance().addFileInfo(pendingFileMessage, fileInfo);
+//            }
+//        }
     }
 
     /**
@@ -208,44 +183,28 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      *
      * @param message Message to resend
      * @param handler Callback handler called when this method is completed
-     * since 3.0.0
+     *                since 3.0.0
      */
-    public void resendMessage(@NonNull BaseMessage message, @Nullable OnCompleteHandler handler) {
-        if (channel == null) return;
-        if (message instanceof UserMessage) {
-            channel.resendMessage((UserMessage) message, (userMessage, e) -> {
-                if (handler != null) handler.onComplete(e);
-                Logger.i("__ resent message : %s", userMessage);
-            });
-        } else if (message instanceof FileMessage) {
-            FileInfo info = PendingMessageRepository.getInstance().getFileInfo(message);
-            final File file = info == null ? null : info.getFile();
-            channel.resendMessage((FileMessage) message, file, (fileMessage, e) -> {
-                if (handler != null) handler.onComplete(e);
-                Logger.i("__ resent file message : %s", fileMessage);
-            });
-        } else if (message instanceof MultipleFilesMessage) {
-            channel.resendMessage((MultipleFilesMessage) message, null, (multipleFilesMessage, e) -> {
-                if (handler != null) handler.onComplete(e);
-                Logger.i("__ resent multiple files message : %s", multipleFilesMessage);
-            });
-        }
-    }
-
-    /**
-     * Updates a text message with {@code messageId}.
-     *
-     * @param messageId ID of message to be updated
-     * @param params Parameters to be applied to the message
-     * @param handler Callback handler called when this method is completed
-     * since 3.0.0
-     */
-    public void updateUserMessage(long messageId, @NonNull UserMessageUpdateParams params, @Nullable OnCompleteHandler handler) {
-        if (channel == null) return;
-        channel.updateUserMessage(messageId, params, (message, e) -> {
-            if (handler != null) handler.onComplete(e);
-            Logger.i("++ updated message : %s", message);
-        });
+    public void resendMessage(@NonNull Message message, @Nullable OnCompleteHandler handler) {
+//        if (channel == null) return;
+//        if (message instanceof UserMessage) {
+//            channel.resendMessage((UserMessage) message, (userMessage, e) -> {
+//                if (handler != null) handler.onComplete(e);
+//                Logger.i("__ resent message : %s", userMessage);
+//            });
+//        } else if (message instanceof FileMessage) {
+//            FileInfo info = PendingMessageRepository.getInstance().getFileInfo(message);
+//            final File file = info == null ? null : info.getFile();
+//            channel.resendMessage((FileMessage) message, file, (fileMessage, e) -> {
+//                if (handler != null) handler.onComplete(e);
+//                Logger.i("__ resent file message : %s", fileMessage);
+//            });
+//        } else if (message instanceof MultipleFilesMessage) {
+//            channel.resendMessage((MultipleFilesMessage) message, null, (multipleFilesMessage, e) -> {
+//                if (handler != null) handler.onComplete(e);
+//                Logger.i("__ resent multiple files message : %s", multipleFilesMessage);
+//            });
+//        }
     }
 
     /**
@@ -253,44 +212,26 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      *
      * @param message Message to be deleted
      * @param handler Callback handler called when this method is completed
-     * since 3.0.0
+     *                since 3.0.0
      */
-    public void deleteMessage(@NonNull BaseMessage message, @Nullable OnCompleteHandler handler) {
+    public void deleteMessage(@NonNull Message message, @Nullable OnCompleteHandler handler) {
         if (channel == null) return;
-        final SendingStatus status = message.getSendingStatus();
-        if (status == SendingStatus.SUCCEEDED) {
-            channel.deleteMessage(message, e -> {
-                if (handler != null) handler.onComplete(e);
-                Logger.i("++ deleted message : %s", message);
-            });
-        }
-    }
+        final Message.MessageState status = message.getState();
+        if (status == Message.MessageState.SENT) {
+            ArrayList<String> ids = new ArrayList<>();
+            ids.add(message.getMessageId());
+            JetIM.getInstance().getMessageManager().deleteMessagesByMessageIdList(channel.getConversation(), ids, new IMessageManager.ISimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    if (handler != null) handler.onComplete(null);
 
-    /**
-     * Adds the reaction with {@code key} if the current user doesn't add it, otherwise the reaction will be deleted
-     *
-     * @param view View displaying the reaction with {@code key}
-     * @param message Message to which the reaction will be applieds
-     * @param key Key of reaction
-     * @param handler Callback handler called when this method is completed
-     * since 3.0.0
-     */
-    public void toggleReaction(@NonNull View view, @NonNull BaseMessage message, @NonNull String key, @Nullable OnCompleteHandler handler) {
-        if (channel == null) return;
-        if (!view.isSelected()) {
-            Logger.i("__ add reaction : %s", key);
-            channel.addReaction(message, key, (reactionEvent, e) -> {
-                if (handler != null) {
-                    Logger.e(e);
-                    handler.onComplete(e);
                 }
-            });
-        } else {
-            Logger.i("__ delete reaction : %s", key);
-            channel.deleteReaction(message, key, (reactionEvent, e) -> {
-                if (handler != null) {
-                    Logger.e(e);
-                    handler.onComplete(e);
+
+                @Override
+                public void onError(int errorCode) {
+                    if (handler != null)
+                        handler.onComplete(new RuntimeException("erroCode:" + errorCode));
+                    Logger.i("++ deleted message : %s", message);
                 }
             });
         }
@@ -300,21 +241,20 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      * Tries to connect Sendbird Server and retrieve a channel instance.
      *
      * @param handler Callback notifying the result of authentication
-     * since 3.0.0
+     *                since 3.0.0
      */
     @Override
     public void authenticate(@NonNull AuthenticateHandler handler) {
         connect((user, e) -> {
             if (user != null) {
-                getChannel(channelUrl, (channel, e1) -> {
-                    this.channel = channel;
-                    if (e1 != null || channel == null) {
-                        handler.onAuthenticationFailed();
-                    } else {
-                        this.memberFinder = new MemberFinder(channel, SendbirdUIKit.getUserMentionConfig());
-                        handler.onAuthenticated();
-                    }
-                });
+                ConversationInfo info = getChannel(conversation);
+                this.channel = info;
+                if (channel == null) {
+                    handler.onAuthenticationFailed();
+                } else {
+                    handler.onAuthenticated();
+                }
+
             } else {
                 handler.onAuthenticationFailed();
             }
@@ -322,21 +262,20 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     }
 
     @VisibleForTesting
-    void getChannel(@NonNull String channelUrl, @NonNull GroupChannelCallbackHandler handler) {
-        GroupChannel.getChannel(channelUrl, handler);
+    ConversationInfo getChannel(@NonNull Conversation conversation) {
+        return JetIM.getInstance().getConversationManager().getConversationInfo(conversation);
     }
 
     /**
      * Loads the list of members whose nickname starts with startWithFilter.
      *
      * @param startWithFilter The filter to be used to load a list of members with nickname that starts with a specific text.
-     * since 3.0.0
+     *                        since 3.0.0
      */
     public synchronized void loadMemberList(@Nullable String startWithFilter) {
-        if (memberFinder != null) memberFinder.find(startWithFilter);
     }
 
-    void onMessagesAdded(@NonNull MessageContext context, @NonNull GroupChannel channel, @NonNull List<BaseMessage> messages) {
+    void onMessagesAdded(@NonNull MessageContext context, @NonNull ConversationInfo channel, @NonNull List<Message> messages) {
         if (messages.isEmpty()) return;
 
         if (context.getMessagesSendingStatus() == SendingStatus.SUCCEEDED || context.getMessagesSendingStatus() == SendingStatus.NONE) {
@@ -347,42 +286,42 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
         }
     }
 
-    void onMessagesUpdated(@NonNull MessageContext context, @NonNull GroupChannel groupChannel, @NonNull List<BaseMessage> messages) {
-        if (messages.isEmpty()) return;
+//    void onMessagesUpdated(@NonNull MessageContext context, @NonNull ConversationInfo groupChannel, @NonNull List<Message> messages) {
+//        if (messages.isEmpty()) return;
+//
+//        if (context.getMessagesSendingStatus() == SendingStatus.SUCCEEDED) {
+//            // if the source was MESSAGE_SENT, we should remove the message from the pending message datasource.
+//            if (context.getCollectionEventSource() == CollectionEventSource.EVENT_MESSAGE_SENT) {
+//                PendingMessageRepository.getInstance().clearAllFileInfo(messages);
+//                cachedMessages.addAll(messages);
+//            } else {
+//                cachedMessages.updateAll(messages);
+//            }
+//            notifyDataSetChanged(context);
+//        } else if (context.getMessagesSendingStatus() == SendingStatus.PENDING) {
+//            notifyDataSetChanged(StringSet.ACTION_PENDING_MESSAGE_ADDED);
+//        } else if (context.getMessagesSendingStatus() == SendingStatus.FAILED) {
+//            notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_ADDED);
+//        } else if (context.getMessagesSendingStatus() == SendingStatus.CANCELED) {
+//            notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_ADDED);
+//        }
+//    }
 
-        if (context.getMessagesSendingStatus() == SendingStatus.SUCCEEDED) {
-            // if the source was MESSAGE_SENT, we should remove the message from the pending message datasource.
-            if (context.getCollectionEventSource() == CollectionEventSource.EVENT_MESSAGE_SENT) {
-                PendingMessageRepository.getInstance().clearAllFileInfo(messages);
-                cachedMessages.addAll(messages);
-            } else {
-                cachedMessages.updateAll(messages);
-            }
-            notifyDataSetChanged(context);
-        } else if (context.getMessagesSendingStatus() == SendingStatus.PENDING) {
-            notifyDataSetChanged(StringSet.ACTION_PENDING_MESSAGE_ADDED);
-        } else if (context.getMessagesSendingStatus() == SendingStatus.FAILED) {
-            notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_ADDED);
-        } else if (context.getMessagesSendingStatus() == SendingStatus.CANCELED) {
-            notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_ADDED);
-        }
-    }
-
-    void onMessagesDeleted(@NonNull MessageContext context, @NonNull GroupChannel groupChannel, @NonNull List<BaseMessage> messages) {
-        if (messages.isEmpty()) return;
-
-        if (context.getMessagesSendingStatus() == SendingStatus.SUCCEEDED) {
-            // Remove the succeeded message from the succeeded message datasource.
-            cachedMessages.deleteAll(messages);
-            notifyDataSetChanged(context);
-        } else if (context.getMessagesSendingStatus() == SendingStatus.PENDING) {
-            // Remove the pending message from the pending message datasource.
-            notifyDataSetChanged(StringSet.ACTION_PENDING_MESSAGE_REMOVED);
-        } else if (context.getMessagesSendingStatus() == SendingStatus.FAILED) {
-            // Remove the failed message from the pending message datasource.
-            notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_REMOVED);
-        }
-    }
+//    void onMessagesDeleted(@NonNull MessageContext context, @NonNull GroupChannel groupChannel, @NonNull List<BaseMessage> messages) {
+//        if (messages.isEmpty()) return;
+//
+//        if (context.getMessagesSendingStatus() == SendingStatus.SUCCEEDED) {
+//            // Remove the succeeded message from the succeeded message datasource.
+//            cachedMessages.deleteAll(messages);
+//            notifyDataSetChanged(context);
+//        } else if (context.getMessagesSendingStatus() == SendingStatus.PENDING) {
+//            // Remove the pending message from the pending message datasource.
+//            notifyDataSetChanged(StringSet.ACTION_PENDING_MESSAGE_REMOVED);
+//        } else if (context.getMessagesSendingStatus() == SendingStatus.FAILED) {
+//            // Remove the failed message from the pending message datasource.
+//            notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_REMOVED);
+//        }
+//    }
 
     @UiThread
     synchronized void notifyDataSetChanged(@NonNull Traceable trace) {
@@ -416,14 +355,9 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      */
     @UiThread
     @NonNull
-    public List<BaseMessage> buildMessageList() {
+    public List<Message> buildMessageList() {
         return Collections.emptyList();
     }
 
-    @TestOnly
-    @Nullable
-    MemberFinder getMemberFinder() {
-        return memberFinder;
-    }
 }
 

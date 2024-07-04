@@ -16,6 +16,30 @@ import androidx.annotation.StyleRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import com.jet.im.kit.activities.ChannelActivity;
+import com.jet.im.kit.adapter.SendbirdUIKitAdapter;
+import com.jet.im.kit.consts.ReplyType;
+import com.jet.im.kit.consts.StringSet;
+import com.jet.im.kit.consts.ThreadReplySelectType;
+import com.jet.im.kit.fragments.UIKitFragmentFactory;
+import com.jet.im.kit.interfaces.CustomParamsHandler;
+import com.jet.im.kit.interfaces.CustomUserListQueryHandler;
+import com.jet.im.kit.interfaces.UserInfo;
+import com.jet.im.kit.internal.contracts.SendbirdChatContract;
+import com.jet.im.kit.internal.contracts.SendbirdChatImpl;
+import com.jet.im.kit.internal.contracts.TaskQueueContract;
+import com.jet.im.kit.internal.contracts.TaskQueueImpl;
+import com.jet.im.kit.internal.singleton.UIKitConfigRepository;
+import com.jet.im.kit.internal.tasks.JobResultTask;
+import com.jet.im.kit.log.Logger;
+import com.jet.im.kit.model.EmojiManager;
+import com.jet.im.kit.model.UserMentionConfig;
+import com.jet.im.kit.model.VoiceRecorderConfig;
+import com.jet.im.kit.model.configurations.Common;
+import com.jet.im.kit.model.configurations.UIKitConfig;
+import com.jet.im.kit.utils.FileUtils;
+import com.jet.im.kit.utils.TextUtils;
+import com.jet.im.kit.utils.UIKitPrefs;
 import com.sendbird.android.AppInfo;
 import com.sendbird.android.BuildConfig;
 import com.sendbird.android.NotificationInfo;
@@ -35,32 +59,6 @@ import com.sendbird.android.params.GroupChannelCreateParams;
 import com.sendbird.android.params.InitParams;
 import com.sendbird.android.params.UserUpdateParams;
 import com.sendbird.android.user.User;
-import com.jet.im.kit.activities.ChannelActivity;
-import com.jet.im.kit.adapter.SendbirdUIKitAdapter;
-import com.jet.im.kit.consts.ReplyType;
-import com.jet.im.kit.consts.StringSet;
-import com.jet.im.kit.consts.ThreadReplySelectType;
-import com.jet.im.kit.fragments.UIKitFragmentFactory;
-import com.jet.im.kit.interfaces.CustomParamsHandler;
-import com.jet.im.kit.interfaces.CustomUserListQueryHandler;
-import com.jet.im.kit.interfaces.UserInfo;
-import com.jet.im.kit.internal.contracts.SendbirdChatContract;
-import com.jet.im.kit.internal.contracts.SendbirdChatImpl;
-import com.jet.im.kit.internal.contracts.TaskQueueContract;
-import com.jet.im.kit.internal.contracts.TaskQueueImpl;
-import com.jet.im.kit.internal.singleton.MessageDisplayDataManager;
-import com.jet.im.kit.internal.singleton.NotificationChannelManager;
-import com.jet.im.kit.internal.singleton.UIKitConfigRepository;
-import com.jet.im.kit.internal.tasks.JobResultTask;
-import com.jet.im.kit.log.Logger;
-import com.jet.im.kit.model.EmojiManager;
-import com.jet.im.kit.model.UserMentionConfig;
-import com.jet.im.kit.model.VoiceRecorderConfig;
-import com.jet.im.kit.model.configurations.Common;
-import com.jet.im.kit.model.configurations.UIKitConfig;
-import com.jet.im.kit.utils.FileUtils;
-import com.jet.im.kit.utils.TextUtils;
-import com.jet.im.kit.utils.UIKitPrefs;
 
 import org.jetbrains.annotations.TestOnly;
 
@@ -243,8 +241,6 @@ public class SendbirdUIKit {
         SendbirdUIKit.customUserListQueryHandler = null;
         defaultThemeMode = ThemeMode.Light;
         UIKitPrefs.clearAll();
-        NotificationChannelManager.clearAll();
-        MessageDisplayDataManager.clearAll();
     }
 
     /**
@@ -262,7 +258,7 @@ public class SendbirdUIKit {
      *
      * @param adapter The {@link SendbirdUIKitAdapter} providing an app ID, a information of the user.
      * @param context <code>Context</code> of <code>Application</code>.
-     * since 2.1.8
+     *                since 2.1.8
      */
     public synchronized static void initFromForeground(@NonNull SendbirdUIKitAdapter adapter, @NonNull Context context) {
         init(new SendbirdChatImpl(), adapter, new UIKitConfigRepository(context, adapter.getAppId()), context, true);
@@ -270,11 +266,11 @@ public class SendbirdUIKit {
 
     @VisibleForTesting
     synchronized static void init(
-        @NonNull SendbirdChatContract sendbirdChatContract,
-        @NonNull SendbirdUIKitAdapter adapter,
-        @NonNull UIKitConfigRepository uikitConfigRepo,
-        @NonNull Context context,
-        boolean isForeground) {
+            @NonNull SendbirdChatContract sendbirdChatContract,
+            @NonNull SendbirdUIKitAdapter adapter,
+            @NonNull UIKitConfigRepository uikitConfigRepo,
+            @NonNull Context context,
+            boolean isForeground) {
         SendbirdUIKit.adapter = adapter;
         SendbirdUIKit.uikitConfigRepo = uikitConfigRepo;
 
@@ -302,9 +298,9 @@ public class SendbirdUIKit {
                 }
                 try {
                     SendbirdSdkInfo o = new SendbirdSdkInfo(
-                        SendbirdProduct.UIKIT_CHAT,
-                        SendbirdPlatform.ANDROID,
-                        BuildConfig.VERSION_NAME
+                            SendbirdProduct.UIKIT_CHAT,
+                            SendbirdPlatform.ANDROID,
+                            BuildConfig.VERSION_NAME
                     );
                     sendbirdChatContract.addSendbirdExtensions(Collections.singletonList(o), null);
                 } catch (Throwable ignored) {
@@ -317,10 +313,9 @@ public class SendbirdUIKit {
         final com.sendbird.android.LogLevel logLevel = BuildConfig.DEBUG ? com.sendbird.android.LogLevel.VERBOSE : com.sendbird.android.LogLevel.WARN;
         // useCaching=true is required for UIKit
         final InitParams initParams = new InitParams(adapter.getAppId(), context, true, logLevel, isForeground);
-        sendbirdChatContract.init(context,initParams, initResultHandler);
+        sendbirdChatContract.init(context, initParams, initResultHandler);
         FileUtils.removeDeletableDir(context.getApplicationContext());
         UIKitPrefs.init(context.getApplicationContext());
-        NotificationChannelManager.init(context.getApplicationContext());
         EmojiManager.init();
     }
 
@@ -551,7 +546,7 @@ public class SendbirdUIKit {
      * Unlike {@link #connect(ConnectHandler)}, it is used to issue the necessary credentials when using the API required for FeedNotification.
      *
      * @param handler Callback handler.
-     * since 3.7.0
+     *                since 3.7.0
      */
     public static void authenticateFeed(@Nullable AuthenticationHandler handler) {
         connectInternal(ConnectType.AUTHENTICATE_FEED, new SendbirdChatImpl(), new TaskQueueImpl(), (user, e1) -> {
@@ -572,10 +567,10 @@ public class SendbirdUIKit {
     }
 
     private static void connectInternal(
-        @NonNull ConnectType connectType,
-        @NonNull SendbirdChatContract sendbirdChat,
-        @NonNull TaskQueueContract taskQueueContract,
-        @Nullable ConnectHandler handler) {
+            @NonNull ConnectType connectType,
+            @NonNull SendbirdChatContract sendbirdChat,
+            @NonNull TaskQueueContract taskQueueContract,
+            @Nullable ConnectHandler handler) {
         taskQueueContract.addTask(new JobResultTask<Pair<User, SendbirdException>>() {
             @Override
             public Pair<User, SendbirdException> call() throws Exception {
@@ -607,26 +602,9 @@ public class SendbirdUIKit {
                     final AppInfo appInfo = sendbirdChat.getAppInfo();
                     if (appInfo != null) {
                         if (appInfo.getUseReaction()
-                            && appInfo.needUpdateEmoji(EmojiManager.getEmojiHash())
-                            && connectType == ConnectType.CONNECT) {
+                                && appInfo.needUpdateEmoji(EmojiManager.getEmojiHash())
+                                && connectType == ConnectType.CONNECT) {
                             updateEmojiList();
-                        }
-
-                        final NotificationInfo notificationInfo = appInfo.getNotificationInfo();
-                        if (notificationInfo != null && notificationInfo.isEnabled()) {
-                            // Even if the request fails, it should not affect the result of the connection request.
-                            try {
-                                // if the cache exists or no need to update, blocking is released right away
-                                final String latestToken = notificationInfo.getTemplateListToken();
-                                NotificationChannelManager.requestTemplateListBlocking(latestToken);
-                            } catch (Exception ignore) {
-                            }
-                            try {
-                                // if the cache exists or no need to update, blocking is released right away
-                                final long settingsUpdatedAt = notificationInfo.getSettingsUpdatedAt();
-                                NotificationChannelManager.requestNotificationChannelSettingBlocking(settingsUpdatedAt);
-                            } catch (Exception ignore) {
-                            }
                         }
 
                         if (SendbirdUIKit.uikitConfigRepo != null) {
@@ -744,7 +722,7 @@ public class SendbirdUIKit {
      * Sets the handler so that common custom data can be set.
      *
      * @param handler The callback that will run.
-     * since 1.2.2
+     *                since 1.2.2
      */
     public static void setCustomParamsHandler(@Nullable CustomParamsHandler handler) {
         SendbirdUIKit.customParamsHandler = handler;
@@ -753,6 +731,7 @@ public class SendbirdUIKit {
     /**
      * Sets the factory that creates fragments generated by UIKit's basic activities.
      * <p>
+     *
      * @deprecated 3.9.0
      * <p> Use {@link com.jet.im.kit.providers.FragmentProviders} instead.</p>
      * since 3.0.0
@@ -794,7 +773,7 @@ public class SendbirdUIKit {
      * The target image types are 'image/jpg`, `image/jpeg`, and `image/png`, the others will be ignored.
      *
      * @param useCompression If <code>true</code> the image file will be transferred to the original image, <code>false</code> other wise.
-     * since 2.0.1
+     *                       since 2.0.1
      */
     public static void setUseImageCompression(boolean useCompression) {
         SendbirdUIKit.useCompression = useCompression;
@@ -841,7 +820,7 @@ public class SendbirdUIKit {
      * When drawing a thumbnail, half the set size is used, and the minimum value is 100x100.
      *
      * @param resizingSize The value of the image to resize.
-     * since 2.0.1
+     *                     since 2.0.1
      */
     public static void setResizingSize(@NonNull Pair<Integer, Integer> resizingSize) {
         SendbirdUIKit.resizingSize = resizingSize;
@@ -904,7 +883,7 @@ public class SendbirdUIKit {
 
     /**
      * @param level set the displaying log level. {@link LogLevel}
-     * since 1.0.2
+     *              since 1.0.2
      */
     public static void setLogLevel(@NonNull LogLevel level) {
         Logger.setLogLevel(level.getLevel());
@@ -973,43 +952,10 @@ public class SendbirdUIKit {
     }
 
     /**
-     * Initiates a group channel with the provided bot ID.
-     *
-     * @param botId The bot ID that is created in dashboard.
-     * @param isDistinct Determines whether to reuse an existing channel or create a new channel.
-     * @param handler The callback handler that lets you know if the request was successful or not.
-     * since 3.8.0
-     */
-    public static void startChatWithAiBot(@NonNull Context context, @NonNull String botId, boolean isDistinct, @Nullable CompletionHandler handler) {
-        User currentUser = SendbirdChat.getCurrentUser();
-        if (currentUser == null) {
-            if (handler != null) {
-                handler.onResult(new SendbirdConnectionRequiredException("Current user is null", null));
-            }
-            return;
-        }
-
-        GroupChannelCreateParams groupChannelCreateParams = new GroupChannelCreateParams();
-        groupChannelCreateParams.setDistinct(isDistinct);
-        groupChannelCreateParams.setUserIds(Arrays.asList(botId, currentUser.getUserId()));
-        GroupChannel.createChannel(groupChannelCreateParams, (groupChannel, e1) -> {
-            if (e1 != null) {
-                if (handler != null) {
-                    handler.onResult(e1);
-                }
-                return;
-            }
-
-            Intent intent = ChannelActivity.newIntent(context, groupChannel.getUrl());
-            context.startActivity(intent);
-        });
-    }
-
-    /**
      * Context switching is performed to the main thread.
      *
      * @param runnable The Runnable that will be executed.
-     * since 3.6.0
+     *                 since 3.6.0
      */
     public static void runOnUIThread(@NonNull Runnable runnable) {
         new Handler(Looper.getMainLooper()).post(runnable);

@@ -4,6 +4,7 @@ import android.content.Context
 import com.jet.im.JetIM
 import com.jet.im.JetIMConst
 import com.jet.im.interfaces.IConnectionManager.IConnectionStatusListener
+import com.jet.im.interfaces.IMessageManager
 import com.sendbird.android.AppInfo
 import com.sendbird.android.ConnectionState
 import com.sendbird.android.SendbirdChat
@@ -22,16 +23,19 @@ import com.sendbird.android.user.User
 
 internal class SendbirdChatImpl : SendbirdChatContract {
 
-    override fun addChannelHandler(identifier: String, handler: BaseChannelHandler) {
-        SendbirdChat.addChannelHandler(identifier, handler)
+    override fun addChannelHandler(identifier: String, handler: IMessageManager.IMessageListener) {
+        JetIM.getInstance().messageManager.addListener(identifier,handler)
+//        SendbirdChat.addChannelHandler(identifier, handler)
     }
 
     override fun addConnectionHandler(identifier: String, handler: ConnectionHandler) {
         SendbirdChat.addConnectionHandler(identifier, handler)
     }
 
-    override fun removeChannelHandler(identifier: String): BaseChannelHandler? =
-        SendbirdChat.removeChannelHandler(identifier)
+    override fun removeChannelHandler(identifier: String){
+        JetIM.getInstance().messageManager.removeListener(identifier)
+    }
+
 
     override fun removeConnectionHandler(identifier: String): ConnectionHandler? =
         SendbirdChat.removeConnectionHandler(identifier)

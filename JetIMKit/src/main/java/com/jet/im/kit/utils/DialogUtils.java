@@ -373,7 +373,7 @@ public final class DialogUtils {
             if (userProfileItemClickListener != null) {
                 userProfileItemClickListener.onItemClick(view, position, menuItem);
             } else {
-                createDirectChannel(context, user, handler);
+//                createDirectChannel(context, user, handler);
             }
         });
 
@@ -384,39 +384,5 @@ public final class DialogUtils {
         }
 
         return dialog;
-    }
-
-    private static void createDirectChannel(Context context, User user, LoadingDialogHandler handler) {
-        GroupChannelCreateParams params = new GroupChannelCreateParams();
-        params.setUserIds(Collections.singletonList(user.getUserId()));
-        params.setName("");
-        params.setCoverUrl("");
-        params.setOperators(Collections.singletonList(SendbirdChat.getCurrentUser()));
-
-        CustomParamsHandler customHandler = SendbirdUIKit.getCustomParamsHandler();
-        if (customHandler != null) {
-            customHandler.onBeforeCreateGroupChannel(params);
-        }
-
-        if (handler == null) {
-            WaitingDialog.show(context);
-        } else {
-            handler.shouldShowLoadingDialog();
-        }
-        GroupChannel.createChannel(params, (channel, e) -> {
-            if (handler == null) {
-                WaitingDialog.dismiss();
-            } else {
-                handler.shouldDismissLoadingDialog();
-            }
-            if (e != null) {
-                ContextUtils.toastError(context, R.string.sb_text_error_create_channel);
-                Logger.e(e);
-                return;
-            }
-
-            Intent intent = ChannelActivity.newIntent(context, channel.getUrl());
-            context.startActivity(intent);
-        });
     }
 }

@@ -10,6 +10,11 @@ import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.jet.im.interfaces.IMessageManager;
+import com.jet.im.kit.interfaces.MessageHandler;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.Message;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.channel.BaseChannel;
 import com.sendbird.android.channel.GroupChannel;
@@ -73,11 +78,11 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @NonNull
     private final MutableLiveData<List<User>> typingMembers = new MutableLiveData<>();
     @NonNull
-    private final MutableLiveData<GroupChannel> channelUpdated = new MutableLiveData<>();
+    private final MutableLiveData<ConversationInfo> channelUpdated = new MutableLiveData<>();
     @NonNull
     private final MutableLiveData<String> channelDeleted = new MutableLiveData<>();
     @NonNull
-    private final MutableLiveData<List<BaseMessage>> messagesDeleted = new MutableLiveData<>();
+    private final MutableLiveData<List<Message>> messagesDeleted = new MutableLiveData<>();
     @NonNull
     private final MutableLiveData<MessageLoadState> messageLoadState = new MutableLiveData<>();
     @NonNull
@@ -94,8 +99,6 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     private MessageListParams messageListParams;
     @Nullable
     private MessageCollectionContract collection;
-    @Nullable
-    private MessageCollectionHandler handler;
     private boolean needToLoadMessageCache = true;
     @NonNull
     private final SendbirdChatContract sendbirdChatContract;
@@ -108,10 +111,10 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     public static class ChannelMessageData {
-        final List<BaseMessage> messages;
+        final List<Message> messages;
         final String traceName;
 
-        ChannelMessageData(@Nullable String traceName, @NonNull List<BaseMessage> messages) {
+        ChannelMessageData(@Nullable String traceName, @NonNull List<Message> messages) {
             this.traceName = traceName;
             this.messages = messages;
         }
@@ -123,7 +126,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
          * since 3.0.0
          */
         @NonNull
-        public List<BaseMessage> getMessages() {
+        public List<Message> getMessages() {
             return messages;
         }
 
@@ -139,35 +142,37 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         }
     }
 
-    /**
-     * Constructor
-     *
-     * @param channelUrl The URL of a channel this view model is currently associated with
-     * @param messageListParams Parameters required to retrieve the message list from this view model
-     * since 3.0.0
-     */
-    public ChannelViewModel(@NonNull String channelUrl, @Nullable MessageListParams messageListParams) {
-        this(channelUrl, messageListParams, UIKitConfig.getGroupChannelConfig());
-    }
 
-    ChannelViewModel(@NonNull String channelUrl, @Nullable MessageListParams messageListParams, @NonNull ChannelConfig channelConfig) {
-        this(channelUrl, messageListParams, new SendbirdUIKitImpl(), new SendbirdChatImpl(), channelConfig);
+    ChannelViewModel(@NonNull Conversation conversation, @Nullable MessageListParams messageListParams, @NonNull ChannelConfig channelConfig) {
+        this(conversation, messageListParams, new SendbirdUIKitImpl(), new SendbirdChatImpl(), channelConfig);
     }
 
     @VisibleForTesting
-    ChannelViewModel(@NonNull String channelUrl, @Nullable MessageListParams messageListParams, @NonNull SendbirdUIKitContract sendbirdUIKitContract, @NonNull SendbirdChatContract sendbirdChatContract, @NonNull ChannelConfig channelConfig) {
-        super(channelUrl, sendbirdUIKitContract);
+    ChannelViewModel(@NonNull Conversation conversation, @Nullable MessageListParams messageListParams, @NonNull SendbirdUIKitContract sendbirdUIKitContract, @NonNull SendbirdChatContract sendbirdChatContract, @NonNull ChannelConfig channelConfig) {
+        super(conversation, sendbirdUIKitContract);
         this.messageListParams = messageListParams;
         this.sendbirdChatContract = sendbirdChatContract;
         this.channelConfig = channelConfig;
 
-        this.sendbirdChatContract.addChannelHandler(ID_CHANNEL_EVENT_HANDLER, new GroupChannelHandler() {
+        this.sendbirdChatContract.addChannelHandler(ID_CHANNEL_EVENT_HANDLER, new IMessageManager.IMessageListener() {
             @Override
-            public void onMessageReceived(@NonNull BaseChannel channel, @NonNull BaseMessage message) {
-                if (ChannelViewModel.this.getChannel() != null && channel.getUrl().equals(channelUrl) && hasNext()) {
-                    markAsRead();
-                    notifyDataSetChanged(new MessageContext(CollectionEventSource.EVENT_MESSAGE_RECEIVED, SendingStatus.SUCCEEDED));
-                }
+            public void onMessageReceive(Message message) {
+                notifyDataSetChanged(new MessageContext(CollectionEventSource.EVENT_MESSAGE_RECEIVED, SendingStatus.SUCCEEDED));
+            }
+
+            @Override
+            public void onMessageRecall(Message message) {
+                notifyDataSetChanged(new MessageContext(CollectionEventSource.EVENT_MESSAGE_RECEIVED, SendingStatus.SUCCEEDED));
+            }
+
+            @Override
+            public void onMessageDelete(Conversation conversation, List<Long> clientMsgNos) {
+                notifyDataSetChanged(new MessageContext(CollectionEventSource.EVENT_MESSAGE_DELETED, SendingStatus.SUCCEEDED));
+            }
+
+            @Override
+            public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
+                notifyDataSetChanged(new MessageContext(CollectionEventSource.EVENT_MESSAGE_DELETED, SendingStatus.SUCCEEDED));
             }
         });
 
@@ -186,7 +191,6 @@ public class ChannelViewModel extends BaseMessageListViewModel {
 
             @Override
             public void onReconnectSucceeded() {
-                loadLatestMessagesForCache();
             }
 
             @Override
@@ -214,7 +218,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.3.0
      */
     @Nullable
-    public BaseMessage getMessageById(long messageId) {
+    public Message getMessageById(long messageId) {
         return cachedMessages.getById(messageId);
     }
 
@@ -226,14 +230,14 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     @NonNull
-    public List<BaseMessage> getMessagesByCreatedAt(long createdAt) {
+    public List<Message> getMessagesByCreatedAt(long createdAt) {
         return cachedMessages.getByCreatedAt(createdAt);
     }
 
     // Do not call loadInitial inside this function.
     private synchronized void initMessageCollection(final long startingPoint) {
         Logger.i(">> ChannelViewModel::initMessageCollection()");
-        final GroupChannel channel = getChannel();
+        final ConversationInfo channel = getChannel();
         if (channel == null) return;
         if (this.collection != null) {
             disposeMessageCollection();
@@ -242,129 +246,13 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             this.messageListParams = createMessageListParams();
         }
         this.messageListParams.setReverse(true);
-        this.collection = createMessageCollection(startingPoint, this.messageListParams, channel, new MessageCollectionHandler() {
-            @UiThread
-            @Override
-            public void onMessagesAdded(@NonNull MessageContext context, @NonNull GroupChannel channel, @NonNull List<BaseMessage> messages) {
-                Logger.d(">> ChannelViewModel::onMessagesAdded() from=%s", context.getCollectionEventSource());
-                ChannelViewModel.this.onMessagesAdded(context, channel, messages);
-
-                if (ChannelViewModel.this.handler != null) {
-                    ChannelViewModel.this.handler.onMessagesAdded(context, channel, messages);
-                }
-            }
-
-            @UiThread
-            @Override
-            public void onMessagesUpdated(@NonNull MessageContext context, @NonNull GroupChannel channel, @NonNull List<BaseMessage> messages) {
-                Logger.d(">> ChannelViewModel::onMessagesUpdated() from=%s", context.getCollectionEventSource());
-                ChannelViewModel.this.onMessagesUpdated(context, channel, messages);
-
-                if (ChannelViewModel.this.handler != null) {
-                    ChannelViewModel.this.handler.onMessagesUpdated(context, channel, messages);
-                }
-            }
-
-            @UiThread
-            @Override
-            public void onMessagesDeleted(@NonNull MessageContext context, @NonNull GroupChannel channel, @NonNull List<BaseMessage> messages) {
-                Logger.d(">> ChannelViewModel::onMessagesDeleted() from=%s", context.getCollectionEventSource());
-
-                ChannelViewModel.this.onMessagesDeleted(context, channel, messages);
-                notifyMessagesDeleted(messages);
-                if (ChannelViewModel.this.handler != null) {
-                    ChannelViewModel.this.handler.onMessagesDeleted(context, channel, messages);
-                }
-            }
-
-            @UiThread
-            @Override
-            public void onChannelDeleted(@NonNull GroupChannelContext context, @NonNull String channelUrl) {
-                Logger.d(">> ChannelViewModel::onChannelDeleted() from=%s", context.getCollectionEventSource());
-                notifyChannelDeleted(channelUrl);
-                if (ChannelViewModel.this.handler != null) {
-                    ChannelViewModel.this.handler.onChannelDeleted(context, channelUrl);
-                }
-            }
-
-            @UiThread
-            @Override
-            public void onHugeGapDetected() {
-                Logger.d(">> ChannelViewModel::onHugeGapDetected()");
-                notifyHugeGapDetected();
-                if (ChannelViewModel.this.handler != null) {
-                    ChannelViewModel.this.handler.onHugeGapDetected();
-                }
-            }
-
-            @Override
-            public void onChannelUpdated(@NonNull GroupChannelContext context, @NonNull GroupChannel channel) {
-                Logger.d(">> ChannelViewModel::onChannelUpdated() from=%s, url=%s", context.getCollectionEventSource(), channel.getUrl());
-
-                switch (context.getCollectionEventSource()) {
-                    case EVENT_TYPING_STATUS_UPDATED:
-                        final List<User> typingUsers = channel.getTypingUsers();
-                        if (typingUsers.size() > 0) {
-                            typingMembers.setValue(typingUsers);
-                        } else {
-                            typingMembers.setValue(null);
-                        }
-                        if (channelConfig.getEnableTypingIndicator() && channelConfig.getTypingIndicatorTypes().contains(TypingIndicatorType.BUBBLE)) {
-                            notifyDataSetChanged(context);
-                        }
-                        break;
-                    case EVENT_DELIVERY_STATUS_UPDATED:
-                    case EVENT_READ_STATUS_UPDATED:
-                        notifyDataSetChanged(context);
-                        break;
-                    default:
-                        break;
-                }
-
-                notifyChannelDataChanged();
-                if (ChannelViewModel.this.handler != null) {
-                    ChannelViewModel.this.handler.onChannelUpdated(context, channel);
-                }
-            }
-        });
+        this.collection =new MessageCollectionImpl(channel);
         Logger.i(">> ChannelViewModel::initMessageCollection() collection=%s", collection);
-        loadLatestMessagesForCache();
     }
 
     @Override
-    void onMessagesAdded(@NonNull MessageContext context, @NonNull GroupChannel channel, @NonNull List<BaseMessage> messages) {
-        super.onMessagesAdded(context, channel, messages);
-        switch (context.getCollectionEventSource()) {
-            case EVENT_MESSAGE_RECEIVED:
-            case EVENT_MESSAGE_SENT:
-            case MESSAGE_FILL:
-                markAsRead();
-                break;
-        }
+    void onMessagesAdded(@NonNull MessageContext context, @NonNull ConversationInfo channel, @NonNull List<Message> messages) {
     }
-
-    // If the collection starts with a starting point value, not MAX_VALUE,
-    // the message should be requested the newest messages at once because there may be no new messages in the cache
-    private void loadLatestMessagesForCache() {
-        if (!needToLoadMessageCache || (this.collection != null && this.collection.getStartingPoint() == Long.MAX_VALUE))
-            return;
-        final GroupChannel channel = getChannel();
-        if (channel == null) return;
-        final MessageCollectionContract syncCollection = createSyncMessageCollection(channel);
-        syncCollection.initialize(MessageCollectionInitPolicy.CACHE_AND_REPLACE_BY_API, new MessageCollectionInitHandler() {
-            @Override
-            public void onCacheResult(@Nullable List<BaseMessage> list, @Nullable SendbirdException e) {}
-
-            @Override
-            public void onApiResult(@Nullable List<BaseMessage> list, @Nullable SendbirdException e) {
-                if (e == null) {
-                    needToLoadMessageCache = false;
-                }
-                syncCollection.dispose();
-            }
-        });
-    }
-
     private synchronized void disposeMessageCollection() {
         Logger.i(">> ChannelViewModel::disposeMessageCollection()");
         if (this.collection != null) {
@@ -373,15 +261,6 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         }
     }
 
-    /**
-     * Registers a handler for the message collection managed by this view model.
-     *
-     * @param handler {@link MessageCollectionHandler} to be registered in this view model
-     * since 3.0.0
-     */
-    public void setMessageCollectionHandler(@Nullable MessageCollectionHandler handler) {
-        this.handler = handler;
-    }
 
     /**
      * Returns LiveData that can be observed if the channel has been updated.
@@ -390,7 +269,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     @NonNull
-    public LiveData<GroupChannel> onChannelUpdated() {
+    public LiveData<ConversationInfo> onChannelUpdated() {
         return channelUpdated;
     }
 
@@ -423,7 +302,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     @NonNull
-    public LiveData<List<BaseMessage>> onMessagesDeleted() {
+    public LiveData<List<Message>> onMessagesDeleted() {
         return messagesDeleted;
     }
 
@@ -522,13 +401,13 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     public long getStartingPoint() {
-        return collection != null ? collection.getStartingPoint() : Long.MAX_VALUE;
+        return 0;
     }
 
     @UiThread
     private synchronized void notifyChannelDataChanged() {
         Logger.d(">> ChannelViewModel::notifyChannelDataChanged()");
-        final GroupChannel groupChannel = getChannel();
+        final ConversationInfo groupChannel = getChannel();
         if (groupChannel == null) return;
         channelUpdated.setValue(groupChannel);
     }
@@ -536,11 +415,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @Override
     synchronized void notifyDataSetChanged(@NonNull String traceName) {
         Logger.d(">> ChannelViewModel::notifyDataSetChanged(), size = %s, action=%s, hasNext=%s", cachedMessages.size(), traceName, hasNext());
-        if (shouldIgnoreEvent(traceName)) {
-            Logger.d("-- ChannelViewModel::notifyDataSetChanged() event is ignored. traceName=%s", traceName);
-            return;
-        }
-        final List<BaseMessage> finalMessageList = buildMessageList();
+        final List<Message> finalMessageList = buildMessageList();
         if (finalMessageList.size() == 0) {
             statusFrame.setValue(StatusFrameView.Status.EMPTY);
         } else {
@@ -550,65 +425,15 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         messageList.setValue(new ChannelMessageData(traceName, finalMessageList));
     }
 
-    boolean shouldIgnoreEvent(@NonNull String traceName) {
-        if (collection == null) return true;
-        // even though a pending message is added, if the message is sent from the Thread page it shouldn't scroll to the first.
-        final List<BaseMessage> pendingMessages = new ArrayList<>(collection.getPendingMessages());
-        final List<BaseMessage> failedMessages = new ArrayList<>(collection.getFailedMessages());
-        if (channelConfig.getReplyType() == ReplyType.THREAD) {
-            boolean shouldCheckEvents = traceName.equals(StringSet.ACTION_FAILED_MESSAGE_ADDED)
-                || traceName.equals(StringSet.ACTION_PENDING_MESSAGE_ADDED);
-
-            final BaseMessage lastPendingMessage = !pendingMessages.isEmpty() ? pendingMessages.get(0) : null;
-            final BaseMessage lastFailedMessage = !failedMessages.isEmpty() ? failedMessages.get(0) : null;
-            final long lastPendingMessageCreatedAt = lastPendingMessage != null ? lastPendingMessage.getCreatedAt() : 0L;
-            final long lastFailedMessageCreatedAt = lastFailedMessage != null ? lastFailedMessage.getCreatedAt() : 0L;
-
-            boolean isThreadMessage = false;
-            if (lastPendingMessageCreatedAt > lastFailedMessageCreatedAt) {
-                isThreadMessage = lastPendingMessage != null && lastPendingMessage.isReplyToChannel();
-            } else if (lastPendingMessageCreatedAt < lastFailedMessageCreatedAt) {
-                isThreadMessage = lastFailedMessage != null && lastFailedMessage.isReplyToChannel();
-            }
-
-            return shouldCheckEvents && isThreadMessage;
-        }
-
-        return false;
-    }
 
     @UiThread
     @NonNull
     @Override
-    public List<BaseMessage> buildMessageList() {
+    public List<Message> buildMessageList() {
         MessageCollectionContract collection = this.collection;
         if (collection == null) return Collections.emptyList();
 
-        final List<BaseMessage> pendingMessages = new ArrayList<>(collection.getPendingMessages());
-        final List<BaseMessage> failedMessages = new ArrayList<>(collection.getFailedMessages());
-
-        if (channelConfig.getReplyType() == ReplyType.THREAD)  {
-            removeThreadMessages(pendingMessages);
-            removeThreadMessages(failedMessages);
-        }
-
-        final List<BaseMessage> copiedList = cachedMessages.toList();
-        if (!hasNext()) {
-            copiedList.addAll(0, pendingMessages);
-            copiedList.addAll(0, failedMessages);
-
-            SuggestedRepliesMessage suggestedRepliesMessage = createSuggestedRepliesMessage();
-            if (suggestedRepliesMessage != null) {
-                copiedList.add(0, suggestedRepliesMessage);
-            }
-
-            TypingIndicatorMessage typingIndicatorMessage = createTypingIndicatorMessage();
-            if (typingIndicatorMessage != null) {
-                copiedList.add(0, typingIndicatorMessage);
-            }
-        }
-
-        return copiedList;
+        return cachedMessages.toList();
     }
 
     private void removeThreadMessages(@NonNull List<BaseMessage> src) {
@@ -620,45 +445,11 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         }
     }
 
-    @Nullable
-    private SuggestedRepliesMessage createSuggestedRepliesMessage() {
-        if (!channelConfig.getEnableSuggestedReplies()) return null;
-        if (hasNext()) return null;
 
-        if (collection != null) {
-            List<BaseMessage> pendingMessages = collection.getPendingMessages();
-            List<BaseMessage> failedMessages = collection.getFailedMessages();
-            if (!pendingMessages.isEmpty() || !failedMessages.isEmpty()) return null;
-        }
-
-        GroupChannel groupChannel = channel;
-        if (groupChannel != null) {
-            BaseMessage lastMessage = groupChannel.getLastMessage();
-            if (lastMessage != null && !lastMessage.getSuggestedReplies().isEmpty()) {
-                return new SuggestedRepliesMessage(lastMessage);
-            }
-        }
-
-        return null;
-    }
-
-    @Nullable
-    private TypingIndicatorMessage createTypingIndicatorMessage() {
-        if (!channelConfig.getEnableTypingIndicator() || !channelConfig.getTypingIndicatorTypes().contains(TypingIndicatorType.BUBBLE)) return null;
-        GroupChannel groupChannel = channel;
-        if (groupChannel != null) {
-            List<User> typingUsers = groupChannel.getTypingUsers();
-            if (!typingUsers.isEmpty()) {
-                return new TypingIndicatorMessage(groupChannel.getUrl(), typingUsers);
-            }
-        }
-
-        return null;
-    }
 
     private void markAsRead() {
         Logger.dev("markAsRead");
-        if (channel != null) channel.markAsRead(null);
+//        if (channel != null) channel.markAsRead(null);
     }
 
     @UiThread
@@ -667,7 +458,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     }
 
     @UiThread
-    private synchronized void notifyMessagesDeleted(@NonNull List<BaseMessage> deletedMessages) {
+    private synchronized void notifyMessagesDeleted(@NonNull List<Message> deletedMessages) {
         messagesDeleted.setValue(deletedMessages);
     }
 
@@ -685,23 +476,23 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         disposeMessageCollection();
     }
 
-    @Override
-    public void deleteMessage(@NonNull BaseMessage message, @Nullable OnCompleteHandler handler) {
-        super.deleteMessage(message, handler);
-        final SendingStatus status = message.getSendingStatus();
-        if (status == SendingStatus.FAILED) {
-            if (collection != null) {
-                collection.removeFailedMessages(Collections.singletonList(message), (requestIds, e) -> {
-                    if (handler != null) handler.onComplete(e);
-                    Logger.i("++ deleted message : %s", message);
-                    notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_REMOVED);
-                    if (message instanceof FileMessage) {
-                        PendingMessageRepository.getInstance().clearFileInfo((FileMessage) message);
-                    }
-                });
-            }
-        }
-    }
+//    @Override
+//    public void deleteMessage(@NonNull BaseMessage message, @Nullable OnCompleteHandler handler) {
+//        super.deleteMessage(message, handler);
+//        final SendingStatus status = message.getSendingStatus();
+//        if (status == SendingStatus.FAILED) {
+//            if (collection != null) {
+//                collection.removeFailedMessages(Collections.singletonList(message), (requestIds, e) -> {
+//                    if (handler != null) handler.onComplete(e);
+//                    Logger.i("++ deleted message : %s", message);
+//                    notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_REMOVED);
+//                    if (message instanceof FileMessage) {
+//                        PendingMessageRepository.getInstance().clearFileInfo((FileMessage) message);
+//                    }
+//                });
+//            }
+//        }
+//    }
 
     /**
      * Requests the list of <code>BaseMessage</code>s for the first time.
@@ -722,22 +513,14 @@ public class ChannelViewModel extends BaseMessageListViewModel {
 
         messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
         cachedMessages.clear();
-        collection.initialize(MessageCollectionInitPolicy.CACHE_AND_REPLACE_BY_API, new MessageCollectionInitHandler() {
+        collection.initialize(new MessageHandler() {
             @Override
-            public void onCacheResult(@Nullable List<BaseMessage> cachedList, @Nullable SendbirdException e) {
-                if (e == null && cachedList != null && cachedList.size() > 0) {
-                    cachedMessages.addAll(cachedList);
-                    notifyDataSetChanged(StringSet.ACTION_INIT_FROM_CACHE);
-                }
-            }
-
-            @Override
-            public void onApiResult(@Nullable List<BaseMessage> apiResultList, @Nullable SendbirdException e) {
-                if (e == null && apiResultList != null) {
+            public void onResult(List<Message> list, @Nullable Exception e) {
+                if (e == null && list != null) {
                     cachedMessages.clear();
-                    cachedMessages.addAll(apiResultList);
+                    cachedMessages.addAll(list);
                     notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
-                    if (apiResultList.size() > 0) {
+                    if (list.size() > 0) {
                         markAsRead();
                     }
                 }
@@ -759,35 +542,36 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @WorkerThread
     @NonNull
     @Override
-    public List<BaseMessage> loadPrevious() throws Exception {
-        if (!hasPrevious() || collection == null) return Collections.emptyList();
-        Logger.i(">> ChannelViewModel::loadPrevious()");
-
-        final AtomicReference<List<BaseMessage>> result = new AtomicReference<>();
-        final AtomicReference<Exception> error = new AtomicReference<>();
-        final CountDownLatch lock = new CountDownLatch(1);
-
-        messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
-        collection.loadPrevious((messages, e) -> {
-            Logger.d("++ privious size = %s", messages == null ? 0 : messages.size());
-            try {
-                if (e == null) {
-                    if (messages != null) {
-                        cachedMessages.addAll(messages);
-                    }
-                    result.set(messages);
-                    notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
-                }
-                error.set(e);
-            } finally {
-                lock.countDown();
-            }
-        });
-        lock.await();
-
-        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-        if (error.get() != null) throw error.get();
-        return result.get();
+    public List<Message> loadPrevious() throws Exception {
+//        if (!hasPrevious() || collection == null) return Collections.emptyList();
+//        Logger.i(">> ChannelViewModel::loadPrevious()");
+//
+//        final AtomicReference<List<BaseMessage>> result = new AtomicReference<>();
+//        final AtomicReference<Exception> error = new AtomicReference<>();
+//        final CountDownLatch lock = new CountDownLatch(1);
+//
+//        messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
+//        collection.loadPrevious((messages, e) -> {
+//            Logger.d("++ privious size = %s", messages == null ? 0 : messages.size());
+//            try {
+//                if (e == null) {
+//                    if (messages != null) {
+//                        cachedMessages.addAll(messages);
+//                    }
+//                    result.set(messages);
+//                    notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
+//                }
+//                error.set(e);
+//            } finally {
+//                lock.countDown();
+//            }
+//        });
+//        lock.await();
+//
+//        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
+//        if (error.get() != null) throw error.get();
+//        return result.get();
+        return new ArrayList<>();
     }
 
     /**
@@ -802,33 +586,34 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @WorkerThread
     @NonNull
     @Override
-    public List<BaseMessage> loadNext() throws Exception {
-        if (!hasNext() || collection == null) return Collections.emptyList();
-
-        Logger.i(">> ChannelViewModel::loadNext()");
-        final AtomicReference<List<BaseMessage>> result = new AtomicReference<>();
-        final AtomicReference<Exception> error = new AtomicReference<>();
-        final CountDownLatch lock = new CountDownLatch(1);
-
-        messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
-        collection.loadNext((messages, e) -> {
-            try {
-                if (e == null) {
-                    messages = messages == null ? Collections.emptyList() : messages;
-                    cachedMessages.addAll(messages);
-                    result.set(messages);
-                    notifyDataSetChanged(StringSet.ACTION_NEXT);
-                }
-                error.set(e);
-            } finally {
-                lock.countDown();
-            }
-        });
-        lock.await();
-
-        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-        if (error.get() != null) throw error.get();
-        return result.get();
+    public List<Message> loadNext() throws Exception {
+//        if (!hasNext() || collection == null) return Collections.emptyList();
+//
+//        Logger.i(">> ChannelViewModel::loadNext()");
+//        final AtomicReference<List<BaseMessage>> result = new AtomicReference<>();
+//        final AtomicReference<Exception> error = new AtomicReference<>();
+//        final CountDownLatch lock = new CountDownLatch(1);
+//
+//        messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
+//        collection.loadNext((messages, e) -> {
+//            try {
+//                if (e == null) {
+//                    messages = messages == null ? Collections.emptyList() : messages;
+//                    cachedMessages.addAll(messages);
+//                    result.set(messages);
+//                    notifyDataSetChanged(StringSet.ACTION_NEXT);
+//                }
+//                error.set(e);
+//            } finally {
+//                lock.countDown();
+//            }
+//        });
+//        lock.await();
+//
+//        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
+//        if (error.get() != null) throw error.get();
+//        return result.get();
+        return new ArrayList<>();
     }
 
     /**
@@ -894,16 +679,11 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         });
     }
 
-    @VisibleForTesting
-    @NonNull
-    MessageCollectionContract createMessageCollection(long startingPoint, @NonNull MessageListParams params, @NonNull GroupChannel channel, @NonNull MessageCollectionHandler handler) {
-        return new MessageCollectionImpl(SendbirdChat.createMessageCollection(new MessageCollectionCreateParams(channel, params, startingPoint, handler)));
-    }
 
     @VisibleForTesting
     @NonNull
-    MessageCollectionContract createSyncMessageCollection(GroupChannel channel) {
-        return new MessageCollectionImpl(SendbirdChat.createMessageCollection(new MessageCollectionCreateParams(channel, new MessageListParams())));
+    MessageCollectionContract createSyncMessageCollection(ConversationInfo channel) {
+        return new MessageCollectionImpl(channel);
     }
 
     @TestOnly
