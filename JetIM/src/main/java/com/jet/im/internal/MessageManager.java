@@ -37,6 +37,7 @@ import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageOptions;
+import com.jet.im.model.MessageQueryOptions;
 import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
@@ -400,6 +401,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     @Override
     public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
         return mCore.getDbManager().getMessages(conversation, count, timestamp, direction, contentTypes);
+    }
+
+    @Override
+    public List<Message> getMessages(int count, long timestamp, JetIMConst.PullDirection direction, MessageQueryOptions messageQueryOptions) {
+        //todo 实现查询
+        return Collections.emptyList();
     }
 
     @Override

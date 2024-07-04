@@ -7,6 +7,7 @@ import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageOptions;
+import com.jet.im.model.MessageQueryOptions;
 import com.jet.im.model.UserInfo;
 
 import java.util.List;
@@ -111,6 +112,8 @@ public interface IMessageManager {
                               long timestamp,
                               JetIMConst.PullDirection direction,
                               List<String> contentTypes);
+
+    List<Message> getMessages(int count, long timestamp, JetIMConst.PullDirection direction, MessageQueryOptions messageQueryOptions);
 
     List<Message> getMessagesByMessageIds(List<String> messageIdList);
 
