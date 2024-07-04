@@ -2,6 +2,7 @@ package com.jet.im.kit.interfaces;
 
 import androidx.annotation.NonNull;
 
+import com.jet.im.model.Message;
 import com.sendbird.android.message.BaseMessage;
 
 import java.util.List;
@@ -15,5 +16,5 @@ public interface OnMessageListUpdateHandler {
      *
      * @param messages Updated {@code List<BaseMessage>}.
      */
-    void onListUpdated(@NonNull List<BaseMessage> messages);
+    void onListUpdated(@NonNull List<Message> messages);
 }

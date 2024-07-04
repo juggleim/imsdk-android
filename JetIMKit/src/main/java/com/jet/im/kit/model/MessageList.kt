@@ -3,6 +3,7 @@ package com.jet.im.kit.model
 import com.sendbird.android.message.BaseMessage
 import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.DateUtils
+import com.jet.im.model.Message
 import java.util.TreeSet
 import java.util.concurrent.ConcurrentHashMap
 
@@ -11,21 +12,21 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
         ASC, DESC
     }
 
-    private val messages: TreeSet<BaseMessage> = TreeSet { o1: BaseMessage, o2: BaseMessage ->
-        if (o1.createdAt > o2.createdAt) {
+    private val messages: TreeSet<Message> = TreeSet { o1: Message, o2: Message ->
+        if (o1.timestamp > o2.timestamp) {
             return@TreeSet if (order == Order.DESC) -1 else 1
-        } else if (o1.createdAt < o2.createdAt) {
+        } else if (o1.timestamp < o2.timestamp) {
             return@TreeSet if (order == Order.DESC) 1 else -1
         }
         0
     }
 
-    private val timelineMap: MutableMap<String, BaseMessage> = ConcurrentHashMap()
+    private val timelineMap: MutableMap<String, Message> = ConcurrentHashMap()
 
     /**
      * @return the latest message.
      */
-    val latestMessage: BaseMessage?
+    val latestMessage: Message?
         get() {
             if (messages.isEmpty()) return null
             return if (order == Order.DESC) messages.first() else messages.last()
@@ -34,7 +35,7 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
     /**
      * @return the oldest message.
      */
-    val oldestMessage: BaseMessage?
+    val oldestMessage: Message?
         get() {
             if (messages.isEmpty()) return null
             return if (order == Order.DESC) messages.last() else messages.first()
@@ -44,7 +45,7 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
         @JvmName("size") // TODO : remove it if there is no place to use it on the java-side.
         get() = messages.size
 
-    fun toList(): MutableList<BaseMessage> {
+    fun toList(): MutableList<Message> {
         return messages.toMutableList()
     }
 
@@ -55,9 +56,9 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
     }
 
     @Synchronized
-    fun add(message: BaseMessage) {
+    fun add(message: Message) {
         Logger.d(">> MessageList::addAll()")
-        val createdAt = message.createdAt
+        val createdAt = message.timestamp
         val dateStr = DateUtils.getDateString(createdAt)
         var timeline = timelineMap[dateStr]
         // create new timeline message if not exists
@@ -66,12 +67,12 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
             messages.add(timeline)
             timelineMap[dateStr] = timeline
             messages.remove(message)
-            BaseMessage.clone(message)?.let { messages.add(it) }
+            message.let { messages.add(it) }
             return
         }
 
         // remove previous timeline message if it exists.
-        val timelineCreatedAt = timeline.createdAt
+        val timelineCreatedAt = timeline.timestamp
         if (timelineCreatedAt > createdAt) {
             messages.remove(timeline)
             val newTimeline = createTimelineMessage(message)
@@ -79,33 +80,33 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
             messages.add(newTimeline)
         }
         messages.remove(message)
-        BaseMessage.clone(message)?.let { messages.add(it) }
+        message?.let { messages.add(it) }
     }
 
-    fun addAll(messages: List<BaseMessage>) {
+    fun addAll(messages: List<Message>) {
         Logger.d(">> MessageList::addAll()")
         if (messages.isEmpty()) return
         messages.forEach { add(it) }
     }
 
     @Synchronized
-    fun delete(message: BaseMessage): Boolean {
+    fun delete(message: Message): Boolean {
         Logger.d(">> MessageList::deleteMessage()")
         val removed = messages.remove(message)
         if (removed) {
-            val createdAt = message.createdAt
+            val createdAt = message.timestamp
             val dateStr = DateUtils.getDateString(createdAt)
             val timeline = timelineMap[dateStr] ?: return true
 
             // check below item.
             val lower = messages.lower(message)
-            if (lower != null && DateUtils.hasSameDate(createdAt, lower.createdAt)) {
+            if (lower != null && DateUtils.hasSameDate(createdAt, lower.timestamp)) {
                 return true
             }
 
             // check above item.
             val higher = messages.higher(message)
-            if (higher != null && DateUtils.hasSameDate(createdAt, higher.createdAt)) {
+            if (higher != null && DateUtils.hasSameDate(createdAt, higher.timestamp)) {
                 if (timeline != higher) {
                     return true
                 }
@@ -117,43 +118,45 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
         return removed
     }
 
-    fun deleteAll(messages: List<BaseMessage>) {
+    fun deleteAll(messages: List<Message>) {
         Logger.d(">> MessageList::deleteAllMessages() size = %s", messages.size)
         messages.forEach { delete(it) }
     }
 
     @Synchronized
-    fun deleteByMessageId(msgId: Long): BaseMessage? {
-        return messages.find { it.messageId == msgId }?.also { delete(it) }
+    fun deleteByMessageId(msgId: Long): Message? {
+        return messages.find { it.clientMsgNo == msgId }?.also { delete(it) }
     }
 
     @Synchronized
-    fun update(message: BaseMessage) {
+    fun update(message: Message) {
         Logger.d(">> MessageList::updateMessage()")
         if (messages.remove(message)) {
-            BaseMessage.clone(message)?.let { messages.add(it) }
+            message?.let { messages.add(it) }
         }
     }
 
-    fun updateAll(messages: List<BaseMessage>) {
+    fun updateAll(messages: List<Message>) {
         Logger.d(">> MessageList::updateAllMessages() size=%s", messages.size)
         messages.forEach { update(it) }
     }
 
     @Synchronized
-    fun getById(messageId: Long): BaseMessage? {
-        return messages.find { it.messageId == messageId }
+    fun getById(messageId: Long): Message? {
+        return messages.find { it.clientMsgNo == messageId }
     }
 
     @Synchronized
-    fun getByCreatedAt(createdAt: Long): List<BaseMessage> {
+    fun getByCreatedAt(createdAt: Long): List<Message> {
         if (createdAt == 0L) return emptyList()
-        return messages.filter { it.createdAt == createdAt }
+        return messages.filter { it.timestamp == createdAt }
     }
 
     companion object {
-        private fun createTimelineMessage(anchorMessage: BaseMessage): BaseMessage {
-            return TimelineMessage(anchorMessage)
+        private fun createTimelineMessage(anchorMessage: Message): Message {
+            var timelineMessage = Message()
+            timelineMessage.content = TimelineMessage(anchorMessage.timestamp)
+            return timelineMessage
         }
     }
 }

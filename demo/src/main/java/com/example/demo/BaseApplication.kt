@@ -87,7 +87,7 @@ class BaseApplication : MultiDexApplication() {
                     // set whether to use user mention
                     UIKitConfig.groupChannelConfig.enableMention = true
                     // set reply type
-                    UIKitConfig.groupChannelConfig.replyType = ReplyType.THREAD
+                    UIKitConfig.groupChannelConfig.replyType = ReplyType.NONE
                     UIKitConfig.groupChannelConfig.threadReplySelectType = ThreadReplySelectType.THREAD
                     // set whether to use voice message
                     UIKitConfig.groupChannelConfig.enableVoiceMessage = true

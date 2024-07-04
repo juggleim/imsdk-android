@@ -1,6 +1,5 @@
 package com.jet.im.kit.fragments;
 
-import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
@@ -10,18 +9,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
-import androidx.appcompat.app.AlertDialog;
 
 import com.jet.im.interfaces.IConversationManager;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.ChannelActivity;
 import com.jet.im.kit.activities.adapter.ChannelListAdapter;
-import com.jet.im.kit.consts.CreatableChannelType;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.interfaces.MessageDisplayDataProvider;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.interfaces.OnItemLongClickListener;
-import com.jet.im.kit.internal.ui.widgets.SelectChannelTypeView;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.ReadyStatus;
 import com.jet.im.kit.model.configurations.ChannelListConfig;
@@ -31,9 +28,6 @@ import com.jet.im.kit.modules.components.HeaderComponent;
 import com.jet.im.kit.modules.components.StatusComponent;
 import com.jet.im.kit.providers.ModuleProviders;
 import com.jet.im.kit.providers.ViewModelProviders;
-import com.jet.im.kit.utils.Available;
-import com.jet.im.kit.utils.ContextUtils;
-import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.vm.ChannelListViewModel;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.jet.im.model.ConversationInfo;
@@ -106,7 +100,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
      *
      * @param headerComponent The component to which the event will be bound
      * @param viewModel       A view model that provides the data needed for the fragment
-     * since 3.0.0
+     *                        since 3.0.0
      */
     protected void onBindHeaderComponent(@NonNull HeaderComponent headerComponent, @NonNull ChannelListViewModel viewModel) {
         Logger.d(">> ChannelListFragment::setupHeaderComponent()");
@@ -119,7 +113,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
      *
      * @param channelListComponent The component to which the event will be bound
      * @param viewModel            A view model that provides the data needed for the fragment
-     * since 3.0.0
+     *                             since 3.0.0
      */
     protected void onBindChannelListComponent(@NonNull ChannelListComponent channelListComponent, @NonNull ChannelListViewModel viewModel) {
         Logger.d(">> ChannelListFragment::setupChannelListComponent()");
@@ -133,7 +127,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
      *
      * @param statusComponent The component to which the event will be bound
      * @param viewModel       A view model that provides the data needed for the fragment
-     * since 3.0.0
+     *                        since 3.0.0
      */
     protected void onBindStatusComponent(@NonNull StatusComponent statusComponent, @NonNull ChannelListViewModel viewModel) {
         Logger.d(">> ChannelListFragment::setupStatusComponent()");
@@ -171,11 +165,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
     private void startChannelActivity(@NonNull ConversationInfo channel) {
         if (isFragmentAlive()) {
             //todo 跳转消息页面
-//            if (channel.isChatNotification()) {
-//                startActivity(ChatNotificationChannelActivity.newIntent(requireContext(), channel.getUrl()));
-//            } else {
-//                startActivity(ChannelActivity.newIntent(requireContext(), channel.getUrl()));
-//            }
+            startActivity(ChannelActivity.newIntent(requireContext(), channel.getConversation().getConversationType().getValue(), channel.getConversation().getConversationId()));
         }
     }
 
@@ -211,7 +201,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
 
     /**
      * Leaves this channel.
-     *
+     * <p>
      * since 1.0.4
      */
     protected void leaveChannel(@NonNull GroupChannel channel) {
@@ -226,7 +216,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
      * @param view     The View clicked.
      * @param position The position clicked.
      * @param channel  The channel that the clicked item displays
-     * since 3.2.0
+     *                 since 3.2.0
      */
     protected void onItemClicked(@NonNull View view, int position, @NonNull ConversationInfo channel) {
         if (itemClickListener != null) {
@@ -239,10 +229,10 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
     /**
      * Called when the item of the channel list is long-clicked.
      *
-     * @param view     The View long-clicked.
-     * @param position The position long-clicked.
-     * @param conversationInfo  The channel that the long-clicked item displays
-     * since 3.2.0
+     * @param view             The View long-clicked.
+     * @param position         The position long-clicked.
+     * @param conversationInfo The channel that the long-clicked item displays
+     *                         since 3.2.0
      */
     protected void onItemLongClicked(@NonNull View view, int position, @NonNull ConversationInfo conversationInfo) {
         if (itemLongClickListener != null) {
@@ -468,7 +458,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
          * Sets the channel list adapter and the message display data provider.
          * The message display data provider is used to generate the data to display the last message in the channel.
          *
-         * @param adapter the adapter for the channel list.
+         * @param adapter  the adapter for the channel list.
          * @param provider the provider for the message display data.
          * @return This Builder object to allow for chaining of calls to set methods.
          * since 3.5.7

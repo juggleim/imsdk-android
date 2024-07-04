@@ -24,27 +24,16 @@ public class ChannelActivity extends AppCompatActivity {
      * Create an intent for a {@link ChannelActivity}.
      *
      * @param context A Context of the application package implementing this class.
-     * @param channelUrl the url of the channel will be implemented.
      * @return ChannelActivity Intent
      */
     @NonNull
-    public static Intent newIntent(@NonNull Context context, @NonNull String channelUrl) {
-        return newIntentFromCustomActivity(context, ChannelActivity.class, channelUrl);
+    public static Intent newIntent(@NonNull Context context, @NonNull int conversationType, @NonNull String conversationId) {
+        return newIntentFromCustomActivity(context, ChannelActivity.class, conversationType, conversationId);
     }
 
-    /**
-     * Create an intent for a {@link ChannelActivity}.
-     * This intent will redirect to {@link MessageThreadActivity} if message has parent.
-     *
-     * @param context A Context of the application package implementing this class.
-     * @param channelUrl the url of the channel will be implemented.
-     * @param messageId  The message id of the anchor that redirects message thread.
-     * @return ChannelActivity Intent
-     * since 3.3.0
-     */
     @NonNull
-    public static Intent newRedirectToMessageThreadIntent(@NonNull Context context, @NonNull String channelUrl, long messageId) {
-        final Intent intent = newIntentFromCustomActivity(context, ChannelActivity.class, channelUrl);
+    public static Intent newRedirectToMessageThreadIntent(@NonNull Context context, @NonNull int type, @NonNull String id, long messageId) {
+        final Intent intent = newIntentFromCustomActivity(context, ChannelActivity.class, type, id);
         intent.putExtra(StringSet.KEY_ANCHOR_MESSAGE_ID, messageId);
         return intent;
     }
@@ -53,14 +42,13 @@ public class ChannelActivity extends AppCompatActivity {
      * Create an intent for a custom activity. The custom activity must inherit {@link ChannelActivity}.
      *
      * @param context A Context of the application package implementing this class.
-     * @param cls The activity class that is to be used for the intent.
-     * @param channelUrl the url of the channel will be implemented.
+     * @param cls     The activity class that is to be used for the intent.
      * @return Returns a newly created Intent that can be used to launch the activity.
      * since 1.1.2
      */
     @NonNull
-    public static Intent newIntentFromCustomActivity(@NonNull Context context, @NonNull Class<? extends ChannelActivity> cls, @NonNull String channelUrl) {
-        return new IntentBuilder(context, cls, channelUrl).build();
+    public static Intent newIntentFromCustomActivity(@NonNull Context context, @NonNull Class<? extends ChannelActivity> cls, @NonNull int type, @NonNull String id) {
+        return new IntentBuilder(context, cls, type, id).build();
     }
 
     @Override
@@ -74,8 +62,8 @@ public class ChannelActivity extends AppCompatActivity {
         FragmentManager manager = getSupportFragmentManager();
         manager.popBackStack();
         manager.beginTransaction()
-            .replace(R.id.sb_fragment_container, fragment)
-            .commit();
+                .replace(R.id.sb_fragment_container, fragment)
+                .commit();
     }
 
     /**
@@ -105,19 +93,21 @@ public class ChannelActivity extends AppCompatActivity {
             }
         }
         final Bundle args = intent != null && intent.getExtras() != null ? intent.getExtras() : new Bundle();
-        return SendbirdUIKit.getFragmentFactory().newChannelFragment(args.getString(StringSet.KEY_CHANNEL_URL, ""), args);
+        return SendbirdUIKit.getFragmentFactory().newChannelFragment(args.getInt(StringSet.KEY_CONVERSATION_TYPE, 1), args.getString(StringSet.KEY_CONVERSATION_ID, ""), args);
     }
 
     /**
      * This builder makes {@link Intent} for ChannelActivity.
-     *
+     * <p>
      * since 2.1.0
      */
     public static class IntentBuilder {
         @NonNull
         private final Context context;
         @NonNull
-        private final String channelUrl;
+        private final String id;
+        @NonNull
+        private final int type;
         private long startingPoint = Long.MAX_VALUE;
 
         @NonNull
@@ -130,37 +120,35 @@ public class ChannelActivity extends AppCompatActivity {
          * Create an intent for a {@link ChannelActivity}.
          *
          * @param context A Context of the application package implementing this class.
-         * @param channelUrl The url of the channel will be implemented.
-         * since 2.1.0
+         *                since 2.1.0
          */
-        public IntentBuilder(@NonNull Context context, @NonNull String channelUrl) {
-            this(context, ChannelActivity.class, channelUrl);
+        public IntentBuilder(@NonNull Context context, @NonNull int type, @NonNull String id) {
+            this(context, ChannelActivity.class, type, id);
         }
 
         /**
          * Create an intent for a {@link ChannelActivity}.
          *
-         * @param context A Context of the application package implementing this class.
+         * @param context     A Context of the application package implementing this class.
          * @param customClass The activity class that is to be used for the intent.
-         * @param channelUrl The url of the channel will be implemented.
-         * since 2.1.0
+         *                    since 2.1.0
          */
-        public IntentBuilder(@NonNull Context context, @NonNull Class<? extends ChannelActivity> customClass, @NonNull String channelUrl) {
-            this(context, customClass, channelUrl, SendbirdUIKit.getDefaultThemeMode().getResId());
+        public IntentBuilder(@NonNull Context context, @NonNull Class<? extends ChannelActivity> customClass, @NonNull int type, @NonNull String id) {
+            this(context, customClass, type, id, SendbirdUIKit.getDefaultThemeMode().getResId());
         }
 
         /**
          * Create an intent for a {@link ChannelActivity}.
          *
-         * @param context A Context of the application package implementing this class.
+         * @param context     A Context of the application package implementing this class.
          * @param customClass The activity class that is to be used for the intent.
-         * @param channelUrl The url of the channel will be implemented.
-         * @param themeResId the resource identifier for custom theme.
-         * since 3.5.6
+         * @param themeResId  the resource identifier for custom theme.
+         *                    since 3.5.6
          */
-        public IntentBuilder(@NonNull Context context, @NonNull Class<? extends ChannelActivity> customClass, @NonNull String channelUrl, @StyleRes int themeResId) {
+        public IntentBuilder(@NonNull Context context, @NonNull Class<? extends ChannelActivity> customClass, @NonNull int type, @NonNull String id, @StyleRes int themeResId) {
             this.context = context;
-            this.channelUrl = channelUrl;
+            this.type = type;
+            this.id = id;
             this.customClass = customClass;
             this.themeResId = themeResId;
         }
@@ -187,7 +175,8 @@ public class ChannelActivity extends AppCompatActivity {
         @NonNull
         public Intent build() {
             Intent intent = new Intent(context, customClass);
-            intent.putExtra(StringSet.KEY_CHANNEL_URL, channelUrl);
+            intent.putExtra(StringSet.KEY_CONVERSATION_TYPE, type);
+            intent.putExtra(StringSet.KEY_CONVERSATION_ID, id);
             intent.putExtra(StringSet.KEY_STARTING_POINT, startingPoint);
             intent.putExtra(StringSet.KEY_THEME_RES_ID, themeResId);
             return intent;

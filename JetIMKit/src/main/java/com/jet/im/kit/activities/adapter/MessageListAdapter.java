@@ -8,7 +8,7 @@ import com.jet.im.kit.activities.viewholder.MessageViewHolder;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitContract;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitImpl;
 import com.jet.im.kit.model.MessageListUIParams;
-import com.sendbird.android.channel.GroupChannel;
+import com.jet.im.model.ConversationInfo;
 import com.sendbird.android.message.BaseMessage;
 
 /**
@@ -20,22 +20,22 @@ public class MessageListAdapter extends BaseMessageListAdapter {
         this(null, useMessageGroupUI);
     }
 
-    public MessageListAdapter(@Nullable GroupChannel channel) {
+    public MessageListAdapter(@Nullable ConversationInfo channel) {
         this(channel, true);
     }
 
-    public MessageListAdapter(@Nullable GroupChannel channel, boolean useMessageGroupUI) {
+    public MessageListAdapter(@Nullable ConversationInfo channel, boolean useMessageGroupUI) {
         this(channel, new MessageListUIParams.Builder()
             .setUseMessageGroupUI(useMessageGroupUI)
             .build());
     }
 
-    public MessageListAdapter(@Nullable GroupChannel channel, @NonNull MessageListUIParams messageListUIParams) {
+    public MessageListAdapter(@Nullable ConversationInfo channel, @NonNull MessageListUIParams messageListUIParams) {
         this(channel, messageListUIParams, new SendbirdUIKitImpl());
     }
 
     @VisibleForTesting
-    MessageListAdapter(@Nullable GroupChannel channel, @NonNull MessageListUIParams messageListUIParams, @NonNull SendbirdUIKitContract sendbirdUIKit) {
+    MessageListAdapter(@Nullable ConversationInfo channel, @NonNull MessageListUIParams messageListUIParams, @NonNull SendbirdUIKitContract sendbirdUIKit) {
         super(channel,
             new MessageListUIParams.Builder(messageListUIParams)
                 .setUseQuotedView(true)

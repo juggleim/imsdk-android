@@ -11,17 +11,17 @@ import com.jet.im.kit.databinding.SbViewMyFileVideoMessageBinding
 import com.jet.im.kit.interfaces.OnItemClickListener
 import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.model.MessageListUIParams
+import com.jet.im.model.ConversationInfo
+import com.jet.im.model.Message
 
 internal class MyVideoFileMessageViewHolder internal constructor(
     val binding: SbViewMyFileVideoMessageBinding,
     messageListUIParams: MessageListUIParams
 ) : GroupChannelMessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: BaseChannel, message: BaseMessage, messageListUIParams: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
         binding.myVideoFileMessageView.messageUIConfig = messageUIConfig
-        if (channel is GroupChannel) {
-            binding.myVideoFileMessageView.drawMessage(channel, message, messageListUIParams)
-        }
+        binding.myVideoFileMessageView.drawMessage(channel, message, params)
     }
 
     override fun setEmojiReaction(
@@ -30,19 +30,11 @@ internal class MyVideoFileMessageViewHolder internal constructor(
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
-        binding.myVideoFileMessageView.binding.rvEmojiReactionList.apply {
-            setReactionList(reactionList)
-            setEmojiReactionClickListener(emojiReactionClickListener)
-            setEmojiReactionLongClickListener(emojiReactionLongClickListener)
-            setMoreButtonClickListener(moreButtonClickListener)
-        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
         return mapOf(
             ClickableViewIdentifier.Chat.name to binding.myVideoFileMessageView.binding.ivThumbnailOverlay,
-            ClickableViewIdentifier.QuoteReply.name to binding.myVideoFileMessageView.binding.quoteReplyPanel,
-            ClickableViewIdentifier.ThreadInfo.name to binding.myVideoFileMessageView.binding.threadInfo
         )
     }
 }

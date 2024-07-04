@@ -4,18 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.jet.im.JetIM;
-import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.model.Message;
-import com.sendbird.android.SendbirdChat;
-import com.sendbird.android.channel.NotificationData;
-import com.sendbird.android.message.AdminMessage;
-import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.message.CustomizableMessage;
-import com.sendbird.android.message.FileMessage;
-import com.sendbird.android.message.MessageMetaArray;
-import com.sendbird.android.message.SendingStatus;
-import com.sendbird.android.message.UserMessage;
-import com.sendbird.android.user.User;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
 import com.jet.im.kit.consts.MessageGroupType;
@@ -24,6 +12,15 @@ import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.model.TimelineMessage;
+import com.jet.im.model.Message;
+import com.sendbird.android.channel.NotificationData;
+import com.sendbird.android.message.AdminMessage;
+import com.sendbird.android.message.BaseMessage;
+import com.sendbird.android.message.CustomizableMessage;
+import com.sendbird.android.message.FileMessage;
+import com.sendbird.android.message.MessageMetaArray;
+import com.sendbird.android.message.SendingStatus;
+import com.sendbird.android.message.UserMessage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,36 +59,44 @@ public class MessageUtils {
         MessageType messageType = MessageViewHolderFactory.getMessageType(message);
         return messageType == MessageType.VIEW_TYPE_UNKNOWN_MESSAGE_ME || messageType == MessageType.VIEW_TYPE_UNKNOWN_MESSAGE_OTHER;
     }
-
-    public static boolean isFailed(@NonNull BaseMessage message) {
-        final SendingStatus status = message.getSendingStatus();
-        return status == SendingStatus.FAILED || status == SendingStatus.CANCELED;
+    public static boolean isUnknownType(@NonNull Message message) {
+        MessageType messageType = MessageViewHolderFactory.getMessageType(message);
+        return messageType == MessageType.VIEW_TYPE_UNKNOWN_MESSAGE_ME || messageType == MessageType.VIEW_TYPE_UNKNOWN_MESSAGE_OTHER;
     }
 
-    public static boolean isSucceed(@NonNull BaseMessage message) {
-        final SendingStatus status = message.getSendingStatus();
-        return status == SendingStatus.SUCCEEDED;
+    public static boolean isFailed(@NonNull Message message) {
+        final Message.MessageState status = message.getState();
+        return status == Message.MessageState.FAIL;
+    }
+
+    public static boolean isSucceed(@NonNull Message message) {
+        final Message.MessageState status = message.getState();
+        return status == Message.MessageState.SENT;
+    }
+
+    public static boolean isGroupChanged(@Nullable Message frontMessage, @Nullable Message backMessage, @NonNull MessageListUIParams messageListUIParams) {
+        return frontMessage == null ||
+                frontMessage.getSenderUserId() == null ||
+                backMessage == null ||
+                !backMessage.getState().equals(Message.MessageState.SENT) ||
+                !frontMessage.getState().equals(Message.MessageState.SENT) ||
+                !frontMessage.getSenderUserId().equals(backMessage.getSenderUserId()) ||
+                !DateUtils.hasSameTimeInMinute(frontMessage.getTimestamp(), backMessage.getTimestamp());
     }
 
     public static boolean isGroupChanged(@Nullable BaseMessage frontMessage, @Nullable BaseMessage backMessage, @NonNull MessageListUIParams messageListUIParams) {
         return frontMessage == null ||
             frontMessage.getSender() == null ||
             frontMessage instanceof AdminMessage ||
-            frontMessage instanceof TimelineMessage ||
-            (messageListUIParams.shouldUseQuotedView() && hasParentMessage(frontMessage)) ||
+            (hasParentMessage(frontMessage)) ||
             backMessage == null ||
             backMessage.getSender() == null ||
             backMessage instanceof AdminMessage ||
-            backMessage instanceof TimelineMessage ||
-            (messageListUIParams.shouldUseQuotedView() && hasParentMessage(backMessage)) ||
+            (hasParentMessage(backMessage)) ||
             !backMessage.getSendingStatus().equals(SendingStatus.SUCCEEDED) ||
             !frontMessage.getSendingStatus().equals(SendingStatus.SUCCEEDED) ||
             !frontMessage.getSender().equals(backMessage.getSender()) ||
-            !DateUtils.hasSameTimeInMinute(frontMessage.getCreatedAt(), backMessage.getCreatedAt()) ||
-            (messageListUIParams.getChannelConfig().getReplyType() == ReplyType.THREAD && (
-                (!(frontMessage instanceof CustomizableMessage) && frontMessage.getThreadInfo().getReplyCount() > 0) ||
-                    (!(backMessage instanceof CustomizableMessage) && backMessage.getThreadInfo().getReplyCount() > 0)
-            ));
+            !DateUtils.hasSameTimeInMinute(frontMessage.getCreatedAt(), backMessage.getCreatedAt());
     }
 
     @NonNull
@@ -107,13 +112,7 @@ public class MessageUtils {
             return MessageGroupType.GROUPING_TYPE_SINGLE;
         }
 
-        if (messageListUIParams.shouldUseQuotedView() && hasParentMessage(message)) {
-            return MessageGroupType.GROUPING_TYPE_SINGLE;
-        }
-
-        if (messageListUIParams.getChannelConfig().getReplyType() == ReplyType.THREAD &&
-            !(message instanceof CustomizableMessage) &&
-            message.getThreadInfo().getReplyCount() > 0) {
+        if (hasParentMessage(message)) {
             return MessageGroupType.GROUPING_TYPE_SINGLE;
         }
 
@@ -132,8 +131,39 @@ public class MessageUtils {
         return messageGroupType;
     }
 
+    @NonNull
+    public static MessageGroupType getMessageGroupType(@Nullable Message prevMessage,
+                                                       @NonNull Message message,
+                                                       @Nullable Message nextMessage,
+                                                       @NonNull MessageListUIParams messageListUIParams) {
+        if (!messageListUIParams.shouldUseMessageGroupUI()) {
+            return MessageGroupType.GROUPING_TYPE_SINGLE;
+        }
+
+        if (!Message.MessageState.SENT.equals(message.getState())) {
+            return MessageGroupType.GROUPING_TYPE_SINGLE;
+        }
+
+        MessageGroupType messageGroupType = MessageGroupType.GROUPING_TYPE_BODY;
+        boolean isHead = messageListUIParams.shouldUseReverseLayout() ? MessageUtils.isGroupChanged(prevMessage, message, messageListUIParams) : MessageUtils.isGroupChanged(message, nextMessage, messageListUIParams);
+        boolean isTail = messageListUIParams.shouldUseReverseLayout() ? MessageUtils.isGroupChanged(message, nextMessage, messageListUIParams) : MessageUtils.isGroupChanged(prevMessage, message, messageListUIParams);
+
+        if (!isHead && isTail) {
+            messageGroupType = MessageGroupType.GROUPING_TYPE_TAIL;
+        } else if (isHead && !isTail) {
+            messageGroupType = MessageGroupType.GROUPING_TYPE_HEAD;
+        } else if (isHead) {
+            messageGroupType = MessageGroupType.GROUPING_TYPE_SINGLE;
+        }
+
+        return messageGroupType;
+    }
     public static boolean hasParentMessage(@NonNull BaseMessage message) {
         return message.getParentMessageId() != 0L;
+    }
+
+    public static boolean hasParentMessage(@NonNull Message message) {
+        return false;
     }
 
     public static boolean hasThread(@NonNull BaseMessage message) {
@@ -163,7 +193,6 @@ public class MessageUtils {
         final String type = typeArray.isEmpty() ? "" : typeArray.get(0).getValue().get(0);
         return type.startsWith(StringSet.voice);
     }
-
     @NonNull
     public static String getVoiceMessageKey(@NonNull FileMessage fileMessage) {
         if (fileMessage.getSendingStatus() == SendingStatus.PENDING) {
@@ -172,10 +201,22 @@ public class MessageUtils {
             return String.valueOf(fileMessage.getMessageId());
         }
     }
+    @NonNull
+    public static String getVoiceMessageKey(@NonNull Message message) {
+        return String.valueOf(message.getClientMsgNo());
+    }
 
     @NonNull
     public static String getVoiceFilename(@NonNull FileMessage message) {
         String key = message.getRequestId();
+        if (key.isEmpty() || key.equals("0")) {
+            key = String.valueOf(message.getMessageId());
+        }
+        return "Voice_file_" + key + "." + StringSet.m4a;
+    }
+    @NonNull
+    public static String getVoiceFilename(@NonNull Message message) {
+        String key = message.getMessageId();
         if (key.isEmpty() || key.equals("0")) {
             key = String.valueOf(message.getMessageId());
         }

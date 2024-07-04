@@ -11,22 +11,7 @@ enum class ReplyType(val value: String) {
      *
      * @since 2.2.0
      */
-    NONE(StringSet.none),
-
-    /**
-     * Displays replies linearly in the message list.
-     *
-     * @since 2.2.0
-     */
-    QUOTE_REPLY(StringSet.quote_reply),
-
-    /**
-     * Displays replies to a parent message on a separate screen.
-     *
-     * @since 3.3.0
-     */
-    THREAD(StringSet.thread);
-
+    NONE(StringSet.none);
     companion object {
         /**
          * Convert to ReplyType that matches the given value.

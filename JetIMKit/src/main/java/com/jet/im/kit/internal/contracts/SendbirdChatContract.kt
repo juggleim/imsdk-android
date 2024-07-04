@@ -1,6 +1,7 @@
 package com.jet.im.kit.internal.contracts
 
 import android.content.Context
+import com.jet.im.interfaces.IMessageManager
 import com.sendbird.android.AppInfo
 import com.sendbird.android.ConnectionState
 import com.sendbird.android.handler.AuthenticationHandler
@@ -15,9 +16,9 @@ import com.sendbird.android.params.InitParams
 import com.sendbird.android.params.UserUpdateParams
 
 internal interface SendbirdChatContract {
-    fun addChannelHandler(identifier: String, handler: BaseChannelHandler)
+    fun addChannelHandler(identifier: String,handler: IMessageManager.IMessageListener)
     fun addConnectionHandler(identifier: String, handler: ConnectionHandler)
-    fun removeChannelHandler(identifier: String): BaseChannelHandler?
+    fun removeChannelHandler(identifier: String)
     fun removeConnectionHandler(identifier: String): ConnectionHandler?
     fun init(context:Context, params: InitParams, handler: InitResultHandler)
     fun connect(userId: String, accessToken: String?, handler: ConnectHandler?)

@@ -74,4 +74,15 @@ public class UserUtils {
         }
         return nickname;
     }
+
+    @NonNull
+    public static String getDisplayName(@NonNull Context context, @Nullable com.jet.im.model.UserInfo userInfo) {
+        String nickname = context.getString(R.string.sb_text_channel_list_title_unknown);
+        if (userInfo == null) return nickname;
+
+        if (userInfo.getUserName() != null && !userInfo.getUserName().isEmpty()) {
+            nickname = userInfo.getUserName();
+        }
+        return nickname;
+    }
 }

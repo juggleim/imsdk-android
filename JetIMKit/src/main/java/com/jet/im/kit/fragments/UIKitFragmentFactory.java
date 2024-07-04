@@ -47,7 +47,7 @@ public class UIKitFragmentFactory {
      */
     @Deprecated
     @NonNull
-    public Fragment newChannelFragment(@NonNull String channelUrl, @NonNull Bundle args) {
-        return FragmentProviders.getChannel().provide(channelUrl, args);
+    public Fragment newChannelFragment(@NonNull int conversationType,@NonNull String conversationId, @NonNull Bundle args) {
+        return FragmentProviders.getChannel().provide(conversationType,conversationId, args);
     }
 }

@@ -8,20 +8,19 @@ import com.jet.im.kit.activities.adapter.MessageListAdapter;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.providers.AdapterProviders;
-import com.sendbird.android.channel.GroupChannel;
-import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.message.SendingStatus;
+import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.Message;
 
 /**
  * This class creates and performs a view corresponding the message list area in Sendbird UIKit.
- *
+ * <p>
  * since 3.0.0
  */
 public class MessageListComponent extends BaseMessageListComponent<MessageListAdapter> {
 
     /**
      * Constructor
-     *
+     * <p>
      * since 3.0.0
      */
     public MessageListComponent() {
@@ -45,22 +44,22 @@ public class MessageListComponent extends BaseMessageListComponent<MessageListAd
     }
 
     @Override
-    public void notifyChannelChanged(@NonNull GroupChannel channel) {
+    public void notifyChannelChanged(@NonNull ConversationInfo channel) {
         if (getAdapter() == null) {
             setAdapter(
-                AdapterProviders.getMessageList().provide(channel, new MessageListUIParams.Builder()
-                    .setUseMessageGroupUI(getParams().shouldUseGroupUI())
-                    .setChannelConfig(getParams().getChannelConfig())
-                    .build())
+                    AdapterProviders.getMessageList().provide(channel, new MessageListUIParams.Builder()
+                            .setUseMessageGroupUI(getParams().shouldUseGroupUI())
+                            .setChannelConfig(getParams().getChannelConfig())
+                            .build())
             );
         }
         super.notifyChannelChanged(channel);
     }
 
     @Override
-    protected void onListItemClicked(@NonNull View view, @NonNull String identifier, int position, @NonNull BaseMessage message) {
-        final SendingStatus status = message.getSendingStatus();
-        if (status == SendingStatus.PENDING) return;
+    protected void onListItemClicked(@NonNull View view, @NonNull String identifier, int position, @NonNull Message message) {
+        final Message.MessageState status = message.getState();
+        if (status == Message.MessageState.SENDING) return;
 
         switch (identifier) {
             case StringSet.Chat:
@@ -75,7 +74,7 @@ public class MessageListComponent extends BaseMessageListComponent<MessageListAd
     }
 
     @Override
-    protected void onListItemLongClicked(@NonNull View view, @NonNull String identifier, int position, @NonNull BaseMessage message) {
+    protected void onListItemLongClicked(@NonNull View view, @NonNull String identifier, int position, @NonNull Message message) {
         switch (identifier) {
             case StringSet.Chat:
                 // ClickableViewType.Chat
@@ -88,5 +87,6 @@ public class MessageListComponent extends BaseMessageListComponent<MessageListAd
         }
     }
 
-    public static class Params extends BaseMessageListComponent.Params {}
+    public static class Params extends BaseMessageListComponent.Params {
+    }
 }

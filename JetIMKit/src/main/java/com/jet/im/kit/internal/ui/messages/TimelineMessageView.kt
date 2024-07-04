@@ -13,6 +13,7 @@ import com.jet.im.kit.internal.extensions.setTypeface
 import com.jet.im.kit.internal.model.notifications.NotificationConfig
 import com.jet.im.kit.utils.DateUtils
 import com.jet.im.kit.utils.DrawableUtils
+import com.jet.im.model.Message
 
 internal class TimelineMessageView @JvmOverloads internal constructor(
     context: Context,
@@ -48,6 +49,9 @@ internal class TimelineMessageView @JvmOverloads internal constructor(
 
     fun drawTimeline(message: BaseMessage) {
         binding.tvTimeline.text = DateUtils.formatTimelineMessage(message.createdAt)
+    }
+    fun drawTimeline(message: Message) {
+        binding.tvTimeline.text = DateUtils.formatTimelineMessage(message.timestamp)
     }
 
     fun drawTimeline(message: BaseMessage, uiConfig: NotificationConfig?) {

@@ -26,7 +26,6 @@ import com.sendbird.android.message.FeedbackStatus
 import com.jet.im.kit.R
 import com.jet.im.kit.consts.StringSet
 import com.jet.im.kit.internal.interfaces.OnFeedbackRatingClickListener
-import com.jet.im.kit.widgets.FeedbackView
 
 @Suppress("DEPRECATION")
 internal fun TextView.setAppearance(context: Context, res: Int) {
@@ -138,17 +137,4 @@ internal fun View.setBackgroundColorAndRadii(colorStateList: ColorStateList?, ra
     drawable.cornerRadii = radii
     drawable.color = colorStateList
     background = drawable
-}
-
-internal fun FeedbackView.drawFeedback(message: BaseMessage, shouldHideFeedback: Boolean, listener: OnFeedbackRatingClickListener?) {
-    this.visibility = if (shouldHideFeedback || message.myFeedbackStatus == FeedbackStatus.NOT_APPLICABLE) {
-        View.GONE
-    } else {
-        View.VISIBLE
-    }
-
-    this.drawFeedback(message.myFeedback)
-    this.onFeedbackRatingClickListener = { feedbackRating: FeedbackRating ->
-        listener?.onFeedbackClicked(message, feedbackRating)
-    }
 }

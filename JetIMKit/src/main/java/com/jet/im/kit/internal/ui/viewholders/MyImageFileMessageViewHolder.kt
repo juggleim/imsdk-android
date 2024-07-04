@@ -11,17 +11,17 @@ import com.jet.im.kit.databinding.SbViewMyFileImageMessageBinding
 import com.jet.im.kit.interfaces.OnItemClickListener
 import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.model.MessageListUIParams
+import com.jet.im.model.ConversationInfo
+import com.jet.im.model.Message
 
 internal class MyImageFileMessageViewHolder internal constructor(
     val binding: SbViewMyFileImageMessageBinding,
     messageListUIParams: MessageListUIParams
 ) : GroupChannelMessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: BaseChannel, message: BaseMessage, messageListUIParams: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
         binding.myImageFileMessageView.messageUIConfig = messageUIConfig
-        if (channel is GroupChannel) {
-            binding.myImageFileMessageView.drawMessage(channel, message, messageListUIParams)
-        }
+        binding.myImageFileMessageView.drawMessage(channel, message, params)
     }
 
     override fun setEmojiReaction(
@@ -30,19 +30,11 @@ internal class MyImageFileMessageViewHolder internal constructor(
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
-        binding.myImageFileMessageView.binding.rvEmojiReactionList.apply {
-            setReactionList(reactionList)
-            setEmojiReactionClickListener(emojiReactionClickListener)
-            setEmojiReactionLongClickListener(emojiReactionLongClickListener)
-            setMoreButtonClickListener(moreButtonClickListener)
-        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
         return mapOf(
             ClickableViewIdentifier.Chat.name to binding.myImageFileMessageView.binding.ivThumbnailOverlay,
-            ClickableViewIdentifier.QuoteReply.name to binding.myImageFileMessageView.binding.quoteReplyPanel,
-            ClickableViewIdentifier.ThreadInfo.name to binding.myImageFileMessageView.binding.threadInfo
         )
     }
 }

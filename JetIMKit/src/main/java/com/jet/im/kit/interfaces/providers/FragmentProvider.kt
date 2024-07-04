@@ -32,6 +32,6 @@ fun interface ChannelFragmentProvider {
      * @return The [ChannelFragment].
      * @since 3.9.0
      */
-    fun provide(channelUrl: String, args: Bundle): ChannelFragment
+    fun provide(conversationType: Int, conversationId: String, args: Bundle): ChannelFragment
 }
 

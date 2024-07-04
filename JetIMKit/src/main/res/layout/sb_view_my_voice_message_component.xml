@@ -43,16 +43,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/contentPanelWithReactions"/>
 
-    <com.jet.im.kit.internal.ui.messages.MyQuotedMessageView
-        android:id="@+id/quoteReplyPanel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:translationY="@dimen/sb_size_10"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/contentPanelWithReactions"
-        android:visibility="gone"/>
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/contentPanelWithReactions"
         android:layout_width="wrap_content"
@@ -63,17 +53,7 @@
         app:layout_constraintBottom_toTopOf="@+id/brBottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/contentLeftView"
-        app:layout_constraintTop_toBottomOf="@id/quoteReplyPanel">
-
-        <View
-            android:id="@+id/emojiReactionListBackground"
-            android:layout_width="@dimen/sb_size_0"
-            android:layout_height="@dimen/sb_size_0"
-            app:layout_constraintTop_toTopOf="@id/rvEmojiReactionList"
-            app:layout_constraintBottom_toBottomOf="@id/rvEmojiReactionList"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
+        app:layout_constraintTop_toTopOf="parent">
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/contentPanel"
             android:layout_width="0dp"
@@ -84,7 +64,7 @@
             app:layout_constraintTop_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
-            app:layout_constraintBottom_toTopOf="@id/rvEmojiReactionList" >
+            app:layout_constraintBottom_toBottomOf="parent" >
 
             <com.jet.im.kit.internal.ui.messages.VoiceMessageView
                 android:id="@+id/voiceMessage"
@@ -97,27 +77,12 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <com.jet.im.kit.internal.ui.reactions.EmojiReactionListView
-            android:id="@+id/rvEmojiReactionList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/sb_size_7"
-            android:paddingStart="@dimen/sb_size_7"
-            android:paddingRight="@dimen/sb_size_7"
-            android:paddingEnd="@dimen/sb_size_7"
-            android:paddingBottom="@dimen/sb_size_7"
-            android:paddingTop="@dimen/sb_size_7"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintTop_toBottomOf="@id/contentPanel"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
-            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <androidx.constraintlayout.widget.Barrier
             android:id="@+id/contentBarrier"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="contentPanel,rvEmojiReactionList"
+            app:constraint_referenced_ids="contentPanel"
             app:barrierDirection="end" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -128,14 +93,4 @@
         android:layout_height="wrap_content"
         app:barrierDirection="bottom"
         app:constraint_referenced_ids="contentPanelWithReactions, tvSentAt, ivStatus" />
-
-    <com.jet.im.kit.internal.ui.messages.ThreadInfoView
-        android:id="@+id/threadInfo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintRight_toRightOf="@id/contentPanelWithReactions"
-        app:layout_constraintTop_toBottomOf="@id/contentPanelWithReactions"
-        />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,14 +3,22 @@ package com.jet.im.kit.model
 import com.sendbird.android.message.BaseMessage
 import com.sendbird.android.message.CustomizableMessage
 import com.jet.im.kit.utils.DateUtils
+import com.jet.im.model.Message
+import com.jet.im.model.MessageContent
 
-open class TimelineMessage(private val anchor: BaseMessage) :
-    CustomizableMessage(anchor.channelUrl, anchor.messageId + anchor.createdAt, anchor.createdAt - 1) {
-    override val requestId: String
-        get() = anchor.requestId + createdAt
-    override var message: String
-        get() = DateUtils.formatTimelineMessage(createdAt)
+open class TimelineMessage(private val time:Long) :
+    MessageContent() {
+    var message: String
+        get() = DateUtils.formatTimelineMessage(time)
         set(message) {
-            super.message = message
+            this.message = message
         }
+
+    override fun encode(): ByteArray {
+        return ByteArray(0)
+    }
+
+    override fun decode(data: ByteArray?) {
+        return
+    }
 }

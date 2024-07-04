@@ -11,17 +11,17 @@ import com.jet.im.kit.databinding.SbViewOtherFileVideoMessageBinding
 import com.jet.im.kit.interfaces.OnItemClickListener
 import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.model.MessageListUIParams
+import com.jet.im.model.ConversationInfo
+import com.jet.im.model.Message
 
 internal class OtherVideoFileMessageViewHolder internal constructor(
     val binding: SbViewOtherFileVideoMessageBinding,
     messageListUIParams: MessageListUIParams
 ) : GroupChannelMessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: BaseChannel, message: BaseMessage, messageListUIParams: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams){
         binding.otherVideoFileMessageView.messageUIConfig = messageUIConfig
-        if (channel is GroupChannel) {
-            binding.otherVideoFileMessageView.drawMessage(channel, message, messageListUIParams)
-        }
+        binding.otherVideoFileMessageView.drawMessage(channel, message, params)
     }
 
     override fun setEmojiReaction(
@@ -30,20 +30,12 @@ internal class OtherVideoFileMessageViewHolder internal constructor(
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
-        binding.otherVideoFileMessageView.binding.rvEmojiReactionList.apply {
-            setReactionList(reactionList)
-            setEmojiReactionClickListener(emojiReactionClickListener)
-            setEmojiReactionLongClickListener(emojiReactionLongClickListener)
-            setMoreButtonClickListener(moreButtonClickListener)
-        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
         return mapOf(
             ClickableViewIdentifier.Chat.name to binding.otherVideoFileMessageView.binding.ivThumbnailOverlay,
             ClickableViewIdentifier.Profile.name to binding.otherVideoFileMessageView.binding.ivProfileView,
-            ClickableViewIdentifier.QuoteReply.name to binding.otherVideoFileMessageView.binding.quoteReplyPanel,
-            ClickableViewIdentifier.ThreadInfo.name to binding.otherVideoFileMessageView.binding.threadInfo
         )
     }
 }

@@ -15,7 +15,6 @@ import com.sendbird.android.message.FileMessage
 import com.jet.im.kit.R
 import com.jet.im.kit.consts.StringSet
 import com.jet.im.kit.databinding.SbViewMessagePreviewBinding
-import com.jet.im.kit.internal.extensions.getDisplayMessage
 import com.jet.im.kit.internal.extensions.getName
 import com.jet.im.kit.internal.extensions.getType
 import com.jet.im.kit.internal.extensions.setAppearance
@@ -123,7 +122,8 @@ internal class MessagePreview @JvmOverloads constructor(
                 maxLines = 2
                 ellipsize = TextUtils.TruncateAt.END
                 setAppearance(context, messageTextAppearance)
-                text = message.getDisplayMessage()
+                //todo
+//                text = name
             }
             binding.ivIcon.visibility = GONE
         }

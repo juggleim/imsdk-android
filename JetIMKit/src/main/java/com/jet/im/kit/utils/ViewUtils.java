@@ -7,11 +7,8 @@ import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
-import android.text.TextPaint;
-import android.text.style.ClickableSpan;
 import android.text.style.TextAppearanceSpan;
 import android.util.Pair;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -29,45 +26,35 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
-import com.sendbird.android.channel.BaseChannel;
-import com.sendbird.android.channel.GroupChannel;
+import com.jet.im.JetIM;
+import com.jet.im.kit.R;
+import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.consts.StringSet;
+import com.jet.im.kit.interfaces.OnItemClickListener;
+import com.jet.im.kit.internal.model.GlideCachedUrlLoader;
+import com.jet.im.kit.internal.ui.messages.OgtagView;
+import com.jet.im.kit.internal.ui.messages.VoiceMessageView;
+import com.jet.im.kit.internal.ui.widgets.RoundCornerView;
+import com.jet.im.kit.internal.ui.widgets.VoiceProgressView;
+import com.jet.im.kit.log.Logger;
+import com.jet.im.kit.model.FileInfo;
+import com.jet.im.kit.model.MessageUIConfig;
+import com.jet.im.kit.model.TextUIConfig;
+import com.jet.im.kit.vm.PendingMessageRepository;
+import com.jet.im.model.Message;
+import com.jet.im.model.UserInfo;
+import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.VoiceMessage;
 import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.message.CustomizableMessage;
 import com.sendbird.android.message.FileMessage;
 import com.sendbird.android.message.OGMetaData;
 import com.sendbird.android.message.Thumbnail;
 import com.sendbird.android.user.Sender;
 import com.sendbird.android.user.User;
-import com.jet.im.kit.R;
-import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.kit.consts.ReplyType;
-import com.jet.im.kit.consts.StringSet;
-import com.jet.im.kit.interfaces.OnItemClickListener;
-import com.jet.im.kit.internal.model.GlideCachedUrlLoader;
-import com.jet.im.kit.internal.singleton.MessageDisplayDataManager;
-import com.jet.im.kit.internal.ui.messages.BaseQuotedMessageView;
-import com.jet.im.kit.internal.ui.messages.OgtagView;
-import com.jet.im.kit.internal.ui.messages.ThreadInfoView;
-import com.jet.im.kit.internal.ui.messages.VoiceMessageView;
-import com.jet.im.kit.internal.ui.reactions.EmojiReactionListView;
-import com.jet.im.kit.internal.ui.widgets.RoundCornerView;
-import com.jet.im.kit.internal.ui.widgets.VoiceProgressView;
-import com.jet.im.kit.log.Logger;
-import com.jet.im.kit.model.FileInfo;
-import com.jet.im.kit.model.MentionSpan;
-import com.jet.im.kit.model.MessageDisplayData;
-import com.jet.im.kit.model.MessageListUIParams;
-import com.jet.im.kit.model.MessageUIConfig;
-import com.jet.im.kit.model.TextUIConfig;
-import com.jet.im.kit.model.UserMessageDisplayData;
-import com.jet.im.kit.model.configurations.ChannelConfig;
-import com.jet.im.kit.vm.PendingMessageRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -94,13 +81,19 @@ public class ViewUtils {
         view.setText(spannable);
     }
 
-    public static void drawTextMessage(@NonNull TextView textView, @Nullable BaseMessage message, @Nullable MessageUIConfig uiConfig, boolean enableMention) {
-        drawTextMessage(textView, message, uiConfig, enableMention, null, null);
+    public static void drawTextMessage(
+            @NonNull TextView textView,
+            @Nullable BaseMessage message,
+            @Nullable MessageUIConfig uiConfig,
+            boolean enableMention,
+            @Nullable TextUIConfig mentionedCurrentUserUIConfig,
+            @Nullable OnItemClickListener<User> mentionClickListener) {
+
     }
 
     public static void drawTextMessage(
         @NonNull TextView textView,
-        @Nullable BaseMessage message,
+        @Nullable Message message,
         @Nullable MessageUIConfig uiConfig,
         boolean enableMention,
         @Nullable TextUIConfig mentionedCurrentUserUIConfig,
@@ -114,8 +107,6 @@ public class ViewUtils {
             drawUnknownMessage(textView, MessageUtils.isMine(message));
             return;
         }
-
-        final boolean isMine = MessageUtils.isMine(message);
         final Context context = textView.getContext();
         final CharSequence text = getDisplayableText(
             context,
@@ -126,35 +117,20 @@ public class ViewUtils {
             mentionClickListener,
             enableMention
         );
-        final SpannableStringBuilder builder = new SpannableStringBuilder(text);
-        if (message.getUpdatedAt() > 0L) {
-            final String edited = textView.getResources().getString(R.string.sb_text_channel_message_badge_edited);
-            final Spannable editedString = new SpannableString(edited);
-            if (uiConfig != null) {
-                final TextUIConfig editedTextMarkUIConfig = isMine ? uiConfig.getMyEditedTextMarkUIConfig() : uiConfig.getOtherEditedTextMarkUIConfig();
-                editedTextMarkUIConfig.bind(context, editedString, 0, editedString.length());
-            }
-            builder.append(editedString);
-        }
-        textView.setText(builder);
+        textView.setText(text);
     }
 
     @NonNull
     public static CharSequence getDisplayableText(
         @NonNull Context context,
-        @NonNull BaseMessage message,
+        @NonNull Message message,
         @Nullable MessageUIConfig uiConfig,
         @Nullable TextUIConfig mentionedCurrentUserUIConfig,
         boolean mentionClickable,
         @Nullable OnItemClickListener<User> mentionClickListener,
         boolean enabledMention
     ) {
-        final String mentionedText = message.getMentionedMessageTemplate();
-        String displayedMessage = message.getMessage();
-        final MessageDisplayData viewData = MessageDisplayDataManager.getOrNull(message);
-        if (viewData instanceof UserMessageDisplayData) {
-            displayedMessage = ((UserMessageDisplayData) viewData).getMessage();
-        }
+        String displayedMessage =message.getContent() instanceof TextMessage?((TextMessage)message.getContent()).getContent():"";
         final SpannableString text = new SpannableString(displayedMessage);
         if (uiConfig != null) {
             final TextUIConfig messageTextUIConfig = MessageUtils.isMine(message) ? uiConfig.getMyMessageTextUIConfig() : uiConfig.getOtherMessageTextUIConfig();
@@ -162,59 +138,6 @@ public class ViewUtils {
         }
 
         CharSequence displayText = text;
-        if (enabledMention && !message.getMentionedUsers().isEmpty() && !TextUtils.isEmpty(mentionedText)) {
-            final SpannableString mentionedSpannableString = new SpannableString(mentionedText);
-            if (uiConfig != null) {
-                final TextUIConfig messageTextUIConfig = MessageUtils.isMine(message) ? uiConfig.getMyMessageTextUIConfig() : uiConfig.getOtherMessageTextUIConfig();
-                messageTextUIConfig.bind(context, mentionedSpannableString, 0, mentionedSpannableString.length());
-            }
-            final Matcher matcher = MENTION.matcher(mentionedSpannableString);
-            final List<String> sources = new ArrayList<>();
-            final List<CharSequence> destinations = new ArrayList<>();
-            while (matcher.find()) {
-                if (matcher.groupCount() < 2) break;
-                Logger.d("_____ matched group[0] = %s, group[1] = %s, start=%d, end=%d, count=%d", matcher.group(0), matcher.group(1), matcher.start(), matcher.end(), matcher.groupCount());
-
-                final String mentionedUserId = matcher.group(1);
-                if (mentionedUserId != null) {
-                    final User mentionedUser = getMentionedUser(message, mentionedUserId);
-                    if (mentionedUser != null) {
-                        final boolean isMine = MessageUtils.isMine(message);
-                        final boolean isMentionedCurrentUser = MessageUtils.isMine(mentionedUserId);
-                        final String trigger = SendbirdUIKit.getUserMentionConfig().getTrigger();
-                        final SpannableString spannable;
-                        if (uiConfig != null) {
-                            final TextUIConfig config = isMine ? uiConfig.getMyMentionUIConfig() : uiConfig.getOtherMentionUIConfig();
-                            final String nickname = UserUtils.getDisplayName(context, mentionedUser);
-                            final MentionSpan mentionSpan = new MentionSpan(context, trigger, nickname, mentionedUser, config, isMentionedCurrentUser ? mentionedCurrentUserUIConfig : null);
-                            spannable = new SpannableString(mentionSpan.getDisplayText());
-                            spannable.setSpan(mentionSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        } else {
-                            spannable = new SpannableString(trigger + mentionedUser.getNickname());
-                        }
-                        if (mentionClickable) {
-                            spannable.setSpan(new ClickableSpan() {
-                                @Override
-                                public void onClick(@NonNull View widget) {
-                                    if (mentionClickListener != null) {
-                                        mentionClickListener.onItemClick(widget, 0, mentionedUser);
-                                    }
-                                }
-
-                                @Override
-                                public void updateDrawState(@NonNull TextPaint paint) {
-                                    paint.setUnderlineText(false);
-                                }
-                            }, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        }
-                        destinations.add(spannable);
-                        sources.add(matcher.group(0));
-                    }
-                }
-            }
-            int arraySize = sources.size();
-            displayText = TextUtils.replace(mentionedSpannableString, sources.toArray(new String[arraySize]), destinations.toArray(new CharSequence[arraySize]));
-        }
         return displayText;
     }
 
@@ -251,15 +174,6 @@ public class ViewUtils {
         });
     }
 
-    public static void drawReactionEnabled(@NonNull EmojiReactionListView view, @NonNull BaseChannel channel, @NonNull ChannelConfig channelConfig) {
-        boolean canSendReaction = ChannelConfig.canSendReactions(channelConfig, channel);
-        view.setClickable(canSendReaction);
-        if (view.useMoreButton() != canSendReaction) {
-            view.setUseMoreButton(canSendReaction);
-            view.refresh();
-        }
-    }
-
     public static void drawNickname(
         @NonNull TextView tvNickname,
         @Nullable BaseMessage message,
@@ -271,6 +185,27 @@ public class ViewUtils {
         }
 
         final Sender sender = message.getSender();
+        final Spannable nickname = new SpannableString(UserUtils.getDisplayName(tvNickname.getContext(), sender));
+        if (uiConfig != null) {
+            final boolean isMine = MessageUtils.isMine(message);
+            final TextUIConfig textUIConfig = isOperator ? uiConfig.getOperatorNicknameTextUIConfig() : (isMine ? uiConfig.getMyNicknameTextUIConfig() : uiConfig.getOtherNicknameTextUIConfig());
+            textUIConfig.bind(tvNickname.getContext(), nickname, 0, nickname.length());
+        }
+
+        tvNickname.setText(nickname);
+    }
+
+    public static void drawNickname(
+            @NonNull TextView tvNickname,
+            @Nullable Message message,
+            @Nullable MessageUIConfig uiConfig,
+            boolean isOperator
+    ) {
+        if (message == null) {
+            return;
+        }
+
+        final UserInfo sender = JetIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId()) ;
         final Spannable nickname = new SpannableString(UserUtils.getDisplayName(tvNickname.getContext(), sender));
         if (uiConfig != null) {
             final boolean isMine = MessageUtils.isMine(message);
@@ -300,6 +235,22 @@ public class ViewUtils {
         if (sender != null && !TextUtils.isEmpty(sender.getProfileUrl())) {
             url = sender.getProfileUrl();
             plainUrl = sender.getPlainProfileImageUrl();
+        }
+
+        drawProfile(ivProfile, url, plainUrl);
+    }
+
+    public static void drawProfile(@NonNull ImageView ivProfile, @Nullable Message message) {
+        if (message == null) {
+            return;
+        }
+        final UserInfo sender = JetIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId()) ;
+
+        String url = "";
+        String plainUrl = "";
+        if (sender != null && !TextUtils.isEmpty(sender.getPortrait())) {
+            url = sender.getPortrait();
+            plainUrl = sender.getPortrait();
         }
 
         drawProfile(ivProfile, url, plainUrl);
@@ -483,16 +434,6 @@ public class ViewUtils {
         }
     }
 
-    public static void drawQuotedMessage(
-        @NonNull BaseQuotedMessageView replyPanel,
-        @NonNull GroupChannel channel,
-        @NonNull BaseMessage message,
-        @Nullable TextUIConfig uiConfig,
-        @NonNull MessageListUIParams params) {
-        final boolean hasParentMessage = MessageUtils.hasParentMessage(message);
-        replyPanel.setVisibility(hasParentMessage ? View.VISIBLE : View.GONE);
-        replyPanel.drawQuotedMessage(channel, message, uiConfig, params);
-    }
 
     public static void drawSentAt(@NonNull TextView tvSentAt, @Nullable BaseMessage message, @Nullable MessageUIConfig uiConfig) {
         if (message == null) {
@@ -500,6 +441,20 @@ public class ViewUtils {
         }
 
         final Spannable sentAt = new SpannableString(DateUtils.formatTime(tvSentAt.getContext(), message.getCreatedAt()));
+        if (uiConfig != null) {
+            final boolean isMine = MessageUtils.isMine(message);
+            final TextUIConfig textUIConfig = isMine ? uiConfig.getMySentAtTextUIConfig() : uiConfig.getOtherSentAtTextUIConfig();
+            textUIConfig.bind(tvSentAt.getContext(), sentAt, 0, sentAt.length());
+        }
+        tvSentAt.setText(sentAt);
+    }
+
+    public static void drawSentAt(@NonNull TextView tvSentAt, @Nullable Message message, @Nullable MessageUIConfig uiConfig) {
+        if (message == null) {
+            return;
+        }
+
+        final Spannable sentAt = new SpannableString(DateUtils.formatTime(tvSentAt.getContext(), message.getTimestamp()));
         if (uiConfig != null) {
             final boolean isMine = MessageUtils.isMine(message);
             final TextUIConfig textUIConfig = isMine ? uiConfig.getMySentAtTextUIConfig() : uiConfig.getOtherSentAtTextUIConfig();
@@ -534,6 +489,13 @@ public class ViewUtils {
         drawFilename(tvFilename, message.getName(), MessageUtils.isMine(message), uiConfig);
     }
 
+    public static void drawFilename(@NonNull TextView tvFilename,@Nullable Message message, @Nullable com.jet.im.model.messages.FileMessage fileMessage, @Nullable MessageUIConfig uiConfig) {
+        if (message == null||fileMessage==null) {
+            return;
+        }
+        drawFilename(tvFilename, fileMessage.getName(), MessageUtils.isMine(message), uiConfig);
+    }
+
     public static void drawFilename(@NonNull TextView tvFilename, @NonNull String fileName, boolean isMine, @Nullable MessageUIConfig uiConfig) {
         final Spannable filename = new SpannableString(fileName);
         if (uiConfig != null) {
@@ -544,17 +506,12 @@ public class ViewUtils {
         tvFilename.setText(filename);
     }
 
-    public static void drawThreadInfo(@NonNull ThreadInfoView threadInfoView, @NonNull BaseMessage message, @NonNull MessageListUIParams messageListUIParams) {
-        if (message instanceof CustomizableMessage) return;
-        if (messageListUIParams.getChannelConfig().getReplyType() != ReplyType.THREAD) {
-            threadInfoView.setVisibility(View.GONE);
-            return;
-        }
-        threadInfoView.drawThreadInfo(message.getThreadInfo());
-    }
-
     public static void drawVoiceMessage(@NonNull VoiceMessageView voiceMessageView, @NonNull FileMessage message) {
         voiceMessageView.drawVoiceMessage(message);
+    }
+
+    public static void drawVoiceMessage(@NonNull VoiceMessageView voiceMessageView, @NonNull VoiceMessage voiceMessage,@NonNull Message message) {
+        voiceMessageView.drawVoiceMessage(message,voiceMessage);
     }
 
     public static void drawTimeline(@NonNull TextView timelineView, int milliseconds) {

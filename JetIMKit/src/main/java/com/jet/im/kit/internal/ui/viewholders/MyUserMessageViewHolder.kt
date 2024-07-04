@@ -12,17 +12,17 @@ import com.jet.im.kit.databinding.SbViewMyUserMessageBinding
 import com.jet.im.kit.interfaces.OnItemClickListener
 import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.model.MessageListUIParams
+import com.jet.im.model.ConversationInfo
+import com.jet.im.model.Message
 
 internal class MyUserMessageViewHolder internal constructor(
     val binding: SbViewMyUserMessageBinding,
     messageListUIParams: MessageListUIParams
 ) : GroupChannelMessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: BaseChannel, message: BaseMessage, messageListUIParams: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
         binding.myUserMessage.messageUIConfig = messageUIConfig
-        if (channel is GroupChannel) {
-            binding.myUserMessage.drawMessage(channel, message, messageListUIParams)
-        }
+        binding.myUserMessage.drawMessage(channel, message, params)
     }
 
     override fun setEmojiReaction(
@@ -31,19 +31,11 @@ internal class MyUserMessageViewHolder internal constructor(
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
-        binding.myUserMessage.binding.rvEmojiReactionList.apply {
-            setReactionList(reactionList)
-            setEmojiReactionClickListener(emojiReactionClickListener)
-            setEmojiReactionLongClickListener(emojiReactionLongClickListener)
-            setMoreButtonClickListener(moreButtonClickListener)
-        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
         return mapOf(
             ClickableViewIdentifier.Chat.name to binding.myUserMessage.binding.contentPanel,
-            ClickableViewIdentifier.QuoteReply.name to binding.myUserMessage.binding.quoteReplyPanel,
-            ClickableViewIdentifier.ThreadInfo.name to binding.myUserMessage.binding.threadInfo
         )
     }
 

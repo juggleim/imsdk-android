@@ -19,20 +19,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.activities.adapter.MessageListAdapter;
-import com.jet.im.kit.activities.adapter.SuggestedMentionListAdapter;
-import com.jet.im.kit.activities.viewholder.MessageType;
-import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
 import com.jet.im.kit.consts.DialogEditTextParams;
 import com.jet.im.kit.consts.KeyboardDisplayType;
-import com.jet.im.kit.consts.ReplyType;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.consts.TypingIndicatorType;
 import com.jet.im.kit.interfaces.LoadingDialogHandler;
-import com.jet.im.kit.interfaces.MessageDisplayDataProvider;
 import com.jet.im.kit.interfaces.OnConsumableClickListener;
 import com.jet.im.kit.interfaces.OnEditTextResultListener;
-import com.jet.im.kit.interfaces.OnEmojiReactionClickListener;
-import com.jet.im.kit.interfaces.OnEmojiReactionLongClickListener;
 import com.jet.im.kit.interfaces.OnInputModeChangedListener;
 import com.jet.im.kit.interfaces.OnInputTextChangedListener;
 import com.jet.im.kit.interfaces.OnItemClickListener;
@@ -56,26 +49,24 @@ import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.utils.MessageUtils;
 import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.vm.ChannelViewModel;
-import com.jet.im.kit.vm.FileDownloader;
 import com.jet.im.kit.widgets.MentionEditText;
 import com.jet.im.kit.widgets.MessageInputView;
 import com.jet.im.kit.widgets.StatusFrameView;
-import com.sendbird.android.channel.GroupChannel;
-import com.sendbird.android.channel.Role;
+import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.Message;
+import com.jet.im.model.MessageContent;
+import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.VoiceMessage;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Feedback;
 import com.sendbird.android.message.FeedbackRating;
-import com.sendbird.android.message.FileMessage;
-import com.sendbird.android.message.SendingStatus;
 import com.sendbird.android.params.MessageListParams;
 import com.sendbird.android.params.UserMessageCreateParams;
 import com.sendbird.android.params.UserMessageUpdateParams;
-import com.sendbird.android.user.MutedState;
 import com.sendbird.android.user.User;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -97,12 +88,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     private OnConsumableClickListener scrollFirstButtonClickListener;
     @Nullable
     private View.OnClickListener inputLeftButtonClickListener;
-    @Nullable
-    private OnEmojiReactionClickListener emojiReactionClickListener;
-    @Nullable
-    private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
-    @Nullable
-    private OnItemClickListener<BaseMessage> emojiReactionMoreButtonClickListener;
     @Nullable
     private OnInputTextChangedListener inputTextChangedListener;
     @Nullable
@@ -131,7 +116,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final Bundle args = getArguments();
     }
 
     @NonNull
@@ -143,7 +127,10 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     @NonNull
     @Override
     protected ChannelViewModel onCreateViewModel() {
-        return ViewModelProviders.getChannel().provide(this, getChannelUrl(), params, channelConfig);
+        final Bundle args = getArguments() == null ? new Bundle() : getArguments();
+        int conversationType = args.getInt(StringSet.KEY_CONVERSATION_TYPE, 1);
+        String conversationId = args.getString(StringSet.KEY_CONVERSATION_ID);
+        return ViewModelProviders.getChannel().provide(this, new Conversation(Conversation.ConversationType.setValue(conversationType), conversationId), params, channelConfig);
     }
 
     @Override
@@ -155,7 +142,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     protected void onBeforeReady(@NonNull ReadyStatus status, @NonNull ChannelModule module, @NonNull ChannelViewModel viewModel) {
         Logger.d(">> ChannelFragment::onBeforeReady()");
         super.onBeforeReady(status, module, viewModel);
-        final GroupChannel channel = viewModel.getChannel();
+        final ConversationInfo channel = viewModel.getChannel();
         onBindChannelHeaderComponent(module.getHeaderComponent(), viewModel, channel);
         onBindMessageListComponent(module.getMessageListComponent(), viewModel, channel);
         onBindMessageInputComponent(module.getMessageInputComponent(), viewModel, channel);
@@ -165,8 +152,8 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     @Override
     protected void onReady(@NonNull ReadyStatus status, @NonNull ChannelModule module, @NonNull ChannelViewModel viewModel) {
         shouldDismissLoadingDialog();
-        final GroupChannel channel = viewModel.getChannel();
-        if (status == ReadyStatus.ERROR || channel == null || channel.isChatNotification()) {
+        final ConversationInfo channel = viewModel.getChannel();
+        if (status == ReadyStatus.ERROR || channel == null) {
             if (isFragmentAlive()) {
                 toastError(R.string.sb_text_error_get_channel);
                 shouldActivityFinish();
@@ -194,7 +181,8 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
 
         ChannelViewModel.ChannelMessageData channelMessageData = getViewModel().getMessageList().getValue();
         if (channelMessageData != null) {
-            MessageExtensionsKt.clearLastValidations(channelMessageData.getMessages());
+            //todo 清理数据
+//            MessageExtensionsKt.clearLastValidations(channelMessageData.getMessages());
         }
     }
 
@@ -204,9 +192,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
      * @param headerComponent The component to which the event will be bound
      * @param viewModel       A view model that provides the data needed for the fragment
      * @param channel         The {@code GroupChannel} that contains the data needed for this fragment
-     * since 3.0.0
+     *                        since 3.0.0
      */
-    protected void onBindChannelHeaderComponent(@NonNull ChannelHeaderComponent headerComponent, @NonNull ChannelViewModel viewModel, @Nullable GroupChannel channel) {
+    protected void onBindChannelHeaderComponent(@NonNull ChannelHeaderComponent headerComponent, @NonNull ChannelViewModel viewModel, @Nullable ConversationInfo channel) {
         Logger.d(">> ChannelFragment::onBindChannelHeaderComponent()");
         headerComponent.setOnLeftButtonClickListener(headerLeftButtonClickListener != null ? headerLeftButtonClickListener : v -> shouldActivityFinish());
         headerComponent.setOnRightButtonClickListener(headerRightButtonClickListener != null ? headerRightButtonClickListener : v -> {
@@ -239,9 +227,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
      * @param messageListComponent The component to which the event will be bound
      * @param viewModel            A view model that provides the data needed for the fragment
      * @param channel              The {@code GroupChannel} that contains the data needed for this fragment
-     * since 3.0.0
+     *                             since 3.0.0
      */
-    protected void onBindMessageListComponent(@NonNull MessageListComponent messageListComponent, @NonNull ChannelViewModel viewModel, @Nullable GroupChannel channel) {
+    protected void onBindMessageListComponent(@NonNull MessageListComponent messageListComponent, @NonNull ChannelViewModel viewModel, @Nullable ConversationInfo channel) {
         Logger.d(">> ChannelFragment::onBindMessageListComponent()");
         if (channel == null) return;
         messageListComponent.setOnMessageClickListener(this::onMessageClicked);
@@ -249,9 +237,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         messageListComponent.setOnMessageProfileClickListener(this::onMessageProfileClicked);
         messageListComponent.setOnMessageLongClickListener(this::onMessageLongClicked);
         messageListComponent.setOnMessageMentionClickListener(this::onMessageMentionClicked);
-        messageListComponent.setOnEmojiReactionClickListener(emojiReactionClickListener != null ? emojiReactionClickListener : (view, position, message, reactionKey) -> toggleReaction(view, message, reactionKey));
-        messageListComponent.setOnEmojiReactionLongClickListener(emojiReactionLongClickListener != null ? emojiReactionLongClickListener : (view, position, message, reactionKey) -> showEmojiReactionDialog(message, position));
-        messageListComponent.setOnEmojiReactionMoreButtonClickListener(emojiReactionMoreButtonClickListener != null ? emojiReactionMoreButtonClickListener : (view, position, message) -> showEmojiListDialog(message));
         messageListComponent.setOnFeedbackRatingClickListener(this::onFeedbackRatingClicked);
         messageListComponent.setOnTooltipClickListener(tooltipClickListener != null ? tooltipClickListener : this::onMessageTooltipClicked);
         messageListComponent.setOnScrollBottomButtonClickListener(scrollBottomButtonClickListener);
@@ -269,7 +254,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             if (!isInitialCallFinished && isFragmentAlive()) {
                 shouldDismissLoadingDialog();
             }
-            final List<BaseMessage> messageList = receivedMessageData.getMessages();
+            final List<Message> messageList = receivedMessageData.getMessages();
             Logger.d("++ result messageList size : %s, source = %s", messageList.size(), receivedMessageData.getTraceName());
 
             final String eventSource = receivedMessageData.getTraceName();
@@ -296,10 +281,12 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                             messageListComponent.notifyOtherMessageReceived(anchorDialogShowing.get());
                             if (eventSource.equals(StringSet.EVENT_MESSAGE_SENT)) {
                                 final MessageListParams messageListParams = viewModel.getMessageListParams();
-                                final BaseMessage latestMessage = adapter.getItem(messageListParams != null && messageListParams.getReverse() ? 0 : adapter.getItemCount() - 1);
-                                if (latestMessage instanceof FileMessage) {
+                                final Message latestMessage = adapter.getItem(messageListParams != null && messageListParams.getReverse() ? 0 : adapter.getItemCount() - 1);
+                                MessageContent content = latestMessage.getContent();
+                                if (content instanceof com.jet.im.model.messages.FileMessage) {
                                     // Download from files already sent for quick image loading.
-                                    FileDownloader.downloadThumbnail(context, (FileMessage) latestMessage);
+                                    //todo 下载
+//                                    FileDownloader.downloadThumbnail(context, (com.jet.im.model.messages.FileMessage) content);
                                 }
                             }
                             break;
@@ -314,9 +301,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                     }
                 }
                 if (!isInitialCallFinished) {
-                    BaseMessage willAnimateMessage = null;
+                    Message willAnimateMessage = null;
                     if (tryAnimateWhenMessageLoaded.getAndSet(false)) {
-                        final List<BaseMessage> founded = viewModel.getMessagesByCreatedAt(viewModel.getStartingPoint());
+                        final List<Message> founded = viewModel.getMessagesByCreatedAt(viewModel.getStartingPoint());
                         Logger.i("++ founded=%s, startingPoint=%s", founded, viewModel.getStartingPoint());
                         if (founded.size() == 1) {
                             willAnimateMessage = founded.get(0);
@@ -341,9 +328,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                         int position = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
                         MessageListAdapter adapter = messageListComponent.getAdapter();
                         if (position >= 0 && adapter != null) {
-                            final BaseMessage message = adapter.getItem(position);
+                            final Message message = adapter.getItem(position);
                             Logger.d("++ founded first visible message = %s", message);
-                            loadInitial(message.getCreatedAt());
+                            loadInitial(message.getTimestamp());
                         }
                     }
                 }
@@ -351,9 +338,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         });
         viewModel.onChannelUpdated().observe(getViewLifecycleOwner(), messageListComponent::notifyChannelChanged);
         viewModel.onMessagesDeleted().observe(getViewLifecycleOwner(), deletedMessages -> {
-            for (final BaseMessage deletedMessage : deletedMessages) {
-                if (deletedMessage instanceof FileMessage && MessageUtils.isVoiceMessage((FileMessage) deletedMessage)) {
-                    final String key = MessageUtils.getVoiceMessageKey((FileMessage) deletedMessage);
+            for (final Message deletedMessage : deletedMessages) {
+                if (deletedMessage.getContent() instanceof VoiceMessage) {
+                    final String key = MessageUtils.getVoiceMessageKey(deletedMessage);
                     if (key.equals(VoicePlayerManager.getCurrentKey())) {
                         VoicePlayerManager.pause();
                     }
@@ -400,9 +387,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
      * @param inputComponent The component to which the event will be bound
      * @param viewModel      A view model that provides the data needed for the fragment
      * @param channel        The {@code GroupChannel} that contains the data needed for this fragment
-     * since 3.0.0
+     *                       since 3.0.0
      */
-    protected void onBindMessageInputComponent(@NonNull MessageInputComponent inputComponent, @NonNull ChannelViewModel viewModel, @Nullable GroupChannel channel) {
+    protected void onBindMessageInputComponent(@NonNull MessageInputComponent inputComponent, @NonNull ChannelViewModel viewModel, @Nullable ConversationInfo channel) {
         Logger.d(">> ChannelFragment::onBindMessageInputComponent()");
         if (channel == null) return;
         inputComponent.setOnInputLeftButtonClickListener(inputLeftButtonClickListener != null ? inputLeftButtonClickListener : v -> showMediaSelectDialog());
@@ -410,19 +397,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         inputComponent.setOnEditModeSaveButtonClickListener(editModeSaveButtonClickListener != null ? editModeSaveButtonClickListener : v -> {
             final EditText inputText = inputComponent.getEditTextView();
             if (inputText != null && !TextUtils.isEmpty(inputText.getText())) {
-                if (null != targetMessage) {
-                    UserMessageUpdateParams params = new UserMessageUpdateParams(inputText.getText().toString());
-                    if (inputText instanceof MentionEditText) {
-                        final List<User> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
-                        final CharSequence mentionedTemplate = ((MentionEditText) inputText).getMentionedTemplate();
-                        Logger.d("++ mentioned template text=%s", mentionedTemplate);
-                        params.setMentionedMessageTemplate(mentionedTemplate.toString());
-                        params.setMentionedUsers(mentionedUsers);
-                    }
-                    updateUserMessage(targetMessage.getMessageId(), params);
-                } else {
-                    Logger.d("Target message for update is missing");
-                }
+                //todo
             }
             inputComponent.requestInputMode(MessageInputView.Mode.DEFAULT);
         });
@@ -442,20 +417,11 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         }
 
         viewModel.onMessagesDeleted().observe(getViewLifecycleOwner(), deletedMessages -> {
-            if (targetMessage != null && deletedMessages.contains(targetMessage)) {
-                targetMessage = null;
-                inputComponent.requestInputMode(MessageInputView.Mode.DEFAULT);
-            }
+
         });
 
         viewModel.onChannelUpdated().observe(getViewLifecycleOwner(), openChannel -> {
             inputComponent.notifyChannelChanged(openChannel);
-            boolean isOperator = channel.getMyRole() == Role.OPERATOR;
-            boolean isMuted = channel.getMyMutedState() == MutedState.MUTED;
-            boolean isFrozen = channel.isFrozen() && !isOperator;
-            if (isMuted || isFrozen) {
-                inputComponent.requestInputMode(MessageInputView.Mode.DEFAULT);
-            }
         });
     }
 
@@ -465,9 +431,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
      * @param statusComponent The component to which the event will be bound
      * @param viewModel       A view model that provides the data needed for the fragment
      * @param channel         The {@code GroupChannel} that contains the data needed for this fragment
-     * since 3.0.0
+     *                        since 3.0.0
      */
-    protected void onBindStatusComponent(@NonNull StatusComponent statusComponent, @NonNull ChannelViewModel viewModel, @Nullable GroupChannel channel) {
+    protected void onBindStatusComponent(@NonNull StatusComponent statusComponent, @NonNull ChannelViewModel viewModel, @Nullable ConversationInfo channel) {
         Logger.d(">> ChannelFragment::onBindStatusComponent()");
         statusComponent.setOnActionButtonClickListener(v -> {
             statusComponent.notifyStatusChanged(StatusFrameView.Status.LOADING);
@@ -479,28 +445,28 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     /**
      * Called when the feedback rating of the message is clicked.
      *
-     * @param message The message that contains feedback
+     * @param message        The message that contains feedback
      * @param feedbackRating The clicked feedback rating
-     * since 3.13.0
+     *                       since 3.13.0
      */
     protected void onFeedbackRatingClicked(@NonNull BaseMessage message, @NonNull FeedbackRating feedbackRating) {
         Feedback currentFeedback = message.getMyFeedback();
         if (currentFeedback != null) {
             DialogListItem[] dialogListItems = {
-                new DialogListItem(R.string.sb_text_feedback_edit_comment),
-                new DialogListItem(R.string.sb_text_feedback_remove_comment, 0, true)
+                    new DialogListItem(R.string.sb_text_feedback_edit_comment),
+                    new DialogListItem(R.string.sb_text_feedback_remove_comment, 0, true)
             };
 
             DialogUtils.showListBottomDialog(
-                requireContext(),
-                dialogListItems,
-                (view, position, data) -> {
-                    if (position == 0) {
-                        showUpdateFeedbackCommentDialog(message);
-                    } else if (position == 1) {
-                        getViewModel().removeFeedback(message);
+                    requireContext(),
+                    dialogListItems,
+                    (view, position, data) -> {
+                        if (position == 0) {
+                            showUpdateFeedbackCommentDialog(message);
+                        } else if (position == 1) {
+                            getViewModel().removeFeedback(message);
+                        }
                     }
-                }
             );
         } else {
             getViewModel().submitFeedback(message, feedbackRating, null);
@@ -510,7 +476,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     /**
      * Find the same message as the message ID and move it to the matching message.
      *
-     * @param messageId the message id to move
+     * @param messageId     the message id to move
      * @param withAnimation {@code true} animate the message after focusing on it
      * @return {@code true} if there is a message to move, {@code false} otherwise
      * since 3.7.0
@@ -518,10 +484,10 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     public boolean moveToMessage(long messageId, boolean withAnimation) {
         Logger.d(">> ChannelFragment::moveToMessage(%s), withAnimation=%s", messageId, withAnimation);
         final MessageListComponent messageListComponent = getModule().getMessageListComponent();
-        final BaseMessage message = getViewModel().getMessageById(messageId);
+        final Message message = getViewModel().getMessageById(messageId);
         if (message != null) {
-            final BaseMessage animateMessage = withAnimation ? message : null;
-            messageListComponent.moveToFocusedMessage(message.getCreatedAt(), animateMessage);
+            final Message animateMessage = withAnimation ? message : null;
+            messageListComponent.moveToFocusedMessage(message.getTimestamp(), animateMessage);
             Logger.d("-- jumpToMessage return (true)");
             return true;
         }
@@ -539,10 +505,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         if (inputText != null && !TextUtils.isEmpty(inputText.getText())) {
             final Editable editableText = inputText.getText();
             UserMessageCreateParams params = new UserMessageCreateParams(editableText.toString());
-            if (targetMessage != null && channelConfig.getReplyType() != ReplyType.NONE) {
-                params.setParentMessageId(targetMessage.getMessageId());
-                params.setReplyToChannel(true);
-            }
             if (channelConfig.getEnableMention()) {
                 if (inputText instanceof MentionEditText) {
                     final List<User> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
@@ -558,129 +520,112 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     }
 
     private void onInputModeChanged(@NonNull MessageInputView.Mode before, @NonNull MessageInputView.Mode current) {
-        final GroupChannel channel = getViewModel().getChannel();
+        final ConversationInfo channel = getViewModel().getChannel();
         final MessageInputComponent inputComponent = getModule().getMessageInputComponent();
-        if (channel == null) return;
-
-        switch (current) {
-            case QUOTE_REPLY:
-            case EDIT:
-                inputComponent.notifyDataChanged(targetMessage, channel);
-                break;
-            default:
-                if (before == MessageInputView.Mode.QUOTE_REPLY && targetMessage == null) {
-                    final EditText input = inputComponent.getEditTextView();
-                    final String defaultText = input != null && !TextUtils.isEmpty(input.getText())
-                        ? inputComponent.getEditTextView().getText().toString() : "";
-                    inputComponent.notifyDataChanged(null, channel, defaultText);
-                } else {
-                    inputComponent.notifyDataChanged(null, channel);
-                }
-                targetMessage = null;
-        }
     }
+//todo 长按事件
 
-    @NonNull
-    @Override
-    protected List<DialogListItem> makeMessageContextMenu(@NonNull BaseMessage message) {
-        final List<DialogListItem> items = new ArrayList<>();
-        final SendingStatus status = message.getSendingStatus();
-        if (status == SendingStatus.PENDING) return items;
-
-        MessageType type = MessageViewHolderFactory.getMessageType(message);
-        DialogListItem copy = new DialogListItem(R.string.sb_text_channel_anchor_copy, R.drawable.icon_copy);
-        DialogListItem edit = new DialogListItem(R.string.sb_text_channel_anchor_edit, R.drawable.icon_edit);
-        DialogListItem save = new DialogListItem(R.string.sb_text_channel_anchor_save, R.drawable.icon_download);
-        DialogListItem delete = new DialogListItem(R.string.sb_text_channel_anchor_delete, R.drawable.icon_delete, false, MessageUtils.hasThread(message));
-        int replyStringRes = channelConfig.getReplyType() == ReplyType.THREAD ? R.string.sb_text_channel_anchor_reply_in_thread : R.string.sb_text_channel_anchor_reply;
-        int replyDrawableRes = channelConfig.getReplyType() == ReplyType.THREAD ? R.drawable.icon_thread : R.drawable.icon_reply;
-        DialogListItem reply = new DialogListItem(replyStringRes, replyDrawableRes, false, MessageUtils.hasParentMessage(message));
-        DialogListItem retry = new DialogListItem(R.string.sb_text_channel_anchor_retry, 0);
-        DialogListItem deleteFailed = new DialogListItem(R.string.sb_text_channel_anchor_delete, 0);
-
-        DialogListItem[] actions = null;
-        final ReplyType replyType = channelConfig.getReplyType();
-        switch (type) {
-            case VIEW_TYPE_USER_MESSAGE_ME:
-                if (status == SendingStatus.SUCCEEDED) {
-                    if (replyType == ReplyType.NONE) {
-                        actions = new DialogListItem[]{copy, edit, delete};
-                    } else {
-                        actions = new DialogListItem[]{copy, edit, delete, reply};
-                    }
-                } else if (MessageUtils.isFailed(message)) {
-                    actions = new DialogListItem[]{retry, deleteFailed};
-                }
-                break;
-            case VIEW_TYPE_USER_MESSAGE_OTHER:
-                if (replyType == ReplyType.NONE) {
-                    actions = new DialogListItem[]{copy};
-                } else {
-                    actions = new DialogListItem[]{copy, reply};
-                }
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
-            case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
-            case VIEW_TYPE_FILE_MESSAGE_ME:
-                if (MessageUtils.isFailed(message)) {
-                    actions = new DialogListItem[]{retry, deleteFailed};
-                } else {
-                    if (replyType == ReplyType.NONE) {
-                        actions = new DialogListItem[]{delete, save};
-                    } else {
-                        actions = new DialogListItem[]{delete, save, reply};
-                    }
-                }
-                break;
-            case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
-            case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
-            case VIEW_TYPE_FILE_MESSAGE_OTHER:
-                if (replyType == ReplyType.NONE) {
-                    actions = new DialogListItem[]{save};
-                } else {
-                    actions = new DialogListItem[]{save, reply};
-                }
-                break;
-            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_ME:
-            case VIEW_TYPE_VOICE_MESSAGE_ME:
-                if (MessageUtils.isFailed(message)) {
-                    actions = new DialogListItem[]{retry, deleteFailed};
-                } else {
-                    if (replyType == ReplyType.NONE) {
-                        actions = new DialogListItem[]{delete};
-                    } else {
-                        actions = new DialogListItem[]{delete, reply};
-                    }
-                }
-                break;
-            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER:
-            case VIEW_TYPE_VOICE_MESSAGE_OTHER:
-                if (replyType != ReplyType.NONE) {
-                    actions = new DialogListItem[]{reply};
-                }
-                break;
-            case VIEW_TYPE_UNKNOWN_MESSAGE_ME:
-                actions = new DialogListItem[]{delete};
-            default:
-                break;
-        }
-
-        if (actions != null) {
-            items.addAll(Arrays.asList(actions));
-        }
-        return items;
-    }
+//    @NonNull
+//    @Override
+//    protected List<DialogListItem> makeMessageContextMenu(@NonNull Message message) {
+//        final List<DialogListItem> items = new ArrayList<>();
+//        final SendingStatus status = message.getSendingStatus();
+//        if (status == SendingStatus.PENDING) return items;
+//
+//        MessageType type = MessageViewHolderFactory.getMessageType(message);
+//        DialogListItem copy = new DialogListItem(R.string.sb_text_channel_anchor_copy, R.drawable.icon_copy);
+//        DialogListItem edit = new DialogListItem(R.string.sb_text_channel_anchor_edit, R.drawable.icon_edit);
+//        DialogListItem save = new DialogListItem(R.string.sb_text_channel_anchor_save, R.drawable.icon_download);
+//        DialogListItem delete = new DialogListItem(R.string.sb_text_channel_anchor_delete, R.drawable.icon_delete, false, MessageUtils.hasThread(message));
+//        int replyStringRes = channelConfig.getReplyType() == ReplyType.THREAD ? R.string.sb_text_channel_anchor_reply_in_thread : R.string.sb_text_channel_anchor_reply;
+//        int replyDrawableRes = channelConfig.getReplyType() == ReplyType.THREAD ? R.drawable.icon_thread : R.drawable.icon_reply;
+//        DialogListItem reply = new DialogListItem(replyStringRes, replyDrawableRes, false, MessageUtils.hasParentMessage(message));
+//        DialogListItem retry = new DialogListItem(R.string.sb_text_channel_anchor_retry, 0);
+//        DialogListItem deleteFailed = new DialogListItem(R.string.sb_text_channel_anchor_delete, 0);
+//
+//        DialogListItem[] actions = null;
+//        final ReplyType replyType = channelConfig.getReplyType();
+//        switch (type) {
+//            case VIEW_TYPE_USER_MESSAGE_ME:
+//                if (status == SendingStatus.SUCCEEDED) {
+//                    if (replyType == ReplyType.NONE) {
+//                        actions = new DialogListItem[]{copy, edit, delete};
+//                    } else {
+//                        actions = new DialogListItem[]{copy, edit, delete, reply};
+//                    }
+//                } else if (MessageUtils.isFailed(message)) {
+//                    actions = new DialogListItem[]{retry, deleteFailed};
+//                }
+//                break;
+//            case VIEW_TYPE_USER_MESSAGE_OTHER:
+//                if (replyType == ReplyType.NONE) {
+//                    actions = new DialogListItem[]{copy};
+//                } else {
+//                    actions = new DialogListItem[]{copy, reply};
+//                }
+//                break;
+//            case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
+//            case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
+//            case VIEW_TYPE_FILE_MESSAGE_ME:
+//                if (MessageUtils.isFailed(message)) {
+//                    actions = new DialogListItem[]{retry, deleteFailed};
+//                } else {
+//                    if (replyType == ReplyType.NONE) {
+//                        actions = new DialogListItem[]{delete, save};
+//                    } else {
+//                        actions = new DialogListItem[]{delete, save, reply};
+//                    }
+//                }
+//                break;
+//            case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
+//            case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
+//            case VIEW_TYPE_FILE_MESSAGE_OTHER:
+//                if (replyType == ReplyType.NONE) {
+//                    actions = new DialogListItem[]{save};
+//                } else {
+//                    actions = new DialogListItem[]{save, reply};
+//                }
+//                break;
+//            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_ME:
+//            case VIEW_TYPE_VOICE_MESSAGE_ME:
+//                if (MessageUtils.isFailed(message)) {
+//                    actions = new DialogListItem[]{retry, deleteFailed};
+//                } else {
+//                    if (replyType == ReplyType.NONE) {
+//                        actions = new DialogListItem[]{delete};
+//                    } else {
+//                        actions = new DialogListItem[]{delete, reply};
+//                    }
+//                }
+//                break;
+//            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER:
+//            case VIEW_TYPE_VOICE_MESSAGE_OTHER:
+//                if (replyType != ReplyType.NONE) {
+//                    actions = new DialogListItem[]{reply};
+//                }
+//                break;
+//            case VIEW_TYPE_UNKNOWN_MESSAGE_ME:
+//                actions = new DialogListItem[]{delete};
+//            default:
+//                break;
+//        }
+//
+//        if (actions != null) {
+//            items.addAll(Arrays.asList(actions));
+//        }
+//        return items;
+//    }
 
     @Override
-    protected boolean onMessageContextMenuItemClicked(@NonNull BaseMessage message, @NonNull View view, int position, @NonNull DialogListItem item) {
+    protected boolean onMessageContextMenuItemClicked(@NonNull Message message, @NonNull View view, int position, @NonNull DialogListItem item) {
         final MessageInputComponent inputComponent = getModule().getMessageInputComponent();
         int key = item.getKey();
         if (key == R.string.sb_text_channel_anchor_copy) {
-            copyTextToClipboard(message.getMessage());
-            return true;
-        } else if (key == R.string.sb_text_channel_anchor_edit) {
-            targetMessage = message;
-            inputComponent.requestInputMode(MessageInputView.Mode.EDIT);
+            String copy = "";
+            if (message.getContent() instanceof TextMessage) {
+                copy = ((TextMessage) message.getContent()).getContent();
+            }
+            copyTextToClipboard(copy);
             return true;
         } else if (key == R.string.sb_text_channel_anchor_delete) {
             if (MessageUtils.isFailed(message)) {
@@ -691,13 +636,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             }
             return true;
         } else if (key == R.string.sb_text_channel_anchor_save) {
-            if (message instanceof FileMessage) {
-                saveFileMessage((FileMessage) message);
+            if (message.getContent() instanceof com.jet.im.model.messages.FileMessage) {
+                saveFileMessage((com.jet.im.model.messages.FileMessage) message.getContent());
             }
-            return true;
-        } else if (key == R.string.sb_text_channel_anchor_reply) {
-            this.targetMessage = message;
-            inputComponent.requestInputMode(MessageInputView.Mode.QUOTE_REPLY);
             return true;
         } else if (key == R.string.sb_text_channel_anchor_retry) {
             resendMessage(message);
@@ -707,24 +648,13 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     }
 
     @Override
-    void showMessageContextMenu(@NonNull View anchorView, @NonNull BaseMessage message, @NonNull List<DialogListItem> items) {
+    void showMessageContextMenu(@NonNull View anchorView, @NonNull Message message, @NonNull List<DialogListItem> items) {
         int size = items.size();
         final DialogListItem[] actions = items.toArray(new DialogListItem[size]);
-        if (getViewModel().getChannel() != null && !(ChannelConfig.canSendReactions(channelConfig, getViewModel().getChannel()))) {
-            final RecyclerView messageListView = getModule().getMessageListComponent().getRecyclerView();
-            if (getContext() == null || messageListView == null || size == 0) return;
-            MessageAnchorDialog messageAnchorDialog = new MessageAnchorDialog.Builder(anchorView, messageListView, actions)
-                .setOnItemClickListener(createMessageActionListener(message))
-                .setOnDismissListener(() -> anchorDialogShowing.set(false))
-                .build();
-            messageAnchorDialog.show();
-            anchorDialogShowing.set(true);
-        } else if (MessageUtils.isUnknownType(message) || !MessageUtils.isSucceed(message)) {
+        if (MessageUtils.isUnknownType(message) || !MessageUtils.isSucceed(message)) {
             if (getContext() == null || size == 0) return;
             hideKeyboard();
             DialogUtils.showListBottomDialog(requireContext(), actions, createMessageActionListener(message));
-        } else {
-            showEmojiActionsDialog(message, actions);
         }
     }
 
@@ -758,14 +688,14 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         }
         params.setEnableSingleLine(true);
         DialogUtils.showInputDialog(
-            requireContext(),
-            getString(R.string.sb_text_feedback_comment_title),
-            params,
-            listener,
-            positiveButtonText,
-            null,
-            getString(R.string.sb_text_button_cancel),
-            null
+                requireContext(),
+                getString(R.string.sb_text_feedback_comment_title),
+                params,
+                listener,
+                positiveButtonText,
+                null,
+                getString(R.string.sb_text_button_cancel),
+                null
         );
     }
 
@@ -780,23 +710,17 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         @Nullable
         private View.OnClickListener headerRightButtonClickListener;
         @Nullable
-        private OnItemClickListener<BaseMessage> messageClickListener;
+        private OnItemClickListener<Message> messageClickListener;
         @Nullable
-        private OnItemClickListener<BaseMessage> messageProfileClickListener;
+        private OnItemClickListener<Message> messageProfileClickListener;
         @Nullable
         private OnItemClickListener<User> emojiReactionUserListProfileClickListener;
         @Nullable
-        private OnItemLongClickListener<BaseMessage> messageLongClickListener;
+        private OnItemLongClickListener<Message> messageLongClickListener;
         @Nullable
-        private OnItemLongClickListener<BaseMessage> messageProfileLongClickListener;
+        private OnItemLongClickListener<Message> messageProfileLongClickListener;
         @Nullable
         private View.OnClickListener inputLeftButtonListener;
-        @Nullable
-        private OnEmojiReactionClickListener emojiReactionClickListener;
-        @Nullable
-        private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
-        @Nullable
-        private OnItemClickListener<BaseMessage> emojiReactionMoreButtonClickListener;
         @Nullable
         private MessageListParams params;
         @Nullable
@@ -805,8 +729,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         private OnInputTextChangedListener inputTextChangedListener;
         @Nullable
         private OnInputTextChangedListener editModeTextChangedListener;
-        @Nullable
-        private SuggestedMentionListAdapter suggestedMentionListAdapter;
         @Nullable
         private View.OnClickListener inputRightButtonClickListener;
         @Nullable
@@ -831,38 +753,21 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         @Nullable
         private ChannelFragment customFragment;
 
-
-        /**
-         * Constructor
-         *
-         * @param channelUrl the url of the channel will be implemented.
-         */
-        public Builder(@NonNull String channelUrl) {
-            this(channelUrl, 0);
+        public Builder(@NonNull int type, @NonNull String id) {
+            this(type,id, 0);
         }
 
-        /**
-         * Constructor
-         *
-         * @param channelUrl the url of the channel will be implemented.
-         * @param themeMode  {@link SendbirdUIKit.ThemeMode}
-         */
-        public Builder(@NonNull String channelUrl, @NonNull SendbirdUIKit.ThemeMode themeMode) {
-            this(channelUrl, themeMode.getResId());
+        public Builder(@NonNull int conversationType,@NonNull String conversationId, @NonNull SendbirdUIKit.ThemeMode themeMode) {
+            this(conversationType,conversationId, themeMode.getResId());
         }
 
-        /**
-         * Constructor
-         *
-         * @param channelUrl       the url of the channel will be implemented.
-         * @param customThemeResId the resource identifier for custom theme. The theme resource id must be `sb_module_channel`.
-         */
-        public Builder(@NonNull String channelUrl, @StyleRes int customThemeResId) {
+        public Builder(@NonNull int conversationType,@NonNull String conversationId, @StyleRes int customThemeResId) {
             this.bundle = new Bundle();
             if (customThemeResId != 0) {
                 this.bundle.putInt(StringSet.KEY_THEME_RES_ID, customThemeResId);
             }
-            this.bundle.putString(StringSet.KEY_CHANNEL_URL, channelUrl);
+            this.bundle.putInt(StringSet.KEY_CONVERSATION_TYPE, conversationType);
+            this.bundle.putString(StringSet.KEY_CONVERSATION_ID, conversationId);
         }
 
         /**
@@ -935,9 +840,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
          * @param useTypingIndicator <code>true</code> if the typing indicator is used,
          *                           <code>false</code> otherwise.
          * @return This Builder object to allow for chaining of calls to set methods.
+         * @see ChannelConfig#setEnableTypingIndicator(boolean)
          * @deprecated 3.6.0
          * <p> Use {@link #setChannelConfig(ChannelConfig)} instead.</p>
-         * @see ChannelConfig#setEnableTypingIndicator(boolean)
          */
         @NonNull
         @Deprecated
@@ -1140,22 +1045,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         }
 
         /**
-         * Sets the message list adapter and the message display data provider.
-         * The message display data provider is used to generate the data to display the message.
-         *
-         * @param adapter the adapter for the message list.
-         * @param provider the provider for the message display data.
-         * @return This Builder object to allow for chaining of calls to set methods.
-         * since 3.5.7
-         */
-        @NonNull
-        public Builder setMessageListAdapter(@Nullable MessageListAdapter adapter, @Nullable MessageDisplayDataProvider provider) {
-            this.adapter = adapter;
-            if (this.adapter != null) this.adapter.setMessageDisplayDataProvider(provider);
-            return this;
-        }
-
-        /**
          * Sets the click listener on the item of message list.
          *
          * @param itemClickListener The callback that will run.
@@ -1163,7 +1052,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
          * since 3.0.0
          */
         @NonNull
-        public Builder setOnMessageClickListener(@NonNull OnItemClickListener<BaseMessage> itemClickListener) {
+        public Builder setOnMessageClickListener(@NonNull OnItemClickListener<Message> itemClickListener) {
             this.messageClickListener = itemClickListener;
             return this;
         }
@@ -1176,7 +1065,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
          * since 3.0.0
          */
         @NonNull
-        public Builder setOnMessageLongClickListener(@NonNull OnItemLongClickListener<BaseMessage> itemLongClickListener) {
+        public Builder setOnMessageLongClickListener(@NonNull OnItemLongClickListener<Message> itemLongClickListener) {
             this.messageLongClickListener = itemLongClickListener;
             return this;
         }
@@ -1210,45 +1099,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         }
 
         /**
-         * Sets the click listener on the emoji reaction of the message.
-         *
-         * @param emojiReactionClickListener The callback that will run.
-         * @return This Builder object to allow for chaining of calls to set methods.
-         * since 1.1.0
-         */
-        @NonNull
-        public Builder setEmojiReactionClickListener(@NonNull OnEmojiReactionClickListener emojiReactionClickListener) {
-            this.emojiReactionClickListener = emojiReactionClickListener;
-            return this;
-        }
-
-        /**
-         * Sets the long click listener on the emoji reaction of the message.
-         *
-         * @param emojiReactionLongClickListener The callback that will run.
-         * @return This Builder object to allow for chaining of calls to set methods.
-         * since 1.1.0
-         */
-        @NonNull
-        public Builder setEmojiReactionLongClickListener(@NonNull OnEmojiReactionLongClickListener emojiReactionLongClickListener) {
-            this.emojiReactionLongClickListener = emojiReactionLongClickListener;
-            return this;
-        }
-
-        /**
-         * Sets the click listener on the emoji reaction more button.
-         *
-         * @param emojiReactionMoreButtonClickListener The callback that will run.
-         * @return This Builder object to allow for chaining of calls to set methods.
-         * since 1.1.0
-         */
-        @NonNull
-        public Builder setEmojiReactionMoreButtonClickListener(@NonNull OnItemClickListener<BaseMessage> emojiReactionMoreButtonClickListener) {
-            this.emojiReactionMoreButtonClickListener = emojiReactionMoreButtonClickListener;
-            return this;
-        }
-
-        /**
          * Sets whether the message group UI is used.
          *
          * @param useMessageGroupUI <code>true</code> if the message group UI is used, <code>false</code> otherwise.
@@ -1269,7 +1119,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
          * since 3.0.0
          */
         @NonNull
-        public Builder setOnMessageProfileClickListener(@NonNull OnItemClickListener<BaseMessage> profileClickListener) {
+        public Builder setOnMessageProfileClickListener(@NonNull OnItemClickListener<Message> profileClickListener) {
             this.messageProfileClickListener = profileClickListener;
             return this;
         }
@@ -1295,7 +1145,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
          * since 3.0.0
          */
         @NonNull
-        public Builder setOnMessageProfileLongClickListener(@NonNull OnItemLongClickListener<BaseMessage> messageProfileLongClickListener) {
+        public Builder setOnMessageProfileLongClickListener(@NonNull OnItemLongClickListener<Message> messageProfileLongClickListener) {
             this.messageProfileLongClickListener = messageProfileLongClickListener;
             return this;
         }
@@ -1456,18 +1306,6 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             return this;
         }
 
-        /**
-         * Sets the suggested mention list adapter.
-         *
-         * @param adapter the adapter for the mentionable user list.
-         * @return This Builder object to allow for chaining of calls to set methods.
-         * since 3.0.0
-         */
-        @NonNull
-        public Builder setSuggestedMentionListAdapter(@Nullable SuggestedMentionListAdapter adapter) {
-            this.suggestedMentionListAdapter = adapter;
-            return this;
-        }
 
         /**
          * Sets the UI configuration of mentioned text.
@@ -1506,8 +1344,8 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         /**
          * Sets the UI configuration of message text.
          *
-         * @param configSentFromMe       the UI configuration of the message text that was sent from me.
-         * @param configSentFromOthers   the UI configuration of the message text that was sent from others.\
+         * @param configSentFromMe     the UI configuration of the message text that was sent from me.
+         * @param configSentFromOthers the UI configuration of the message text that was sent from others.\
          * @return This Builder object to allow for chaining of calls to set methods.
          * since 3.1.1
          */
@@ -1523,8 +1361,8 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         /**
          * Sets the UI configuration of message sentAt text.
          *
-         * @param configSentFromMe       the UI configuration of the message sentAt text that was sent from me.
-         * @param configSentFromOthers   the UI configuration of the message sentAt text that was sent from others.
+         * @param configSentFromMe     the UI configuration of the message sentAt text that was sent from me.
+         * @param configSentFromOthers the UI configuration of the message sentAt text that was sent from others.
          * @return This Builder object to allow for chaining of calls to set methods.
          * since 3.1.1
          */
@@ -1540,7 +1378,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         /**
          * Sets the UI configuration of sender nickname text.
          *
-         * @param configSentFromOthers   the UI configuration of the sender nickname text that was sent from others.
+         * @param configSentFromOthers the UI configuration of the sender nickname text that was sent from others.
          * @return This Builder object to allow for chaining of calls to set methods.
          * since 3.1.1
          */
@@ -1624,7 +1462,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         /**
          * Sets the UI configuration of the linked text color in the message text.
          *
-         * @param colorRes  the UI configuration of the linked text color.
+         * @param colorRes the UI configuration of the linked text color.
          * @return This Builder object to allow for chaining of calls to set methods.
          * since 3.1.1
          */
@@ -1834,16 +1672,12 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             fragment.setOnMessageClickListener(messageClickListener);
             fragment.setOnMessageLongClickListener(messageLongClickListener);
             fragment.inputLeftButtonClickListener = inputLeftButtonListener;
-            fragment.emojiReactionClickListener = emojiReactionClickListener;
-            fragment.emojiReactionLongClickListener = emojiReactionLongClickListener;
-            fragment.emojiReactionMoreButtonClickListener = emojiReactionMoreButtonClickListener;
             fragment.setOnMessageProfileClickListener(messageProfileClickListener);
             fragment.setOnEmojiReactionUserListProfileClickListener(emojiReactionUserListProfileClickListener);
             fragment.setOnMessageProfileLongClickListener(messageProfileLongClickListener);
             fragment.setOnLoadingDialogHandler(loadingDialogHandler);
             fragment.inputTextChangedListener = inputTextChangedListener;
             fragment.editModeTextChangedListener = editModeTextChangedListener;
-            fragment.setSuggestedMentionListAdapter(suggestedMentionListAdapter);
             fragment.inputRightButtonClickListener = inputRightButtonClickListener;
             fragment.editModeCancelButtonClickListener = editModeCancelButtonClickListener;
             fragment.editModeSaveButtonClickListener = editModeSaveButtonClickListener;

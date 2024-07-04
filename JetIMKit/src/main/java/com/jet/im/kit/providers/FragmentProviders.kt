@@ -40,8 +40,8 @@ object FragmentProviders {
             ChannelListFragment.Builder().withArguments(args).setUseHeader(true).build()
         }
 
-        this.channel = ChannelFragmentProvider { channelUrl, args ->
-            ChannelFragment.Builder(channelUrl).withArguments(args)
+        this.channel = ChannelFragmentProvider { type, id, args ->
+            ChannelFragment.Builder(type,id).withArguments(args)
                 .setUseHeader(true)
                 .build()
         }

@@ -144,8 +144,8 @@ public class ChannelListActivity extends AppCompatActivity {
      * since 1.0.4
      */
     @NonNull
-    protected Intent createRedirectChannelActivityIntent(@NonNull String channelUrl) {
-        return ChannelActivity.newIntent(this, channelUrl);
+    protected Intent createRedirectChannelActivityIntent(int type,@NonNull String id) {
+        return ChannelActivity.newIntent(this, type,id);
     }
 
     @Override
@@ -158,12 +158,15 @@ public class ChannelListActivity extends AppCompatActivity {
         if (intent == null) return;
 
         if ((intent.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) {
-            getIntent().removeExtra(StringSet.KEY_CHANNEL_URL);
+            getIntent().removeExtra(StringSet.KEY_CONVERSATION_TYPE);
+            getIntent().removeExtra(StringSet.KEY_CONVERSATION_ID);
         }
-        if (intent.hasExtra(StringSet.KEY_CHANNEL_URL)) {
-            String channelUrl = intent.getStringExtra(StringSet.KEY_CHANNEL_URL);
-            if (!TextUtils.isEmpty(channelUrl)) startActivity(createRedirectChannelActivityIntent(channelUrl));
-            intent.removeExtra(StringSet.KEY_CHANNEL_URL);
+        if (intent.hasExtra(StringSet.KEY_CONVERSATION_TYPE)&&intent.hasExtra(StringSet.KEY_CONVERSATION_ID)) {
+            String id = intent.getStringExtra(StringSet.KEY_CONVERSATION_ID);
+            int type = intent.getIntExtra(StringSet.KEY_CONVERSATION_TYPE,1);
+            if (!TextUtils.isEmpty(id)) startActivity(createRedirectChannelActivityIntent(type,id));
+            intent.removeExtra(StringSet.KEY_CONVERSATION_ID);
+            intent.removeExtra(StringSet.KEY_CONVERSATION_TYPE);
         }
     }
 }

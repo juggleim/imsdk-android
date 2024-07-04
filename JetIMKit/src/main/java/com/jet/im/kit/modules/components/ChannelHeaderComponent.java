@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.jet.im.model.ConversationInfo;
 import com.sendbird.android.channel.GroupChannel;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.internal.ui.components.HeaderView;
@@ -73,7 +74,7 @@ public class ChannelHeaderComponent extends HeaderComponent {
      * @param channel The latest group channel
      * since 3.0.0
      */
-    public void notifyChannelChanged(@NonNull GroupChannel channel) {
+    public void notifyChannelChanged(@NonNull ConversationInfo channel) {
         final View rootView = getRootView();
         if (!(rootView instanceof HeaderView)) return;
 

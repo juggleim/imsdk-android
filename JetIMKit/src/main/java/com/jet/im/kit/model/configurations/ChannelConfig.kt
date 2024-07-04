@@ -11,6 +11,7 @@ import com.jet.im.kit.internal.model.serializer.ReplyTypeAsStringSerializer
 import com.jet.im.kit.internal.model.serializer.ThreadReplySelectTypeAsStringSerializer
 import com.jet.im.kit.internal.model.template_messages.KeySet
 import com.jet.im.kit.utils.Available
+import com.jet.im.model.ConversationInfo
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -52,7 +53,7 @@ data class ChannelConfig internal constructor(
     private var _threadReplySelectType: ThreadReplySelectType = ThreadReplySelectType.THREAD,
     @SerialName(KeySet.reply_type)
     @Serializable(with = ReplyTypeAsStringSerializer::class)
-    private var _replyType: ReplyType = ReplyType.QUOTE_REPLY,
+    private var _replyType: ReplyType = ReplyType.NONE,
     /**
      * Returns <code>Input</code>, which is the configuration of the input area.
      *
@@ -104,56 +105,6 @@ data class ChannelConfig internal constructor(
         @JvmStatic
         fun getEnableOgTag(channelConfig: ChannelConfig): Boolean {
             return Available.isSupportOgTag() && channelConfig.enableOgTag
-        }
-
-        /**
-         * Returns a value that determines whether to display the reactions or not.
-         * true, if channel displays the reactions in the message.
-         * false, otherwise.
-         *
-         * This method is affected by the value of [Available.isSupportReaction].
-         * It is also affected by the reactions value set in the application and channel type.
-         *
-         * @param channelConfig The channel configuration
-         * @param channel The channel
-         * @return true if the reactions is enabled, false otherwise
-         * @since 3.6.0
-         */
-        @JvmStatic
-        fun getEnableReactions(channelConfig: ChannelConfig, channel: BaseChannel): Boolean {
-            return if (channel is GroupChannel) {
-                if (channel.isBroadcast || channel.isChatNotification) {
-                    false
-                } else {
-                    if (channel.isSuper) {
-                        Available.isSupportReaction() && channelConfig.enableReactionsSupergroup
-                    } else {
-                        Available.isSupportReaction() && channelConfig.enableReactions
-                    }
-                }
-            } else {
-                false
-            }
-        }
-
-        /**
-         * Returns a value that determines that reactions can be sent by the channel.
-         * true, if channel can send the reactions in the message.
-         *
-         * @param channelConfig The channel configuration
-         * @param channel The channel
-         * @return true if the reactions can be sent, false otherwise
-         * @since 3.6.0
-         */
-        @JvmStatic
-        fun canSendReactions(channelConfig: ChannelConfig, channel: BaseChannel): Boolean {
-            val useReaction = getEnableReactions(channelConfig, channel)
-            if (channel is GroupChannel) {
-                val isOperator = channel.myRole == Role.OPERATOR
-                val isFrozen = channel.isFrozen
-                return useReaction && (isOperator || !isFrozen)
-            }
-            return false
         }
     }
 

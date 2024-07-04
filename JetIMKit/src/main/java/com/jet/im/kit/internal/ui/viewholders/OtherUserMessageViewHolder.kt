@@ -13,17 +13,17 @@ import com.jet.im.kit.interfaces.OnItemClickListener
 import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.internal.interfaces.OnFeedbackRatingClickListener
 import com.jet.im.kit.model.MessageListUIParams
+import com.jet.im.model.ConversationInfo
+import com.jet.im.model.Message
 
 internal class OtherUserMessageViewHolder internal constructor(
     val binding: SbViewOtherUserMessageBinding,
     messageListUIParams: MessageListUIParams
 ) : GroupChannelMessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: BaseChannel, message: BaseMessage, messageListUIParams: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
         binding.otherMessageView.messageUIConfig = messageUIConfig
-        if (channel is GroupChannel) {
-            binding.otherMessageView.drawMessage(channel, message, messageListUIParams)
-        }
+        binding.otherMessageView.drawMessage(channel, message, params)
     }
 
     override fun setEmojiReaction(
@@ -32,20 +32,12 @@ internal class OtherUserMessageViewHolder internal constructor(
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
-        binding.otherMessageView.binding.rvEmojiReactionList.apply {
-            setReactionList(reactionList)
-            setEmojiReactionClickListener(emojiReactionClickListener)
-            setEmojiReactionLongClickListener(emojiReactionLongClickListener)
-            setMoreButtonClickListener(moreButtonClickListener)
-        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
         return mapOf(
             ClickableViewIdentifier.Chat.name to binding.otherMessageView.binding.contentPanel,
             ClickableViewIdentifier.Profile.name to binding.otherMessageView.binding.ivProfileView,
-            ClickableViewIdentifier.QuoteReply.name to binding.otherMessageView.binding.quoteReplyPanel,
-            ClickableViewIdentifier.ThreadInfo.name to binding.otherMessageView.binding.threadInfo
         )
     }
 

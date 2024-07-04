@@ -15,6 +15,8 @@ import com.jet.im.kit.interfaces.OnItemClickListener
 import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.internal.extensions.toComponentListContextThemeWrapper
 import com.jet.im.kit.model.MessageListUIParams
+import com.jet.im.model.ConversationInfo
+import com.jet.im.model.Message
 
 /**
  * This ViewHolder has a basic message template for 'Other message.'
@@ -39,7 +41,7 @@ open class OtherMessageViewHolder(
     }
 
     @CallSuper
-    override fun bind(channel: BaseChannel, message: BaseMessage, params: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
         binding.root.drawMessage(channel, message, params)
     }
 
@@ -47,8 +49,6 @@ open class OtherMessageViewHolder(
     override fun getClickableViewMap(): Map<String, View> {
         return mapOf(
             ClickableViewIdentifier.Chat.name to binding.root.binding.contentPanel,
-            ClickableViewIdentifier.QuoteReply.name to binding.root.binding.quoteReplyPanel,
-            ClickableViewIdentifier.ThreadInfo.name to binding.root.binding.threadInfo
         )
     }
 
@@ -67,11 +67,5 @@ open class OtherMessageViewHolder(
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
-        binding.root.binding.rvEmojiReactionList.apply {
-            setReactionList(reactionList)
-            setEmojiReactionClickListener(emojiReactionClickListener)
-            setEmojiReactionLongClickListener(emojiReactionLongClickListener)
-            setMoreButtonClickListener(moreButtonClickListener)
-        }
     }
 }

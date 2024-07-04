@@ -6,6 +6,8 @@ import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.providers.ModuleProviders
 import com.jet.im.kit.vm.ChannelListViewModel
 import com.jet.im.kit.vm.ChannelViewModel
+import com.jet.im.model.Conversation
+import com.jet.im.model.ConversationInfo
 import com.sendbird.android.params.MessageListParams
 
 /**
@@ -37,7 +39,7 @@ fun interface ChannelViewModelProvider {
      */
     fun provide(
         owner: ViewModelStoreOwner,
-        channelUrl: String,
+        conversationInfo: Conversation,
         params: MessageListParams?,
         config: ChannelConfig
     ): ChannelViewModel
