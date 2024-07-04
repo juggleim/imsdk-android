@@ -58,9 +58,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MessageManager implements IMessageManager {
+public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMessageListener {
     public MessageManager(JetIMCore core, UserInfoManager userInfoManager) {
         this.mCore = core;
+        this.mCore.getWebSocket().setMessageListener(this);
         this.mUserInfoManager = userInfoManager;
         ContentTypeCenter.getInstance().registerContentType(TextMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ImageMessage.class);
@@ -1206,6 +1207,45 @@ public class MessageManager implements IMessageManager {
         this.mDefaultMessageUploadProvider = uploadProvider;
     }
 
+    @Override
+    public void onMessageReceive(ConcreteMessage message) {
+        List<ConcreteMessage> list = new ArrayList<>();
+        list.add(message);
+        handleReceiveMessages(list, false);
+    }
+
+    @Override
+    public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
+        handleReceiveMessages(messages, true);
+
+        if (!isFinished) {
+            sync();
+        } else {
+            mSyncProcessing = false;
+            if (mCachedSendTime > 0) {
+                mCore.setMessageSendSyncTime(mCachedSendTime);
+                mCachedSendTime = -1;
+            }
+            if (mCachedReceiveTime > 0) {
+                mCore.setMessageReceiveTime(mCachedReceiveTime);
+                mCachedReceiveTime = -1;
+            }
+            if (mSyncListenerMap != null) {
+                for (Map.Entry<String, IMessageSyncListener> entry : mSyncListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onMessageSyncComplete());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onSyncNotify(long syncTime) {
+        if (syncTime > mCore.getMessageReceiveTime()) {
+            mSyncProcessing = true;
+            sync();
+        }
+    }
+
     interface ISendReceiveListener {
         void onMessageSave(ConcreteMessage message);
 
@@ -1242,52 +1282,6 @@ public class MessageManager implements IMessageManager {
 
     void syncMessage() {
         mSyncProcessing = true;
-        if (!mHasSetMessageListener) {
-            mHasSetMessageListener = true;
-            if (mCore.getWebSocket() != null) {
-                mCore.getWebSocket().setMessageListener(new JWebSocket.IWebSocketMessageListener() {
-                    @Override
-                    public void onMessageReceive(ConcreteMessage message) {
-                        List<ConcreteMessage> list = new ArrayList<>();
-                        list.add(message);
-                        handleReceiveMessages(list, false);
-                    }
-
-                    @Override
-                    public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
-                        handleReceiveMessages(messages, true);
-
-                        if (!isFinished) {
-                            sync();
-                        } else {
-                            mSyncProcessing = false;
-                            if (mCachedSendTime > 0) {
-                                mCore.setMessageSendSyncTime(mCachedSendTime);
-                                mCachedSendTime = -1;
-                            }
-                            if (mCachedReceiveTime > 0) {
-                                mCore.setMessageReceiveTime(mCachedReceiveTime);
-                                mCachedReceiveTime = -1;
-                            }
-                            if (mSyncListenerMap != null) {
-                                for (Map.Entry<String, IMessageSyncListener> entry : mSyncListenerMap.entrySet()) {
-                                    mCore.getCallbackHandler().post(() -> entry.getValue().onMessageSyncComplete());
-                                }
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onSyncNotify(long syncTime) {
-                        if (syncTime > mCore.getMessageReceiveTime()) {
-                            mSyncProcessing = true;
-                            sync();
-                        }
-
-                    }
-                });
-            }
-        }
         sync();
     }
 
@@ -1698,7 +1692,6 @@ public class MessageManager implements IMessageManager {
     private boolean mSyncProcessing = false;
     private long mCachedReceiveTime = -1;
     private long mCachedSendTime = -1;
-    private boolean mHasSetMessageListener = false;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
