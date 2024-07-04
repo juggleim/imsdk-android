@@ -15,6 +15,8 @@ import com.jet.im.model.MessageMentionInfo;
 import com.jet.im.model.messages.MergeMessage;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 class MessageSql {
     static ConcreteMessage messageWithCursor(Cursor cursor) {
@@ -186,6 +188,72 @@ class MessageSql {
         return sql;
     }
 
+    static String sqlGetMessages(
+            int count,
+            long timestamp,
+            JetIMConst.PullDirection pullDirection,
+            Message.MessageDirection direction,
+            List<String> contentTypes,
+            List<String> senderUserIds,
+            List<Message.MessageState> messageStates,
+            List<Conversation> conversations,
+            List<String> whereArgs
+    ) {
+        List<String> whereClauses = new ArrayList<>();
+        //添加 is_deleted = 0 条件
+        whereClauses.add("is_deleted = 0");
+        //添加 direction 条件
+        if (direction != null) {
+            whereClauses.add("direction = ?");
+            whereArgs.add(String.valueOf(direction.getValue()));
+        }
+        //添加 contentTypes 条件
+        if (contentTypes != null && !contentTypes.isEmpty()) {
+            whereClauses.add("type IN " + CursorHelper.getQuestionMarkPlaceholder(contentTypes.size()));
+            whereArgs.addAll(contentTypes);
+        }
+        //添加 senderUserIds 条件
+        if (senderUserIds != null && !senderUserIds.isEmpty()) {
+            whereClauses.add("sender IN " + CursorHelper.getQuestionMarkPlaceholder(senderUserIds.size()));
+            whereArgs.addAll(senderUserIds);
+        }
+        //添加 messageStates 条件
+        if (messageStates != null && !messageStates.isEmpty()) {
+            whereClauses.add("state IN " + CursorHelper.getQuestionMarkPlaceholder(messageStates.size()));
+            for (Message.MessageState state : messageStates) {
+                whereArgs.add(String.valueOf(state.getValue()));
+            }
+        }
+        //添加 conversations 条件
+        if (conversations != null && !conversations.isEmpty()) {
+            List<String> conversationClauses = new ArrayList<>();
+            for (Conversation conversation : conversations) {
+                conversationClauses.add("(conversation_type = ? AND conversation_id = ?)");
+                whereArgs.add(String.valueOf(conversation.getConversationType().getValue()));
+                whereArgs.add(conversation.getConversationId());
+            }
+            whereClauses.add("(" + String.join(" OR ", conversationClauses) + ")");
+        }
+        //添加 timestamp 和 pullDirection 条件
+        if (pullDirection == JetIMConst.PullDirection.NEWER) {
+            whereClauses.add("timestamp > ?");
+        } else {
+            whereClauses.add("timestamp < ?");
+        }
+        whereArgs.add(String.valueOf(timestamp));
+        //合并查询条件
+        String whereClause = whereClauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", whereClauses);
+        String sql = "SELECT * FROM message " + whereClause + " ORDER BY timestamp";
+        if (pullDirection == JetIMConst.PullDirection.NEWER) {
+            sql += " ASC";
+        } else {
+            sql += " DESC";
+        }
+        sql += " LIMIT " + count;
+        //返回sql
+        return sql;
+    }
+
     static String sqlGetLastMessageInConversation(Conversation conversation) {
         String sql = String.format("SELECT * FROM message WHERE conversation_type = '%s' AND conversation_id = '%s' AND is_deleted = 0", conversation.getConversationType().getValue(), conversation.getConversationId());
         sql = sql + SQL_ORDER_BY_TIMESTAMP + SQL_DESC + SQL_LIMIT + 1;
@@ -233,6 +301,7 @@ class MessageSql {
 
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_ID = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE message_uid = ?";
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_NO = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE id = ?";
+
     static String sqlDeleteMessagesByMessageId(int count) {
         return "UPDATE message SET is_deleted = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
     }

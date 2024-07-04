@@ -405,8 +405,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public List<Message> getMessages(int count, long timestamp, JetIMConst.PullDirection direction, MessageQueryOptions messageQueryOptions) {
-        //todo 实现查询
-        return Collections.emptyList();
+        return mCore.getDbManager().getMessages(count, timestamp, direction, messageQueryOptions.getDirection(), messageQueryOptions.getContentTypes(), messageQueryOptions.getSenderUserIds(), messageQueryOptions.getStates(), messageQueryOptions.getConversations());
     }
 
     @Override

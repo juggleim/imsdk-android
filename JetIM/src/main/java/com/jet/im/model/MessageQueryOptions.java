@@ -7,20 +7,11 @@ import java.util.List;
  * @create 2024-07-04 17:33
  */
 public class MessageQueryOptions {
-    private String mSearchContent;
     private List<String> mSenderUserIds;
     private List<String> mContentTypes;
     private List<Conversation> mConversations;
     private List<Message.MessageState> mStates;
-    private List<Message.MessageDirection> mDirections;
-
-    public String getSearchContent() {
-        return mSearchContent;
-    }
-
-    public void setSearchContent(String searchContent) {
-        this.mSearchContent = searchContent;
-    }
+    private Message.MessageDirection mDirection;
 
     public List<String> getSenderUserIds() {
         return mSenderUserIds;
@@ -54,11 +45,11 @@ public class MessageQueryOptions {
         this.mStates = states;
     }
 
-    public List<Message.MessageDirection> getDirections() {
-        return mDirections;
+    public Message.MessageDirection getDirection() {
+        return mDirection;
     }
 
-    public void setDirections(List<Message.MessageDirection> directions) {
-        this.mDirections = directions;
+    public void setDirection(Message.MessageDirection direction) {
+        this.mDirection = direction;
     }
 }

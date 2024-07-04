@@ -318,6 +318,39 @@ public class DBManager {
         return list;
     }
 
+    public List<Message> getMessages(
+            int count,
+            long timestamp,
+            JetIMConst.PullDirection pullDirection,
+            Message.MessageDirection direction,
+            List<String> contentTypes,
+            List<String> senderUserIds,
+            List<Message.MessageState> messageStates,
+            List<Conversation> conversations
+    ) {
+        List<Message> result = new ArrayList<>();
+        if (count < 1) return result;
+        if (timestamp == 0) {
+            timestamp = Long.MAX_VALUE;
+        }
+        //处理sql及查询条件
+        List<String> whereArgs = new ArrayList<>();
+        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, direction, contentTypes, senderUserIds, messageStates, conversations, whereArgs);
+        //执行查询
+        Cursor cursor = rawQuery(sql, whereArgs.toArray(new String[0]));
+        if (cursor == null) {
+            return result;
+        }
+        //解析查询结果
+        addMessagesFromCursor(result, cursor);
+        cursor.close();
+        //按需反转结果列表
+        if (pullDirection == JetIMConst.PullDirection.OLDER) {
+            Collections.reverse(result);
+        }
+        //返回查询结果
+        return result;
+    }
 
     //被删除的消息也能查出来
     public List<Message> getMessagesByMessageIds(List<String> messageIds) {
