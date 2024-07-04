@@ -367,7 +367,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     }
 
     public interface IWebSocketMessageListener {
-        void onMessageReceive(ConcreteMessage message);
+        boolean onMessageReceive(ConcreteMessage message);
 
         void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished);
 
@@ -576,10 +576,11 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     private void handleReceiveMessage(PBRcvObj.PublishMsgBody body) {
         JLogger.i("WS-Receive", "handleReceiveMessage");
+        boolean needAck = false;
         if (mMessageListener != null) {
-            mMessageListener.onMessageReceive(body.rcvMessage);
+            needAck = mMessageListener.onMessageReceive(body.rcvMessage);
         }
-        if (body.qos == 1) {
+        if (body.qos == 1 && needAck) {
             sendPublishAck(body.index);
         }
     }

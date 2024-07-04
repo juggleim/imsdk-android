@@ -1208,10 +1208,14 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void onMessageReceive(ConcreteMessage message) {
+    public boolean onMessageReceive(ConcreteMessage message) {
+        if (mSyncProcessing) {
+            return false;
+        }
         List<ConcreteMessage> list = new ArrayList<>();
         list.add(message);
         handleReceiveMessages(list, false);
+        return true;
     }
 
     @Override
@@ -1240,6 +1244,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void onSyncNotify(long syncTime) {
+        if (mSyncProcessing) {
+            return;
+        }
         if (syncTime > mCore.getMessageReceiveTime()) {
             mSyncProcessing = true;
             sync();
@@ -1689,7 +1696,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private final JetIMCore mCore;
     private final UserInfoManager mUserInfoManager;
     private int mIncreaseId = 0;
-    private boolean mSyncProcessing = false;
+    private boolean mSyncProcessing = true;
     private long mCachedReceiveTime = -1;
     private long mCachedSendTime = -1;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;

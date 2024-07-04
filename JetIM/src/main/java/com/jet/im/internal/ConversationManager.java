@@ -954,7 +954,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     private final MessageManager mMessageManager;
     private ConcurrentHashMap<String, IConversationListener> mListenerMap;
     private ConcurrentHashMap<String, IConversationSyncListener> mSyncListenerMap;
-    private boolean mSyncProcessing;
+    private boolean mSyncProcessing = true;
     private long mCachedSyncTime;
     private static final int CONVERSATION_SYNC_COUNT = 100;
 
