@@ -1339,11 +1339,14 @@ public class MessageManager implements IMessageManager {
         mCore.getDbManager().insertMessages(messagesToSave);
         updateUserInfo(messagesToSave);
 
+        //合并普通消息
         List<ConcreteMessage> messagesToUpdateConversation = new ArrayList<>();
+        //合并同一类型不同会话的cmd消息列表
+        Map<String, Map<Conversation, List<ConcreteMessage>>> mergeSameTypeMessages = new HashMap<>();
         long sendTime = 0;
         long receiveTime = 0;
-        Map<String, UserInfo> userInfoMap = new HashMap<>();
         for (ConcreteMessage message : messages) {
+            //获取消息时间
             if (message.getDirection() == Message.MessageDirection.SEND) {
                 sendTime = message.getTimestamp();
             } else if (message.getDirection() == Message.MessageDirection.RECEIVE) {
@@ -1429,8 +1432,21 @@ public class MessageManager implements IMessageManager {
 
             //clear unread message
             if (message.getContentType().equals(ClearUnreadMessage.CONTENT_TYPE)) {
-                ClearUnreadMessage clearUnreadMessage = (ClearUnreadMessage) message.getContent();
-                handleClearUnreadMessageCmdMessage(clearUnreadMessage.getConversations());
+                Map<Conversation, List<ConcreteMessage>> conversationEntry = mergeSameTypeMessages.get(message.getContentType());
+                if (conversationEntry == null) {
+                    conversationEntry = new HashMap<>();
+                    mergeSameTypeMessages.put(message.getContentType(), conversationEntry);
+                }
+                List<ConcreteMessage> messageListEntry = conversationEntry.get(message.getConversation());
+                if (messageListEntry == null) {
+                    messageListEntry = new ArrayList<>();
+                    conversationEntry.put(message.getConversation(), messageListEntry);
+                }
+                //只保存本次循环中最新的一条消息
+                if (messageListEntry.isEmpty() || messageListEntry.get(messageListEntry.size() - 1).getTimestamp() < message.getTimestamp()) {
+                    messageListEntry.clear();
+                    messageListEntry.add(message);
+                }
                 continue;
             }
 
@@ -1469,33 +1485,62 @@ public class MessageManager implements IMessageManager {
                 continue;
             }
 
+            //cmd消息不回调
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
+
+            //已存在的消息不回调
             if (message.isExisted()) {
                 continue;
             }
 
-            if (message.hasMentionInfo() && message.getMentionInfo().getTargetUsers() != null) {
-                for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
-                    if (userInfo.getUserId() != null) {
-                        userInfoMap.put(userInfo.getUserId(), userInfo);
-                    }
-                }
-            }
-
+            //合并普通消息
             messagesToUpdateConversation.add(message);
 
+            //执行回调
             if (mListenerMap != null) {
                 for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
                     mCore.getCallbackHandler().post(() -> entry.getValue().onMessageReceive(message));
                 }
             }
         }
+        //处理合并的普通消息
         if (mSendReceiveListener != null) {
             mSendReceiveListener.onMessageReceive(messagesToUpdateConversation);
         }
-        mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        //处理合并的cmd消息
+        for (Map.Entry<String, Map<Conversation, List<ConcreteMessage>>> conversationEntry : mergeSameTypeMessages.entrySet()) {
+            String contentType = conversationEntry.getKey();
+            Map<Conversation, List<ConcreteMessage>> conversationsMap = conversationEntry.getValue();
+            if (conversationsMap == null || conversationsMap.values().isEmpty()) {
+                continue;
+            }
+            switch (contentType) {
+                case ClearUnreadMessage.CONTENT_TYPE:
+                    for (List<ConcreteMessage> messageList : conversationsMap.values()) {
+                        if (messageList == null || messageList.isEmpty()) {
+                            continue;
+                        }
+                        ClearUnreadMessage clearUnreadMessage = (ClearUnreadMessage) messageList.get(messageList.size() - 1).getContent();
+                        handleClearUnreadMessageCmdMessage(clearUnreadMessage.getConversations());
+                    }
+                    break;
+                case RecallCmdMessage.CONTENT_TYPE:
+                case DeleteConvMessage.CONTENT_TYPE:
+                case ReadNtfMessage.CONTENT_TYPE:
+                case GroupReadNtfMessage.CONTENT_TYPE:
+                case CleanMsgMessage.CONTENT_TYPE:
+                case DeleteMsgMessage.CONTENT_TYPE:
+                case ClearTotalUnreadMessage.CONTENT_TYPE:
+                case TopConvMessage.CONTENT_TYPE:
+                case UnDisturbConvMessage.CONTENT_TYPE:
+                case LogCommandMessage.CONTENT_TYPE:
+                case AddConvMessage.CONTENT_TYPE:
+                default:
+                    break;
+            }
+        }
         //直发的消息，而且正在同步中，不直接更新 sync time
         if (!isSync && mSyncProcessing) {
             if (sendTime > 0) {
@@ -1627,6 +1672,13 @@ public class MessageManager implements IMessageManager {
             }
             if (message.getTargetUserInfo() != null && !TextUtils.isEmpty(message.getTargetUserInfo().getUserId())) {
                 userInfoMap.put(message.getTargetUserInfo().getUserId(), message.getTargetUserInfo());
+            }
+            if (message.hasMentionInfo() && message.getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
+                    if (!TextUtils.isEmpty(userInfo.getUserId())) {
+                        userInfoMap.put(userInfo.getUserId(), userInfo);
+                    }
+                }
             }
         }
         mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
