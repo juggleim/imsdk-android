@@ -348,6 +348,10 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
+    void connectSuccess(){
+        mSyncProcessing = true;
+    }
+
     void syncConversations(ICompleteCallback callback) {
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;

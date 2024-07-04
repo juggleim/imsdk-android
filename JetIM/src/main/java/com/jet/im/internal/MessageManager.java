@@ -1063,26 +1063,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         loopBroadcastMessage(content, conversations, 0, conversations.size(), callback);
     }
 
-    public void updateMessageSendSyncTime(long timestamp) {
-        if (mSyncProcessing) {
-            if (timestamp > mCachedSendTime) {
-                mCachedSendTime = timestamp;
-            }
-        } else {
-            mCore.setMessageSendSyncTime(timestamp);
-        }
-    }
-
-    public void updateMessageReceiveTime(long timestamp) {
-        if (mSyncProcessing) {
-            if (timestamp > mCachedReceiveTime) {
-                mCachedReceiveTime = timestamp;
-            }
-        } else {
-            mCore.setMessageReceiveTime(timestamp);
-        }
-    }
-
     private void loopBroadcastMessage(MessageContent content,
                                       List<Conversation> conversations,
                                       int processCount,
@@ -1290,6 +1270,30 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     void syncMessage() {
         mSyncProcessing = true;
         sync();
+    }
+
+    void updateMessageSendSyncTime(long timestamp) {
+        if (mSyncProcessing) {
+            if (timestamp > mCachedSendTime) {
+                mCachedSendTime = timestamp;
+            }
+        } else {
+            mCore.setMessageSendSyncTime(timestamp);
+        }
+    }
+
+    void updateMessageReceiveTime(long timestamp) {
+        if (mSyncProcessing) {
+            if (timestamp > mCachedReceiveTime) {
+                mCachedReceiveTime = timestamp;
+            }
+        } else {
+            mCore.setMessageReceiveTime(timestamp);
+        }
+    }
+
+    void connectSuccess() {
+        mSyncProcessing = true;
     }
 
     private List<ConcreteMessage> messagesToSave(List<ConcreteMessage> messages) {

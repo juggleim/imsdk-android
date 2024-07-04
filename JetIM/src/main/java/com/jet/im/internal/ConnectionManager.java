@@ -119,6 +119,8 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         if (errorCode == ConstInternal.ErrorCode.NONE) {
             mCore.setUserId(userId);
             openDB();
+            mMessageManager.connectSuccess();
+            mConversationManager.connectSuccess();
             changeStatus(JetIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
             mConversationManager.syncConversations(mMessageManager::syncMessage);
             PushManager.getInstance().getToken(mCore.getContext());
