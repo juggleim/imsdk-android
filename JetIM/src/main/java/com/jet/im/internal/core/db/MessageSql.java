@@ -220,7 +220,7 @@ class MessageSql {
             whereArgs.add(String.valueOf(timestamp));
         }
         //添加 search_content 条件
-        if (!TextUtils.isEmpty(searchContent)) {
+        if (searchContent != null) {
             whereClauses.add("search_content LIKE ?");
             whereArgs.add("%" + searchContent + "%");
         }
