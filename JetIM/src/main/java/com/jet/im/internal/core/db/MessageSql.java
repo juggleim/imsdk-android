@@ -166,32 +166,13 @@ class MessageSql {
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
-    static final String SQL_AND_TYPE_IN = " AND type in ";
-
-    static String sqlGetMessagesInConversation(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction, int size) {
-        String sql = String.format("SELECT * FROM message WHERE conversation_type = %s AND conversation_id = ? AND is_deleted = 0", conversation.getConversationType().getValue());
-        if (direction == JetIMConst.PullDirection.NEWER) {
-            sql = sql + SQL_AND_GREATER_THAN + timestamp;
-        } else {
-            sql = sql + SQL_AND_LESS_THAN + timestamp;
-        }
-        if (size > 0) {
-            sql = sql + SQL_AND_TYPE_IN + CursorHelper.getQuestionMarkPlaceholder(size);
-        }
-        sql = sql + SQL_ORDER_BY_TIMESTAMP;
-        if (direction == JetIMConst.PullDirection.NEWER) {
-            sql = sql + SQL_ASC;
-        } else {
-            sql = sql + SQL_DESC;
-        }
-        sql = sql + SQL_LIMIT + count;
-        return sql;
-    }
 
     static String sqlGetMessages(
             int count,
             long timestamp,
             JetIMConst.PullDirection pullDirection,
+            boolean openSearch,
+            String searchContent,
             Message.MessageDirection direction,
             List<String> contentTypes,
             List<String> senderUserIds,
@@ -235,23 +216,19 @@ class MessageSql {
             whereClauses.add("(" + String.join(" OR ", conversationClauses) + ")");
         }
         //添加 timestamp 和 pullDirection 条件
-        if (pullDirection == JetIMConst.PullDirection.NEWER) {
-            whereClauses.add("timestamp > ?");
-        } else {
-            whereClauses.add("timestamp < ?");
+        if (pullDirection != null) {
+            whereClauses.add(pullDirection == JetIMConst.PullDirection.NEWER ? "timestamp > ?" : "timestamp < ?");
+            whereArgs.add(String.valueOf(timestamp));
         }
-        whereArgs.add(String.valueOf(timestamp));
+        //添加 search_content 条件
+        if (openSearch) {
+            whereClauses.add("search_content LIKE ?");
+            whereArgs.add("%" + searchContent + "%");
+        }
         //合并查询条件
         String whereClause = whereClauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", whereClauses);
-        String sql = "SELECT * FROM message " + whereClause + " ORDER BY timestamp";
-        if (pullDirection == JetIMConst.PullDirection.NEWER) {
-            sql += " ASC";
-        } else {
-            sql += " DESC";
-        }
-        sql += " LIMIT " + count;
         //返回sql
-        return sql;
+        return "SELECT * FROM message " + whereClause + " ORDER BY timestamp " + (JetIMConst.PullDirection.NEWER == pullDirection ? "ASC" : "DESC") + " LIMIT " + count;
     }
 
     static String sqlGetLastMessageInConversation(Conversation conversation) {
@@ -288,10 +265,7 @@ class MessageSql {
         return sql.toString();
     }
 
-    static final String SQL_AND_GREATER_THAN = " AND timestamp > ";
-    static final String SQL_AND_LESS_THAN = " AND timestamp < ";
     static final String SQL_ORDER_BY_TIMESTAMP = " ORDER BY timestamp";
-    static final String SQL_ASC = " ASC";
     static final String SQL_DESC = " DESC";
     static final String SQL_LIMIT = " LIMIT ";
 
@@ -315,34 +289,6 @@ class MessageSql {
         if (!TextUtils.isEmpty(senderId)) {
             sql = sql + String.format(" AND sender = '%s'", senderId);
         }
-        return sql;
-    }
-
-    static final String SQL_CLIENT_MSG_NO_IS = " id = ";
-    static final String SQL_MESSAGE_ID_IS = " message_uid = ?";
-
-    static String sqlSearchMessage(Conversation conversation, String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, int size) {
-        String sql;
-        if (conversation == null) {
-            sql = String.format("SELECT * FROM message WHERE search_content LIKE '%%%s%%' AND is_deleted = 0", searchContent);
-        } else {
-            sql = String.format("SELECT * FROM message WHERE search_content LIKE '%%%s%%' AND is_deleted = 0 AND conversation_type = %s AND conversation_id = %s", searchContent, conversation.getConversationType().getValue(), conversation.getConversationId());
-        }
-        if (JetIMConst.PullDirection.NEWER == direction) {
-            sql = sql + SQL_AND_GREATER_THAN + timestamp;
-        } else {
-            sql = sql + SQL_AND_LESS_THAN + timestamp;
-        }
-        if (size > 0) {
-            sql = sql + SQL_AND_TYPE_IN + CursorHelper.getQuestionMarkPlaceholder(size);
-        }
-        sql = sql + SQL_ORDER_BY_TIMESTAMP;
-        if (JetIMConst.PullDirection.NEWER == direction) {
-            sql = sql + SQL_ASC;
-        } else {
-            sql = sql + SQL_DESC;
-        }
-        sql = sql + SQL_LIMIT + count;
         return sql;
     }
 
