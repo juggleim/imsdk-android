@@ -7,13 +7,13 @@ import java.util.List;
  * @create 2024-07-04 17:33
  */
 public class MessageQueryOptions {
-    private boolean mOpenSearch;
-    private String mSearchContent;
-    private List<String> mSenderUserIds;
-    private List<String> mContentTypes;
-    private List<Conversation> mConversations;
-    private List<Message.MessageState> mStates;
-    private Message.MessageDirection mDirection;
+    private boolean mOpenSearch;//是否为搜索模式，搜索模式下才会对mSearchContent进行判断与处理
+    private String mSearchContent;//指定搜索内容
+    private List<String> mSenderUserIds;//指定消息发送者ID
+    private List<String> mContentTypes;//指定消息类型
+    private List<Conversation> mConversations;//指定会话
+    private List<Message.MessageState> mStates;//指定消息状态
+    private Message.MessageDirection mDirection;//指定消息方向
 
     public MessageQueryOptions() {
     }
