@@ -294,30 +294,40 @@ public class DBManager {
         return message;
     }
 
-    public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
+    public List<Message> getMessages(
+            int count,
+            long timestamp,
+            JetIMConst.PullDirection pullDirection,
+            String searchContent,
+            Message.MessageDirection direction,
+            List<String> contentTypes,
+            List<String> senderUserIds,
+            List<Message.MessageState> messageStates,
+            List<Conversation> conversations
+    ) {
+        List<Message> result = new ArrayList<>();
+        if (count < 1) return result;
         if (timestamp == 0) {
             timestamp = Long.MAX_VALUE;
         }
-        int contentTypeSize = contentTypes.size();
-        String sql = MessageSql.sqlGetMessagesInConversation(conversation, count, timestamp, direction, contentTypeSize);
-        String[] args = new String[contentTypeSize + 1];
-        args[0] = conversation.getConversationId();
-        for (int i = 0; i < contentTypeSize; i++) {
-            args[i + 1] = contentTypes.get(i);
-        }
-        Cursor cursor = rawQuery(sql, args);
-        List<Message> list = new ArrayList<>();
+        //处理sql及查询条件
+        List<String> whereArgs = new ArrayList<>();
+        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, whereArgs);
+        //执行查询
+        Cursor cursor = rawQuery(sql, whereArgs.toArray(new String[0]));
         if (cursor == null) {
-            return list;
+            return result;
         }
-        addMessagesFromCursor(list, cursor);
-        if (direction == JetIMConst.PullDirection.OLDER) {
-            Collections.reverse(list);
-        }
+        //解析查询结果
+        addMessagesFromCursor(result, cursor);
         cursor.close();
-        return list;
+        //按需反转结果列表
+        if (JetIMConst.PullDirection.OLDER == pullDirection) {
+            Collections.reverse(result);
+        }
+        //返回查询结果
+        return result;
     }
-
 
     //被删除的消息也能查出来
     public List<Message> getMessagesByMessageIds(List<String> messageIds) {
@@ -392,38 +402,6 @@ public class DBManager {
             }
         }
         return messages;
-    }
-
-    public List<Message> searchMessage(Conversation conversation, String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
-        List<Message> result = new ArrayList<>();
-        if (TextUtils.isEmpty(searchContent) || count < 1) return result;
-
-        if (timestamp == 0) {
-            timestamp = Long.MAX_VALUE;
-        }
-        if (direction == null) {
-            direction = JetIMConst.PullDirection.OLDER;
-        }
-        if (contentTypes == null) {
-            contentTypes = new ArrayList<>();
-        }
-
-        int contentTypeSize = contentTypes.size();
-        String sql = MessageSql.sqlSearchMessage(conversation, searchContent, count, timestamp, direction, contentTypeSize);
-        String[] args = new String[contentTypeSize];
-        for (int i = 0; i < contentTypeSize; i++) {
-            args[i] = contentTypes.get(i);
-        }
-        Cursor cursor = rawQuery(sql, args);
-        if (cursor == null) {
-            return result;
-        }
-        addMessagesFromCursor(result, cursor);
-        if (JetIMConst.PullDirection.OLDER == direction) {
-            Collections.reverse(result);
-        }
-        cursor.close();
-        return result;
     }
 
     //从消息表中获取会话中最新一条消息

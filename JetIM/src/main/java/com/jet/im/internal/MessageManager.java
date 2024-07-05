@@ -37,6 +37,7 @@ import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.MessageOptions;
+import com.jet.im.model.MessageQueryOptions;
 import com.jet.im.model.UserInfo;
 import com.jet.im.model.messages.FileMessage;
 import com.jet.im.model.messages.ImageMessage;
@@ -394,12 +395,37 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction) {
-        return getMessages(conversation, count, timestamp, direction, new ArrayList<>());
+        return getMessages(
+                count, timestamp, direction,
+                new MessageQueryOptions
+                        .Builder()
+                        .setConversations(Collections.singletonList(conversation))
+                        .build());
     }
 
     @Override
     public List<Message> getMessages(Conversation conversation, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
-        return mCore.getDbManager().getMessages(conversation, count, timestamp, direction, contentTypes);
+        return getMessages(
+                count, timestamp, direction,
+                new MessageQueryOptions
+                        .Builder()
+                        .setConversations(Collections.singletonList(conversation))
+                        .setContentTypes(contentTypes)
+                        .build());
+    }
+
+    @Override
+    public List<Message> getMessages(int count, long timestamp, JetIMConst.PullDirection pullDirection, MessageQueryOptions messageQueryOptions) {
+        return mCore.getDbManager().getMessages(
+                count,
+                timestamp,
+                pullDirection,
+                messageQueryOptions != null ? messageQueryOptions.getSearchContent() : null,
+                messageQueryOptions != null ? messageQueryOptions.getDirection() : null,
+                messageQueryOptions != null ? messageQueryOptions.getContentTypes() : null,
+                messageQueryOptions != null ? messageQueryOptions.getSenderUserIds() : null,
+                messageQueryOptions != null ? messageQueryOptions.getStates() : null,
+                messageQueryOptions != null ? messageQueryOptions.getConversations() : null);
     }
 
     @Override
@@ -498,7 +524,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         });
     }
 
-
     @Override
     public List<Message> getMessagesByClientMsgNos(long[] clientMsgNos) {
         return mCore.getDbManager().getMessagesByClientMsgNos(clientMsgNos);
@@ -506,22 +531,46 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public List<Message> searchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction) {
-        return searchMessage(searchContent, count, timestamp, direction, new ArrayList<>());
+        return getMessages(
+                count, timestamp, direction,
+                new MessageQueryOptions
+                        .Builder()
+                        .setSearchContent(searchContent)
+                        .build());
     }
 
     @Override
     public List<Message> searchMessage(String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
-        return searchMessageInConversation(null, searchContent, count, timestamp, direction, new ArrayList<>());
+        return getMessages(
+                count, timestamp, direction,
+                new MessageQueryOptions
+                        .Builder()
+                        .setSearchContent(searchContent)
+                        .setContentTypes(contentTypes)
+                        .build());
     }
 
     @Override
     public List<Message> searchMessageInConversation(Conversation conversation, String searchContent, int count, long timestamp, JetIMConst.PullDirection direction) {
-        return searchMessageInConversation(conversation, searchContent, count, timestamp, direction, new ArrayList<>());
+        return getMessages(
+                count, timestamp, direction,
+                new MessageQueryOptions
+                        .Builder()
+                        .setSearchContent(searchContent)
+                        .setConversations(Collections.singletonList(conversation))
+                        .build());
     }
 
     @Override
     public List<Message> searchMessageInConversation(Conversation conversation, String searchContent, int count, long timestamp, JetIMConst.PullDirection direction, List<String> contentTypes) {
-        return mCore.getDbManager().searchMessage(conversation, searchContent, count, timestamp, direction, contentTypes);
+        return getMessages(
+                count, timestamp, direction,
+                new MessageQueryOptions
+                        .Builder()
+                        .setSearchContent(searchContent)
+                        .setConversations(Collections.singletonList(conversation))
+                        .setContentTypes(contentTypes)
+                        .build());
     }
 
     @Override
