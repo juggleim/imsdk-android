@@ -263,9 +263,20 @@ public class ConversationManager implements IConversationManager, MessageManager
                 JLogger.i("CONV-ClearUnread", "success");
                 mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
                 mCore.getDbManager().setMentionInfo(conversation, "");
-                noticeTotalUnreadCountChange();
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+                noticeTotalUnreadCountChange();
+                if (mListenerMap != null) {
+                    info.setLastReadMessageIndex(info.getLastMessageIndex());
+                    info.setUnreadCount(0);
+                    info.setMentionInfo(null);
+
+                    List<ConversationInfo> list = new ArrayList<>();
+                    list.add(info);
+                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(list));
+                    }
                 }
             }
 
@@ -348,7 +359,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
-    void connectSuccess(){
+    void connectSuccess() {
         mSyncProcessing = true;
     }
 
