@@ -7,7 +7,6 @@ import java.util.List;
  * @create 2024-07-04 17:33
  */
 public class MessageQueryOptions {
-    private boolean mOpenSearch;//是否为搜索模式，搜索模式下才会对mSearchContent进行判断与处理
     private String mSearchContent;//指定搜索内容
     private List<String> mSenderUserIds;//指定消息发送者ID
     private List<String> mContentTypes;//指定消息类型
@@ -19,21 +18,12 @@ public class MessageQueryOptions {
     }
 
     public MessageQueryOptions(Builder builder) {
-        this.mOpenSearch = builder.mOpenSearch;
         this.mSearchContent = builder.mSearchContent;
         this.mSenderUserIds = builder.mSenderUserIds;
         this.mContentTypes = builder.mContentTypes;
         this.mConversations = builder.mConversations;
         this.mStates = builder.mStates;
         this.mDirection = builder.mDirection;
-    }
-
-    public boolean isOpenSearch() {
-        return mOpenSearch;
-    }
-
-    public void setOpenSearch(boolean openSearch) {
-        this.mOpenSearch = openSearch;
     }
 
     public String getSearchContent() {
@@ -85,7 +75,6 @@ public class MessageQueryOptions {
     }
 
     public static class Builder {
-        private boolean mOpenSearch;
         private String mSearchContent;
         private List<String> mSenderUserIds;
         private List<String> mContentTypes;
@@ -94,11 +83,6 @@ public class MessageQueryOptions {
         private Message.MessageDirection mDirection;
 
         public Builder() {
-        }
-
-        public Builder setOpenSearch(boolean openSearch) {
-            this.mOpenSearch = openSearch;
-            return this;
         }
 
         public Builder setSearchContent(String searchContent) {

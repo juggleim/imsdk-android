@@ -420,7 +420,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 count,
                 timestamp,
                 pullDirection,
-                messageQueryOptions != null && messageQueryOptions.isOpenSearch(),
                 messageQueryOptions != null ? messageQueryOptions.getSearchContent() : null,
                 messageQueryOptions != null ? messageQueryOptions.getDirection() : null,
                 messageQueryOptions != null ? messageQueryOptions.getContentTypes() : null,
@@ -536,7 +535,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 count, timestamp, direction,
                 new MessageQueryOptions
                         .Builder()
-                        .setOpenSearch(true)
                         .setSearchContent(searchContent)
                         .build());
     }
@@ -547,7 +545,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 count, timestamp, direction,
                 new MessageQueryOptions
                         .Builder()
-                        .setOpenSearch(true)
                         .setSearchContent(searchContent)
                         .setContentTypes(contentTypes)
                         .build());
@@ -559,7 +556,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 count, timestamp, direction,
                 new MessageQueryOptions
                         .Builder()
-                        .setOpenSearch(true)
                         .setSearchContent(searchContent)
                         .setConversations(Collections.singletonList(conversation))
                         .build());
@@ -571,7 +567,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 count, timestamp, direction,
                 new MessageQueryOptions
                         .Builder()
-                        .setOpenSearch(true)
                         .setSearchContent(searchContent)
                         .setConversations(Collections.singletonList(conversation))
                         .setContentTypes(contentTypes)

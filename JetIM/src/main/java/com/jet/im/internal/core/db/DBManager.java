@@ -298,7 +298,6 @@ public class DBManager {
             int count,
             long timestamp,
             JetIMConst.PullDirection pullDirection,
-            boolean openSearch,
             String searchContent,
             Message.MessageDirection direction,
             List<String> contentTypes,
@@ -308,13 +307,12 @@ public class DBManager {
     ) {
         List<Message> result = new ArrayList<>();
         if (count < 1) return result;
-        if (openSearch && TextUtils.isEmpty(searchContent)) return result;
         if (timestamp == 0) {
             timestamp = Long.MAX_VALUE;
         }
         //处理sql及查询条件
         List<String> whereArgs = new ArrayList<>();
-        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, openSearch, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, whereArgs);
+        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, whereArgs);
         //执行查询
         Cursor cursor = rawQuery(sql, whereArgs.toArray(new String[0]));
         if (cursor == null) {

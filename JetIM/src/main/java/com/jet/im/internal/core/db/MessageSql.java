@@ -171,7 +171,6 @@ class MessageSql {
             int count,
             long timestamp,
             JetIMConst.PullDirection pullDirection,
-            boolean openSearch,
             String searchContent,
             Message.MessageDirection direction,
             List<String> contentTypes,
@@ -221,7 +220,7 @@ class MessageSql {
             whereArgs.add(String.valueOf(timestamp));
         }
         //添加 search_content 条件
-        if (openSearch) {
+        if (!TextUtils.isEmpty(searchContent)) {
             whereClauses.add("search_content LIKE ?");
             whereArgs.add("%" + searchContent + "%");
         }
