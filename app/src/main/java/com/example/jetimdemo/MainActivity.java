@@ -516,7 +516,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN5);
+        JetIM.getInstance().getConnectionManager().connect("ChBuc2xycmdybWdhcWY4eXdkGiAvuJ3uRTdwBIZJWjtNauEs2bxBDFP2cjnJbrowbbbiyg==");
         JetIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {

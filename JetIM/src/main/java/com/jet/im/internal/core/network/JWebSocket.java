@@ -707,7 +707,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     }
 
     private URI createWebSocketUri(String server) {
-        String webSocketUrl = WEB_SOCKET_PREFIX + server + WEB_SOCKET_SUFFIX;
+        String webSocketUrl;
+        if (server.contains(PROTOCOL_HEAD)) {
+            webSocketUrl = server;
+        } else {
+            webSocketUrl = WSS_HEAD_PREFIX + server + WEB_SOCKET_SUFFIX;
+        }
         return URI.create(webSocketUrl);
     }
 
@@ -729,7 +734,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private boolean mIsCompeteFinish;
     private final List<JWebSocketClient> mCompeteWSCList;
     private final Handler mSendHandler;
-    private static final String WEB_SOCKET_PREFIX = "ws://";
+    private static final String PROTOCOL_HEAD = "://";
+    private static final String WS_HEAD_PREFIX = "ws://";
+    private static final String WSS_HEAD_PREFIX = "wss://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
     private static final int MAX_CONCURRENT_COUNT = 5;
 }
