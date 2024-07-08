@@ -36,6 +36,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mWebSocketCommandManager = new WebSocketCommandManager(this);
         mWebSocketCommandManager.start(false);
         mCompeteWSCList = new ArrayList<>();
+        mCompeteStatusList = new ArrayList<>();
     }
 
     public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, List<String> servers) {
@@ -57,6 +58,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 URI uri = createWebSocketUri(server);
                 JWebSocketClient wsc = new JWebSocketClient(uri, JWebSocket.this);
                 mCompeteWSCList.add(wsc);
+                mCompeteStatusList.add(WebSocketStatus.IDLE);
                 executorService.execute(wsc::connect);
             }
         });
@@ -381,10 +383,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 client.close();
                 return;
             }
-            for (JWebSocketClient wsc : mCompeteWSCList) {
+            for (int i = 0; i < mCompeteWSCList.size(); i++) {
+                JWebSocketClient wsc = mCompeteWSCList.get(i);
                 if (wsc == client) {
                     JLogger.i("WS-Connect", "onOpen");
                     mIsCompeteFinish = true;
+                    mCompeteStatusList.set(i, WebSocketStatus.SUCCESS);
                     mWebSocketClient = client;
                     sendConnectMsg();
                     break;
@@ -459,14 +463,38 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     @Override
     public void onClose(JWebSocketClient client, int code, String reason, boolean remote) {
-        if (client != mWebSocketClient) {
-            return;
-        }
-        JLogger.i("WS-Connect", "onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
-        mSendHandler.post(this::resetWebSocketClient);
-        if (remote && mConnectListener != null) {
-            mConnectListener.onWebSocketClose();
-        }
+        mSendHandler.post(() -> {
+            if (mIsCompeteFinish) {
+                if (client != mWebSocketClient) {
+                    return;
+                }
+                JLogger.i("WS-Connect", "onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
+                resetWebSocketClient();
+                if (remote && mConnectListener != null) {
+                    mConnectListener.onWebSocketClose();
+                }
+            } else {
+                for (int i = 0; i < mCompeteWSCList.size(); i++) {
+                    JWebSocketClient wsc = mCompeteWSCList.get(i);
+                    if (wsc == client) {
+                        mCompeteStatusList.set(i, WebSocketStatus.FAILURE);
+                        break;
+                    }
+                }
+                boolean allFailed = true;
+                for (WebSocketStatus status : mCompeteStatusList) {
+                    if (WebSocketStatus.FAILURE != status) {
+                        allFailed = false;
+                        break;
+                    }
+                }
+                if (allFailed && mConnectListener != null) {
+                    JLogger.i("WS-Connect", "onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
+                    resetWebSocketClient();
+                    mConnectListener.onWebSocketClose();
+                }
+            }
+        });
     }
 
     @Override
@@ -703,18 +731,21 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private void resetWebSocketClient() {
         mWebSocketClient = null;
         mCompeteWSCList.clear();
+        mCompeteStatusList.clear();
         mIsCompeteFinish = false;
     }
 
     private URI createWebSocketUri(String server) {
         String webSocketUrl;
         if (server.contains(PROTOCOL_HEAD)) {
-            webSocketUrl = server;
+            webSocketUrl = server + WEB_SOCKET_SUFFIX;
         } else {
             webSocketUrl = WSS_HEAD_PREFIX + server + WEB_SOCKET_SUFFIX;
         }
         return URI.create(webSocketUrl);
     }
+
+    private enum WebSocketStatus {IDLE, FAILURE, SUCCESS}
 
     private String mAppKey;
     private String mToken;
@@ -733,6 +764,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private JWebSocketClient mWebSocketClient;
     private boolean mIsCompeteFinish;
     private final List<JWebSocketClient> mCompeteWSCList;
+    private final List<WebSocketStatus> mCompeteStatusList;
     private final Handler mSendHandler;
     private static final String PROTOCOL_HEAD = "://";
     private static final String WS_HEAD_PREFIX = "ws://";
