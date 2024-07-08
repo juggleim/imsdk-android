@@ -9,7 +9,6 @@ import com.jet.im.internal.core.JetIMCore;
 import com.jet.im.internal.core.db.DBManager;
 import com.jet.im.internal.core.network.AddConversationCallback;
 import com.jet.im.internal.core.network.SyncConversationsCallback;
-import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
@@ -54,8 +53,9 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         mCore.getWebSocket().addConversationInfo(conversation, mCore.getUserId(), new AddConversationCallback() {
             @Override
-            public void onSuccess(ConcreteConversationInfo conversationInfo) {
+            public void onSuccess(long timestamp, ConcreteConversationInfo conversationInfo) {
                 JLogger.i("CONV-Create", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
                 ConcreteConversationInfo added = doConversationsAdd(conversationInfo);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(added));
@@ -161,10 +161,11 @@ public class ConversationManager implements IConversationManager, MessageManager
             }
             return;
         }
-        mCore.getWebSocket().setMute(conversation, isMute, mCore.getUserId(), new WebSocketSimpleCallback() {
+        mCore.getWebSocket().setMute(conversation, isMute, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("CONV-Mute", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().setMute(conversation, isMute);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
@@ -204,6 +205,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("CONV-Top", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().setTop(conversation, isTop, timestamp);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
@@ -257,10 +259,11 @@ public class ConversationManager implements IConversationManager, MessageManager
             }
             return;
         }
-        mCore.getWebSocket().clearUnreadCount(conversation, mCore.getUserId(), info.getLastMessageIndex(), new WebSocketSimpleCallback() {
+        mCore.getWebSocket().clearUnreadCount(conversation, mCore.getUserId(), info.getLastMessageIndex(), new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("CONV-ClearUnread", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
                 mCore.getDbManager().setMentionInfo(conversation, "");
                 if (callback != null) {
@@ -301,10 +304,11 @@ public class ConversationManager implements IConversationManager, MessageManager
             return;
         }
         long time = Math.max(mCore.getMessageSendSyncTime(), mCore.getMessageReceiveTime());
-        mCore.getWebSocket().clearTotalUnreadCount(mCore.getUserId(), time, new WebSocketSimpleCallback() {
+        mCore.getWebSocket().clearTotalUnreadCount(mCore.getUserId(), time, new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("CONV-ClearTotal", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().clearTotalUnreadCount();
                 mCore.getDbManager().clearMentionInfo();
                 noticeTotalUnreadCountChange();

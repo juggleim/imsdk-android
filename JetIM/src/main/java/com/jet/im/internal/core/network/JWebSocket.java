@@ -146,7 +146,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public void sendReadReceipt(Conversation conversation,
                                 List<String> messageIds,
-                                WebSocketSimpleCallback callback) {
+                                WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.sendReadReceiptData(conversation, messageIds, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
@@ -177,7 +177,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     public void clearUnreadCount(Conversation conversation,
                                  String userId,
                                  long msgIndex,
-                                 WebSocketSimpleCallback callback) {
+                                 WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
@@ -185,7 +185,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void clearTotalUnreadCount(String userId, long time, WebSocketSimpleCallback callback) {
+    public void clearTotalUnreadCount(String userId, long time, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.clearTotalUnreadCountData(userId, time, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
@@ -217,7 +217,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void setMute(Conversation conversation, boolean isMute, String userId, WebSocketSimpleCallback callback) {
+    public void setMute(Conversation conversation, boolean isMute, String userId, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
@@ -270,7 +270,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void clearHistoryMessage(Conversation conversation, long time, WebSocketSimpleCallback callback) {
+    public void clearHistoryMessage(Conversation conversation, long time, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.clearHistoryMessage(conversation, time, 0, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
@@ -278,7 +278,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, WebSocketSimpleCallback callback) {
+    public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.deleteMessage(conversation, msgList, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
@@ -683,7 +683,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {
-                callback.onSuccess(ack.conversationInfo);
+                callback.onSuccess(ack.timestamp, ack.conversationInfo);
             }
         }
     }

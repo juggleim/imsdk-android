@@ -1283,18 +1283,18 @@ class PBData {
             put(C_MSG, PBRcvObj.PBRcvType.publishMsgAck);
             put(RECALL_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(DEL_CONV, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
-            put(CLEAR_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
-            put(CLEAR_TOTAL_UNREAD, PBRcvObj.PBRcvType.simpleQryAck);
-            put(MARK_READ, PBRcvObj.PBRcvType.simpleQryAck);
+            put(CLEAR_UNREAD, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(CLEAR_TOTAL_UNREAD, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(MARK_READ, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_READ_DETAIL, PBRcvObj.PBRcvType.qryReadDetailAck);
             put(QRY_HISMSG_BY_IDS, PBRcvObj.PBRcvType.qryHisMessagesAck);
-            put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(UNDISTURB_CONVERS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(TOP_CONVERS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_MERGED_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
             put(REG_PUSH_TOKEN, PBRcvObj.PBRcvType.simpleQryAck);
             put(QRY_MENTION_MSGS, PBRcvObj.PBRcvType.qryHisMessagesAck);
-            put(CLEAR_HIS_MSG, PBRcvObj.PBRcvType.simpleQryAck);
-            put(DELETE_MSG, PBRcvObj.PBRcvType.simpleQryAck);
+            put(CLEAR_HIS_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(DELETE_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_FILE_CRED, PBRcvObj.PBRcvType.qryFileCredAck);
             put(ADD_CONVERSATION, PBRcvObj.PBRcvType.addConversationAck);
         }

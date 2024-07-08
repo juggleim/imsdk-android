@@ -11,7 +11,6 @@ import com.jet.im.internal.core.network.JWebSocket;
 import com.jet.im.internal.core.network.QryHisMsgCallback;
 import com.jet.im.internal.core.network.QryReadDetailCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
-import com.jet.im.internal.core.network.WebSocketSimpleCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
 import com.jet.im.internal.logger.IJLog;
 import com.jet.im.internal.model.ConcreteConversationInfo;
@@ -611,10 +610,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return;
         }
         //调用接口
-        mCore.getWebSocket().deleteMessage(conversation, deleteList, new WebSocketSimpleCallback() {
+        mCore.getWebSocket().deleteMessage(conversation, deleteList, new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Delete", "by messageId, success");
+                updateMessageSendSyncTime(timestamp);
                 //删除消息
                 mCore.getDbManager().deleteMessagesByMessageIds(deleteIdList);
                 //通知会话更新
@@ -694,10 +694,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return;
         }
         //调用接口
-        mCore.getWebSocket().deleteMessage(conversation, deleteRemoteList, new WebSocketSimpleCallback() {
+        mCore.getWebSocket().deleteMessage(conversation, deleteRemoteList, new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Delete", "by clientMsgNo, success");
+                updateMessageSendSyncTime(timestamp);
                 //删除消息
                 mCore.getDbManager().deleteMessageByClientMsgNo(deleteClientMsgNoList);
                 //通知会话更新
@@ -737,10 +738,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         //调用接口
         long finalStartTime = startTime;
-        mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, new WebSocketSimpleCallback() {
+        mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Clear", "success");
+                updateMessageSendSyncTime(timestamp);
                 //清空消息
                 mCore.getDbManager().clearMessages(conversation, finalStartTime, null);
                 //通知会话更新
@@ -795,11 +797,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Recall", "success");
-                if (mSyncProcessing) {
-                    mCachedSendTime = timestamp;
-                } else {
-                    mCore.setMessageSendSyncTime(timestamp);
-                }
+                updateMessageSendSyncTime(timestamp);
                 m.setContentType(RecallInfoMessage.CONTENT_TYPE);
                 RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
                 recallInfoMessage.setExtra(extras);
@@ -962,10 +960,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
             return;
         }
-        mCore.getWebSocket().sendReadReceipt(conversation, messageIds, new WebSocketSimpleCallback() {
+        mCore.getWebSocket().sendReadReceipt(conversation, messageIds, new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("MSG-ReadReceipt", "sendReadReceipt, success");
+                updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().setMessagesRead(messageIds);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
