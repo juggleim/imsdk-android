@@ -163,11 +163,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo) {
                 JLogger.i("MSG-Send", "success, clientMsgNo is " + clientMsgNo);
-                if (mSyncProcessing) {
-                    mCachedSendTime = timestamp;
-                } else {
-                    mCore.setMessageSendSyncTime(timestamp);
-                }
+                updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, seqNo);
                 message.setClientMsgNo(clientMsgNo);
                 message.setMessageId(msgId);
