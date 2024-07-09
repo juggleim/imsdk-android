@@ -740,7 +740,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         if (server.contains(PROTOCOL_HEAD)) {
             webSocketUrl = server + WEB_SOCKET_SUFFIX;
         } else {
-            webSocketUrl = WSS_HEAD_PREFIX + server + WEB_SOCKET_SUFFIX;
+            webSocketUrl = WS_HEAD_PREFIX + server + WEB_SOCKET_SUFFIX;
         }
         return URI.create(webSocketUrl);
     }
