@@ -503,10 +503,11 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             return;
         }
         JLogger.e("WS-Connect", "onError, msg is " + ex.getMessage());
-        mSendHandler.post(this::resetWebSocketClient);
-        if (mConnectListener != null) {
-            mConnectListener.onWebSocketFail();
-        }
+        //不处理，避免业务层的异常导致重连
+//        mSendHandler.post(this::resetWebSocketClient);
+//        if (mConnectListener != null) {
+//            mConnectListener.onWebSocketFail();
+//        }
     }
 
     public void setToken(String token) {
