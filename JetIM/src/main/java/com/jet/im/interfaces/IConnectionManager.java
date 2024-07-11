@@ -10,6 +10,8 @@ public interface IConnectionManager {
 
     void registerPushToken(PushChannel channel, String token);
 
+    JetIMConst.ConnectionStatus getConnectionStatus();
+
     void addConnectionStatusListener(String key, IConnectionStatusListener listener);
 
     void removeConnectionStatusListener(String key);

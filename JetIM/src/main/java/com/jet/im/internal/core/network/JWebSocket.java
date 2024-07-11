@@ -502,6 +502,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         if (client != mWebSocketClient) {
             return;
         }
+        ex.printStackTrace();
         JLogger.e("WS-Connect", "onError, msg is " + ex.getMessage());
         //不处理，避免业务层的异常导致重连
 //        mSendHandler.post(this::resetWebSocketClient);

@@ -16,6 +16,15 @@ public class JetIMConst {
         int getStatus() {
             return this.status;
         }
+
+        public static ConnectionStatus setStatus(int status) {
+            for (ConnectionStatus s : ConnectionStatus.values()) {
+                if (status == s.status) {
+                    return s;
+                }
+            }
+            return IDLE;
+        }
     }
     public enum PullDirection {
         NEWER, OLDER

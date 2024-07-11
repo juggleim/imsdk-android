@@ -88,6 +88,11 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     }
 
     @Override
+    public JetIMConst.ConnectionStatus getConnectionStatus() {
+        return JetIMConst.ConnectionStatus.setStatus(mCore.getConnectionStatus());
+    }
+
+    @Override
     public void addConnectionStatusListener(String key, IConnectionStatusListener listener) {
         if (listener == null || TextUtils.isEmpty(key)) {
             return;

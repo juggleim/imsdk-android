@@ -75,20 +75,23 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            ImageMessage image = new ImageMessage();
-                            image.setLocalPath("asdfasdgasdgasdf");
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
-                            JetIM.getInstance().getMessageManager().sendMessage(image, c, new IMessageManager.ISendMessageCallback() {
-                                @Override
-                                public void onSuccess(Message message) {
-                                    int i = 1;
-                                }
-
-                                @Override
-                                public void onError(Message message, int errorCode) {
-
-                                }
-                            });
+                            JetIMConst.ConnectionStatus s = JetIM.getInstance().getConnectionManager().getConnectionStatus();
+                            int i = 1;
+                            i = i+1;
+//                            ImageMessage image = new ImageMessage();
+//                            image.setLocalPath("asdfasdgasdgasdf");
+//                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
+//                            JetIM.getInstance().getMessageManager().sendMessage(image, c, new IMessageManager.ISendMessageCallback() {
+//                                @Override
+//                                public void onSuccess(Message message) {
+//                                    int i = 1;
+//                                }
+//
+//                                @Override
+//                                public void onError(Message message, int errorCode) {
+//
+//                                }
+//                            });
 //                            JetIM.getInstance().getConnectionManager().disconnect(false);
 //                            JetIM.getInstance().getConnectionManager().connect(TOKEN3);
 
@@ -516,7 +519,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect("ChBuc2xycmdybWdhcWY4eXdkGiAvuJ3uRTdwBIZJWjtNauEs2bxBDFP2cjnJbrowbbbiyg==");
+        JetIM.getInstance().getConnectionManager().connect(TOKEN4);
         JetIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {

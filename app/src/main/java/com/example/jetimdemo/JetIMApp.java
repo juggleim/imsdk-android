@@ -15,12 +15,12 @@ public class JetIMApp extends Application {
     public void onCreate() {
         super.onCreate();
         List<String> serverList = new ArrayList<>();
-        serverList.add("https://im-nav.yometalk.com");
-        JetIM.getInstance().setServer(serverList);
+//        serverList.add("https://im-nav.yometalk.com");
+//        JetIM.getInstance().setServer(serverList);
         JetIM.InitConfig initConfig = new JetIM.InitConfig.Builder()
                 .setPushConfig(new PushConfig.Builder().build())
                 .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build())
                 .build();
-        JetIM.getInstance().init(this, "nslrrgrmgaqf8ywd", initConfig);
+        JetIM.getInstance().init(this, "appkey", initConfig);
     }
 }
