@@ -41,7 +41,7 @@ public interface IMessageManager {
 
         void onSuccess(Message message);
 
-        void onError(Message message, int errorCode);
+        void onError(int errorCode);
 
         void onCancel(Message message);
     }
