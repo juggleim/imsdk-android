@@ -561,62 +561,87 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void downloadMediaMessage(Message message, IDownloadMediaMessageCallback callback) {
-        if (!(message.getContent() instanceof MediaMessageContent)) {
-            callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE);
-            return;
-        }
-        MediaMessageContent content = (MediaMessageContent) message.getContent();
-        if (TextUtils.isEmpty(content.getUrl())) {
-            callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_URL_EMPTY);
-            return;
-        }
-        String media = "file";
-        String name = (message.getMessageId() != null ? message.getMessageId() : String.valueOf(message.getClientMsgNo())) + "_" + FileUtils.getFileNameWithPath(content.getUrl());
-        if (content instanceof ImageMessage) {
-            media = "image";
-        } else if (content instanceof VoiceMessage) {
-            media = "voice";
-        } else if (content instanceof VideoMessage) {
-            media = "video";
-        }
-
-        String userId = mCore.getUserId();
-        String appKey = mCore.getAppKey();
-        Context context = mCore.getContext();
-        if (TextUtils.isEmpty(appKey) || TextUtils.isEmpty(userId)) {
-            callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_APPKEY_OR_USERID_EMPTY);
-            return;
-        }
-        String dir = appKey + "/" + userId + "/" + media;
-        String savePath = FileUtils.getMediaDownloadDir(context, dir, name);
-        if (TextUtils.isEmpty(savePath)) {
-            callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY);
-            return;
-
-        }
-        MediaDownloadEngine.getInstance().download(message.getMessageId(), content.getUrl(), savePath, new MediaDownloadEngine.DownloadEngineCallback() {
-
+        mCore.getSendHandler().post(new Runnable() {
             @Override
-            public void onError(int errorCode) {
-                callback.onError(message, errorCode);
-            }
+            public void run() {
+                if (!(message.getContent() instanceof MediaMessageContent)) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE);
+                    });
 
-            @Override
-            public void onComplete(String savePath) {
-                content.setLocalPath(savePath);
-                callback.onSuccess(message);
-            }
+                    return;
+                }
+                MediaMessageContent content = (MediaMessageContent) message.getContent();
+                if (TextUtils.isEmpty(content.getUrl())) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_URL_EMPTY);
+                    });
+                    return;
+                }
+                String media = "file";
+                String name = (message.getMessageId() != null ? message.getMessageId() : String.valueOf(message.getClientMsgNo())) + "_" + FileUtils.getFileNameWithPath(content.getUrl());
+                if (content instanceof ImageMessage) {
+                    media = "image";
+                } else if (content instanceof VoiceMessage) {
+                    media = "voice";
+                } else if (content instanceof VideoMessage) {
+                    media = "video";
+                }
 
-            @Override
-            public void onProgress(int progress) {
-                callback.onProgress(progress, message);
-            }
+                String userId = mCore.getUserId();
+                String appKey = mCore.getAppKey();
+                Context context = mCore.getContext();
+                if (TextUtils.isEmpty(appKey) || TextUtils.isEmpty(userId)) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_APPKEY_OR_USERID_EMPTY);
+                    });
+                    return;
+                }
+                String dir = appKey + "/" + userId + "/" + media;
+                String savePath = FileUtils.getMediaDownloadDir(context, dir, name);
+                if (TextUtils.isEmpty(savePath)) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY);
+                    });
+                    return;
 
-            @Override
-            public void onCanceled(String tag) {
-                callback.onCancel(message);
+                }
+                MediaDownloadEngine.getInstance().download(message.getMessageId(), content.getUrl(), savePath, new MediaDownloadEngine.DownloadEngineCallback() {
+
+                    @Override
+                    public void onError(int errorCode) {
+                        mCore.getCallbackHandler().post(() -> {
+                            callback.onError(message, errorCode);
+                        });
+
+                    }
+
+                    @Override
+                    public void onComplete(String savePath) {
+                        content.setLocalPath(savePath);
+                        mCore.getCallbackHandler().post(() -> {
+                            callback.onSuccess(message);
+                        });
+                    }
+
+                    @Override
+                    public void onProgress(int progress) {
+                        mCore.getCallbackHandler().post(() -> {
+                            callback.onProgress(progress, message);
+                        });
+                    }
+
+                    @Override
+                    public void onCanceled(String tag) {
+                        mCore.getCallbackHandler().post(() -> {
+                            callback.onCancel(message);
+                        });
+
+                    }
+                });
             }
         });
+
     }
 
     public void cancelDownloadMediaMessage(Message message) {
