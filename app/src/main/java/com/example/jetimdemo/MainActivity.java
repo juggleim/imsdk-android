@@ -31,6 +31,7 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.GroupInfo;
 import com.jet.im.model.GroupMessageReadInfo;
+import com.jet.im.model.MediaMessageContent;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageContent;
 import com.jet.im.model.UserInfo;
@@ -54,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     private final String TOKEN3 = "CgZhcHBrZXkaINMDzs7BBTTZTwjKtM10zyxL4DBWFuZL6Z/OAU0Iajpv";
     private final String TOKEN4 = "CgZhcHBrZXkaIDHZwzfny4j4GiJye8y8ehU5fpJ+wVOGI3dCsBMfyLQv";
     private final String TOKEN5 = "CgZhcHBrZXkaIOx2upLCsmsefp8U/KNb52UGnAEu/xf+im3QaUd0HTC2";
+    //nsw3sue72begyv7y,AVaoVF4zG
+    private final String TOKEN6 = "ChBuc3czc3VlNzJiZWd5djd5GiAH3t-KKHZ0UOZNG6mfNL8m2hAUbN4RYH0iskZQTm6M7Q==";
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
@@ -519,7 +522,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN4);
+        JetIM.getInstance().getConnectionManager().connect(TOKEN2);
         JetIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {
@@ -560,6 +563,29 @@ public class MainActivity extends AppCompatActivity {
                 } else if (c instanceof VoiceMessage) {
                     VoiceMessage v = (VoiceMessage) c;
                     Log.i("lifei", "voice message, extra is " + v.getExtra());
+                }
+                if(message.getContent() instanceof MediaMessageContent){
+                    JetIM.getInstance().getMessageManager().downloadMediaMessage(message.getMessageId(), new IMessageManager.IDownloadMediaMessageCallback() {
+                        @Override
+                        public void onProgress(int progress, Message message) {
+                            Log.d("yuto","progress:"+progress);
+                        }
+
+                        @Override
+                        public void onSuccess(Message message) {
+                            Log.d("yuto","onSuccess:"+((MediaMessageContent)message.getContent()).getLocalPath());
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            Log.d("yuto","onError:"+errorCode);
+                        }
+
+                        @Override
+                        public void onCancel(Message message) {
+
+                        }
+                    });
                 }
             }
 
