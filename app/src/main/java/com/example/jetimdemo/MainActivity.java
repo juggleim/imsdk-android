@@ -565,7 +565,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.i("lifei", "voice message, extra is " + v.getExtra());
                 }
                 if(message.getContent() instanceof MediaMessageContent){
-                    JetIM.getInstance().getMessageManager().downloadMediaMessage(message, new IMessageManager.IDownloadMediaMessageCallback() {
+                    JetIM.getInstance().getMessageManager().downloadMediaMessage(message.getMessageId(), new IMessageManager.IDownloadMediaMessageCallback() {
                         @Override
                         public void onProgress(int progress, Message message) {
                             Log.d("yuto","progress:"+progress);

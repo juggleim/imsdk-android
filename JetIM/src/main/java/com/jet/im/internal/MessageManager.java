@@ -560,10 +560,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void downloadMediaMessage(Message message, IDownloadMediaMessageCallback callback) {
+    public void downloadMediaMessage(String messageId, IDownloadMediaMessageCallback callback) {
         mCore.getSendHandler().post(new Runnable() {
             @Override
             public void run() {
+                ConcreteMessage message = mCore.getDbManager().getMessageWithMessageId(messageId);
                 if (!(message.getContent() instanceof MediaMessageContent)) {
                     mCore.getCallbackHandler().post(() -> {
                         callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE);
@@ -619,6 +620,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     @Override
                     public void onComplete(String savePath) {
                         content.setLocalPath(savePath);
+                        mCore.getDbManager().updateMessageContentWithMessageId(message.getContent(), message.getContentType(), message.getMessageId());
                         mCore.getCallbackHandler().post(() -> {
                             callback.onSuccess(message);
                         });
@@ -644,8 +646,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     }
 
-    public void cancelDownloadMediaMessage(Message message) {
-        MediaDownloadEngine.getInstance().cancel(message.getMessageId());
+    public void cancelDownloadMediaMessage(String messageId) {
+        MediaDownloadEngine.getInstance().cancel(messageId);
     }
 
     @Override

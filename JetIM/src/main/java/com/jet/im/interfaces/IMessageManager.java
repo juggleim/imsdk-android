@@ -157,12 +157,15 @@ public interface IMessageManager {
     /**
      * 下载多媒体文件。
      *
-     * @param message 媒体消息（FileMessage，SightMessage，GIFMessage, HQVoiceMessage等）。
-     * @param callback 下载文件的回调。参考 {@link IDownloadMediaMessageCallback}。
+     * @param messageId 媒体消息（FileMessage，SightMessage，GIFMessage, HQVoiceMessage等）。
+     * @param callback  下载文件的回调。参考 {@link IDownloadMediaMessageCallback}。
      * @since 5.0.0
      */
     public abstract void downloadMediaMessage(
-            final Message message, final IDownloadMediaMessageCallback callback);
+            final String messageId, final IDownloadMediaMessageCallback callback);
+
+    public abstract void cancelDownloadMediaMessage(String messageId);
+
     List<Message> searchMessageInConversation(
             Conversation conversation,
             String searchContent,
