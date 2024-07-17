@@ -36,6 +36,16 @@ public interface IMessageManager {
         void onCancel(Message message);
     }
 
+    interface IDownloadMediaMessageCallback {
+        void onProgress(int progress, Message message);
+
+        void onSuccess(Message message);
+
+        void onError(Message message, int errorCode);
+
+        void onCancel(Message message);
+    }
+
     interface IGetLocalAndRemoteMessagesCallback {
         void onGetLocalList(List<Message> messages, boolean hasRemote);
 
@@ -143,6 +153,16 @@ public interface IMessageManager {
             long timestamp,
             JetIMConst.PullDirection direction);
 
+
+    /**
+     * 下载多媒体文件。
+     *
+     * @param message 媒体消息（FileMessage，SightMessage，GIFMessage, HQVoiceMessage等）。
+     * @param callback 下载文件的回调。参考 {@link IDownloadMediaMessageCallback}。
+     * @since 5.0.0
+     */
+    public abstract void downloadMediaMessage(
+            final Message message, final IDownloadMediaMessageCallback callback);
     List<Message> searchMessageInConversation(
             Conversation conversation,
             String searchContent,

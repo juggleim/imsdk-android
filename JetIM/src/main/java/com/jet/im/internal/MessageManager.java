@@ -1,5 +1,6 @@
 package com.jet.im.internal;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.jet.im.JErrorCode;
@@ -12,6 +13,7 @@ import com.jet.im.internal.core.network.QryHisMsgCallback;
 import com.jet.im.internal.core.network.QryReadDetailCallback;
 import com.jet.im.internal.core.network.SendMessageCallback;
 import com.jet.im.internal.core.network.WebSocketTimestampCallback;
+import com.jet.im.internal.downloader.MediaDownloadEngine;
 import com.jet.im.internal.logger.IJLog;
 import com.jet.im.internal.model.ConcreteConversationInfo;
 import com.jet.im.internal.model.ConcreteMessage;
@@ -28,6 +30,7 @@ import com.jet.im.internal.model.messages.ReadNtfMessage;
 import com.jet.im.internal.model.messages.RecallCmdMessage;
 import com.jet.im.internal.model.messages.TopConvMessage;
 import com.jet.im.internal.model.messages.UnDisturbConvMessage;
+import com.jet.im.internal.util.FileUtils;
 import com.jet.im.internal.util.JLogger;
 import com.jet.im.model.Conversation;
 import com.jet.im.model.GroupInfo;
@@ -554,6 +557,70 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                         .setSearchContent(searchContent)
                         .setConversations(Collections.singletonList(conversation))
                         .build());
+    }
+
+    @Override
+    public void downloadMediaMessage(Message message, IDownloadMediaMessageCallback callback) {
+        if (!(message.getContent() instanceof MediaMessageContent)) {
+            callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE);
+            return;
+        }
+        MediaMessageContent content = (MediaMessageContent) message.getContent();
+        if (TextUtils.isEmpty(content.getUrl())) {
+            callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_URL_EMPTY);
+            return;
+        }
+        String media = "file";
+        String name = (message.getMessageId() != null ? message.getMessageId() : String.valueOf(message.getClientMsgNo())) + "_" + FileUtils.getFileNameWithPath(content.getUrl());
+        if (content instanceof ImageMessage) {
+            media = "image";
+        } else if (content instanceof VoiceMessage) {
+            media = "voice";
+        } else if (content instanceof VideoMessage) {
+            media = "video";
+        }
+
+        String userId = mCore.getUserId();
+        String appKey = mCore.getAppKey();
+        Context context = mCore.getContext();
+        if (TextUtils.isEmpty(appKey) || TextUtils.isEmpty(userId)) {
+            callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_APPKEY_OR_USERID_EMPTY);
+            return;
+        }
+        String dir = appKey + "/" + userId + "/" + media;
+        String savePath = FileUtils.getMediaDownloadDir(context, dir, name);
+        if (TextUtils.isEmpty(savePath)) {
+            callback.onError(message, JErrorCode.MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY);
+            return;
+
+        }
+        MediaDownloadEngine.getInstance().download(message.getMessageId(), content.getUrl(), savePath, new MediaDownloadEngine.DownloadEngineCallback() {
+
+            @Override
+            public void onError(int errorCode) {
+                callback.onError(message, errorCode);
+            }
+
+            @Override
+            public void onComplete(String savePath) {
+                content.setLocalPath(savePath);
+                callback.onSuccess(message);
+            }
+
+            @Override
+            public void onProgress(int progress) {
+                callback.onProgress(progress, message);
+            }
+
+            @Override
+            public void onCanceled(String tag) {
+                callback.onCancel(message);
+            }
+        });
+    }
+
+    public void cancelDownloadMediaMessage(Message message) {
+        MediaDownloadEngine.getInstance().cancel(message.getMessageId());
     }
 
     @Override
