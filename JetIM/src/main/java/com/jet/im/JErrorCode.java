@@ -40,8 +40,8 @@ public class JErrorCode {
     public static final int MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE = 23001;
     //媒体消息url 为空
     public static final int MESSAGE_DOWNLOAD_ERROR_URL_EMPTY = 23002;
-    //appkey 或 userid 为 null
-    public static final int MESSAGE_DOWNLOAD_ERROR_APPKEY_OR_USERID_EMPTY = 23004;
+    //appKey 或 userid 为 null
+    public static final int MESSAGE_DOWNLOAD_ERROR_APP_KEY_OR_USERID_EMPTY = 23004;
     public static final int MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY = 23005;
     public static final int MESSAGE_DOWNLOAD_ERROR = 23006;
     public static final int FILE_SAVED_FAILED = 23007;

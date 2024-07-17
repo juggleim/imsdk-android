@@ -569,7 +569,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     mCore.getCallbackHandler().post(() -> {
                         callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
                     });
-
                     return;
                 }
                 if (!(message.getContent() instanceof MediaMessageContent)) {
@@ -600,7 +599,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 Context context = mCore.getContext();
                 if (TextUtils.isEmpty(appKey) || TextUtils.isEmpty(userId)) {
                     mCore.getCallbackHandler().post(() -> {
-                        callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_APPKEY_OR_USERID_EMPTY);
+                        callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_APP_KEY_OR_USERID_EMPTY);
                     });
                     return;
                 }

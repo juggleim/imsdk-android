@@ -161,10 +161,10 @@ public interface IMessageManager {
      * @param callback  下载文件的回调。参考 {@link IDownloadMediaMessageCallback}。
      * @since 5.0.0
      */
-    public abstract void downloadMediaMessage(
+    void downloadMediaMessage(
             final String messageId, final IDownloadMediaMessageCallback callback);
 
-    public abstract void cancelDownloadMediaMessage(String messageId);
+    void cancelDownloadMediaMessage(String messageId);
 
     List<Message> searchMessageInConversation(
             Conversation conversation,
