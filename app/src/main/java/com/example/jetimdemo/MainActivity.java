@@ -577,7 +577,7 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onError(Message message, int errorCode) {
+                        public void onError(int errorCode) {
                             Log.d("yuto","onError:"+errorCode);
                         }
 
