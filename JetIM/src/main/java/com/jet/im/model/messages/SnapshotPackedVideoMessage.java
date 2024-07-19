@@ -66,6 +66,9 @@ public class SnapshotPackedVideoMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(mExtra)) {
                 jsonObject.put(EXTRA, mExtra);
             }
+            if (!TextUtils.isEmpty(getLocalPath())) {
+                jsonObject.put(LOCALPATH, getLocalPath());
+            }
         } catch (JSONException e) {
             JLogger.e("MSG-Encode", "SnapshotPackedVideoMessage JSONException " + e.getMessage());
         }
@@ -107,6 +110,9 @@ public class SnapshotPackedVideoMessage extends MediaMessageContent {
             }
             if (jsonObject.has(EXTRA)) {
                 mExtra = jsonObject.optString(EXTRA);
+            }
+            if (jsonObject.has(LOCALPATH)) {
+                setLocalPath(jsonObject.optString(LOCALPATH));
             }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "SnapshotPackedVideoMessage decode JSONException " + e.getMessage());
@@ -190,4 +196,6 @@ public class SnapshotPackedVideoMessage extends MediaMessageContent {
     private static final String NAME = "name";
     private static final String EXTRA = "extra";
     private static final String DIGEST = "[Video]";
+
+    private static final String LOCALPATH = "localPath";
 }

@@ -32,6 +32,10 @@ public class FileMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(mExtra)) {
                 jsonObject.put(EXTRA, mExtra);
             }
+            if (!TextUtils.isEmpty(getLocalPath())) {
+                jsonObject.put(LOCALPATH, getLocalPath());
+            }
+
         } catch (JSONException e) {
             JLogger.e("MSG-Encode", "FileMessage JSONException " + e.getMessage());
         }
@@ -62,6 +66,9 @@ public class FileMessage extends MediaMessageContent {
             }
             if (jsonObject.has(EXTRA)) {
                 mExtra = jsonObject.optString(EXTRA);
+            }
+            if (jsonObject.has(LOCALPATH)) {
+                setLocalPath(jsonObject.optString(LOCALPATH));
             }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "FileMessage decode JSONException " + e.getMessage());
@@ -121,4 +128,5 @@ public class FileMessage extends MediaMessageContent {
     private static final String TYPE = "type";
     private static final String EXTRA = "extra";
     private static final String DIGEST = "[File]";
+    private static final String LOCALPATH = "localPath";
 }
