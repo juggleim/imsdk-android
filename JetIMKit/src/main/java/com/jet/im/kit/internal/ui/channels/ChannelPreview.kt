@@ -1,6 +1,7 @@
 package com.jet.im.kit.internal.ui.channels
 
 import android.content.Context
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,10 @@ import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.model.Conversation
 import com.jet.im.model.ConversationInfo
+import com.jet.im.model.messages.ImageMessage
+import com.jet.im.model.messages.TextMessage
+import com.jet.im.model.messages.VoiceMessage
+import org.w3c.dom.Text
 
 internal class ChannelPreview @JvmOverloads constructor(
     context: Context,
@@ -233,22 +238,31 @@ internal class ChannelPreview @JvmOverloads constructor(
 //                }
             }
             // todo 最后一条消息内容
-//            channel.lastMessage?.let {
-//                when (it) {
-//                    is AdminMessage,
-//                    is UserMessage -> {
-//                        textView.maxLines = 2
-//                        textView.ellipsize = TextUtils.TruncateAt.END
-//                        message = it.getDisplayMessage()
-//                    }
-//
-//                    is BaseFileMessage -> {
-//                        textView.maxLines = 1
-//                        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
-//                        message = it.toDisplayText(textView.context)
-//                    }
-//                }
-//            }
+            channel.lastMessage?.content?.let {
+                when (it) {
+                    is TextMessage -> {
+                        textView.maxLines = 2
+                        textView.ellipsize = TextUtils.TruncateAt.END
+                        message = it.content
+                    }
+
+                    is VoiceMessage -> {
+                        textView.maxLines = 1
+                        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+                        message = "[语音]"
+                    }
+
+                    is ImageMessage -> {
+                        textView.maxLines = 1
+                        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+                        message = "[图片]"
+                    }
+                    else ->{
+                        message="暂不支持此消息"
+                    }
+
+                }
+            }
             textView.text = message
         }
     }

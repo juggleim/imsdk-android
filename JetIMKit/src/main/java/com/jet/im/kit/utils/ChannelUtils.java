@@ -80,10 +80,10 @@ public class ChannelUtils {
     public static String makeTitleText(@NonNull Context context, @NonNull ConversationInfo channel) {
         if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.PRIVATE)) {
             UserInfo info = JetIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
-            return info.getUserName();
+            return android.text.TextUtils.isEmpty(info.getUserName())?info.getUserId():info.getUserName();
         } else if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.GROUP)) {
             GroupInfo info = JetIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
-            return info.getGroupName();
+            return android.text.TextUtils.isEmpty(info.getGroupName())?info.getGroupId():info.getGroupName();
         } else {
             return channel.getConversation().getConversationId();
         }
