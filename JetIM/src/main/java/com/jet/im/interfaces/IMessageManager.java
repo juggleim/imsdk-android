@@ -46,15 +46,6 @@ public interface IMessageManager {
         void onCancel(Message message);
     }
 
-    interface IDownloadMediaMessageCallback {
-        void onProgress(int progress, Message message);
-
-        void onSuccess(Message message);
-
-        void onError(int errorCode);
-
-        void onCancel(Message message);
-    }
 
     interface IGetLocalAndRemoteMessagesCallback {
         void onGetLocalList(List<Message> messages, boolean hasRemote);
