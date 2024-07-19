@@ -224,6 +224,18 @@ public interface IMessageManager {
 
         //当 senderId 有值时，表示只清空这个用户发送的消息
         void onMessageClear(Conversation conversation, long timestamp, String senderId);
+
+        default void onSendMessageSuccess(Message message){
+        }
+
+        default void onSendMessageError(Message message,int errorCode){
+        }
+
+        default void onSendMessageUpload(Message message,int progress){
+        }
+
+        default void onSendMessageCancel(Message message){
+        }
     }
 
     interface IMessageSyncListener {

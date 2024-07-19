@@ -49,7 +49,7 @@ public class TextMessage extends MessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(CONTENT)) {
-                mContent = jsonObject.optString(CONTENT);
+                mContent =String.valueOf(jsonObject.opt(CONTENT));
             }
             if (jsonObject.has(EXTRA)) {
                 mExtra = jsonObject.optString(EXTRA);

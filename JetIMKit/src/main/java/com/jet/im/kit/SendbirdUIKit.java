@@ -22,6 +22,7 @@ import com.jet.im.kit.consts.ReplyType;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.consts.ThreadReplySelectType;
 import com.jet.im.kit.fragments.UIKitFragmentFactory;
+import com.jet.im.kit.interfaces.ConnectHandler;
 import com.jet.im.kit.interfaces.CustomParamsHandler;
 import com.jet.im.kit.interfaces.CustomUserListQueryHandler;
 import com.jet.im.kit.interfaces.UserInfo;
@@ -49,7 +50,6 @@ import com.sendbird.android.exception.SendbirdConnectionRequiredException;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.handler.AuthenticationHandler;
 import com.sendbird.android.handler.CompletionHandler;
-import com.sendbird.android.handler.ConnectHandler;
 import com.sendbird.android.handler.DisconnectHandler;
 import com.sendbird.android.handler.InitResultHandler;
 import com.sendbird.android.internal.sb.SendbirdPlatform;
@@ -73,7 +73,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SendbirdUIKit {
     private static volatile SendbirdUIKitAdapter adapter;
-
+    public static volatile String token;
     /**
      * UIKit log level. It depends on android Log level.
      */
@@ -541,19 +541,6 @@ public class SendbirdUIKit {
         connectInternal(new SendbirdChatImpl(), new TaskQueueImpl(), handler);
     }
 
-    /**
-     * Authenticate to Sendbird with given <code>UserInfo</code>.
-     * Unlike {@link #connect(ConnectHandler)}, it is used to issue the necessary credentials when using the API required for FeedNotification.
-     *
-     * @param handler Callback handler.
-     *                since 3.7.0
-     */
-    public static void authenticateFeed(@Nullable AuthenticationHandler handler) {
-        connectInternal(ConnectType.AUTHENTICATE_FEED, new SendbirdChatImpl(), new TaskQueueImpl(), (user, e1) -> {
-            if (handler != null) handler.onAuthenticated(user, e1);
-        });
-    }
-
     private enum ConnectType {
         CONNECT,
         AUTHENTICATE_FEED
@@ -562,7 +549,7 @@ public class SendbirdUIKit {
     @VisibleForTesting
     static void connectInternal(@NonNull SendbirdChatContract sendbirdChat,
                                 @NonNull TaskQueueContract taskQueueContract,
-                                @Nullable ConnectHandler handler) {
+                                @Nullable com.jet.im.kit.interfaces.ConnectHandler handler) {
         connectInternal(ConnectType.CONNECT, sendbirdChat, taskQueueContract, handler);
     }
 
@@ -570,11 +557,11 @@ public class SendbirdUIKit {
             @NonNull ConnectType connectType,
             @NonNull SendbirdChatContract sendbirdChat,
             @NonNull TaskQueueContract taskQueueContract,
-            @Nullable ConnectHandler handler) {
-        taskQueueContract.addTask(new JobResultTask<Pair<User, SendbirdException>>() {
+            @Nullable com.jet.im.kit.interfaces.ConnectHandler handler) {
+        taskQueueContract.addTask(new JobResultTask<Pair<User, Exception>>() {
             @Override
-            public Pair<User, SendbirdException> call() throws Exception {
-                final Pair<User, SendbirdException> data;
+            public Pair<User, Exception> call() throws Exception {
+                final Pair<User, Exception> data;
                 if (connectType == ConnectType.AUTHENTICATE_FEED) {
                     data = authenticateFeedBlocking(sendbirdChat);
                 } else {
@@ -582,7 +569,7 @@ public class SendbirdUIKit {
                 }
 
                 final User user = data.first;
-                final SendbirdException error = data.second;
+                final Exception error = data.second;
                 Logger.d("++ user=%s, error=%s", user, error);
                 if (error == null && user != null) {
                     UserInfo userInfo = adapter.getUserInfo();
@@ -621,28 +608,28 @@ public class SendbirdUIKit {
             }
 
             @Override
-            public void onResultForUiThread(@Nullable Pair<User, SendbirdException> data, @Nullable SendbirdException e) {
+            public void onResultForUiThread(@Nullable Pair<User, Exception> data, @Nullable SendbirdException e) {
                 final User user = data != null ? data.first : null;
-                final SendbirdException error = data != null ? data.second : e;
+                final Exception error = data != null ? data.second : e;
                 Logger.d("++ user=%s, error=%s", user, error);
                 if (handler != null) {
-                    handler.onConnected(user, error);
+                    handler.onConnected(error);
                 }
             }
         });
     }
 
     @NonNull
-    private static Pair<User, SendbirdException> connectBlocking(@NonNull SendbirdChatContract sendbirdChat) throws InterruptedException {
+    private static Pair<User, Exception> connectBlocking(@NonNull SendbirdChatContract sendbirdChat) throws InterruptedException {
         AtomicReference<User> result = new AtomicReference<>();
-        AtomicReference<SendbirdException> error = new AtomicReference<>();
+        AtomicReference<Exception> error = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
         UserInfo userInfo = adapter.getUserInfo();
         String userId = userInfo.getUserId();
         String accessToken = adapter.getAccessToken();
 
-        sendbirdChat.connect(userId, accessToken, (user, e) -> {
-            result.set(user);
+        sendbirdChat.connect(userId, accessToken, (e) -> {
+            result.set(null);
             if (e != null) {
                 error.set(e);
             }
@@ -654,9 +641,9 @@ public class SendbirdUIKit {
     }
 
     @NonNull
-    private static Pair<User, SendbirdException> authenticateFeedBlocking(@NonNull SendbirdChatContract sendbirdChat) throws InterruptedException {
+    private static Pair<User, Exception> authenticateFeedBlocking(@NonNull SendbirdChatContract sendbirdChat) throws InterruptedException {
         AtomicReference<User> result = new AtomicReference<>();
-        AtomicReference<SendbirdException> error = new AtomicReference<>();
+        AtomicReference<Exception> error = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
         UserInfo userInfo = adapter.getUserInfo();
         String userId = userInfo.getUserId();

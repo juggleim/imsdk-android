@@ -44,7 +44,6 @@ internal class ImageFileView @JvmOverloads constructor(
         url: String,
         plainUrl: String,
         fileType: String,
-        thumbnails: List<Thumbnail>,
         cacheKey: String
     ) {
         binding.ivThumbnailOverlay.setOnClickListener { this.performClick() }
@@ -56,7 +55,6 @@ internal class ImageFileView @JvmOverloads constructor(
             url,
             plainUrl,
             fileType,
-            thumbnails,
             null,
             R.dimen.sb_size_32
         )

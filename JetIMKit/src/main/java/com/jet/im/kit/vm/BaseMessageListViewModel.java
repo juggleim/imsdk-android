@@ -15,7 +15,9 @@ import com.jet.im.model.Conversation;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.MessageOptions;
+import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
+import com.jet.im.model.messages.VoiceMessage;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.collection.CollectionEventSource;
 import com.sendbird.android.collection.MessageContext;
@@ -155,6 +157,24 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 
     }
 
+    public void sendVoiceMessage(@NonNull String localPath,int duration) {
+        if (channel != null) {
+            VoiceMessage voiceMessage = new VoiceMessage();
+            voiceMessage.setLocalPath(localPath);
+            voiceMessage.setDuration(duration);
+            JetIM.getInstance().getMessageManager().sendMediaMessage(voiceMessage, channel.getConversation(), null);
+        }
+    }
+
+
+    public void sendImageMessage(@NonNull String localPath) {
+        if (channel != null) {
+            ImageMessage imageMessage = new ImageMessage();
+            imageMessage.setLocalPath(localPath);
+            imageMessage.setThumbnailLocalPath(localPath);
+            JetIM.getInstance().getMessageManager().sendMediaMessage(imageMessage, channel.getConversation(), null);
+        }
+    }
     /**
      * Sends a file message to the channel.
      *
@@ -165,16 +185,20 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     public void sendFileMessage(@NonNull FileMessageCreateParams params, @NonNull FileInfo fileInfo) {
         Logger.i("++ request send file message : %s", params);
 //        if (channel != null) {
-//            FileMessage pendingFileMessage = channel.sendFileMessage(params, (message, ee) -> {
-//                if (ee != null) {
-//                    Logger.e(ee);
-//                    return;
+//            VoiceMessage voiceMessage = new VoiceMessage();
+//            voiceMessage.setLocalPath(fileInfo.getPath());
+//            voiceMessage.setDuration();
+//            JetIM.getInstance().getMessageManager().sendMediaMessage(textMessage, channel.getConversation(), new IMessageManager.ISendMessageCallback() {
+//                @Override
+//                public void onSuccess(Message message) {
+//                    Logger.i("++ sent message : %s", message);
 //                }
-//                Logger.i("++ sent message : %s", message);
+//
+//                @Override
+//                public void onError(Message message, int errorCode) {
+//                    Logger.e("send message error : %s", errorCode);
+//                }
 //            });
-//            if (pendingFileMessage != null) {
-//                PendingMessageRepository.getInstance().addFileInfo(pendingFileMessage, fileInfo);
-//            }
 //        }
     }
 
@@ -245,8 +269,8 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      */
     @Override
     public void authenticate(@NonNull AuthenticateHandler handler) {
-        connect((user, e) -> {
-            if (user != null) {
+        connect((e) -> {
+            if (e == null) {
                 ConversationInfo info = getChannel(conversation);
                 this.channel = info;
                 if (channel == null) {
@@ -275,53 +299,19 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     public synchronized void loadMemberList(@Nullable String startWithFilter) {
     }
 
-    void onMessagesAdded(@NonNull MessageContext context, @NonNull ConversationInfo channel, @NonNull List<Message> messages) {
-        if (messages.isEmpty()) return;
-
-        if (context.getMessagesSendingStatus() == SendingStatus.SUCCEEDED || context.getMessagesSendingStatus() == SendingStatus.NONE) {
-            cachedMessages.addAll(messages);
-            notifyDataSetChanged(context);
-        } else if (context.getMessagesSendingStatus() == SendingStatus.PENDING) {
-            notifyDataSetChanged(StringSet.ACTION_PENDING_MESSAGE_ADDED);
+    void onMessagesUpdated(@NonNull ConversationInfo channel, @NonNull Message message) {
+        if (message == null || message.getClientMsgNo() == 0) return;
+        Message find = cachedMessages.getById(message.getClientMsgNo());
+        String name;
+        if (find == null) {
+            cachedMessages.add(message);
+            name = StringSet.ACTION_PENDING_MESSAGE_ADDED;
+        } else {
+            name = StringSet.EVENT_MESSAGE_SENT;
+            cachedMessages.update(message);
         }
+        notifyDataSetChanged(name);
     }
-
-//    void onMessagesUpdated(@NonNull MessageContext context, @NonNull ConversationInfo groupChannel, @NonNull List<Message> messages) {
-//        if (messages.isEmpty()) return;
-//
-//        if (context.getMessagesSendingStatus() == SendingStatus.SUCCEEDED) {
-//            // if the source was MESSAGE_SENT, we should remove the message from the pending message datasource.
-//            if (context.getCollectionEventSource() == CollectionEventSource.EVENT_MESSAGE_SENT) {
-//                PendingMessageRepository.getInstance().clearAllFileInfo(messages);
-//                cachedMessages.addAll(messages);
-//            } else {
-//                cachedMessages.updateAll(messages);
-//            }
-//            notifyDataSetChanged(context);
-//        } else if (context.getMessagesSendingStatus() == SendingStatus.PENDING) {
-//            notifyDataSetChanged(StringSet.ACTION_PENDING_MESSAGE_ADDED);
-//        } else if (context.getMessagesSendingStatus() == SendingStatus.FAILED) {
-//            notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_ADDED);
-//        } else if (context.getMessagesSendingStatus() == SendingStatus.CANCELED) {
-//            notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_ADDED);
-//        }
-//    }
-
-//    void onMessagesDeleted(@NonNull MessageContext context, @NonNull GroupChannel groupChannel, @NonNull List<BaseMessage> messages) {
-//        if (messages.isEmpty()) return;
-//
-//        if (context.getMessagesSendingStatus() == SendingStatus.SUCCEEDED) {
-//            // Remove the succeeded message from the succeeded message datasource.
-//            cachedMessages.deleteAll(messages);
-//            notifyDataSetChanged(context);
-//        } else if (context.getMessagesSendingStatus() == SendingStatus.PENDING) {
-//            // Remove the pending message from the pending message datasource.
-//            notifyDataSetChanged(StringSet.ACTION_PENDING_MESSAGE_REMOVED);
-//        } else if (context.getMessagesSendingStatus() == SendingStatus.FAILED) {
-//            // Remove the failed message from the pending message datasource.
-//            notifyDataSetChanged(StringSet.ACTION_FAILED_MESSAGE_REMOVED);
-//        }
-//    }
 
     @UiThread
     synchronized void notifyDataSetChanged(@NonNull Traceable trace) {

@@ -7,6 +7,8 @@ import com.jet.im.internal.logger.JLogConfig;
 import com.jet.im.internal.logger.JLogLevel;
 import com.jet.im.push.PushConfig;
 
+import java.util.ArrayList;
+
 public class JetIMApp extends Application {
     @Override
     public void onCreate() {

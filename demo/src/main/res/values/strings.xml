@@ -3,10 +3,10 @@
 
     <!-- LOGIN -->
     <string name="text_title_login_activity">Sendbird UIKit sample</string>
-    <string name="text_title_basic_sample">Basic Usage</string>
-    <string name="text_title_ai_chat_bot_sample">Talk to an AI Chatbot</string>
-    <string name="text_title_customization_sample">Customizations</string>
-    <string name="text_title_notification_sample">Sendbird Notification</string>
+    <string name="text_title_basic_sample">Token1</string>
+    <string name="text_title_ai_chat_bot_sample">Token3</string>
+    <string name="text_title_customization_sample">Token2</string>
+    <string name="text_title_notification_sample">Token4</string>
     <string name="text_title_uikit_sample_app">UIKit sample app</string>
 
     <string name="text_version_info">UI Kit v%1$s &#160;&#160;&#160;&#160; SDK v%2$s</string>

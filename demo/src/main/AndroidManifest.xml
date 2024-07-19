@@ -29,7 +29,7 @@
 
         <!-- Basic activities -->
         <activity
-            android:name=".basic.GroupChannelMainActivity"
+            android:name=".SelectServiceActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true">
             <intent-filter>
@@ -37,6 +37,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <activity
+            android:name=".basic.GroupChannelMainActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="singleTask" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/icon_push_lollipop" />

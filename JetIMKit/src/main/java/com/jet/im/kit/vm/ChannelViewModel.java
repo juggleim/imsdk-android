@@ -174,6 +174,11 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
                 notifyDataSetChanged(new MessageContext(CollectionEventSource.EVENT_MESSAGE_DELETED, SendingStatus.SUCCEEDED));
             }
+
+            @Override
+            public void onSendMessageSuccess(Message message) {
+                ChannelViewModel.this.onMessagesUpdated( channel, message);
+            }
         });
 
         this.sendbirdChatContract.addConnectionHandler(CONNECTION_HANDLER_ID, new ConnectionHandler() {
@@ -251,7 +256,8 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     }
 
     @Override
-    void onMessagesAdded(@NonNull MessageContext context, @NonNull ConversationInfo channel, @NonNull List<Message> messages) {
+    void onMessagesUpdated(@NonNull ConversationInfo channel, @NonNull Message message) {
+        super.onMessagesUpdated(channel,message);
     }
     private synchronized void disposeMessageCollection() {
         Logger.i(">> ChannelViewModel::disposeMessageCollection()");
@@ -401,7 +407,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     public long getStartingPoint() {
-        return 0;
+        return Long.MAX_VALUE;
     }
 
     @UiThread

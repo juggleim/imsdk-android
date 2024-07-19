@@ -4,8 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.ViewModel;
 
-import com.sendbird.android.handler.ConnectHandler;
 import com.jet.im.kit.interfaces.AuthenticateHandler;
+import com.jet.im.kit.interfaces.ConnectHandler;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitImpl;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitContract;
 import com.jet.im.kit.log.Logger;

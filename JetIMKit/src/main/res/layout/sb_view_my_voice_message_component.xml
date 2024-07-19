@@ -61,7 +61,7 @@
             android:gravity="center"
             app:layout_constraintWidth_min="@dimen/sb_voice_message_min_width"
             app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintTop_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
             app:layout_constraintBottom_toBottomOf="parent" >

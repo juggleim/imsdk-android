@@ -30,6 +30,7 @@ public interface SendbirdUIKitAdapter {
     @Nullable
     String getAccessToken();
 
+
     /**
      * Provides the {@link UserInfo} to access SendBird server.
      *

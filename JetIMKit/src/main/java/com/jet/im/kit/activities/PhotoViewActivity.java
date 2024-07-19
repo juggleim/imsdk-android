@@ -10,6 +10,10 @@ import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
+import com.jet.im.model.Conversation;
+import com.jet.im.model.ConversationInfo;
+import com.jet.im.model.Message;
+import com.jet.im.model.messages.ImageMessage;
 import com.sendbird.android.channel.ChannelType;
 import com.sendbird.android.message.FileMessage;
 import com.sendbird.android.message.MultipleFilesMessage;
@@ -26,78 +30,47 @@ import com.jet.im.kit.utils.MessageUtils;
  */
 public class PhotoViewActivity extends AppCompatActivity {
     @NonNull
-    public static Intent newIntent(@NonNull Context context, @NonNull ChannelType channelType, @NonNull FileMessage message) {
-        return newIntent(context, channelType, message, SendbirdUIKit.getDefaultThemeMode().getResId());
+    public static Intent newIntent(@NonNull Context context, Conversation conversation, @NonNull ImageMessage imageMessage, @NonNull Message message) {
+//        return newIntent(context, conversation, imageMessage, message, SendbirdUIKit.getDefaultThemeMode().getResId());
+        return new Intent();
     }
 
-    @NonNull
-    public static Intent newIntent(@NonNull Context context, @NonNull ChannelType channelType, @NonNull MultipleFilesMessage message, int index) {
-        return newIntent(context, channelType, message, index, SendbirdUIKit.getDefaultThemeMode().getResId());
-    }
-
-    @NonNull
-    public static Intent newIntent(@NonNull Context context, @NonNull ChannelType channelType, @NonNull FileMessage message, @StyleRes int themeResId) {
-        return newIntent(
-            context,
-            channelType,
-            message.getMessageId(),
-            message.getChannelUrl(),
-            message.getUrl(),
-            message.getPlainUrl(),
-            message.getRequestId(),
-            message.getName(),
-            message.getType(),
-            message.getCreatedAt(),
-            message.getSender() == null ? "0" : message.getSender().getUserId(),
-            message.getSender() == null ? "" : message.getSender().getNickname(),
-            MessageUtils.isDeletableMessage(message),
-            themeResId
-        );
-    }
-
-    @NonNull
-    public static Intent newIntent(
-        @NonNull Context context,
-        @NonNull ChannelType channelType,
-        @NonNull MultipleFilesMessage message,
-        int index, // Assuming that index is always in the range of message.files.
-        @StyleRes int themeResId
-    ) {
-        UploadedFileInfo uploadedFileInfo = message.getFiles().get(index);
-        return newIntent(
-            context,
-            channelType,
-            message.getMessageId(),
-            message.getChannelUrl(),
-            uploadedFileInfo.getUrl(),
-            uploadedFileInfo.getPlainUrl(),
-            MessageExtensionsKt.getCacheKey(message, index), // Since the request id is used for the cache key of image, it should be unique among the images in the same message.
-            uploadedFileInfo.getFileName(),
-            uploadedFileInfo.getFileType(),
-            message.getCreatedAt(),
-            message.getSender() == null ? "0" : message.getSender().getUserId(),
-            message.getSender() == null ? "" : message.getSender().getNickname(),
-            false, // Currently, each file of MultipleFilesMessage cannot be deleted.
-            themeResId
-        );
-    }
+//    @NonNull
+//    public static Intent newIntent(@NonNull Context context, Conversation conversation, @NonNull ImageMessage imageMessage, @NonNull Message message, @StyleRes int themeResId) {
+//        return newIntent(
+//                context,
+//                channelType,
+//                message.getMessageId(),
+//                message.getChannelUrl(),
+//                message.getUrl(),
+//                message.getPlainUrl(),
+//                message.getRequestId(),
+//                message.getName(),
+//                message.getType(),
+//                message.getCreatedAt(),
+//                message.getSender() == null ? "0" : message.getSender().getUserId(),
+//                message.getSender() == null ? "" : message.getSender().getNickname(),
+//                MessageUtils.isDeletableMessage(message),
+//                themeResId
+//        );
+//    }
 
     @NonNull
     private static Intent newIntent(
-        @NonNull Context context,
-        @NonNull ChannelType channelType,
-        long messageId,
-        @NonNull String channelUrl,
-        @NonNull String imageUrl,
-        @NonNull String plainUrl,
-        @NonNull String requestId,
-        @NonNull String fileName,
-        @NonNull String fileType,
-        long createdAt,
-        @NonNull String senderId,
-        @NonNull String senderName,
-        boolean isDeletable,
-        @StyleRes int themeResId
+            @NonNull Context context,
+            @NonNull Conversation channelType,
+            long messageId,
+            @NonNull String channelUrl,
+            @NonNull String imageUrl,
+            @NonNull String plainUrl,
+            @NonNull String requestId,
+            @NonNull String fileName,
+            @NonNull String fileType,
+            long createdAt,
+            @NonNull String senderId,
+            @NonNull String senderName,
+            boolean isDeletable,
+            @StyleRes int themeResId
     ) {
         Intent intent = new Intent(context, PhotoViewActivity.class);
         intent.putExtra(StringSet.KEY_MESSAGE_ID, messageId);
@@ -110,7 +83,7 @@ public class PhotoViewActivity extends AppCompatActivity {
         intent.putExtra(StringSet.KEY_MESSAGE_CREATEDAT, createdAt);
         intent.putExtra(StringSet.KEY_SENDER_ID, senderId);
         intent.putExtra(StringSet.KEY_MESSAGE_SENDER_NAME, senderName);
-        intent.putExtra(StringSet.KEY_CHANNEL_TYPE, channelType);
+//        intent.putExtra(StringSet.KEY_CHANNEL_TYPE, channelType);
         intent.putExtra(StringSet.KEY_DELETABLE_MESSAGE, isDeletable);
         intent.putExtra(StringSet.KEY_THEME_RES_ID, themeResId);
         return intent;
@@ -138,14 +111,14 @@ public class PhotoViewActivity extends AppCompatActivity {
         final boolean isDeletable = intent.getBooleanExtra(StringSet.KEY_DELETABLE_MESSAGE, MessageUtils.isMine(senderId));
 
         final PhotoViewFragment fragment = new PhotoViewFragment.Builder(senderId, fileName,
-            channelUrl, url, plainUrl, requestId, mimeType, senderNickname, createdAt,
-            messageId, channelType, SendbirdUIKit.getDefaultThemeMode(), isDeletable)
-            .build();
+                channelUrl, url, plainUrl, requestId, mimeType, senderNickname, createdAt,
+                messageId, channelType, SendbirdUIKit.getDefaultThemeMode(), isDeletable)
+                .build();
 
         final FragmentManager manager = getSupportFragmentManager();
         manager.popBackStack();
         manager.beginTransaction()
-            .replace(R.id.sb_fragment_container, fragment)
-            .commit();
+                .replace(R.id.sb_fragment_container, fragment)
+                .commit();
     }
 }

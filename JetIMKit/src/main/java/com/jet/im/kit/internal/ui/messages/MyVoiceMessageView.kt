@@ -5,22 +5,21 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
-import com.sendbird.android.channel.GroupChannel
-import com.sendbird.android.message.BaseMessage
-import com.sendbird.android.message.FileMessage
-import com.sendbird.android.message.SendingStatus
 import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.consts.MessageGroupType
 import com.jet.im.kit.databinding.SbViewMyVoiceMessageComponentBinding
 import com.jet.im.kit.internal.extensions.setAppearance
 import com.jet.im.kit.model.MessageListUIParams
-import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.jet.im.model.ConversationInfo
 import com.jet.im.model.Message
 import com.jet.im.model.messages.VoiceMessage
+import com.sendbird.android.channel.GroupChannel
+import com.sendbird.android.message.BaseMessage
+import com.sendbird.android.message.FileMessage
+import com.sendbird.android.message.SendingStatus
 
 internal class MyVoiceMessageView @JvmOverloads internal constructor(
     context: Context,
@@ -34,24 +33,39 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
     private val sentAtAppearance: Int
 
     init {
-        val a = context.theme.obtainStyledAttributes(attrs, R.styleable.MessageView_File, defStyle, 0)
+        val a =
+            context.theme.obtainStyledAttributes(attrs, R.styleable.MessageView_File, defStyle, 0)
         try {
-            binding = SbViewMyVoiceMessageComponentBinding.inflate(LayoutInflater.from(context), this, true)
+            binding = SbViewMyVoiceMessageComponentBinding.inflate(
+                LayoutInflater.from(context),
+                this,
+                true
+            )
             sentAtAppearance = a.getResourceId(
                 R.styleable.MessageView_File_sb_message_time_text_appearance,
                 R.style.SendbirdCaption4OnLight03
             )
             val messageBackground =
-                a.getResourceId(R.styleable.MessageView_File_sb_message_me_background, R.drawable.sb_shape_chat_bubble)
-            val messageBackgroundTint = a.getColorStateList(R.styleable.MessageView_File_sb_message_me_background_tint)
+                a.getResourceId(
+                    R.styleable.MessageView_File_sb_message_me_background,
+                    R.drawable.sb_shape_chat_bubble
+                )
+            val messageBackgroundTint =
+                a.getColorStateList(R.styleable.MessageView_File_sb_message_me_background_tint)
             val emojiReactionListBackground = a.getResourceId(
                 R.styleable.MessageView_File_sb_message_emoji_reaction_list_background,
                 R.drawable.sb_shape_chat_bubble_reactions_light
             )
             val progressColor =
-                a.getResourceId(R.styleable.MessageView_File_sb_voice_message_progress_color, R.color.onlight_03)
+                a.getResourceId(
+                    R.styleable.MessageView_File_sb_voice_message_progress_color,
+                    R.color.onlight_03
+                )
             val progressTrackColor =
-                a.getResourceId(R.styleable.MessageView_File_sb_voice_message_progress_track_color, R.color.primary_300)
+                a.getResourceId(
+                    R.styleable.MessageView_File_sb_voice_message_progress_track_color,
+                    R.color.primary_300
+                )
             val timelineTextAppearance =
                 a.getResourceId(
                     R.styleable.MessageView_File_sb_voice_message_timeline_text_appearance,
@@ -68,13 +82,21 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
                     progressTrackColor
                 )
             )
-            binding.voiceMessage.setProgressProgressColor(AppCompatResources.getColorStateList(context, progressColor))
+            binding.voiceMessage.setProgressProgressColor(
+                AppCompatResources.getColorStateList(
+                    context,
+                    progressColor
+                )
+            )
             binding.voiceMessage.setTimelineTextAppearance(timelineTextAppearance)
-            val loadingTint = if (SendbirdUIKit.isDarkMode()) R.color.primary_300 else R.color.primary_200
+            val loadingTint =
+                if (SendbirdUIKit.isDarkMode()) R.color.primary_300 else R.color.primary_200
             val loading = DrawableUtils.setTintList(context, R.drawable.sb_progress, loadingTint)
             binding.voiceMessage.setLoadingDrawable(loading)
-            val buttonBackgroundTint = if (SendbirdUIKit.isDarkMode()) R.color.background_600 else R.color.background_50
-            val buttonTint = if (SendbirdUIKit.isDarkMode()) R.color.primary_200 else R.color.primary_300
+            val buttonBackgroundTint =
+                if (SendbirdUIKit.isDarkMode()) R.color.background_600 else R.color.background_50
+            val buttonTint =
+                if (SendbirdUIKit.isDarkMode()) R.color.primary_200 else R.color.primary_300
             val inset = context.resources.getDimension(R.dimen.sb_size_12).toInt()
             val playIcon =
                 DrawableUtils.createOvalIcon(
@@ -101,7 +123,11 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
         }
     }
 
-    override fun drawMessage(channel: GroupChannel, message: BaseMessage, params: MessageListUIParams) {
+    override fun drawMessage(
+        channel: GroupChannel,
+        message: BaseMessage,
+        params: MessageListUIParams
+    ) {
         val fileMessage = message as FileMessage
         val isSent = message.sendingStatus == SendingStatus.SUCCEEDED
         val messageGroupType = params.messageGroupType
@@ -111,7 +137,9 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
 
         messageUIConfig?.let {
             it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
-            it.myMessageBackground?.let { background -> binding.contentPanel.background = background }
+            it.myMessageBackground?.let { background ->
+                binding.contentPanel.background = background
+            }
         }
 
         ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
@@ -120,7 +148,12 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
             resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
         val paddingBottom =
             resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        binding.root.setPadding(binding.root.paddingLeft, paddingTop, binding.root.paddingRight, paddingBottom)
+        binding.root.setPadding(
+            binding.root.paddingLeft,
+            paddingTop,
+            binding.root.paddingRight,
+            paddingBottom
+        )
         ViewUtils.drawVoiceMessage(binding.voiceMessage, fileMessage)
     }
 
@@ -129,7 +162,7 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
         message: Message,
         params: MessageListUIParams
     ) {
-        val fileMessage = message as VoiceMessage
+        val fileMessage = message.content as VoiceMessage
         val isSent = message.state == Message.MessageState.SENT
         val messageGroupType = params.messageGroupType
         binding.tvSentAt.visibility =
@@ -138,7 +171,9 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
 
         messageUIConfig?.let {
             it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
-            it.myMessageBackground?.let { background -> binding.contentPanel.background = background }
+            it.myMessageBackground?.let { background ->
+                binding.contentPanel.background = background
+            }
         }
 
         ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
@@ -147,7 +182,12 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
             resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
         val paddingBottom =
             resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        binding.root.setPadding(binding.root.paddingLeft, paddingTop, binding.root.paddingRight, paddingBottom)
-        ViewUtils.drawVoiceMessage(binding.voiceMessage, fileMessage,message)
+        binding.root.setPadding(
+            binding.root.paddingLeft,
+            paddingTop,
+            binding.root.paddingRight,
+            paddingBottom
+        )
+        ViewUtils.drawVoiceMessage(binding.voiceMessage, fileMessage, message)
     }
 }
