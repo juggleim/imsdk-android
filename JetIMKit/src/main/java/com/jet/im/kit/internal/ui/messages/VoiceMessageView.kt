@@ -15,6 +15,7 @@ import com.jet.im.kit.internal.model.VoicePlayer
 import com.jet.im.kit.internal.model.VoicePlayerManager
 import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.MessageUtils
+import com.jet.im.kit.utils.TextUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.jet.im.model.Message
 import com.jet.im.model.messages.VoiceMessage
@@ -119,7 +120,7 @@ internal class VoiceMessageView @JvmOverloads internal constructor(
         this@VoiceMessageView.key = key
         duration = MessageUtils.extractDuration(fileMessage)
         binding.ibtnPlay.setOnClickListener {
-            VoicePlayerManager.play(context, key, fileMessage, onUpdateListener, onProgressUpdateListener)
+//            VoicePlayerManager.play(context, key, fileMessage, onUpdateListener, onProgressUpdateListener)
         }
         binding.ibtnPause.setOnClickListener {
             VoicePlayerManager.pause()
@@ -133,7 +134,18 @@ internal class VoiceMessageView @JvmOverloads internal constructor(
         this@VoiceMessageView.key = key
         duration =fileMessage.duration
         binding.ibtnPlay.setOnClickListener {
-//            VoicePlayerManager.play(context, key, fileMessage, onUpdateListener, onProgressUpdateListener)
+            if(!TextUtils.isEmpty(fileMessage.localPath)) {
+                VoicePlayerManager.play(
+                    context,
+                    key,
+                    fileMessage,
+                    onUpdateListener,
+                    onProgressUpdateListener
+                )
+            }else{
+
+            }
+
         }
         binding.ibtnPause.setOnClickListener {
             VoicePlayerManager.pause()

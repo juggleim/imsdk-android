@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.multidex.MultiDexApplication
 import com.example.demo.common.consts.InitState
-import com.example.demo.common.consts.SampleType
 import com.example.demo.common.consts.StringSet
 import com.example.demo.common.preferences.PreferenceUtils
 import com.jet.im.JetIM
@@ -76,44 +75,30 @@ class BaseApplication : MultiDexApplication() {
          * These are only used in the sample, because if the app kills and resurrects due to low memory, the last used sample settings should be preserved.
          */
         fun setupConfigurations() {
-            when (PreferenceUtils.selectedSampleType) {
-                SampleType.Basic -> {
-                    // set whether to use user profile
-                    UIKitConfig.common.enableUsingDefaultUserProfile = true
-                    // set whether to use typing indicators in channel list
-                    UIKitConfig.groupChannelListConfig.enableTypingIndicator = true
-                    // set whether to use read/delivery receipt in channel list
-                    UIKitConfig.groupChannelListConfig.enableMessageReceiptStatus = true
-                    // set whether to use user mention
-                    UIKitConfig.groupChannelConfig.enableMention = true
-                    // set reply type
-                    UIKitConfig.groupChannelConfig.replyType = ReplyType.NONE
-                    UIKitConfig.groupChannelConfig.threadReplySelectType = ThreadReplySelectType.THREAD
-                    // set whether to use voice message
-                    UIKitConfig.groupChannelConfig.enableVoiceMessage = true
-                    // set typing indicator types
-                    UIKitConfig.groupChannelConfig.typingIndicatorTypes = setOf(TypingIndicatorType.BUBBLE, TypingIndicatorType.TEXT)
-                    // set whether to use feedback
-                    UIKitConfig.groupChannelConfig.enableFeedback = true
-                    // set custom params
-                    SendbirdUIKit.setCustomParamsHandler(object : CustomParamsHandler {
-                        override fun onBeforeCreateOpenChannel(params: OpenChannelCreateParams) {
-                            // You can set OpenChannelCreateParams globally before creating a open channel.
-                            params.customType = StringSet.SB_COMMUNITY_TYPE
-                        }
-                    })
+            // set whether to use user profile
+            UIKitConfig.common.enableUsingDefaultUserProfile = true
+            // set whether to use typing indicators in channel list
+            UIKitConfig.groupChannelListConfig.enableTypingIndicator = true
+            // set whether to use read/delivery receipt in channel list
+            UIKitConfig.groupChannelListConfig.enableMessageReceiptStatus = true
+            // set whether to use user mention
+            UIKitConfig.groupChannelConfig.enableMention = true
+            // set reply type
+            UIKitConfig.groupChannelConfig.replyType = ReplyType.NONE
+            UIKitConfig.groupChannelConfig.threadReplySelectType = ThreadReplySelectType.THREAD
+            // set whether to use voice message
+            UIKitConfig.groupChannelConfig.enableVoiceMessage = true
+            // set typing indicator types
+            UIKitConfig.groupChannelConfig.typingIndicatorTypes = setOf(TypingIndicatorType.BUBBLE, TypingIndicatorType.TEXT)
+            // set whether to use feedback
+            UIKitConfig.groupChannelConfig.enableFeedback = true
+            // set custom params
+            SendbirdUIKit.setCustomParamsHandler(object : CustomParamsHandler {
+                override fun onBeforeCreateOpenChannel(params: OpenChannelCreateParams) {
+                    // You can set OpenChannelCreateParams globally before creating a open channel.
+                    params.customType = StringSet.SB_COMMUNITY_TYPE
                 }
-                SampleType.Notification -> {}
-                SampleType.Customization -> {}
-                SampleType.AiChatBot -> {
-                    // set typing indicator types
-                    UIKitConfig.groupChannelConfig.typingIndicatorTypes = setOf(TypingIndicatorType.BUBBLE)
-                    // set whether to use feedback
-                    UIKitConfig.groupChannelConfig.enableFeedback = true
-                }
-                else -> {
-                }
-            }
+            })
         }
     }
 
