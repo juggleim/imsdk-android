@@ -8,15 +8,18 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.AnyThread
 import androidx.annotation.UiThread
-import com.sendbird.android.exception.SendbirdException
-import com.sendbird.android.message.FileMessage
+import com.jet.im.JetIM
+import com.jet.im.interfaces.IMessageManager.IDownloadMediaMessageCallback
 import com.jet.im.kit.interfaces.OnResultHandler
 import com.jet.im.kit.internal.extensions.runOnUiThread
 import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.ClearableScheduledExecutorService
 import com.jet.im.kit.utils.FileUtils
 import com.jet.im.kit.vm.FileDownloader
+import com.jet.im.model.Message
 import com.jet.im.model.messages.VoiceMessage
+import com.sendbird.android.exception.SendbirdException
+import com.sendbird.android.message.FileMessage
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -49,14 +52,15 @@ internal class VoicePlayer(val key: String) {
     @Synchronized
     fun play(
         context: Context,
-        voice: VoiceMessage,
+        id: String,
+        voiceMessage: VoiceMessage,
         duration: Int,
         onUpdateListener: OnUpdateListener,
         onProgressUpdateListener: OnProgressUpdateListener
     ) {
         Logger.i("VoicePlayer::play()")
-        val voiceFile: File? =File(voice.localPath)
-        if (voiceFile != null) {
+        if (voiceMessage.localPath != null) {
+            val voiceFile = File(voiceMessage.localPath)
             play(context, voiceFile, duration, onUpdateListener, onProgressUpdateListener)
             return
         }
@@ -64,23 +68,36 @@ internal class VoicePlayer(val key: String) {
         addOnUpdateListener(onUpdateListener)
         addOnProgressUpdateListener(onProgressUpdateListener)
         updateStatus(Status.PREPARING)
-//        downloadFile(
-//            context,
-//            message,
-//            object : OnVoiceFileDownloadListener {
-//                override fun onVoiceFileDownloaded(
-//                    voiceFile: File?,
-//                    e: SendbirdException?
-//                ) {
-//                    Logger.i(">> VoicePlayer::onVoiceFileDownloaded, status=$status")
-//                    if (e != null || status != Status.PREPARING || voiceFile == null) {
-//                        stop()
-//                        return
-//                    }
-//                    play(context, voiceFile, duration, onUpdateListener, onProgressUpdateListener)
-//                }
-//            }
-//        )
+        JetIM.getInstance().messageManager.downloadMediaMessage(id,
+            object : IDownloadMediaMessageCallback {
+                override fun onProgress(progress: Int, message: Message?) {
+
+                }
+
+                override fun onSuccess(message: Message?) {
+                    var voice: File? = null;
+                    if (message?.content is VoiceMessage) {
+                        if ((message?.content as VoiceMessage)?.localPath != null) {
+                            voiceMessage.localPath = (message?.content as VoiceMessage)?.localPath
+                            voice = File(voiceMessage.localPath)
+                        }
+
+                    }
+                    if (status != Status.PREPARING || voice == null) {
+                        stop()
+                        return
+                    }
+                    play(context, voice, duration, onUpdateListener, onProgressUpdateListener)
+                }
+
+                override fun onError(errorCode: Int) {
+                    stop()
+                }
+
+                override fun onCancel(message: Message?) {
+
+                }
+            });
     }
 
     @UiThread
