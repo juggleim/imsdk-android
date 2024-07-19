@@ -8,7 +8,7 @@
 
     <application>
         <receiver
-            android:name="com.jet.im.push.xm.MiMessageReceiver"
+            android:name="com.juggle.im.push.xm.MiMessageReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.xiaomi.mipush.RECEIVE_MESSAGE" />

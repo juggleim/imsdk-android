@@ -18,7 +18,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "JetIMDemo"
 include ':app'
-include ':JetIM'
+include ':JuggleIM'
 include ':HWPlugin'
 include ':JGPlugin'
 include ':GooglePlugin'

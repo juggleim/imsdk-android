@@ -1,0 +1,71 @@
+plugins {
+    id 'com.google.protobuf' version '0.9.1'
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.juggle.im'
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 21
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main {
+            proto {
+                srcDir 'src/main/java/com/juggle/im/internal/proto'
+                include '*.proto'
+            }
+        }
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'org.java-websocket:Java-WebSocket:1.5.5'
+    implementation 'com.google.protobuf:protobuf-javalite:3.18.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    implementation 'com.qiniu:qiniu-android-sdk:8.7.0'
+}
+
+protobuf {
+    //配置 protoc 编译器
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.21.7'
+    }
+    //配置生成目录，编译后会在 build 的目录下生成对应的java文件
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option 'lite'
+                }
+            }
+        }
+    }
+}
