@@ -16,6 +16,7 @@ import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.ClearableScheduledExecutorService
 import com.jet.im.kit.utils.FileUtils
 import com.jet.im.kit.vm.FileDownloader
+import com.jet.im.model.messages.VoiceMessage
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -48,13 +49,13 @@ internal class VoicePlayer(val key: String) {
     @Synchronized
     fun play(
         context: Context,
-        message: FileMessage,
+        voice: VoiceMessage,
         duration: Int,
         onUpdateListener: OnUpdateListener,
         onProgressUpdateListener: OnProgressUpdateListener
     ) {
         Logger.i("VoicePlayer::play()")
-        val voiceFile: File? = getData(context, message)
+        val voiceFile: File? =File(voice.localPath)
         if (voiceFile != null) {
             play(context, voiceFile, duration, onUpdateListener, onProgressUpdateListener)
             return
@@ -63,23 +64,23 @@ internal class VoicePlayer(val key: String) {
         addOnUpdateListener(onUpdateListener)
         addOnProgressUpdateListener(onProgressUpdateListener)
         updateStatus(Status.PREPARING)
-        downloadFile(
-            context,
-            message,
-            object : OnVoiceFileDownloadListener {
-                override fun onVoiceFileDownloaded(
-                    voiceFile: File?,
-                    e: SendbirdException?
-                ) {
-                    Logger.i(">> VoicePlayer::onVoiceFileDownloaded, status=$status")
-                    if (e != null || status != Status.PREPARING || voiceFile == null) {
-                        stop()
-                        return
-                    }
-                    play(context, voiceFile, duration, onUpdateListener, onProgressUpdateListener)
-                }
-            }
-        )
+//        downloadFile(
+//            context,
+//            message,
+//            object : OnVoiceFileDownloadListener {
+//                override fun onVoiceFileDownloaded(
+//                    voiceFile: File?,
+//                    e: SendbirdException?
+//                ) {
+//                    Logger.i(">> VoicePlayer::onVoiceFileDownloaded, status=$status")
+//                    if (e != null || status != Status.PREPARING || voiceFile == null) {
+//                        stop()
+//                        return
+//                    }
+//                    play(context, voiceFile, duration, onUpdateListener, onProgressUpdateListener)
+//                }
+//            }
+//        )
     }
 
     @UiThread

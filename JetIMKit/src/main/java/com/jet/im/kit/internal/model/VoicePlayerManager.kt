@@ -6,6 +6,7 @@ import androidx.annotation.UiThread
 import com.sendbird.android.message.FileMessage
 import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.MessageUtils
+import com.jet.im.model.messages.VoiceMessage
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
@@ -20,15 +21,15 @@ internal object VoicePlayerManager {
     fun play(
         context: Context,
         key: String,
-        fileMessage: FileMessage,
+        voiceMessage: VoiceMessage,
         onUpdateListener: VoicePlayer.OnUpdateListener,
         onProgressUpdateListener: VoicePlayer.OnProgressUpdateListener
     ) {
         swap(key).apply {
             play(
                 context,
-                fileMessage,
-                MessageUtils.extractDuration(fileMessage),
+                voiceMessage,
+                voiceMessage.duration,
                 onUpdateListener,
                 onProgressUpdateListener
             )
