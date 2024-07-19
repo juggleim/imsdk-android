@@ -33,7 +33,8 @@ internal class VoiceMessageView @JvmOverloads internal constructor(
 
     init {
         Logger.i("_________init() this=$this")
-        val a = context.theme.obtainStyledAttributes(attrs, R.styleable.MessageView_File, defStyle, 0)
+        val a =
+            context.theme.obtainStyledAttributes(attrs, R.styleable.MessageView_File, defStyle, 0)
         try {
             binding = SbViewVoiceMessageBinding.inflate(LayoutInflater.from(context), this, true)
             onUpdateListener = object : VoicePlayer.OnUpdateListener {
@@ -55,7 +56,11 @@ internal class VoiceMessageView @JvmOverloads internal constructor(
                         binding.timelineView,
                         if (status == VoicePlayer.Status.STOPPED) duration else duration - milliseconds
                     )
-                    ViewUtils.drawVoicePlayerProgress(binding.voiceProgressView, milliseconds, duration)
+                    ViewUtils.drawVoicePlayerProgress(
+                        binding.voiceProgressView,
+                        milliseconds,
+                        duration
+                    )
                 }
             }
         } finally {
@@ -128,24 +133,20 @@ internal class VoiceMessageView @JvmOverloads internal constructor(
         drawVoiceMessage(key)
     }
 
-    fun drawVoiceMessage(message: Message,fileMessage: VoiceMessage) {
+    fun drawVoiceMessage(message: Message, fileMessage: VoiceMessage) {
         Logger.i("_________VoiceMessageView::drawVoiceMessage()")
         val key = MessageUtils.getVoiceMessageKey(message)
         this@VoiceMessageView.key = key
-        duration =fileMessage.duration
+        duration = fileMessage.duration
         binding.ibtnPlay.setOnClickListener {
-            if(!TextUtils.isEmpty(fileMessage.localPath)) {
-                VoicePlayerManager.play(
-                    context,
-                    key,
-                    fileMessage,
-                    onUpdateListener,
-                    onProgressUpdateListener
-                )
-            }else{
-
-            }
-
+            VoicePlayerManager.play(
+                context,
+                message.messageId,
+                key,
+                fileMessage,
+                onUpdateListener,
+                onProgressUpdateListener
+            )
         }
         binding.ibtnPause.setOnClickListener {
             VoicePlayerManager.pause()
@@ -177,16 +178,19 @@ internal class VoiceMessageView @JvmOverloads internal constructor(
                 binding.loading.visibility = GONE
                 binding.ibtnPause.visibility = GONE
             }
+
             VoicePlayer.Status.PREPARING -> {
                 binding.ibtnPlay.visibility = GONE
                 binding.loading.visibility = VISIBLE
                 binding.ibtnPause.visibility = GONE
             }
+
             VoicePlayer.Status.PLAYING -> {
                 binding.ibtnPlay.visibility = GONE
                 binding.loading.visibility = GONE
                 binding.ibtnPause.visibility = VISIBLE
             }
+
             VoicePlayer.Status.PAUSED -> {
                 binding.ibtnPlay.visibility = VISIBLE
                 binding.loading.visibility = GONE

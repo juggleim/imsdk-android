@@ -3,9 +3,7 @@ package com.jet.im.kit.internal.model
 import android.content.Context
 import androidx.annotation.AnyThread
 import androidx.annotation.UiThread
-import com.sendbird.android.message.FileMessage
 import com.jet.im.kit.log.Logger
-import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.model.messages.VoiceMessage
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -20,6 +18,7 @@ internal object VoicePlayerManager {
     @JvmStatic
     fun play(
         context: Context,
+        id: String,
         key: String,
         voiceMessage: VoiceMessage,
         onUpdateListener: VoicePlayer.OnUpdateListener,
@@ -28,6 +27,7 @@ internal object VoicePlayerManager {
         swap(key).apply {
             play(
                 context,
+                id,
                 voiceMessage,
                 voiceMessage.duration,
                 onUpdateListener,
@@ -155,7 +155,10 @@ internal object VoicePlayerManager {
     @AnyThread
     @Synchronized
     @JvmStatic
-    fun removeOnProgressListener(key: String, onProgressUpdateListener: VoicePlayer.OnProgressUpdateListener) {
+    fun removeOnProgressListener(
+        key: String,
+        onProgressUpdateListener: VoicePlayer.OnProgressUpdateListener
+    ) {
         cache[key]?.removeOnProgressListener(onProgressUpdateListener)
     }
 }
