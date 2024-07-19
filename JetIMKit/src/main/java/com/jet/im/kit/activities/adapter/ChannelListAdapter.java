@@ -245,9 +245,9 @@ public class ChannelListAdapter extends BaseAdapter<ConversationInfo, BaseViewHo
         ChannelPreviewHolder(@NonNull SbViewChannelPreviewBinding binding, @NonNull ChannelListUIParams params) {
             super(binding.getRoot());
             this.binding = binding;
-            this.binding.channelPreview.setUseTypingIndicator(params.getEnableTypingIndicator());
-            this.binding.channelPreview.setUseMessageReceiptStatus(params.getEnableMessageReceiptStatus());
-            this.binding.channelPreview.setUseUnreadMentionCount(UIKitConfig.getGroupChannelConfig().getEnableMention());
+            this.binding.channelPreview.setUseTypingIndicator(false);
+            this.binding.channelPreview.setUseMessageReceiptStatus(false);
+            this.binding.channelPreview.setUseUnreadMentionCount(false);
         }
 
         @Override
