@@ -29,9 +29,6 @@ public class ImageMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(mThumbnailUrl)) {
                 jsonObject.put(THUMBNAIL, mThumbnailUrl);
             }
-            if (!TextUtils.isEmpty(getLocalPath())) {
-                jsonObject.put(LOCALPATH, getLocalPath());
-            }
             jsonObject.put(HEIGHT, mHeight);
             jsonObject.put(WIDTH, mWidth);
             if (!TextUtils.isEmpty(mExtra)) {
@@ -74,9 +71,6 @@ public class ImageMessage extends MediaMessageContent {
             }
             if (jsonObject.has(SIZE)) {
                 mSize = jsonObject.optLong(SIZE);
-            }
-            if (jsonObject.has(LOCALPATH)) {
-                setLocalPath(jsonObject.optString(LOCALPATH));
             }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "ImageMessage decode JSONException " + e.getMessage());
@@ -150,6 +144,4 @@ public class ImageMessage extends MediaMessageContent {
     private static final String EXTRA = "extra";
     private static final String SIZE = "size";
     private static final String DIGEST = "[Image]";
-
-    private static final String LOCALPATH = "localPath";
 }
