@@ -70,10 +70,6 @@ public class ThumbnailPackedImageMessage extends MediaMessageContent {
                 jsonObject.put(EXTRA, mExtra);
             }
             jsonObject.put(SIZE, mSize);
-
-            if (!TextUtils.isEmpty(getLocalPath())) {
-                jsonObject.put(LOCALPATH, getLocalPath());
-            }
         } catch (JSONException e) {
             JLogger.e("MSG-Encode", "ThumbnailPackedImageMessage JSONException " + e.getMessage());
         }
@@ -112,9 +108,6 @@ public class ThumbnailPackedImageMessage extends MediaMessageContent {
             }
             if (jsonObject.has(SIZE)) {
                 mSize = jsonObject.optLong(SIZE);
-            }
-            if (jsonObject.has(LOCALPATH)) {
-                setLocalPath(jsonObject.optString(LOCALPATH));
             }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "ThumbnailPackedImageMessage decode JSONException " + e.getMessage());
@@ -188,6 +181,4 @@ public class ThumbnailPackedImageMessage extends MediaMessageContent {
     private static final String EXTRA = "extra";
     private static final String SIZE = "size";
     private static final String DIGEST = "[Image]";
-
-    private static final String LOCALPATH = "localPath";
 }

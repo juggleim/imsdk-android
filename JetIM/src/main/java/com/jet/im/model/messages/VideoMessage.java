@@ -36,10 +36,6 @@ public class VideoMessage extends MediaMessageContent {
             }
             jsonObject.put(DURATION, mDuration);
             jsonObject.put(SIZE, mSize);
-
-            if (!TextUtils.isEmpty(getLocalPath())) {
-                jsonObject.put(LOCALPATH, getLocalPath());
-            }
         } catch (JSONException e) {
             JLogger.e("MSG-Encode", "VideoMessage JSONException " + e.getMessage());
         }
@@ -79,9 +75,6 @@ public class VideoMessage extends MediaMessageContent {
             }
             if (jsonObject.has(EXTRA)) {
                 mExtra = jsonObject.optString(EXTRA);
-            }
-            if (jsonObject.has(LOCALPATH)) {
-                setLocalPath(jsonObject.optString(LOCALPATH));
             }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "VideoMessage decode JSONException " + e.getMessage());
@@ -166,6 +159,4 @@ public class VideoMessage extends MediaMessageContent {
     private static final String DURATION = "duration";
     private static final String EXTRA = "extra";
     private static final String DIGEST = "[Video]";
-
-    private static final String LOCALPATH = "localPath";
 }

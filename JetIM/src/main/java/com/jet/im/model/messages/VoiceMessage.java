@@ -29,9 +29,6 @@ public class VoiceMessage extends MediaMessageContent {
             if (!TextUtils.isEmpty(mExtra)) {
                 jsonObject.put(EXTRA, mExtra);
             }
-            if (!TextUtils.isEmpty(getLocalPath())) {
-                jsonObject.put(LOCALPATH, getLocalPath());
-            }
         } catch (JSONException e) {
             JLogger.e("MSG-Encode", "VoiceMessage JSONException " + e.getMessage());
         }
@@ -59,9 +56,6 @@ public class VoiceMessage extends MediaMessageContent {
             }
             if (jsonObject.has(EXTRA)) {
                 mExtra = jsonObject.optString(EXTRA);
-            }
-            if (jsonObject.has(LOCALPATH)) {
-                setLocalPath(jsonObject.optString(LOCALPATH));
             }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "VoiceMessage decode JSONException " + e.getMessage());
@@ -95,6 +89,5 @@ public class VoiceMessage extends MediaMessageContent {
     private static final String LOCAL = "local";
     private static final String DURATION = "duration";
     private static final String EXTRA = "extra";
-    private static final String LOCALPATH = "localPath";
     private static final String DIGEST = "[Voice]";
 }
