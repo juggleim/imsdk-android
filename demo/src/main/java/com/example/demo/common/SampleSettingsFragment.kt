@@ -23,6 +23,28 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.demo.R
+import com.example.demo.SelectServiceActivity
+import com.example.demo.common.consts.StringSet
+import com.example.demo.common.extensions.getDrawable
+import com.example.demo.common.extensions.isUsingDarkTheme
+import com.example.demo.common.preferences.PreferenceUtils
+import com.example.demo.common.widgets.WaitingDialog
+import com.example.demo.databinding.FragmentSampleSettingsBinding
+import com.example.demo.databinding.ViewCustomMenuTextButtonBinding
+import com.jet.im.JetIM
+import com.jet.im.kit.SendbirdUIKit
+import com.jet.im.kit.consts.DialogEditTextParams
+import com.jet.im.kit.interfaces.OnEditTextResultListener
+import com.jet.im.kit.log.Logger
+import com.jet.im.kit.model.DialogListItem
+import com.jet.im.kit.modules.components.StateHeaderComponent
+import com.jet.im.kit.utils.ContextUtils
+import com.jet.im.kit.utils.DialogUtils
+import com.jet.im.kit.utils.FileUtils
+import com.jet.im.kit.utils.IntentUtils
+import com.jet.im.kit.utils.PermissionUtils
+import com.jet.im.kit.utils.TextUtils
 import com.sendbird.android.SendbirdChat.autoBackgroundDetection
 import com.sendbird.android.SendbirdChat.currentUser
 import com.sendbird.android.SendbirdChat.getDoNotDisturb
@@ -32,29 +54,9 @@ import com.sendbird.android.exception.SendbirdException
 import com.sendbird.android.handler.CompletionHandler
 import com.sendbird.android.handler.DoNotDisturbHandler
 import com.sendbird.android.params.UserUpdateParams
-import com.jet.im.kit.SendbirdUIKit
-import com.jet.im.kit.consts.DialogEditTextParams
-import com.jet.im.kit.interfaces.OnEditTextResultListener
-import com.jet.im.kit.log.Logger
-import com.jet.im.kit.model.DialogListItem
-import com.jet.im.kit.modules.components.StateHeaderComponent
-import com.example.demo.R
-import com.example.demo.common.consts.StringSet
-import com.example.demo.common.extensions.getDrawable
-import com.example.demo.common.extensions.isUsingDarkTheme
-import com.example.demo.common.preferences.PreferenceUtils
-import com.example.demo.common.widgets.WaitingDialog
-import com.example.demo.databinding.FragmentSampleSettingsBinding
-import com.example.demo.databinding.ViewCustomMenuTextButtonBinding
-import com.jet.im.kit.utils.ContextUtils
-import com.jet.im.kit.utils.DialogUtils
-import com.jet.im.kit.utils.FileUtils
-import com.jet.im.kit.utils.IntentUtils
-import com.jet.im.kit.utils.PermissionUtils
-import com.jet.im.kit.utils.TextUtils
+import java.io.File
 import java.util.Locale
 import java.util.TimeZone
-import java.io.File
 
 /**
  * Displays a settings screen.
@@ -66,7 +68,8 @@ class SampleSettingsFragment : Fragment() {
     private val appSettingLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (context == null) return@registerForActivityResult
-            val hasPermission = PermissionUtils.hasPermissions(requireContext(), *REQUIRED_PERMISSIONS)
+            val hasPermission =
+                PermissionUtils.hasPermissions(requireContext(), *REQUIRED_PERMISSIONS)
             if (hasPermission) {
                 showMediaSelectDialog()
             }
@@ -103,16 +106,26 @@ class SampleSettingsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SendbirdUIKit.connect { _, _ -> initPage() }
+        SendbirdUIKit.connect { _ -> initPage() }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentSampleSettingsBinding.inflate(inflater, container, false)
         headerComponent.params.title = getString(R.string.text_settings_header_title)
         headerComponent.params.setUseLeftButton(false)
-        headerComponent.params.rightButtonText = getString(R.string.text_settings_header_edit_button)
+        headerComponent.params.rightButtonText =
+            getString(R.string.text_settings_header_edit_button)
         val header =
-            headerComponent.onCreateView(requireContext(), inflater, binding.headerComponent, savedInstanceState)
+            headerComponent.onCreateView(
+                requireContext(),
+                inflater,
+                binding.headerComponent,
+                savedInstanceState
+            )
         binding.headerComponent.addView(header)
         return binding.root
     }
@@ -169,7 +182,8 @@ class SampleSettingsFragment : Fragment() {
         }
 
         // 2. determine whether rationale popup should show
-        val deniedList = PermissionUtils.getExplicitDeniedPermissionList(requireActivity(), *permissions)
+        val deniedList =
+            PermissionUtils.getExplicitDeniedPermissionList(requireActivity(), *permissions)
         if (deniedList.isNotEmpty()) {
             showPermissionRationalePopup(deniedList[0])
             return
@@ -194,7 +208,12 @@ class SampleSettingsFragment : Fragment() {
         val dialog = builder.create()
         dialog.show()
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            .setTextColor(ContextCompat.getColor(requireContext(), com.jet.im.kit.R.color.secondary_300))
+            .setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    com.jet.im.kit.R.color.secondary_300
+                )
+            )
     }
 
     private fun initPage() {
@@ -265,7 +284,8 @@ class SampleSettingsFragment : Fragment() {
             }
 
             val useHeader = arguments?.getBoolean(StringSet.SETTINGS_USE_HEADER, true) ?: true
-            val useDoNotDisturb = arguments?.getBoolean(StringSet.SETTINGS_USE_DO_NOT_DISTURB, true) ?: true
+            val useDoNotDisturb =
+                arguments?.getBoolean(StringSet.SETTINGS_USE_DO_NOT_DISTURB, true) ?: true
             this@SampleSettingsFragment.headerComponent.rootView?.visibility =
                 if (useHeader) View.VISIBLE else View.GONE
             this@SampleSettingsFragment.headerComponent.setOnRightButtonClickListener {
@@ -281,8 +301,10 @@ class SampleSettingsFragment : Fragment() {
                 binding.tvUserId.text = PreferenceUtils.userId
                 binding.tvNickname.text = PreferenceUtils.nickname
             }
-            val iconTint = if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.background_700 else com.jet.im.kit.R.color.background_50
-            val themeBackgroundTint = if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.background_300 else com.jet.im.kit.R.color.background_400
+            val iconTint =
+                if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.background_700 else com.jet.im.kit.R.color.background_50
+            val themeBackgroundTint =
+                if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.background_300 else com.jet.im.kit.R.color.background_400
             binding.ivDarkThemeIcon.setImageDrawable(
                 requireContext().getDrawable(R.drawable.icon_theme, iconTint)
             )
@@ -300,7 +322,8 @@ class SampleSettingsFragment : Fragment() {
                 Logger.d("++ dark theme clicked")
                 updateDarkTheme()
             }
-            val disturbBackgroundTint = if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.secondary_200 else com.jet.im.kit.R.color.secondary_300
+            val disturbBackgroundTint =
+                if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.secondary_200 else com.jet.im.kit.R.color.secondary_300
             binding.ivDisturbIcon.setImageDrawable(
                 requireContext().getDrawable(R.drawable.icon_notifications_filled, iconTint)
             )
@@ -333,9 +356,17 @@ class SampleSettingsFragment : Fragment() {
             binding.ivHomeIcon.setImageDrawable(
                 requireContext().getDrawable(R.drawable.icon_leave, iconTint)
             )
-            binding.ivHomeIcon.background = requireContext().getDrawable(R.drawable.shape_oval, homeBackgroundTint)
+            binding.ivHomeIcon.background =
+                requireContext().getDrawable(R.drawable.shape_oval, homeBackgroundTint)
             binding.itemHome.setOnClickListener {
                 Logger.d("++ home clicked")
+                JetIM.getInstance().connectionManager.disconnect(false);
+                startActivity(
+                    Intent(
+                        activity,
+                        SelectServiceActivity::class.java
+                    )
+                )
                 activity?.finish()
             }
         }
@@ -347,7 +378,10 @@ class SampleSettingsFragment : Fragment() {
             DialogListItem(R.string.text_settings_change_user_nickname),
             DialogListItem(R.string.text_settings_change_user_profile_image)
         )
-        DialogUtils.showListBottomDialog(requireContext(), items) { _: View?, _: Int, item: DialogListItem ->
+        DialogUtils.showListBottomDialog(
+            requireContext(),
+            items
+        ) { _: View?, _: Int, item: DialogListItem ->
             val key = item.key
             if (key == R.string.text_settings_change_user_nickname) {
                 Logger.dev("change user nickname")
@@ -370,7 +404,8 @@ class SampleSettingsFragment : Fragment() {
             } else if (key == R.string.text_settings_change_user_profile_image) {
                 Logger.dev("change user profile")
                 if (context == null) return@showListBottomDialog
-                val hasPermission = PermissionUtils.hasPermissions(requireContext(), *REQUIRED_PERMISSIONS)
+                val hasPermission =
+                    PermissionUtils.hasPermissions(requireContext(), *REQUIRED_PERMISSIONS)
                 if (hasPermission) {
                     showMediaSelectDialog()
                     return@showListBottomDialog
@@ -421,7 +456,8 @@ class SampleSettingsFragment : Fragment() {
     }
 
     private fun updateDarkTheme() {
-        val themeMode = if (SendbirdUIKit.isDarkMode()) SendbirdUIKit.ThemeMode.Light else SendbirdUIKit.ThemeMode.Dark
+        val themeMode =
+            if (SendbirdUIKit.isDarkMode()) SendbirdUIKit.ThemeMode.Light else SendbirdUIKit.ThemeMode.Dark
         SendbirdUIKit.setDefaultThemeMode(themeMode)
         PreferenceUtils.themeMode = themeMode
         binding.scDarkThemeSwitch.isChecked = themeMode.isUsingDarkTheme()
@@ -524,7 +560,11 @@ class SampleSettingsFragment : Fragment() {
             } else {
                 com.jet.im.kit.R.string.sb_text_need_to_allow_permission_storage
             }
-            return String.format(Locale.US, context.getString(textResId), ContextUtils.getApplicationName(context))
+            return String.format(
+                Locale.US,
+                context.getString(textResId),
+                ContextUtils.getApplicationName(context)
+            )
         }
     }
 }

@@ -22,6 +22,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.PhotoViewActivity;
 import com.jet.im.kit.activities.adapter.BaseMessageListAdapter;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
@@ -56,10 +57,10 @@ import com.jet.im.kit.vm.FileDownloader;
 import com.jet.im.model.ConversationInfo;
 import com.jet.im.model.Message;
 import com.jet.im.model.messages.FileMessage;
+import com.jet.im.model.messages.ImageMessage;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.message.UploadableFileInfo;
 import com.sendbird.android.params.FileMessageCreateParams;
 import com.sendbird.android.params.MultipleFilesMessageCreateParams;
 import com.sendbird.android.params.UserMessageCreateParams;
@@ -135,7 +136,7 @@ abstract public class BaseMessageListFragment<
                     getMultipleFilesMessageFileCountLimit()), this::onMultipleMediaResult);
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickSingleMedia =
-            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), this::onSingleMediaResult);
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), this::onImageResult);
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -215,7 +216,7 @@ abstract public class BaseMessageListFragment<
                 case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
                 case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
                     //todo 图片
-//                    startActivity(PhotoViewActivity.newIntent(requireContext(), ChannelType.GROUP, (FileMessage) message));
+//                    startActivity(PhotoViewActivity.newIntent(requireContext(),(ImageMessage) message.getContent(),message));
                     break;
                 case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
                 case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
@@ -601,10 +602,9 @@ abstract public class BaseMessageListFragment<
      *            since 3.9.0
      */
     @VisibleForTesting
-    void onSingleMediaResult(@Nullable Uri uri) {
-        SendbirdChat.setAutoBackgroundDetection(true);
+    void onImageResult(@Nullable Uri uri) {
         if (uri != null && isFragmentAlive()) {
-            sendSingleMedia(uri);
+            sendImageMessage(uri);
         }
     }
 
@@ -847,6 +847,35 @@ abstract public class BaseMessageListFragment<
      * @param uri A file Uri
      *            since 1.0.4
      */
+    protected void sendImageMessage(@NonNull Uri uri) {
+        if (getContext() != null) {
+            FileInfo.fromUri(getContext(), uri, false, new OnResultHandler<FileInfo>() {
+                @Override
+                public void onResult(@NonNull FileInfo info) {
+                    BaseMessageListFragment.this.mediaUri = null;
+                    final ConversationInfo channel = getViewModel().getChannel();
+                    if (channel == null) return;
+                    if (getContext() != null) {
+                        getViewModel().sendImageMessage(info.getPath());
+                    }
+                }
+
+                @Override
+                public void onError(@Nullable SendbirdException e) {
+                    Logger.w(e);
+                    toastError(R.string.sb_text_error_send_message);
+                    BaseMessageListFragment.this.mediaUri = null;
+                }
+            });
+        }
+    }
+
+    /**
+     * Sends a file with given file information.
+     *
+     * @param uri A file Uri
+     *            since 1.0.4
+     */
     protected void sendFileMessage(@NonNull Uri uri) {
         if (getContext() != null) {
             FileInfo.fromUri(getContext(), uri, SendbirdUIKit.shouldUseImageCompression(), new OnResultHandler<FileInfo>() {
@@ -876,9 +905,7 @@ abstract public class BaseMessageListFragment<
         final ConversationInfo channel = getViewModel().getChannel();
         if (channel == null) return;
         if (getContext() != null) {
-            final FileInfo fileInfo = FileInfo.fromVoiceFileInfo(info,
-                    FileUtils.getChannelFileCacheDir(getContext(), channel.getConversation().getConversationId() + "_" + channel.getConversation().getConversationType()));
-            sendFileMessage(fileInfo);
+            getViewModel().sendVoiceMessage(info.getPath(),info.getDuration());
         }
     }
 

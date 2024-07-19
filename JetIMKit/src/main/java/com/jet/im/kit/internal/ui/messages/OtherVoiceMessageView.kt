@@ -69,7 +69,7 @@ internal class OtherVoiceMessageView @JvmOverloads constructor(
         params: MessageListUIParams
     ) {
         val messageGroupType = params.messageGroupType
-        val fileMessage = message as VoiceMessage
+        val fileMessage = message.content as VoiceMessage
         val isSent = message.state == Message.MessageState.SENT
         val showProfile =
             messageGroupType == MessageGroupType.GROUPING_TYPE_SINGLE || messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL

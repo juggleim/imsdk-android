@@ -189,6 +189,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
                 }
+                if (mListenerMap != null) {
+                    for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onSendMessageSuccess(message));
+                    }
+                }
             }
 
             @Override
@@ -199,6 +204,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 if (callback != null) {
                     message.setClientMsgNo(clientMsgNo);
                     mCore.getCallbackHandler().post(() -> callback.onError(message, errorCode));
+                }
+                if (mListenerMap != null) {
+                    for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onSendMessageError(message,errorCode));
+                    }
                 }
             }
         };
@@ -259,6 +269,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onProgress(progress, message));
                 }
+                if (mListenerMap != null) {
+                    for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onSendMessageUpload(message,progress));
+                    }
+                }
             }
 
             @Override
@@ -268,6 +283,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     setMessageState(uploadMessage.getClientMsgNo(), Message.MessageState.FAIL);
                     if (callback != null) {
                         mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            mCore.getCallbackHandler().post(() -> entry.getValue().onSendMessageError(message,JErrorCode.MESSAGE_UPLOAD_ERROR));
+                        }
                     }
                     return;
                 }
@@ -299,6 +319,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
                 }
+                if (mListenerMap != null) {
+                    for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onSendMessageError(message,JErrorCode.MESSAGE_UPLOAD_ERROR));
+                    }
+                }
             }
 
             @Override
@@ -307,6 +332,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onCancel(message));
+                }
+                if (mListenerMap != null) {
+                    for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onSendMessageCancel(message));
+                    }
                 }
             }
         };
@@ -317,6 +347,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         } else {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
+            }
+            if (mListenerMap != null) {
+                for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onSendMessageError(message,JErrorCode.MESSAGE_UPLOAD_ERROR));
+                }
             }
         }
         return message;

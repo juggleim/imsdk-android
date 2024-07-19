@@ -4,10 +4,11 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.multidex.MultiDexApplication
-import com.sendbird.android.exception.SendbirdException
-import com.sendbird.android.handler.InitResultHandler
-import com.sendbird.android.params.OpenChannelCreateParams
-import com.sendbird.android.push.SendbirdPushHelper
+import com.example.demo.common.consts.InitState
+import com.example.demo.common.consts.SampleType
+import com.example.demo.common.consts.StringSet
+import com.example.demo.common.preferences.PreferenceUtils
+import com.jet.im.JetIM
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.adapter.SendbirdUIKitAdapter
 import com.jet.im.kit.consts.ReplyType
@@ -16,10 +17,9 @@ import com.jet.im.kit.consts.TypingIndicatorType
 import com.jet.im.kit.interfaces.CustomParamsHandler
 import com.jet.im.kit.interfaces.UserInfo
 import com.jet.im.kit.model.configurations.UIKitConfig
-import com.example.demo.common.consts.InitState
-import com.example.demo.common.consts.SampleType
-import com.example.demo.common.consts.StringSet
-import com.example.demo.common.preferences.PreferenceUtils
+import com.sendbird.android.exception.SendbirdException
+import com.sendbird.android.handler.InitResultHandler
+import com.sendbird.android.params.OpenChannelCreateParams
 
 private const val APP_ID = "FEA2129A-EA73-4EB9-9E0B-EC738E7EB768"
 internal const val enableAiChatBotSample = false
@@ -123,7 +123,9 @@ class BaseApplication : MultiDexApplication() {
 
         // initialize SendbirdUIKit
         initUIKit(this)
-
+        val navi = ArrayList<String>()
+        navi.add("https://nav.gxjipei.com")
+        JetIM.getInstance().setServer(navi)
         // setup uikit configurations
         setupConfigurations()
     }

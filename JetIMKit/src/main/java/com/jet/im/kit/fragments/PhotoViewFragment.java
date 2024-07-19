@@ -26,6 +26,7 @@ import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.github.chrisbanes.photoview.PhotoViewAttacher;
+import com.jet.im.model.Conversation;
 import com.sendbird.android.channel.BaseChannel;
 import com.sendbird.android.channel.ChannelType;
 import com.sendbird.android.channel.GroupChannel;
@@ -51,7 +52,7 @@ public class PhotoViewFragment extends PermissionFragment implements PermissionF
     private final String[] REQUIRED_PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     private SbFragmentPhotoViewBinding binding;
-    private BaseChannel channel;
+    private Conversation channel;
 
     private boolean loadComplete = false;
 
@@ -114,17 +115,17 @@ public class PhotoViewFragment extends PermissionFragment implements PermissionF
 
         if (TextUtils.isEmpty(channelUrl)) return;
 
-        if (channelType == ChannelType.GROUP) {
-            GroupChannel.getChannel(channelUrl, (channel, e) -> {
-                PhotoViewFragment.this.channel = channel;
-                onDrawPage();
-            });
-        } else {
-            OpenChannel.getChannel(channelUrl, (channel, e) -> {
-                PhotoViewFragment.this.channel = channel;
-                onDrawPage();
-            });
-        }
+//        if (channelType == ChannelType.GROUP) {
+//            GroupChannel.getChannel(channelUrl, (channel, e) -> {
+//                PhotoViewFragment.this.channel = channel;
+//                onDrawPage();
+//            });
+//        } else {
+//            OpenChannel.getChannel(channelUrl, (channel, e) -> {
+//                PhotoViewFragment.this.channel = channel;
+//                onDrawPage();
+//            });
+//        }
     }
 
     @Override
@@ -191,26 +192,26 @@ public class PhotoViewFragment extends PermissionFragment implements PermissionF
 
         if (channel != null && isDeletableMessage) {
             ivDelete.setVisibility(View.VISIBLE);
-            ivDelete.setOnClickListener(v -> {
-                    if (!loadComplete || getContext() == null) return;
-
-                    DialogUtils.showWarningDialog(
-                        requireContext(),
-                        getString(R.string.sb_text_dialog_delete_file_message),
-                        getString(R.string.sb_text_button_delete),
-                        v1 -> channel.deleteMessage(messageId, e -> {
-                            if (e != null) {
-                                toastError(R.string.sb_text_error_delete_message);
-                                return;
-                            }
-                            if (isFragmentAlive()) {
-                                shouldActivityFinish();
-                            }
-                        }),
-                        getString(R.string.sb_text_button_cancel),
-                        cancel -> Logger.dev("cancel"));
-                }
-            );
+//            ivDelete.setOnClickListener(v -> {
+//                    if (!loadComplete || getContext() == null) return;
+//
+//                    DialogUtils.showWarningDialog(
+//                        requireContext(),
+//                        getString(R.string.sb_text_dialog_delete_file_message),
+//                        getString(R.string.sb_text_button_delete),
+//                        v1 -> channel.deleteMessage(messageId, e -> {
+//                            if (e != null) {
+//                                toastError(R.string.sb_text_error_delete_message);
+//                                return;
+//                            }
+//                            if (isFragmentAlive()) {
+//                                shouldActivityFinish();
+//                            }
+//                        }),
+//                        getString(R.string.sb_text_button_cancel),
+//                        cancel -> Logger.dev("cancel"));
+//                }
+//            );
         } else {
             ivDelete.setVisibility(View.GONE);
             ivDelete.setOnClickListener(null);

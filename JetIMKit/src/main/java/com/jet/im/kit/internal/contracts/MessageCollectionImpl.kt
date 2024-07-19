@@ -37,7 +37,7 @@ internal class MessageCollectionImpl(private val collection: ConversationInfo) :
     }
     override fun getHasPrevious(): Boolean = true
 
-    override fun getHasNext(): Boolean = true
+    override fun getHasNext(): Boolean = false
 
     override fun setMessageCollectionHandler(listener: MessageCollectionHandler?) {
 //        collection.messageCollectionHandler = listener

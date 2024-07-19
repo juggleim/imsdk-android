@@ -3,6 +3,8 @@ package com.jet.im.kit.utils;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -43,6 +45,7 @@ import com.jet.im.kit.model.TextUIConfig;
 import com.jet.im.kit.vm.PendingMessageRepository;
 import com.jet.im.model.Message;
 import com.jet.im.model.UserInfo;
+import com.jet.im.model.messages.ImageMessage;
 import com.jet.im.model.messages.TextMessage;
 import com.jet.im.model.messages.VoiceMessage;
 import com.sendbird.android.message.BaseMessage;
@@ -52,6 +55,7 @@ import com.sendbird.android.message.Thumbnail;
 import com.sendbird.android.user.Sender;
 import com.sendbird.android.user.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -92,12 +96,12 @@ public class ViewUtils {
     }
 
     public static void drawTextMessage(
-        @NonNull TextView textView,
-        @Nullable Message message,
-        @Nullable MessageUIConfig uiConfig,
-        boolean enableMention,
-        @Nullable TextUIConfig mentionedCurrentUserUIConfig,
-        @Nullable OnItemClickListener<User> mentionClickListener
+            @NonNull TextView textView,
+            @Nullable Message message,
+            @Nullable MessageUIConfig uiConfig,
+            boolean enableMention,
+            @Nullable TextUIConfig mentionedCurrentUserUIConfig,
+            @Nullable OnItemClickListener<User> mentionClickListener
     ) {
         if (message == null) {
             return;
@@ -109,28 +113,28 @@ public class ViewUtils {
         }
         final Context context = textView.getContext();
         final CharSequence text = getDisplayableText(
-            context,
-            message,
-            uiConfig,
-            mentionedCurrentUserUIConfig,
-            true,
-            mentionClickListener,
-            enableMention
+                context,
+                message,
+                uiConfig,
+                mentionedCurrentUserUIConfig,
+                true,
+                mentionClickListener,
+                enableMention
         );
         textView.setText(text);
     }
 
     @NonNull
     public static CharSequence getDisplayableText(
-        @NonNull Context context,
-        @NonNull Message message,
-        @Nullable MessageUIConfig uiConfig,
-        @Nullable TextUIConfig mentionedCurrentUserUIConfig,
-        boolean mentionClickable,
-        @Nullable OnItemClickListener<User> mentionClickListener,
-        boolean enabledMention
+            @NonNull Context context,
+            @NonNull Message message,
+            @Nullable MessageUIConfig uiConfig,
+            @Nullable TextUIConfig mentionedCurrentUserUIConfig,
+            boolean mentionClickable,
+            @Nullable OnItemClickListener<User> mentionClickListener,
+            boolean enabledMention
     ) {
-        String displayedMessage =message.getContent() instanceof TextMessage?((TextMessage)message.getContent()).getContent():"";
+        String displayedMessage = message.getContent() instanceof TextMessage ? ((TextMessage) message.getContent()).getContent() : "";
         final SpannableString text = new SpannableString(displayedMessage);
         if (uiConfig != null) {
             final TextUIConfig messageTextUIConfig = MessageUtils.isMine(message) ? uiConfig.getMyMessageTextUIConfig() : uiConfig.getOtherMessageTextUIConfig();
@@ -175,10 +179,10 @@ public class ViewUtils {
     }
 
     public static void drawNickname(
-        @NonNull TextView tvNickname,
-        @Nullable BaseMessage message,
-        @Nullable MessageUIConfig uiConfig,
-        boolean isOperator
+            @NonNull TextView tvNickname,
+            @Nullable BaseMessage message,
+            @Nullable MessageUIConfig uiConfig,
+            boolean isOperator
     ) {
         if (message == null) {
             return;
@@ -205,7 +209,7 @@ public class ViewUtils {
             return;
         }
 
-        final UserInfo sender = JetIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId()) ;
+        final UserInfo sender = JetIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId());
         final Spannable nickname = new SpannableString(UserUtils.getDisplayName(tvNickname.getContext(), sender));
         if (uiConfig != null) {
             final boolean isMine = MessageUtils.isMine(message);
@@ -244,7 +248,7 @@ public class ViewUtils {
         if (message == null) {
             return;
         }
-        final UserInfo sender = JetIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId()) ;
+        final UserInfo sender = JetIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId());
 
         String url = "";
         String plainUrl = "";
@@ -267,27 +271,40 @@ public class ViewUtils {
 
     public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull FileMessage message) {
         drawThumbnail(
-            view,
-            message.getRequestId(),
-            getUrl(message),
-            message.getPlainUrl(),
-            message.getType(),
-            message.getThumbnails(),
-            null,
-            R.dimen.sb_size_48
+                view,
+                message.getRequestId(),
+                getUrl(message),
+                message.getPlainUrl(),
+                message.getType(),
+                null,
+                R.dimen.sb_size_48
+        );
+    }
+
+    public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull ImageMessage image, @NonNull Message message) {
+        if (TextUtils.isEmpty(image.getThumbnailUrl())) {
+            return;
+        }
+        drawThumbnail(
+                view,
+                message.getMessageId(),
+                image.getThumbnailUrl(),
+                image.getUrl(),
+                StringSet.image,
+                null,
+                R.dimen.sb_size_48
         );
     }
 
     public static void drawQuotedMessageThumbnail(@NonNull RoundCornerView view, @NonNull FileMessage message, @Nullable RequestListener<Drawable> requestListener) {
         drawThumbnail(
-            view,
-            message.getRequestId(),
-            getUrl(message),
-            message.getPlainUrl(),
-            message.getType(),
-            message.getThumbnails(),
-            requestListener,
-            R.dimen.sb_size_24
+                view,
+                message.getRequestId(),
+                getUrl(message),
+                message.getPlainUrl(),
+                message.getType(),
+                requestListener,
+                R.dimen.sb_size_24
         );
     }
 
@@ -301,47 +318,37 @@ public class ViewUtils {
     }
 
     public static void drawThumbnail(
-        @NonNull RoundCornerView view,
-        @NonNull String requestId,
-        @NonNull String url,
-        @NonNull String plainUrl,
-        @NonNull String fileType,
-        @NonNull List<Thumbnail> thumbnails,
-        @Nullable RequestListener<Drawable> requestListener,
-        @DimenRes int iconSize
+            @NonNull RoundCornerView view,
+            @NonNull String requestId,
+            @NonNull String url,
+            @NonNull String plainUrl,
+            @NonNull String fileType,
+            @Nullable RequestListener<Drawable> requestListener,
+            @DimenRes int iconSize
     ) {
         Context context = view.getContext();
         RequestOptions options = new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL);
         RequestBuilder<Drawable> builder = Glide.with(context).asDrawable().apply(options);
-
-        Pair<Integer, Integer> defaultResizingSize = SendbirdUIKit.getResizingSize();
-        int width = defaultResizingSize.first / 2;
-        int height = defaultResizingSize.second / 2;
-        FileInfo fileInfo = PendingMessageRepository.getInstance().getFileInfo(requestId);
-        if (fileInfo != null) {
-            width = fileInfo.getThumbnailWidth();
-            height = fileInfo.getThumbnailHeight();
-            builder = builder.override(width, height);
-            if (!TextUtils.isEmpty(fileInfo.getThumbnailPath())) {
-                url = fileInfo.getThumbnailPath();
-            }
-        } else {
-            Thumbnail thumbnail = null;
-            if (thumbnails.size() > 0) {
-                thumbnail = thumbnails.get(0);
-            }
-            if (thumbnail != null && !TextUtils.isEmpty(thumbnail.getUrl())) {
-                Logger.dev("++ thumbnail width : %s, thumbnail height : %s", thumbnail.getRealWidth(), thumbnail.getRealHeight());
-                width = Math.max(MINIMUM_THUMBNAIL_WIDTH, thumbnail.getRealWidth());
-                height = Math.max(MINIMUM_THUMBNAIL_HEIGHT, thumbnail.getRealHeight());
-                url = thumbnail.getUrl();
-                builder = builder.override(width, height);
-            } else {
-                final int size = Math.min(Math.max(MINIMUM_THUMBNAIL_WIDTH, width), Math.max(MINIMUM_THUMBNAIL_HEIGHT, height));
-                builder = builder.override(size);
-            }
-        }
-
+//        int width;
+//        int height;
+////        FileInfo fileInfo = PendingMessageRepository.getInstance().getFileInfo(requestId);
+////        if (fileInfo != null) {
+////            width = fileInfo.getThumbnailWidth();
+////            height = fileInfo.getThumbnailHeight();
+////            builder = builder.override(width, height);
+////            if (!TextUtils.isEmpty(fileInfo.getThumbnailPath())) {
+////                url = fileInfo.getThumbnailPath();
+////            }
+////        } else {
+////            BitmapFactory.Options opt = new BitmapFactory.Options();
+////            opt.inJustDecodeBounds = true;
+////            BitmapFactory.decodeFile(url, opt);
+////            width = opt.outWidth;
+////            height = opt.outHeight;
+////            width = Math.max(MINIMUM_THUMBNAIL_WIDTH, width);
+////            height = Math.max(MINIMUM_THUMBNAIL_HEIGHT, height);
+////            builder = builder.override(width, height);
+////        }
         if (fileType.toLowerCase().contains(StringSet.image) && !fileType.toLowerCase().contains(StringSet.gif)) {
             view.getContent().setScaleType(ImageView.ScaleType.CENTER);
             int thumbnailIconTint = SendbirdUIKit.isDarkMode() ? R.color.ondark_02 : R.color.onlight_02;
@@ -489,8 +496,8 @@ public class ViewUtils {
         drawFilename(tvFilename, message.getName(), MessageUtils.isMine(message), uiConfig);
     }
 
-    public static void drawFilename(@NonNull TextView tvFilename,@Nullable Message message, @Nullable com.jet.im.model.messages.FileMessage fileMessage, @Nullable MessageUIConfig uiConfig) {
-        if (message == null||fileMessage==null) {
+    public static void drawFilename(@NonNull TextView tvFilename, @Nullable Message message, @Nullable com.jet.im.model.messages.FileMessage fileMessage, @Nullable MessageUIConfig uiConfig) {
+        if (message == null || fileMessage == null) {
             return;
         }
         drawFilename(tvFilename, fileMessage.getName(), MessageUtils.isMine(message), uiConfig);
@@ -510,8 +517,8 @@ public class ViewUtils {
         voiceMessageView.drawVoiceMessage(message);
     }
 
-    public static void drawVoiceMessage(@NonNull VoiceMessageView voiceMessageView, @NonNull VoiceMessage voiceMessage,@NonNull Message message) {
-        voiceMessageView.drawVoiceMessage(message,voiceMessage);
+    public static void drawVoiceMessage(@NonNull VoiceMessageView voiceMessageView, @NonNull VoiceMessage voiceMessage, @NonNull Message message) {
+        voiceMessageView.drawVoiceMessage(message, voiceMessage);
     }
 
     public static void drawTimeline(@NonNull TextView timelineView, int milliseconds) {

@@ -278,8 +278,8 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
      */
     @Override
     public void authenticate(@NonNull AuthenticateHandler handler) {
-        connect((user, e) -> {
-            if (user != null) {
+        connect((e) -> {
+            if (e == null) {
                 handler.onAuthenticated();
             } else {
                 handler.onAuthenticationFailed();
