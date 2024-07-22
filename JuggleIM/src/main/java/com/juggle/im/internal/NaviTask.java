@@ -82,6 +82,18 @@ class NaviTask {
                 return;
             }
             JSONObject json = new JSONObject(s);
+            if (json.has(CODE)) {
+                int code = json.optInt(CODE);
+                if (code != ConstInternal.ErrorCode.NONE) {
+                    JLogger.e("NAV-Request", "navi response error, code is " + code);
+                    responseError(url, code);
+                    return;
+                }
+            } else {
+                JLogger.e("NAV-Request", "navi doesn't response a code");
+                responseError(url, ConstInternal.ErrorCode.NAVI_FAILURE);
+                return;
+            }
             JSONObject data = json.getJSONObject(DATA);
             String userId = data.optString(USER_ID);
             JSONArray servers = data.optJSONArray(SERVERS);
@@ -140,6 +152,7 @@ class NaviTask {
     private static final String DATA = "data";
     private static final String USER_ID = "user_id";
     private static final String SERVERS = "servers";
+    private static final String CODE = "code";
     private static final int MAX_CONCURRENT_COUNT = 5;
     private boolean mIsFinish = false;
     private final ConcurrentHashMap<String, TaskStatus> mRequestMap;

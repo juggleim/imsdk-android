@@ -44,7 +44,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             @Override
             public void onError(int errorCode) {
                 JLogger.i("CON-Navi", "fail, errorCode is " + errorCode);
-                if (errorCode == ConstInternal.ErrorCode.TOKEN_ILLEGAL) {
+                if (checkConnectionFailure(errorCode)) {
                     changeStatus(JIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
                 } else {
                     changeStatus(JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
