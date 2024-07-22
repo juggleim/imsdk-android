@@ -167,17 +167,17 @@ public class Message {
     }
 
     public String getLocalAttribute() {
-        return localAttribute;
+        return mLocalAttribute;
     }
 
     public void setLocalAttribute(String localAttribute) {
-        this.localAttribute = localAttribute;
+        this.mLocalAttribute = localAttribute;
     }
 
     private Conversation mConversation;
     /// 消息类型
     private String mContentType;
-    /// 本端消息唯一编号（支队当前设备生效）
+    /// 本端消息唯一编号（只对当前设备生效）
     private long mClientMsgNo;
     /// 消息 id，全局唯一
     private String mMessageId;
@@ -196,5 +196,6 @@ public class Message {
     private GroupMessageReadInfo mGroupMessageReadInfo;
     private Message mReferredMessage;
     private MessageMentionInfo mMentionInfo;
-    private String localAttribute;
+    /// 消息本地属性（仅对本端生效，不会同步到服务端）
+    private String mLocalAttribute;
 }
