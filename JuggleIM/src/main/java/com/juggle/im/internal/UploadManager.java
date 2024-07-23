@@ -134,26 +134,19 @@ public class UploadManager implements IMessageUploadProvider {
 
             @Override
             public void onSuccess(String url) {
+                MediaMessageContent content = (MediaMessageContent) message.getContent();
+                if (!isPreUpload) {
+                    content.setUrl(url);
+                    uploadCallback.onSuccess(message);
+                    return;
+                }
                 if (message.getContent() instanceof ImageMessage) {
-                    if (isPreUpload) {
-                        ((ImageMessage) message.getContent()).setThumbnailUrl(url);
-                    } else {
-                        ((ImageMessage) message.getContent()).setUrl(url);
-                    }
+                    ((ImageMessage) message.getContent()).setThumbnailUrl(url);
                 } else if (message.getContent() instanceof VideoMessage) {
-                    if (isPreUpload) {
-                        ((VideoMessage) message.getContent()).setSnapshotUrl(url);
-                    } else {
-                        ((VideoMessage) message.getContent()).setUrl(url);
-                    }
-                } else if (message.getContent() instanceof VoiceMessage) {
-                    ((VoiceMessage) message.getContent()).setUrl(url);
-                } else if (message.getContent() instanceof FileMessage) {
-                    ((FileMessage) message.getContent()).setUrl(url);
+                    ((VideoMessage) message.getContent()).setSnapshotUrl(url);
                 }
                 uploadCallback.onSuccess(message);
             }
-
             @Override
             public void onError() {
                 uploadCallback.onError();

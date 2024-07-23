@@ -366,19 +366,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
             return message;
         }
-        if (message.getClientMsgNo() > 0) {
-            if (message.getState() != Message.MessageState.SENDING) {
-                message.setState(Message.MessageState.SENDING);
-                setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
-            }
-            updateMessageWithContent((ConcreteMessage) message);
-            return sendMediaMessage(message, callback);
-        } else {
-            MessageOptions options = new MessageOptions();
-            options.setMentionInfo(message.getMentionInfo());
-            options.setReferredMessageId(message.getReferredMessage() == null ? null : message.getReferredMessage().getMessageId());
-            return sendMediaMessage((MediaMessageContent) message.getContent(), message.getConversation(), options, callback);
+        if (message.getState() != Message.MessageState.SENDING) {
+            message.setState(Message.MessageState.SENDING);
+            setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
         }
+        updateMessageWithContent((ConcreteMessage) message);
+        return sendMediaMessage(message, callback);
     }
 
     @Override
