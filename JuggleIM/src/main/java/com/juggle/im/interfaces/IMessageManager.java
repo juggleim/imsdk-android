@@ -60,6 +60,12 @@ public interface IMessageManager {
         void onError(int errorCode);
     }
 
+    interface IGetMessagesWithFinishCallback {
+        void onSuccess(List<Message> messages, boolean isFinished);
+
+        void onError(int errorCode);
+    }
+
     interface IRecallMessageCallback {
         void onSuccess(Message message);
 
@@ -186,7 +192,7 @@ public interface IMessageManager {
                            int count,
                            long startTime,
                            JIMConst.PullDirection direction,
-                           IGetMessagesCallback callback);
+                           IGetMessagesWithFinishCallback callback);
 
     void getLocalAndRemoteMessages(Conversation conversation,
                                    int count,
@@ -209,7 +215,7 @@ public interface IMessageManager {
                                int count,
                                long time,
                                JIMConst.PullDirection direction,
-                               IGetMessagesCallback callback);
+                               IGetMessagesWithFinishCallback callback);
 
     void setLocalAttribute(String messageId, String attribute);
 

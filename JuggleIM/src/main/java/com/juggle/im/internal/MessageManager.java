@@ -911,7 +911,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void getRemoteMessages(Conversation conversation, int count, long startTime, JIMConst.PullDirection direction, IGetMessagesCallback callback) {
+    public void getRemoteMessages(Conversation conversation, int count, long startTime, JIMConst.PullDirection direction, IGetMessagesWithFinishCallback callback) {
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("MSG-Get", "getRemoteMessages, fail, errorCode is " + errorCode);
@@ -932,7 +932,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 updateUserInfo(messagesToSave);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
-                    mCore.getCallbackHandler().post(() -> callback.onSuccess(result));
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(result, isFinished));
                 }
             }
 
@@ -971,9 +971,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             mCore.getCallbackHandler().post(() -> callback.onGetLocalList(localMessages, finalNeedRemote));
         }
         if (needRemote) {
-            getRemoteMessages(conversation, count, startTime, direction, new IGetMessagesCallback() {
+            getRemoteMessages(conversation, count, startTime, direction, new IGetMessagesWithFinishCallback() {
                 @Override
-                public void onSuccess(List<Message> messages) {
+                public void onSuccess(List<Message> messages, boolean isFinished) {
                     JLogger.i("MSG-Get", "getLocalAndRemoteMessages, success");
                     //合并去重
                     List<Message> mergeList = mergeLocalAndRemoteMessages(localMessages == null ? new ArrayList<>() : localMessages, messages);
@@ -1141,7 +1141,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void getMentionMessageList(Conversation conversation, int count, long time, JIMConst.PullDirection direction, IGetMessagesCallback callback) {
+    public void getMentionMessageList(Conversation conversation, int count, long time, JIMConst.PullDirection direction, IGetMessagesWithFinishCallback callback) {
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("MSG-GetMention", "fail, code is " + errorCode);
@@ -1157,7 +1157,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 mCore.getDbManager().insertMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
-                    mCore.getCallbackHandler().post(() -> callback.onSuccess(result));
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(result, isFinished));
                 }
             }
 
