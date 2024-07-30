@@ -1,8 +1,9 @@
 plugins {
     id 'com.google.protobuf' version '0.9.1'
     id 'com.android.library'
-}
 
+}
+apply from: './upload-maven.gradle'
 android {
     namespace 'com.juggle.im'
     compileSdk 33
@@ -37,6 +38,11 @@ android {
                 include '*.proto'
             }
         }
+    }
+    publishing {
+        // Publishes "fullRelease" build variant with "fullRelease" component created by
+        // Android Gradle plugin
+        singleVariant("release")
     }
 }
 
