@@ -137,7 +137,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     public void setDraft(Conversation conversation, String draft) {
         mCore.getDbManager().setDraft(conversation, draft);
         ConversationInfo info = mCore.getDbManager().getConversationInfo(conversation);
-        if (mListenerMap != null) {
+        if (mListenerMap != null && info != null) {
             List<ConversationInfo> l = new ArrayList<>();
             l.add(info);
             for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {

@@ -43,6 +43,8 @@ import com.juggle.im.model.messages.VoiceMessage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +81,10 @@ public class MainActivity extends AppCompatActivity {
                             JIMConst.ConnectionStatus s = JIM.getInstance().getConnectionManager().getConnectionStatus();
                             int i = 1;
                             i = i+1;
+
+                            Conversation conversation = new Conversation(Conversation.ConversationType.GROUP, "groupId1");
+
+                            ConversationInfo info = JIM.getInstance().getConversationManager().getConversationInfo(conversation);
 //                            ImageMessage image = new ImageMessage();
 //                            image.setLocalPath("asdfasdgasdgasdf");
 //                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
