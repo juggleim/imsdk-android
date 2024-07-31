@@ -12,8 +12,8 @@ afterEvaluate {
                 from components.release
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.juggle.im'
-                artifactId = 'lib'
-                version = '0.0.1'
+                artifactId = 'juggle'
+                version = '1.0.0'
                 pom {
                     name = 'JuggleIM'
                     description = 'JuggleIM Android SDK'
