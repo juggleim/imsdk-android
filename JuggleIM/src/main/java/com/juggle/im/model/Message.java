@@ -174,6 +174,14 @@ public class Message {
         this.mLocalAttribute = localAttribute;
     }
 
+    public boolean isDelete() {
+        return mIsDelete;
+    }
+
+    public void setDelete(boolean delete) {
+        mIsDelete = delete;
+    }
+
     private Conversation mConversation;
     /// 消息类型
     private String mContentType;
@@ -198,4 +206,6 @@ public class Message {
     private MessageMentionInfo mMentionInfo;
     /// 消息本地属性（仅对本端生效，不会同步到服务端）
     private String mLocalAttribute;
+    ///是否已删除
+    private boolean mIsDelete;
 }

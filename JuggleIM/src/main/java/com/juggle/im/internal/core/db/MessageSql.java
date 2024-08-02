@@ -55,6 +55,8 @@ class MessageSql {
         info.setMemberCount(CursorHelper.readInt(cursor, COL_MEMBER_COUNT));
         message.setGroupMessageReadInfo(info);
         message.setLocalAttribute(CursorHelper.readString(cursor, COL_LOCAL_ATTRIBUTE));
+        boolean isDelete = CursorHelper.readInt(cursor, COL_IS_DELETED) != 0;
+        message.setDelete(isDelete);
         String mentionInfoStr = CursorHelper.readString(cursor, COL_MENTION_INFO);
         if (!TextUtils.isEmpty(mentionInfoStr)) {
             message.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
