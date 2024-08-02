@@ -12,6 +12,7 @@ import com.juggle.im.JIMConst;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.util.JLogger;
+import com.juggle.im.internal.util.JSortTimeCounter;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.GroupInfo;
@@ -35,6 +36,7 @@ public class DBManager {
             mDBHelper = new DBHelper(context, path);
             mDb = mDBHelper.getWritableDatabase();
         }
+        mSortTimeCounter = new JSortTimeCounter(context, appKey, userId);
         JLogger.i("DB-Open", "open db, path is " + path + ", result is " + isOpen());
         return true;
     }
@@ -124,6 +126,7 @@ public class DBManager {
                     Object[] args = ConversationSql.argsWithUpdateConcreteConversationInfo(info);
                     execSQL(ConversationSql.SQL_UPDATE_CONVERSATION, args);
                 } else {
+                    resetSortTime(info);
                     insertConversations.add(info);
                     Object[] args = ConversationSql.argsWithInsertConcreteConversationInfo(info);
                     execSQL(ConversationSql.SQL_INSERT_CONVERSATION, args);
@@ -133,6 +136,12 @@ public class DBManager {
         if (callback != null) {
             callback.onComplete(insertConversations, updateConversations);
         }
+    }
+
+    //重设会话sortTime
+    private void resetSortTime(ConcreteConversationInfo info) {
+        if (info == null || info.getSortTime() != 0) return;
+        info.setSortTime(mSortTimeCounter == null ? 0 : mSortTimeCounter.getNextSortTime());
     }
 
     public List<ConversationInfo> getConversationInfoList() {
@@ -699,6 +708,7 @@ public class DBManager {
 
     private DBHelper mDBHelper;
     private SQLiteDatabase mDb;
+    private JSortTimeCounter mSortTimeCounter;
     private static final String PATH_JET_IM = "jet_im";
     private static final String DB_NAME = "jetimdb";
 
