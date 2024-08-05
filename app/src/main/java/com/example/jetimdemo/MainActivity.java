@@ -21,29 +21,30 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.jetimdemo.databinding.ActivityMainBinding;
-import com.jet.im.JetIM;
-import com.jet.im.JetIMConst;
-import com.jet.im.interfaces.IConnectionManager;
-import com.jet.im.interfaces.IConversationManager;
-import com.jet.im.interfaces.IMessageManager;
-import com.jet.im.internal.uploader.FileUtil;
-import com.jet.im.model.Conversation;
-import com.jet.im.model.ConversationInfo;
-import com.jet.im.model.GroupInfo;
-import com.jet.im.model.GroupMessageReadInfo;
-import com.jet.im.model.Message;
-import com.jet.im.model.MessageContent;
-import com.jet.im.model.UserInfo;
-import com.jet.im.model.messages.FileMessage;
-import com.jet.im.model.messages.ImageMessage;
-import com.jet.im.model.messages.SnapshotPackedVideoMessage;
-import com.jet.im.model.messages.TextMessage;
-import com.jet.im.model.messages.ThumbnailPackedImageMessage;
-import com.jet.im.model.messages.VideoMessage;
-import com.jet.im.model.messages.VoiceMessage;
+import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.IConnectionManager;
+import com.juggle.im.interfaces.IConversationManager;
+import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.internal.uploader.FileUtil;
+import com.juggle.im.model.Conversation;
+import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GroupMessageReadInfo;
+import com.juggle.im.model.MediaMessageContent;
+import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.messages.FileMessage;
+import com.juggle.im.model.messages.ImageMessage;
+import com.juggle.im.model.messages.SnapshotPackedVideoMessage;
+import com.juggle.im.model.messages.TextMessage;
+import com.juggle.im.model.messages.ThumbnailPackedImageMessage;
+import com.juggle.im.model.messages.VideoMessage;
+import com.juggle.im.model.messages.VoiceMessage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     private final String TOKEN3 = "CgZhcHBrZXkaINMDzs7BBTTZTwjKtM10zyxL4DBWFuZL6Z/OAU0Iajpv";
     private final String TOKEN4 = "CgZhcHBrZXkaIDHZwzfny4j4GiJye8y8ehU5fpJ+wVOGI3dCsBMfyLQv";
     private final String TOKEN5 = "CgZhcHBrZXkaIOx2upLCsmsefp8U/KNb52UGnAEu/xf+im3QaUd0HTC2";
+    //nsw3sue72begyv7y,AVaoVF4zG
+    private final String TOKEN6 = "ChBuc3czc3VlNzJiZWd5djd5GiAH3t-KKHZ0UOZNG6mfNL8m2hAUbN4RYH0iskZQTm6M7Q==";
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
@@ -65,19 +68,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         HandlerThread sendThread = new HandlerThread("DEMO_TEST");
         sendThread.start();
-        JetIM.getInstance().setCallbackHandler(new Handler(sendThread.getLooper()));
-        JetIM.getInstance().getConnectionManager().addConnectionStatusListener("mainActivity", new IConnectionManager.IConnectionStatusListener() {
+        JIM.getInstance().setCallbackHandler(new Handler(sendThread.getLooper()));
+        JIM.getInstance().getConnectionManager().addConnectionStatusListener("mainActivity", new IConnectionManager.IConnectionStatusListener() {
             @Override
-            public void onStatusChange(JetIMConst.ConnectionStatus status, int code, String extra) {
+            public void onStatusChange(JIMConst.ConnectionStatus status, int code, String extra) {
                 Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
-                if (status == JetIMConst.ConnectionStatus.CONNECTED) {
+                if (status == JIMConst.ConnectionStatus.CONNECTED) {
                     Handler mainHandler = new Handler(Looper.getMainLooper());
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            JetIMConst.ConnectionStatus s = JetIM.getInstance().getConnectionManager().getConnectionStatus();
+                            JIMConst.ConnectionStatus s = JIM.getInstance().getConnectionManager().getConnectionStatus();
                             int i = 1;
                             i = i+1;
+
+                            Conversation conversation = new Conversation(Conversation.ConversationType.GROUP, "groupId1");
+
+                            ConversationInfo info = JIM.getInstance().getConversationManager().getConversationInfo(conversation);
 //                            ImageMessage image = new ImageMessage();
 //                            image.setLocalPath("asdfasdgasdgasdf");
 //                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
@@ -519,8 +526,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JetIM.getInstance().getConnectionManager().connect(TOKEN4);
-        JetIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
+        JIM.getInstance().getConnectionManager().connect(TOKEN2);
+        JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {
                 Log.d("lifei", "onMessageRead, count is " + messageIds.size() + ", conversationType is " + conversation.getConversationType() + ", conversationId is " + conversation.getConversationId());
@@ -531,19 +538,19 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("lifei", "onGroupMessagesRead, conversationType is " + conversation.getConversationType() + ", id is " + conversation.getConversationId() + ", count is " + messages.size());
             }
         });
-        JetIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
+        JIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
             @Override
             public void onMessageSyncComplete() {
                 Log.d("lifei", "onMessageSyncComplete");
             }
         });
-        JetIM.getInstance().getConversationManager().addSyncListener("main", new IConversationManager.IConversationSyncListener() {
+        JIM.getInstance().getConversationManager().addSyncListener("main", new IConversationManager.IConversationSyncListener() {
             @Override
             public void onConversationSyncComplete() {
                 Log.d("lifei", "onConversationSyncComplete");
             }
         });
-        JetIM.getInstance().getMessageManager().addListener("main", new IMessageManager.IMessageListener() {
+        JIM.getInstance().getMessageManager().addListener("main", new IMessageManager.IMessageListener() {
             @Override
             public void onMessageReceive(Message message) {
                 Log.d("lifei", "onMessageReceive type is " + message.getContentType() + " message is " + message);
@@ -560,6 +567,29 @@ public class MainActivity extends AppCompatActivity {
                 } else if (c instanceof VoiceMessage) {
                     VoiceMessage v = (VoiceMessage) c;
                     Log.i("lifei", "voice message, extra is " + v.getExtra());
+                }
+                if(message.getContent() instanceof MediaMessageContent){
+                    JIM.getInstance().getMessageManager().downloadMediaMessage(message.getMessageId(), new IMessageManager.IDownloadMediaMessageCallback() {
+                        @Override
+                        public void onProgress(int progress, Message message) {
+                            Log.d("yuto","progress:"+progress);
+                        }
+
+                        @Override
+                        public void onSuccess(Message message) {
+                            Log.d("yuto","onSuccess:"+((MediaMessageContent)message.getContent()).getLocalPath());
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            Log.d("yuto","onError:"+errorCode);
+                        }
+
+                        @Override
+                        public void onCancel(Message message) {
+
+                        }
+                    });
                 }
             }
 
@@ -578,7 +608,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("zzb", "onMessageClear, conversation is " + conversation.getConversationId() + ", timestamp is " + timestamp + ", senderId is " + senderId);
             }
         });
-        JetIM.getInstance().getConversationManager().addListener("main", new IConversationManager.IConversationListener() {
+        JIM.getInstance().getConversationManager().addListener("main", new IConversationManager.IConversationListener() {
             @Override
             public void onConversationInfoAdd(List<ConversationInfo> conversationInfoList) {
                 Log.i("lifei", "onConversationInfoAdd, count is " + conversationInfoList.size());
@@ -619,7 +649,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void createConversation() {
         Conversation conversation = new Conversation(Conversation.ConversationType.GROUP, "test14");
-        JetIM.getInstance().getConversationManager().createConversationInfo(conversation, new IConversationManager.ICreateConversationInfoCallback() {
+        JIM.getInstance().getConversationManager().createConversationInfo(conversation, new IConversationManager.ICreateConversationInfoCallback() {
             @Override
             public void onSuccess(ConversationInfo conversationInfo) {
                 Toast.makeText(getApplicationContext(), "createConversationInfo success", Toast.LENGTH_SHORT).show();
@@ -669,7 +699,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onError(Message message, int errorCode) {
                 Log.i("TAG", "send message error, code is " + errorCode);
-                Message mm = JetIM.getInstance().getMessageManager().resendMessage(message, new IMessageManager.ISendMessageCallback() {
+                Message mm = JIM.getInstance().getMessageManager().resendMessage(message, new IMessageManager.ISendMessageCallback() {
                     @Override
                     public void onSuccess(Message message) {
                         Log.i("TAG", "send message success");
@@ -683,7 +713,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("TAG", "resend ");
             }
         };
-        Message m = JetIM.getInstance().getMessageManager().sendMessage(t, c, callback);
+        Message m = JIM.getInstance().getMessageManager().sendMessage(t, c, callback);
         Log.i("TAG", "after send, clientMsgNo is " + m.getClientMsgNo());
 //        Thread.sleep(500);
 //        JetIM.getInstance().getMessageManager().sendMessage(i, c, callback);
@@ -727,7 +757,7 @@ public class MainActivity extends AppCompatActivity {
         VoiceMessage voice = new VoiceMessage();
         voice.setLocalPath(filePath);
         voice.setDuration(15);
-        Message m = JetIM.getInstance().getMessageManager().sendMediaMessage(image, c, new IMessageManager.ISendMediaMessageCallback() {
+        Message m = JIM.getInstance().getMessageManager().sendMediaMessage(image, c, new IMessageManager.ISendMediaMessageCallback() {
             @Override
             public void onProgress(int progress, Message message) {
                 Log.i("sendMediaMessage", "onProgress, clientMsgNo is " + message.getClientMsgNo() + ", progress is " + progress);

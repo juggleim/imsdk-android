@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'com.jet.im.push.oppo'
+    namespace 'com.juggle.im.push.oppo'
     compileSdk 33
 
     defaultConfig {
@@ -32,7 +32,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
-    implementation project(path: ':JetIM')
+    implementation project(path: ':JuggleIM')
     implementation project(':OPPOPlugin_sdk')
     //以下依赖都需要添加
     implementation 'com.google.code.gson:gson:2.10.1'
