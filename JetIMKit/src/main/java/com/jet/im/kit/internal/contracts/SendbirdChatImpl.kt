@@ -41,8 +41,7 @@ internal class SendbirdChatImpl : SendbirdChatContract {
         SendbirdChat.removeConnectionHandler(identifier)
 
     override fun init(context: Context, params: InitParams, handler: InitResultHandler) {
-        JetIM.getInstance().init(context, "appkey")
-        SendbirdChat.init(params, handler)
+//        SendbirdChat.init(params, handler)
     }
 
     private var mUser: User? = null;

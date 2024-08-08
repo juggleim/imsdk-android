@@ -10,8 +10,8 @@
     <string name="text_title_uikit_sample_app">UIKit sample app</string>
 
     <string name="text_version_info">UI Kit v%1$s &#160;&#160;&#160;&#160; SDK v%2$s</string>
-    <string name="text_hint_application_id">App ID</string>
-    <string name="text_hint_user_id">User ID</string>
+    <string name="text_hint_code">Verification Code</string>
+    <string name="text_hint_phone">Phone Number</string>
     <string name="text_hint_nickname">Nickname</string>
     <string name="text_sign_in">SIGN IN</string>
     <string name="text_sign_out">SIGN OUT</string>
@@ -34,7 +34,7 @@
 
     <string name="text_use_feed_channel_only">Use feed channel only</string>
     <string name="text_home">Home</string>
-    <string name="text_save">Save</string>
+    <string name="text_send">Send</string>
     <string name="text_group_channel">Group channel</string>
     <string name="text_open_channel">Open channel</string>
     <string name="text_ai_chatbot">Talk to an AI Chatbot</string>

@@ -74,6 +74,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SendbirdUIKit {
     private static volatile SendbirdUIKitAdapter adapter;
     public static volatile String token;
+
+    public static volatile String authorization;
     /**
      * UIKit log level. It depends on android Log level.
      */

@@ -7,6 +7,7 @@ import androidx.multidex.MultiDexApplication
 import com.example.demo.common.consts.InitState
 import com.example.demo.common.consts.StringSet
 import com.example.demo.common.preferences.PreferenceUtils
+import com.example.demo.utils.SSLHelper
 import com.jet.im.JetIM
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.adapter.SendbirdUIKitAdapter
@@ -19,6 +20,10 @@ import com.jet.im.kit.model.configurations.UIKitConfig
 import com.sendbird.android.exception.SendbirdException
 import com.sendbird.android.handler.InitResultHandler
 import com.sendbird.android.params.OpenChannelCreateParams
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLSession
+
 
 private const val APP_ID = "FEA2129A-EA73-4EB9-9E0B-EC738E7EB768"
 internal const val enableAiChatBotSample = false
@@ -49,19 +54,20 @@ class BaseApplication : MultiDexApplication() {
                     override fun getProfileUrl(): String = PreferenceUtils.profileUrl
                 }
 
-                override fun getInitResultHandler(): InitResultHandler = object : InitResultHandler {
-                    override fun onMigrationStarted() {
-                        initState.value = InitState.MIGRATING
-                    }
+                override fun getInitResultHandler(): InitResultHandler =
+                    object : InitResultHandler {
+                        override fun onMigrationStarted() {
+                            initState.value = InitState.MIGRATING
+                        }
 
-                    override fun onInitFailed(e: SendbirdException) {
-                        initState.value = InitState.FAILED
-                    }
+                        override fun onInitFailed(e: SendbirdException) {
+                            initState.value = InitState.FAILED
+                        }
 
-                    override fun onInitSucceed() {
-                        initState.value = InitState.SUCCEED
+                        override fun onInitSucceed() {
+                            initState.value = InitState.SUCCEED
+                        }
                     }
-                }
             }, context)
 
             // set theme mode
@@ -89,7 +95,8 @@ class BaseApplication : MultiDexApplication() {
             // set whether to use voice message
             UIKitConfig.groupChannelConfig.enableVoiceMessage = true
             // set typing indicator types
-            UIKitConfig.groupChannelConfig.typingIndicatorTypes = setOf(TypingIndicatorType.BUBBLE, TypingIndicatorType.TEXT)
+            UIKitConfig.groupChannelConfig.typingIndicatorTypes =
+                setOf(TypingIndicatorType.BUBBLE, TypingIndicatorType.TEXT)
             // set whether to use feedback
             UIKitConfig.groupChannelConfig.enableFeedback = true
             // set custom params
@@ -107,11 +114,18 @@ class BaseApplication : MultiDexApplication() {
         PreferenceUtils.init(applicationContext)
 
         // initialize SendbirdUIKit
-        initUIKit(this)
         val navi = ArrayList<String>()
-        navi.add("https://nav.gxjipei.com")
+        navi.add("https://nav.juggleim.com")
         JetIM.getInstance().setServer(navi)
+        initUIKit(this)
+        JetIM.getInstance().init(this, "nsw3sue72begyv7y")
         // setup uikit configurations
+        HttpsURLConnection.setDefaultSSLSocketFactory(SSLHelper.getTrustAllSSLSocketFactory())
+        HttpsURLConnection.setDefaultHostnameVerifier(object :HostnameVerifier{
+            override fun verify(hostname: String?, session: SSLSession?): Boolean {
+                return true
+            }
+        })
         setupConfigurations()
     }
 }
