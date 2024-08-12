@@ -8,6 +8,7 @@ import com.example.demo.common.consts.InitState
 import com.example.demo.common.consts.StringSet
 import com.example.demo.common.preferences.PreferenceUtils
 import com.example.demo.utils.SSLHelper
+import com.example.demo.utils.ToastUtils
 import com.jet.im.JetIM
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.adapter.SendbirdUIKitAdapter
@@ -111,8 +112,8 @@ class BaseApplication : MultiDexApplication() {
 
     override fun onCreate() {
         super.onCreate()
+        ToastUtils.init(applicationContext)
         PreferenceUtils.init(applicationContext)
-
         // initialize SendbirdUIKit
         val navi = ArrayList<String>()
         navi.add("https://nav.juggleim.com")

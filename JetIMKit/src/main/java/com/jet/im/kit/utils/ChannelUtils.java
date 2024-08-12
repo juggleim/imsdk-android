@@ -80,10 +80,10 @@ public class ChannelUtils {
     public static String makeTitleText(@NonNull Context context, @NonNull ConversationInfo channel) {
         if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.PRIVATE)) {
             UserInfo info = JetIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
-            return android.text.TextUtils.isEmpty(info.getUserName())?info.getUserId():info.getUserName();
+            return info == null ? channel.getConversation().getConversationId() : android.text.TextUtils.isEmpty(info.getUserName()) ? info.getUserId() : info.getUserName();
         } else if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.GROUP)) {
             GroupInfo info = JetIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
-            return android.text.TextUtils.isEmpty(info.getGroupName())?info.getGroupId():info.getGroupName();
+            return info == null ? channel.getConversation().getConversationId() : android.text.TextUtils.isEmpty(info.getGroupName()) ? info.getGroupId() : info.getGroupName();
         } else {
             return channel.getConversation().getConversationId();
         }
@@ -132,10 +132,14 @@ public class ChannelUtils {
     public static void loadChannelCover(@NonNull ChannelCoverView coverView, @NonNull ConversationInfo channel) {
         if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.PRIVATE)) {
             UserInfo info = JetIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
-            coverView.loadImage(info.getPortrait());
+            if (info != null) {
+                coverView.loadImage(info.getPortrait());
+            }
         } else if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.GROUP)) {
             GroupInfo info = JetIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
-            coverView.loadImage(info.getPortrait());
+            if (info != null) {
+                coverView.loadImage(info.getPortrait());
+            }
         } else {
             //todo 头像
         }
@@ -186,10 +190,12 @@ public class ChannelUtils {
     public static boolean isChannelPushOff(@NonNull GroupChannel channel) {
         return channel.getMyPushTriggerOption() == GroupChannel.PushTriggerOption.OFF;
     }
+
     public static boolean isChannelPushOff(@NonNull ConversationInfo channel) {
         //todo 关闭推送
         return false;
     }
+
     @NonNull
     public static CharSequence makeMemberCountText(int memberCount) {
         String text = String.valueOf(memberCount);

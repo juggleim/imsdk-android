@@ -8,8 +8,8 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven { url "https://repo.sendbird.com/public/maven" }
         maven { url "https://jitpack.io" }
+        maven { url "https://repo.sendbird.com/public/maven" }
         maven {url 'https://developer.hihonor.com/repo'}
         maven { url 'https://developer.huawei.com/repo/' }
         google()

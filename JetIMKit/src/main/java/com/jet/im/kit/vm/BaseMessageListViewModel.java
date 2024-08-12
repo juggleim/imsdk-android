@@ -272,6 +272,10 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
         connect((e) -> {
             if (e == null) {
                 ConversationInfo info = getChannel(conversation);
+                if(info==null){
+                    info=new ConversationInfo();
+                    info.setConversation(conversation);
+                }
                 this.channel = info;
                 if (channel == null) {
                     handler.onAuthenticationFailed();

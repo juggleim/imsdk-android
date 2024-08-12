@@ -8,12 +8,8 @@ import com.jet.im.interfaces.IMessageManager
 import com.jet.im.kit.SendbirdUIKit
 import com.sendbird.android.AppInfo
 import com.sendbird.android.ConnectionState
-import com.sendbird.android.SendbirdChat
-import com.sendbird.android.exception.SendbirdException
 import com.sendbird.android.handler.AuthenticationHandler
-import com.sendbird.android.handler.BaseChannelHandler
 import com.sendbird.android.handler.CompletionHandler
-import com.sendbird.android.handler.ConnectHandler
 import com.sendbird.android.handler.ConnectionHandler
 import com.sendbird.android.handler.InitResultHandler
 import com.sendbird.android.handler.UIKitConfigurationHandler
@@ -28,24 +24,21 @@ internal class SendbirdChatImpl : SendbirdChatContract {
         JetIM.getInstance().messageManager.addListener(identifier, handler)
     }
 
-    override fun addConnectionHandler(identifier: String, handler: ConnectionHandler) {
-        SendbirdChat.addConnectionHandler(identifier, handler)
-    }
-
     override fun removeChannelHandler(identifier: String) {
         JetIM.getInstance().messageManager.removeListener(identifier)
     }
 
-
-    override fun removeConnectionHandler(identifier: String): ConnectionHandler? =
-        SendbirdChat.removeConnectionHandler(identifier)
 
     override fun init(context: Context, params: InitParams, handler: InitResultHandler) {
 //        SendbirdChat.init(params, handler)
     }
 
     private var mUser: User? = null;
-    override fun connect(userId: String, accessToken: String?, handler: com.jet.im.kit.interfaces.ConnectHandler?) {
+    override fun connect(
+        userId: String,
+        accessToken: String?,
+        handler: com.jet.im.kit.interfaces.ConnectHandler?
+    ) {
         val listener = object : IConnectionStatusListener {
             override fun onStatusChange(
                 status: JetIMConst.ConnectionStatus?,
@@ -53,10 +46,10 @@ internal class SendbirdChatImpl : SendbirdChatContract {
                 extra: String
             ) {
                 if (status == JetIMConst.ConnectionStatus.CONNECTED) {
-                    handler?.onConnected( null);
+                    handler?.onConnected(null);
                     JetIM.getInstance().connectionManager.removeConnectionStatusListener("kit")
                 } else if (status == JetIMConst.ConnectionStatus.FAILURE) {
-                    handler?.onConnected( RuntimeException());
+                    handler?.onConnected(RuntimeException());
                     JetIM.getInstance().connectionManager.removeConnectionStatusListener("kit")
                 }
             }
@@ -74,27 +67,19 @@ internal class SendbirdChatImpl : SendbirdChatContract {
     }
 
     override fun updateCurrentUserInfo(params: UserUpdateParams, handler: CompletionHandler?) {
-        SendbirdChat.updateCurrentUserInfo(params, handler)
     }
 
     override fun addExtension(key: String, version: String) {
-        SendbirdChat.addExtension(key, version)
     }
 
     override fun addSendbirdExtensions(
         extensions: List<SendbirdSdkInfo>,
         customData: Map<String, String>?
     ) {
-        SendbirdChat.addSendbirdExtensions(extensions, customData)
     }
 
-    override fun getAppInfo(): AppInfo? = SendbirdChat.appInfo
 
-    override fun getConnectionState(): ConnectionState = SendbirdChat.connectionState
 
-    override fun getUIKitConfiguration(handler: UIKitConfigurationHandler?) {
-        SendbirdChat.getUIKitConfiguration(handler)
-    }
 
     override fun authenticateFeed(
         userId: String,

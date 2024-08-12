@@ -49,42 +49,6 @@ internal class UIKitConfigRepository constructor(
         preferences.putString(prefKeyConfigurations, config)
     }
 
-    @Synchronized
-    @Throws(SendbirdException::class)
-    fun requestConfigurationsBlocking(
-        sendbirdChatContract: SendbirdChatContract,
-        uikitConfigInfo: UIKitConfigInfo
-    ): UIKitConfigurations {
-        val shouldInitUIKitConfig = isFirstRequestConfig.getAndSet(false)
-        if (uikitConfigInfo.lastUpdatedAt <= lastUpdatedAt) return UIKitConfig.uikitConfig
-        val lock = CountDownLatch(1)
-        val config = AtomicReference<String>()
-        val error = AtomicReference<SendbirdException>()
-        sendbirdChatContract.getUIKitConfiguration { uikitConfiguration, e ->
-            try {
-                if (e != null) {
-                    error.set(e)
-                }
-                if (uikitConfiguration != null) {
-                    config.set(uikitConfiguration.jsonPayload)
-                }
-            } finally {
-                lock.countDown()
-            }
-        }
-        lock.await()
-        return if (error.get() != null) {
-            throw error.get()
-        } else {
-            val configJsonString = config.get()
-            val configurations = Configurations.from(configJsonString)
-            saveToCache(configJsonString)
-            if (shouldInitUIKitConfig) UIKitConfig.uikitConfig.merge(configurations.uikitConfig)
-            this@UIKitConfigRepository.lastUpdatedAt = configurations.lastUpdatedAt
-            UIKitConfig.uikitConfig
-        }
-    }
-
     fun clearAll() {
         preferences.clearAll()
     }

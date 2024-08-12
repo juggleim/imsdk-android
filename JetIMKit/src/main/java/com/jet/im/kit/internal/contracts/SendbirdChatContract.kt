@@ -15,9 +15,7 @@ import com.sendbird.android.params.UserUpdateParams
 
 internal interface SendbirdChatContract {
     fun addChannelHandler(identifier: String, handler: IMessageManager.IMessageListener)
-    fun addConnectionHandler(identifier: String, handler: ConnectionHandler)
     fun removeChannelHandler(identifier: String)
-    fun removeConnectionHandler(identifier: String): ConnectionHandler?
     fun init(context: Context, params: InitParams, handler: InitResultHandler)
     fun connect(
         userId: String,
@@ -32,10 +30,6 @@ internal interface SendbirdChatContract {
         extensions: List<SendbirdSdkInfo>,
         customData: Map<String, String>? = null
     )
-
-    fun getAppInfo(): AppInfo?
-    fun getConnectionState(): ConnectionState
-    fun getUIKitConfiguration(handler: UIKitConfigurationHandler?)
 
     fun authenticateFeed(
         userId: String,

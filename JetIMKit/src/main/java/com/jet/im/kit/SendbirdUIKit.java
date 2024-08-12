@@ -74,6 +74,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SendbirdUIKit {
     private static volatile SendbirdUIKitAdapter adapter;
     public static volatile String token;
+    public static volatile String userId;
 
     public static volatile String authorization;
     /**
@@ -587,23 +588,6 @@ public class SendbirdUIKit {
                     }
 
                     Logger.dev("++ user nickname = %s, profileUrl = %s", user.getNickname(), user.getProfileUrl());
-
-                    final AppInfo appInfo = sendbirdChat.getAppInfo();
-                    if (appInfo != null) {
-                        if (appInfo.getUseReaction()
-                                && appInfo.needUpdateEmoji(EmojiManager.getEmojiHash())
-                                && connectType == ConnectType.CONNECT) {
-                            updateEmojiList();
-                        }
-
-                        if (SendbirdUIKit.uikitConfigRepo != null) {
-                            try {
-                                SendbirdUIKit.uikitConfigRepo.requestConfigurationsBlocking(sendbirdChat, appInfo.getUiKitConfigInfo());
-                            } catch (Exception e) {
-                                Logger.w(e);
-                            }
-                        }
-                    }
                 }
 
                 return new Pair<>(user, error);

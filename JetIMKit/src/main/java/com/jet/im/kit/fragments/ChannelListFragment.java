@@ -164,7 +164,6 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
 
     private void startChannelActivity(@NonNull ConversationInfo channel) {
         if (isFragmentAlive()) {
-            //todo 跳转消息页面
             startActivity(ChannelActivity.newIntent(requireContext(), channel.getConversation().getConversationType().getValue(), channel.getConversation().getConversationId()));
         }
     }
@@ -605,5 +604,11 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
             fragment.query = query;
             return fragment;
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getViewModel().loadInitial();
     }
 }

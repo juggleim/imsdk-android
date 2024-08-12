@@ -341,12 +341,12 @@ class SampleSettingsFragment : Fragment() {
                 binding.scDisturbSwitch.thumbTintList = AppCompatResources.getColorStateList(
                     requireContext(), switchThumbTint
                 )
-                getDoNotDisturb(DoNotDisturbHandler { b: Boolean, _: Int, _: Int, _: Int, _: Int, _: String?, _: SendbirdException? ->
-                    PreferenceUtils.doNotDisturb = b
-                    if (isActive) {
-                        binding.scDisturbSwitch.isChecked = PreferenceUtils.doNotDisturb
-                    }
-                })
+//                getDoNotDisturb(DoNotDisturbHandler { b: Boolean, _: Int, _: Int, _: Int, _: Int, _: String?, _: SendbirdException? ->
+//                    PreferenceUtils.doNotDisturb = b
+//                    if (isActive) {
+//                        binding.scDisturbSwitch.isChecked = PreferenceUtils.doNotDisturb
+//                    }
+//                })
                 binding.scDisturbSwitch.setOnClickListener {
                     Logger.d("++ disturb clicked")
                     updateDoNotDisturb()

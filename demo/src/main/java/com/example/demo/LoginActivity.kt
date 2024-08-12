@@ -12,13 +12,10 @@ import com.example.demo.bean.LoginRequest
 import com.example.demo.bean.LoginResult
 import com.example.demo.common.widgets.WaitingDialog
 import com.example.demo.databinding.ActivityLoginBinding
+import com.example.demo.http.CustomCallback
 import com.example.demo.http.ServiceManager
 import com.jet.im.kit.SendbirdUIKit
-import com.jet.im.kit.utils.TextUtils
 import com.sendbird.android.SendbirdChat.sdkVersion
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 /**
  * Displays a login screen.
@@ -59,23 +56,11 @@ open class LoginActivity : AppCompatActivity() {
     }
 
     open fun onSendCode(phone: String) {
+        Toast.makeText(this@LoginActivity, "success", Toast.LENGTH_SHORT).show()
         val verificationCode = ServiceManager.loginService().getVerificationCode(CodeRequest(phone))
-        verificationCode.enqueue(object : Callback<HttpResult<Void>> {
-            override fun onResponse(
-                call: Call<HttpResult<Void>>,
-                response: Response<HttpResult<Void>>
-            ) {
-                if (response.code() == 200 && (response.body()?.code ?: -1) == 0) {
-                    Toast.makeText(this@LoginActivity, "success", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@LoginActivity, "fail", Toast.LENGTH_SHORT).show()
-                }
-
-
-            }
-
-            override fun onFailure(call: Call<HttpResult<Void>>, t: Throwable) {
-                Toast.makeText(this@LoginActivity, "fail", Toast.LENGTH_SHORT).show()
+        verificationCode.enqueue(object : CustomCallback<HttpResult<Void>, Void>() {
+            override fun onSuccess(k: Void?) {
+                Toast.makeText(this@LoginActivity, "success", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -83,38 +68,24 @@ open class LoginActivity : AppCompatActivity() {
     open fun onSignUp(phone: String, code: String) {
         WaitingDialog.show(this)
         val verificationCode = ServiceManager.loginService().login(LoginRequest(phone, code))
-        verificationCode.enqueue(object : Callback<HttpResult<LoginResult>> {
-            override fun onResponse(
-                call: Call<HttpResult<LoginResult>>,
-                response: Response<HttpResult<LoginResult>>
-            ) {
+        verificationCode.enqueue(object : CustomCallback<HttpResult<LoginResult>, LoginResult>() {
+            override fun onSuccess(k: LoginResult?) {
                 WaitingDialog.dismiss()
-                if (response.code() == 200 && (response.body()?.code
-                        ?: -1) == 0 && TextUtils.isNotEmpty(
-                        response.body()?.data?.im_token
-                    )
-                ) {
-                    SendbirdUIKit.token = response.body()?.data?.im_token
-                    SendbirdUIKit.authorization= response.body()?.data?.authorization ?:""
-                    startActivity(
-                        Intent(
-                            this@LoginActivity,
-                            GroupChannelMainActivity::class.java
-                        )
-                    )
-                    finish()
-                } else {
-                    Toast.makeText(
+                SendbirdUIKit.token = k?.im_token
+                SendbirdUIKit.authorization = k?.authorization ?: ""
+                SendbirdUIKit.userId = k?.user_id ?: ""
+                startActivity(
+                    Intent(
                         this@LoginActivity,
-                        response.body()?.msg ?: "fail",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
+                        GroupChannelMainActivity::class.java
+                    )
+                )
+                finish()
             }
 
-            override fun onFailure(call: Call<HttpResult<LoginResult>>, t: Throwable) {
-                Toast.makeText(this@LoginActivity, "fail", Toast.LENGTH_SHORT).show()
+            override fun onError(t: Throwable?) {
+                WaitingDialog.dismiss()
+                super.onError(t)
             }
         })
 

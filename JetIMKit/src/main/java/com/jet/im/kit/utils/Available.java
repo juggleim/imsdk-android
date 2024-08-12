@@ -10,8 +10,7 @@ import com.jet.im.kit.consts.StringSet;
 @SuppressWarnings("unused")
 public class Available {
     private static boolean isAvailable(@NonNull String key) {
-        final AppInfo appInfo = SendbirdChat.getAppInfo();
-        return appInfo != null && appInfo.getAttributesInUse().contains(key);
+        return false;
     }
 
     /**

@@ -156,7 +156,6 @@ abstract public class BaseMessageListFragment<
     public void onDestroy() {
         Logger.i(">> BaseMessageListFragment::onDestroy()");
         super.onDestroy();
-        SendbirdChat.setAutoBackgroundDetection(true);
     }
 
     @Override

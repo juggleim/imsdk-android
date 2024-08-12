@@ -180,28 +180,6 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                 ChannelViewModel.this.onMessagesUpdated( channel, message);
             }
         });
-
-        this.sendbirdChatContract.addConnectionHandler(CONNECTION_HANDLER_ID, new ConnectionHandler() {
-            @Override
-            public void onDisconnected(@NonNull String s) {
-            }
-
-            @Override
-            public void onConnected(@NonNull String s) {
-            }
-
-            @Override
-            public void onReconnectStarted() {
-            }
-
-            @Override
-            public void onReconnectSucceeded() {
-            }
-
-            @Override
-            public void onReconnectFailed() {
-            }
-        });
     }
 
     /**
@@ -478,7 +456,6 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         super.onCleared();
         Logger.dev("-- onCleared ChannelViewModel");
         this.sendbirdChatContract.removeChannelHandler(ID_CHANNEL_EVENT_HANDLER);
-        this.sendbirdChatContract.removeConnectionHandler(CONNECTION_HANDLER_ID);
         disposeMessageCollection();
     }
 

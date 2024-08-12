@@ -14,17 +14,13 @@ import com.example.demo.common.extensions.isUsingDarkTheme
 import com.example.demo.common.preferences.PreferenceUtils
 import com.example.demo.common.widgets.CustomTabView
 import com.example.demo.databinding.ActivityGroupChannelMainBinding
+import com.example.demo.friends.FriendListFragment
+import com.example.demo.group.GroupListFragment
 import com.google.android.material.tabs.TabLayoutMediator
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.activities.ChannelActivity
 import com.jet.im.kit.providers.FragmentProviders
 import com.sendbird.android.SendbirdChat
-import com.sendbird.android.exception.SendbirdException
-import com.sendbird.android.handler.UnreadMessageCountHandler
-import com.sendbird.android.handler.UserEventHandler
-import com.sendbird.android.params.GroupChannelTotalUnreadMessageCountParams
-import com.sendbird.android.user.UnreadMessageCount
-import com.sendbird.android.user.User
 
 class GroupChannelMainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGroupChannelMainBinding
@@ -49,7 +45,20 @@ class GroupChannelMainActivity : AppCompatActivity() {
                         }
                         unreadCountTab
                     }
-
+                    1->{
+                        CustomTabView(this@GroupChannelMainActivity).apply {
+                            setBadgeVisibility(View.GONE)
+                            setTitle(getString(R.string.text_tab_friends))
+                            setIcon(R.drawable.icon_chat_filled)
+                        }
+                    }
+                    2->{
+                        CustomTabView(this@GroupChannelMainActivity).apply {
+                            setBadgeVisibility(View.GONE)
+                            setTitle(getString(R.string.text_tab_friends))
+                            setIcon(R.drawable.icon_chat_filled)
+                        }
+                    }
                     else -> {
                         CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
@@ -94,7 +103,6 @@ class GroupChannelMainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        SendbirdChat.removeUserEventHandler(USER_EVENT_HANDLER_KEY)
     }
 
     private fun redirectChannelIfNeeded(intent: Intent?) {
@@ -134,15 +142,22 @@ class GroupChannelMainActivity : AppCompatActivity() {
     private class MainAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
         override fun getItemCount(): Int = PAGE_SIZE
         override fun createFragment(position: Int): Fragment {
-            return if (position == 0) {
-                FragmentProviders.channelList.provide(Bundle())
-            } else {
-                SampleSettingsFragment()
+            var fragment: Fragment
+            if (position == 0) {
+                fragment = FragmentProviders.channelList.provide(Bundle())
+            } else if (position == 1) {
+                fragment = FriendListFragment()
+            } else if (position == 2) {
+                fragment = GroupListFragment()
             }
+            else {
+                fragment = SampleSettingsFragment()
+            }
+            return fragment
         }
 
         companion object {
-            private const val PAGE_SIZE = 2
+            private const val PAGE_SIZE = 4
         }
     }
 
