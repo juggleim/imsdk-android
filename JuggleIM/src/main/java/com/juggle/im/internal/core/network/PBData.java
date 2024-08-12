@@ -23,6 +23,7 @@ import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
+import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.MergeMessage;
 import com.juggle.im.push.PushChannel;
@@ -570,7 +571,7 @@ class PBData {
         return m.toByteArray();
     }
 
-    public byte[] getUploadFileCred(String userId, UploadFileType fileType, String ext, Integer index) {
+    byte[] getUploadFileCred(String userId, UploadFileType fileType, String ext, Integer index) {
         Appmessages.QryFileCredReq req = Appmessages.QryFileCredReq.newBuilder()
                 .setFileTypeValue(fileType.getValue())
                 .setExt(ext == null ? "" : ext)
@@ -582,6 +583,42 @@ class PBData {
                 .setData(req.toByteString())
                 .build();
 
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] setGlobalMute(boolean isMute, String userId, String timezone, List<TimePeriod> periods, int index) {
+        Appmessages.UserUndisturb.Builder builder = Appmessages.UserUndisturb.newBuilder()
+                .setSwitch(isMute)
+                .setTimezone(timezone);
+        for (TimePeriod period : periods) {
+            Appmessages.UserUndisturbItem item = Appmessages.UserUndisturbItem.newBuilder()
+                    .setStart(period.getStartTime())
+                    .setEnd(period.getEndTime())
+                    .build();
+            builder.addRules(item);
+        }
+        Appmessages.UserUndisturb req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(SET_USER_UNDISTURB)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getGlobalMute(String userId, int index) {
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(GET_USER_UNDISTURB)
+                .setTargetId(userId)
+                .build();
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
@@ -681,6 +718,9 @@ class PBData {
                             break;
                         case PBRcvObj.PBRcvType.addConversationAck:
                             obj = addConversationAckWithImWebsocketMsg(msg);
+                            break;
+                        case PBRcvObj.PBRcvType.globalMuteAck:
+                            obj = globalMuteAckWithImWebsocketMsg(msg);
                             break;
                         default:
                             break;
@@ -854,6 +894,25 @@ class PBData {
         PBRcvObj.ConversationInfoAck a = new PBRcvObj.ConversationInfoAck(msg.getQryAckMsgBody());
         a.conversationInfo = conversationInfoWithPBConversation(resp);
         obj.mConversationInfoAck = a;
+        return obj;
+    }
+
+    private PBRcvObj globalMuteAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.globalMuteAck);
+        Appmessages.UserUndisturb resp = Appmessages.UserUndisturb.parseFrom(msg.getQryAckMsgBody().getData());
+        PBRcvObj.GlobalMuteAck a = new PBRcvObj.GlobalMuteAck(msg.getQryAckMsgBody());
+        a.isMute = resp.getSwitch();
+        a.timezone = resp.getTimezone();
+        List<TimePeriod> periods = new ArrayList<>();
+        for (Appmessages.UserUndisturbItem item : resp.getRulesList()) {
+            TimePeriod p = new TimePeriod();
+            p.setStartTime(item.getStart());
+            p.setEndTime(item.getEnd());
+            periods.add(p);
+        }
+        a.periods = periods;
+        obj.mGlobalMuteAck = a;
         return obj;
     }
 
@@ -1268,6 +1327,8 @@ class PBData {
     private static final String DELETE_MSG = "del_msg";
     private static final String QRY_FILE_CRED = "file_cred";
     private static final String ADD_CONVERSATION = "add_conver";
+    private static final String SET_USER_UNDISTURB = "set_user_undisturb";
+    private static final String GET_USER_UNDISTURB = "get_user_undisturb";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -1297,6 +1358,8 @@ class PBData {
             put(DELETE_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_FILE_CRED, PBRcvObj.PBRcvType.qryFileCredAck);
             put(ADD_CONVERSATION, PBRcvObj.PBRcvType.addConversationAck);
+            put(SET_USER_UNDISTURB, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(GET_USER_UNDISTURB, PBRcvObj.PBRcvType.globalMuteAck);
         }
     };
 

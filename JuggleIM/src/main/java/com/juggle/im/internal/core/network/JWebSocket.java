@@ -16,6 +16,7 @@ import com.juggle.im.model.Conversation;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
+import com.juggle.im.model.TimePeriod;
 import com.juggle.im.push.PushChannel;
 
 import org.java_websocket.handshake.ServerHandshake;
@@ -291,6 +292,23 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     public void getUploadFileCred(String userId, UploadFileType fileType, String ext, QryUploadFileCredCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.getUploadFileCred(userId, fileType, ext, mCmdIndex++);
+        JLogger.i("WS-Send", "getUploadFileCred, file type is " + fileType);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void setGlobalMute(boolean isMute, String userId, String timezone, List<TimePeriod> periods, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.setGlobalMute(isMute, userId, timezone, periods, mCmdIndex++);
+        JLogger.i("WS-Send", "setGlobalMute, isMute is " + isMute);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getGlobalMute(String userId, GetGlobalMuteCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getGlobalMute(userId, mCmdIndex++);
+        JLogger.i("WS-Send", "getGlobalMute");
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }
@@ -455,6 +473,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.addConversationAck:
                 handleAddConversationAck(obj.mConversationInfoAck);
                 break;
+            case PBRcvObj.PBRcvType.globalMuteAck:
+                handleGlobalMuteAck(obj.mGlobalMuteAck);
+                break;
+
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
                 break;
@@ -714,6 +736,20 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.timestamp, ack.conversationInfo);
+            }
+        }
+    }
+
+    private void handleGlobalMuteAck(PBRcvObj.GlobalMuteAck ack) {
+        JLogger.i("WS-Receive", "handleGlobalMuteAck, code is " + ack.code);
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof GetGlobalMuteCallback) {
+            GetGlobalMuteCallback callback = (GetGlobalMuteCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.isMute, ack.timezone, ack.periods);
             }
         }
     }

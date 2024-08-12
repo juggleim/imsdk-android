@@ -8,6 +8,7 @@ import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.interfaces.IMessageUploadProvider;
 import com.juggle.im.internal.core.JIMCore;
+import com.juggle.im.internal.core.network.GetGlobalMuteCallback;
 import com.juggle.im.internal.core.network.JWebSocket;
 import com.juggle.im.internal.core.network.QryHisMsgCallback;
 import com.juggle.im.internal.core.network.QryReadDetailCallback;
@@ -40,6 +41,7 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
@@ -59,6 +61,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMessageListener {
@@ -1202,6 +1205,53 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         loopBroadcastMessage(content, conversations, 0, conversations.size(), callback);
     }
 
+    @Override
+    public void setMute(boolean isMute, List<TimePeriod> periods, ISimpleCallback callback) {
+        TimeZone timezone = TimeZone.getDefault();
+        String zoneName = timezone.getID();
+        if (zoneName == null) {
+            zoneName = "";
+        }
+        mCore.getWebSocket().setGlobalMute(isMute, mCore.getUserId(), zoneName, periods, new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                JLogger.i("MSG-Mute", "success");
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-Mute", "code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void getMuteStatus(IGetMuteStatusCallback callback) {
+        mCore.getWebSocket().getGlobalMute(mCore.getUserId(), new GetGlobalMuteCallback() {
+            @Override
+            public void onSuccess(boolean isMute, String timezone, List<TimePeriod> periods) {
+                JLogger.i("MSG-GetMute", "success");
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(isMute, timezone, periods));
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-GetMute", "code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
     private void loopBroadcastMessage(MessageContent content,
                                       List<Conversation> conversations,
                                       int processCount,
@@ -1244,6 +1294,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             mCore.getSendHandler().postDelayed(() -> loopBroadcastMessage(message.getContent(), conversations, processCount + 1, totalCount, callback), 50);
         }
     }
+
+
 
     @Override
     public void setMessageState(long clientMsgNo, Message.MessageState state) {

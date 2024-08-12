@@ -5,6 +5,7 @@ import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.upload.UploadOssType;
 import com.juggle.im.internal.model.upload.UploadPreSignCred;
 import com.juggle.im.internal.model.upload.UploadQiNiuCred;
+import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 
 import java.util.List;
@@ -106,6 +107,15 @@ class PBRcvObj {
         }
     }
 
+    static class GlobalMuteAck extends QryAck {
+        boolean isMute;
+        String timezone;
+        List<TimePeriod> periods;
+
+        GlobalMuteAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
 
     static class PublishMsgNtf {
         long syncTime;
@@ -135,6 +145,7 @@ class PBRcvObj {
         static final int conversationSetTopAck = 14;
         static final int qryFileCredAck = 15;
         static final int addConversationAck = 16;
+        static final int globalMuteAck = 17;
     }
 
     public int getRcvType() {
@@ -157,6 +168,7 @@ class PBRcvObj {
     TimestampQryAck mTimestampQryAck;
     QryFileCredAck mQryFileCredAck;
     ConversationInfoAck mConversationInfoAck;
+    GlobalMuteAck mGlobalMuteAck;
     private int mRcvType;
 }
 

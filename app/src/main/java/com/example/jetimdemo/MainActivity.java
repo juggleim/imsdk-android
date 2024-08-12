@@ -33,6 +33,7 @@ import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.SnapshotPackedVideoMessage;
@@ -78,13 +79,34 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            JIMConst.ConnectionStatus s = JIM.getInstance().getConnectionManager().getConnectionStatus();
-                            int i = 1;
-                            i = i+1;
+                            List<TimePeriod> list = new ArrayList<>();
+                            TimePeriod p1 = new TimePeriod();
+                            p1.setStartTime("11:22");
+                            p1.setEndTime("23:24");
+                            list.add(p1);
+//                            JIM.getInstance().getMessageManager().setMute(true, list, new IMessageManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    Log.i("lifei", "set mute success");
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//                                    Log.i("lifei", "set mute error, code is " + errorCode);
+//                                }
+//                            });
+                            JIM.getInstance().getMessageManager().getMuteStatus(new IMessageManager.IGetMuteStatusCallback() {
+                                @Override
+                                public void onSuccess(boolean isMute, String timezone, List<TimePeriod> periods) {
+                                    int i = 1;
+                                }
 
-                            Conversation conversation = new Conversation(Conversation.ConversationType.GROUP, "groupId1");
+                                @Override
+                                public void onError(int errorCode) {
+                                    int i = 1;
+                                }
+                            });
 
-                            ConversationInfo info = JIM.getInstance().getConversationManager().getConversationInfo(conversation);
 //                            ImageMessage image = new ImageMessage();
 //                            image.setLocalPath("asdfasdgasdgasdf");
 //                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "userid1");
@@ -526,7 +548,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JIM.getInstance().getConnectionManager().connect(TOKEN2);
+        JIM.getInstance().getConnectionManager().connect("ChBuc3czc3VlNzJiZWd5djd5GiD7zSMmwtS0R0B-TiJYOa5KRIfR5mmGLKgA2x10PYuNiA==");
         JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {

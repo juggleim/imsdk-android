@@ -8,6 +8,7 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 
 import java.util.List;
@@ -90,6 +91,11 @@ public interface IMessageManager {
         void onComplete();
     }
 
+    interface IGetMuteStatusCallback {
+        void onSuccess(boolean isMute, String timezone, List<TimePeriod> periods);
+        void onError(int errorCode);
+    }
+
     Message sendMessage(MessageContent content,
                         Conversation conversation,
                         ISendMessageCallback callback);
@@ -165,7 +171,6 @@ public interface IMessageManager {
      *
      * @param messageId 媒体消息（FileMessage，SightMessage，GIFMessage, HQVoiceMessage等）。
      * @param callback  下载文件的回调。参考 {@link IDownloadMediaMessageCallback}。
-     * @since 5.0.0
      */
     void downloadMediaMessage(
             final String messageId, final IDownloadMediaMessageCallback callback);
@@ -228,6 +233,17 @@ public interface IMessageManager {
     void broadcastMessage(MessageContent content,
                           List<Conversation> conversations,
                           IBroadcastMessageCallback callback);
+
+    /**
+     * 设置消息全局免打扰。
+     *
+     * @param isMute 是否免打扰
+     * @param periods 免打扰的时间段，如果为空则视为全天免打扰
+     * @param callback  结果回调
+     */
+    void setMute(boolean isMute, List<TimePeriod> periods, ISimpleCallback callback);
+
+    void getMuteStatus(IGetMuteStatusCallback callback);
 
     void setMessageState(long clientMsgNo, Message.MessageState state);
 
