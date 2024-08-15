@@ -79,33 +79,8 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            List<TimePeriod> list = new ArrayList<>();
-                            TimePeriod p1 = new TimePeriod();
-                            p1.setStartTime("11:22");
-                            p1.setEndTime("23:24");
-                            list.add(p1);
-//                            JIM.getInstance().getMessageManager().setMute(true, list, new IMessageManager.ISimpleCallback() {
-//                                @Override
-//                                public void onSuccess() {
-//                                    Log.i("lifei", "set mute success");
-//                                }
-//
-//                                @Override
-//                                public void onError(int errorCode) {
-//                                    Log.i("lifei", "set mute error, code is " + errorCode);
-//                                }
-//                            });
-                            JIM.getInstance().getMessageManager().getMuteStatus(new IMessageManager.IGetMuteStatusCallback() {
-                                @Override
-                                public void onSuccess(boolean isMute, String timezone, List<TimePeriod> periods) {
-                                    int i = 1;
-                                }
-
-                                @Override
-                                public void onError(int errorCode) {
-                                    int i = 1;
-                                }
-                            });
+                            List<ConversationInfo> l = JIM.getInstance().getConversationManager().getConversationInfoList();
+                            int i = 1;
 
 //                            ImageMessage image = new ImageMessage();
 //                            image.setLocalPath("asdfasdgasdgasdf");
@@ -548,7 +523,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JIM.getInstance().getConnectionManager().connect("ChBuc3czc3VlNzJiZWd5djd5GiD7zSMmwtS0R0B-TiJYOa5KRIfR5mmGLKgA2x10PYuNiA==");
+        JIM.getInstance().getConnectionManager().connect("CgdrZWZ1a2V5GiCBXD5u5xlBP7E8VIMjeY4h1HifAdQl4lMFusL_TjhVVw==");
         JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {

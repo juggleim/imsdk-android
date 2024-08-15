@@ -1571,7 +1571,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 List<Conversation> deletedList = new ArrayList<>();
                 for (Conversation deleteConv : deleteConvMessage.getConversations()) {
                     //从消息表中获取指定会话的最新一条消息
-                    Message lastMessage = mCore.getDbManager().getLastMessage(deleteConv);
+                    ConcreteConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(deleteConv);
+                    if (conversationInfo == null) {
+                        continue;
+                    }
+                    Message lastMessage = conversationInfo.getLastMessage();
                     //当DeleteConvMessage的时间戳小于它指定的会话的最后一条消息的时间戳时，进行抛弃处理
                     if (lastMessage != null && message.getTimestamp() <= lastMessage.getTimestamp())
                         continue;
