@@ -30,7 +30,6 @@ import com.jet.im.kit.interfaces.OnInputModeChangedListener;
 import com.jet.im.kit.interfaces.OnInputTextChangedListener;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.interfaces.OnItemLongClickListener;
-import com.jet.im.kit.internal.extensions.MessageExtensionsKt;
 import com.jet.im.kit.internal.model.VoicePlayerManager;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.DialogListItem;
@@ -64,7 +63,6 @@ import com.sendbird.android.message.Feedback;
 import com.sendbird.android.message.FeedbackRating;
 import com.sendbird.android.params.MessageListParams;
 import com.sendbird.android.params.UserMessageCreateParams;
-import com.sendbird.android.params.UserMessageUpdateParams;
 import com.sendbird.android.user.User;
 
 import java.util.List;
@@ -522,99 +520,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     private void onInputModeChanged(@NonNull MessageInputView.Mode before, @NonNull MessageInputView.Mode current) {
         final ConversationInfo channel = getViewModel().getChannel();
         final MessageInputComponent inputComponent = getModule().getMessageInputComponent();
+        if (channel == null) return;
+        inputComponent.notifyDataChanged(null, channel);
     }
-//todo 长按事件
-
-//    @NonNull
-//    @Override
-//    protected List<DialogListItem> makeMessageContextMenu(@NonNull Message message) {
-//        final List<DialogListItem> items = new ArrayList<>();
-//        final SendingStatus status = message.getSendingStatus();
-//        if (status == SendingStatus.PENDING) return items;
-//
-//        MessageType type = MessageViewHolderFactory.getMessageType(message);
-//        DialogListItem copy = new DialogListItem(R.string.sb_text_channel_anchor_copy, R.drawable.icon_copy);
-//        DialogListItem edit = new DialogListItem(R.string.sb_text_channel_anchor_edit, R.drawable.icon_edit);
-//        DialogListItem save = new DialogListItem(R.string.sb_text_channel_anchor_save, R.drawable.icon_download);
-//        DialogListItem delete = new DialogListItem(R.string.sb_text_channel_anchor_delete, R.drawable.icon_delete, false, MessageUtils.hasThread(message));
-//        int replyStringRes = channelConfig.getReplyType() == ReplyType.THREAD ? R.string.sb_text_channel_anchor_reply_in_thread : R.string.sb_text_channel_anchor_reply;
-//        int replyDrawableRes = channelConfig.getReplyType() == ReplyType.THREAD ? R.drawable.icon_thread : R.drawable.icon_reply;
-//        DialogListItem reply = new DialogListItem(replyStringRes, replyDrawableRes, false, MessageUtils.hasParentMessage(message));
-//        DialogListItem retry = new DialogListItem(R.string.sb_text_channel_anchor_retry, 0);
-//        DialogListItem deleteFailed = new DialogListItem(R.string.sb_text_channel_anchor_delete, 0);
-//
-//        DialogListItem[] actions = null;
-//        final ReplyType replyType = channelConfig.getReplyType();
-//        switch (type) {
-//            case VIEW_TYPE_USER_MESSAGE_ME:
-//                if (status == SendingStatus.SUCCEEDED) {
-//                    if (replyType == ReplyType.NONE) {
-//                        actions = new DialogListItem[]{copy, edit, delete};
-//                    } else {
-//                        actions = new DialogListItem[]{copy, edit, delete, reply};
-//                    }
-//                } else if (MessageUtils.isFailed(message)) {
-//                    actions = new DialogListItem[]{retry, deleteFailed};
-//                }
-//                break;
-//            case VIEW_TYPE_USER_MESSAGE_OTHER:
-//                if (replyType == ReplyType.NONE) {
-//                    actions = new DialogListItem[]{copy};
-//                } else {
-//                    actions = new DialogListItem[]{copy, reply};
-//                }
-//                break;
-//            case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
-//            case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
-//            case VIEW_TYPE_FILE_MESSAGE_ME:
-//                if (MessageUtils.isFailed(message)) {
-//                    actions = new DialogListItem[]{retry, deleteFailed};
-//                } else {
-//                    if (replyType == ReplyType.NONE) {
-//                        actions = new DialogListItem[]{delete, save};
-//                    } else {
-//                        actions = new DialogListItem[]{delete, save, reply};
-//                    }
-//                }
-//                break;
-//            case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
-//            case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
-//            case VIEW_TYPE_FILE_MESSAGE_OTHER:
-//                if (replyType == ReplyType.NONE) {
-//                    actions = new DialogListItem[]{save};
-//                } else {
-//                    actions = new DialogListItem[]{save, reply};
-//                }
-//                break;
-//            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_ME:
-//            case VIEW_TYPE_VOICE_MESSAGE_ME:
-//                if (MessageUtils.isFailed(message)) {
-//                    actions = new DialogListItem[]{retry, deleteFailed};
-//                } else {
-//                    if (replyType == ReplyType.NONE) {
-//                        actions = new DialogListItem[]{delete};
-//                    } else {
-//                        actions = new DialogListItem[]{delete, reply};
-//                    }
-//                }
-//                break;
-//            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER:
-//            case VIEW_TYPE_VOICE_MESSAGE_OTHER:
-//                if (replyType != ReplyType.NONE) {
-//                    actions = new DialogListItem[]{reply};
-//                }
-//                break;
-//            case VIEW_TYPE_UNKNOWN_MESSAGE_ME:
-//                actions = new DialogListItem[]{delete};
-//            default:
-//                break;
-//        }
-//
-//        if (actions != null) {
-//            items.addAll(Arrays.asList(actions));
-//        }
-//        return items;
-//    }
 
     @Override
     protected boolean onMessageContextMenuItemClicked(@NonNull Message message, @NonNull View view, int position, @NonNull DialogListItem item) {
@@ -754,14 +662,14 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         private ChannelFragment customFragment;
 
         public Builder(@NonNull int type, @NonNull String id) {
-            this(type,id, 0);
+            this(type, id, 0);
         }
 
-        public Builder(@NonNull int conversationType,@NonNull String conversationId, @NonNull SendbirdUIKit.ThemeMode themeMode) {
-            this(conversationType,conversationId, themeMode.getResId());
+        public Builder(@NonNull int conversationType, @NonNull String conversationId, @NonNull SendbirdUIKit.ThemeMode themeMode) {
+            this(conversationType, conversationId, themeMode.getResId());
         }
 
-        public Builder(@NonNull int conversationType,@NonNull String conversationId, @StyleRes int customThemeResId) {
+        public Builder(@NonNull int conversationType, @NonNull String conversationId, @StyleRes int customThemeResId) {
             this.bundle = new Bundle();
             if (customThemeResId != 0) {
                 this.bundle.putInt(StringSet.KEY_THEME_RES_ID, customThemeResId);
