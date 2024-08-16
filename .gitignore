@@ -14,6 +14,7 @@ JuggleIM/build
 /captures
 .externalNativeBuild
 .cxx
+.idea
 local.properties
 OPPOPlugin/sdk/build
 XMPlugin/sdk/build
