@@ -6,7 +6,7 @@ import org.java_websocket.handshake.ServerHandshake;
 import java.net.URI;
 import java.nio.ByteBuffer;
 
-class JWebSocketClient extends WebSocketClient {
+public class JWebSocketClient extends WebSocketClient {
     JWebSocketClient(URI serverUri, IWebSocketClientListener listener) {
         super(serverUri);
         mWebSocketClientListener = listener;
