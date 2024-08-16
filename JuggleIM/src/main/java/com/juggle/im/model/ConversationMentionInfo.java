@@ -57,7 +57,7 @@ public class ConversationMentionInfo {
     public String encodeToJson() {
         JSONObject jsonObject = new JSONObject();
         try {
-            if (mMentionMsgList != null && mMentionMsgList.size() > 0) {
+            if (mMentionMsgList != null && !mMentionMsgList.isEmpty()) {
                 JSONArray jsonMentionMsgs = new JSONArray();
                 for (MentionMsg mentionMsg : mMentionMsgList) {
                     JSONObject jsonMentionMsg = new JSONObject();
@@ -75,7 +75,7 @@ public class ConversationMentionInfo {
     }
 
     public ConversationMentionInfo(String json) {
-        if (json == null || json.length() == 0) {
+        if (json == null || json.isEmpty()) {
             return;
         }
         try {
