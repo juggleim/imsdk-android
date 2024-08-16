@@ -23,13 +23,13 @@ public class JetIMApp extends Application {
     public void onCreate() {
         super.onCreate();
         List<String> serverList = new ArrayList<>();
-        serverList.add("https://nav.routechat.im");
+        serverList.add("https://nav.juggleim.com");
         JIM.getInstance().setServer(serverList);
         JIM.InitConfig initConfig = new JIM.InitConfig.Builder()
                 .setPushConfig(new PushConfig.Builder().build())
                 .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build())
                 .build();
-        JIM.getInstance().init(this, "kefukey", initConfig);
+        JIM.getInstance().init(this, "nsw3sue72begyv7y", initConfig);
 //        try {
 //            TrustManager[] trustAllCerts = new TrustManager[]{
 //                    new X509TrustManager() {

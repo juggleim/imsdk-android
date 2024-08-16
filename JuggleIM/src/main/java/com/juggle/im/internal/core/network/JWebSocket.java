@@ -252,9 +252,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                                       long time,
                                       int count,
                                       JIMConst.PullDirection direction,
+                                      long lastReadIndex,
                                       QryHisMsgCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getMentionMessages(conversation, time, count, direction, mCmdIndex++);
+        byte[] bytes = mPbData.getMentionMessages(conversation, time, count, direction, lastReadIndex, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "getMentionMessageList, conversation is " + conversation + ", time is " + time + ", count is " + count + ", direction is " + direction);
         sendWhenOpen(bytes);

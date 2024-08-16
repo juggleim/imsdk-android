@@ -1153,7 +1153,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
             return;
         }
-        mCore.getWebSocket().getMentionMessageList(conversation, time, count, direction, new QryHisMsgCallback() {
+        ConcreteConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
+        mCore.getWebSocket().getMentionMessageList(conversation, time, count, direction, conversationInfo.getLastReadMessageIndex(), new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-GetMention", "success");

@@ -506,6 +506,7 @@ class PBData {
                               long timestamp,
                               int count,
                               JIMConst.PullDirection direction,
+                              long lastReadIndex,
                               int index) {
         int order = direction == JIMConst.PullDirection.OLDER ? 0 : 1;
         Appmessages.QryMentionMsgsReq req = Appmessages.QryMentionMsgsReq.newBuilder()
@@ -514,6 +515,7 @@ class PBData {
                 .setStartTime(timestamp)
                 .setCount(count)
                 .setOrder(order)
+                .setLatestReadIndex(lastReadIndex)
                 .build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)

@@ -79,8 +79,18 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            List<ConversationInfo> l = JIM.getInstance().getConversationManager().getConversationInfoList();
-                            int i = 1;
+                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "VV0jm1B59");
+                            JIM.getInstance().getMessageManager().getMentionMessageList(c, 100, 0, JIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesWithFinishCallback() {
+                                @Override
+                                public void onSuccess(List<Message> messages, boolean isFinished) {
+                                    int i = 0;
+                                }
+
+                                @Override
+                                public void onError(int errorCode) {
+                                    int i = 0;
+                                }
+                            });
 
 //                            ImageMessage image = new ImageMessage();
 //                            image.setLocalPath("asdfasdgasdgasdf");
@@ -523,7 +533,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JIM.getInstance().getConnectionManager().connect("CgdrZWZ1a2V5GiCBXD5u5xlBP7E8VIMjeY4h1HifAdQl4lMFusL_TjhVVw==");
+        JIM.getInstance().getConnectionManager().connect("ChBuc3czc3VlNzJiZWd5djd5GiDuv7mgMhk4e9roYlO9WeWer6_KZGn-hpJGuiMKsCI7Yw==");
         JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {

@@ -361,6 +361,7 @@ message QryMentionMsgsReq{
   int64 startTime = 3;
   int32 count = 4;
   int32 order = 5;
+  int64 latestReadIndex = 6;
 }
 
 message QryMentionMsgsResp{
