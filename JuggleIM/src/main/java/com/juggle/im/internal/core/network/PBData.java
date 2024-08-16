@@ -374,15 +374,19 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] queryHisMsgData(Conversation conversation, long startTime, int count, JIMConst.PullDirection direction, int index) {
+    byte[] queryHisMsgData(Conversation conversation, long startTime, int count, JIMConst.PullDirection direction, List<String> contentTypes, int index) {
         int order = direction == JIMConst.PullDirection.OLDER ? 0 : 1;
-        Appmessages.QryHisMsgsReq req = Appmessages.QryHisMsgsReq.newBuilder()
-                .setTargetId(conversation.getConversationId())
+        Appmessages.QryHisMsgsReq.Builder builder = Appmessages.QryHisMsgsReq.newBuilder();
+        builder.setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
                 .setStartTime(startTime)
                 .setCount(count)
-                .setOrder(order)
-                .build();
+                .setOrder(order);
+        if (contentTypes != null && !contentTypes.isEmpty()) {
+            builder.addAllMsgTypes(contentTypes);
+        }
+        Appmessages.QryHisMsgsReq req = builder.build();
+
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(QRY_HIS_MSG)

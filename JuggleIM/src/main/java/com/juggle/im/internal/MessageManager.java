@@ -34,6 +34,7 @@ import com.juggle.im.internal.model.messages.UnDisturbConvMessage;
 import com.juggle.im.internal.util.FileUtils;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
+import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
@@ -55,7 +56,6 @@ import com.juggle.im.model.messages.VoiceMessage;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -429,7 +429,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void getMessagesByMessageIds(Conversation conversation, List<String> messageIds, IGetMessagesCallback callback) {
-        if (messageIds.size() == 0) {
+        if (messageIds.isEmpty()) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
             }
@@ -437,7 +437,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         List<Message> localMessages = mCore.getDbManager().getMessagesByMessageIds(messageIds);
         List<String> notExistList = new ArrayList<>();
-        if (localMessages.size() == 0) {
+        if (localMessages.isEmpty()) {
             notExistList = messageIds;
         } else if (localMessages.size() < messageIds.size()) {
             int localMessageIndex = 0;
@@ -453,7 +453,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 }
             }
         }
-        if (notExistList.size() == 0) {
+        if (notExistList.isEmpty()) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onSuccess(localMessages));
             }
@@ -462,7 +462,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("MSG-Get", "by id, fail, errorCode is " + errorCode);
-            if (localMessages.size() > 0) {
+            if (!localMessages.isEmpty()) {
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(localMessages));
                 }
@@ -505,7 +505,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onError(int errorCode) {
                 JLogger.e("MSG-Get", "by id, fail, errorCode is " + errorCode);
-                if (localMessages.size() > 0) {
+                if (!localMessages.isEmpty()) {
                     if (callback != null) {
                         mCore.getCallbackHandler().post(() -> callback.onSuccess(localMessages));
                     }
@@ -557,92 +557,71 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void downloadMediaMessage(String messageId, IDownloadMediaMessageCallback callback) {
-        mCore.getSendHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                ConcreteMessage message = mCore.getDbManager().getMessageWithMessageId(messageId);
-                if(message==null){
-                    mCore.getCallbackHandler().post(() -> {
-                        callback.onError(JErrorCode.MESSAGE_NOT_EXIST);
-                    });
-                    return;
-                }
-                if (!(message.getContent() instanceof MediaMessageContent)) {
-                    mCore.getCallbackHandler().post(() -> {
-                        callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE);
-                    });
-                    return;
-                }
-                MediaMessageContent content = (MediaMessageContent) message.getContent();
-                if (TextUtils.isEmpty(content.getUrl())) {
-                    mCore.getCallbackHandler().post(() -> {
-                        callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_URL_EMPTY);
-                    });
-                    return;
-                }
-                String media = "file";
-                String name = (message.getMessageId() != null ? message.getMessageId() : String.valueOf(message.getClientMsgNo())) + "_" + FileUtils.getFileNameWithPath(content.getUrl());
-                if (content instanceof ImageMessage) {
-                    media = "image";
-                } else if (content instanceof VoiceMessage) {
-                    media = "voice";
-                } else if (content instanceof VideoMessage) {
-                    media = "video";
-                }
-
-                String userId = mCore.getUserId();
-                String appKey = mCore.getAppKey();
-                Context context = mCore.getContext();
-                if (TextUtils.isEmpty(appKey) || TextUtils.isEmpty(userId)) {
-                    mCore.getCallbackHandler().post(() -> {
-                        callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_APP_KEY_OR_USERID_EMPTY);
-                    });
-                    return;
-                }
-                String dir = appKey + "/" + userId + "/" + media;
-                String savePath = FileUtils.getMediaDownloadDir(context, dir, name);
-                if (TextUtils.isEmpty(savePath)) {
-                    mCore.getCallbackHandler().post(() -> {
-                        callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY);
-                    });
-                    return;
-
-                }
-                MediaDownloadEngine.getInstance().download(message.getMessageId(), content.getUrl(), savePath, new MediaDownloadEngine.DownloadEngineCallback() {
-
-                    @Override
-                    public void onError(int errorCode) {
-                        mCore.getCallbackHandler().post(() -> {
-                            callback.onError(errorCode);
-                        });
-
-                    }
-
-                    @Override
-                    public void onComplete(String savePath) {
-                        content.setLocalPath(savePath);
-                        mCore.getDbManager().updateMessageContentWithMessageId(message.getContent(), message.getContentType(), message.getMessageId());
-                        mCore.getCallbackHandler().post(() -> {
-                            callback.onSuccess(message);
-                        });
-                    }
-
-                    @Override
-                    public void onProgress(int progress) {
-                        mCore.getCallbackHandler().post(() -> {
-                            callback.onProgress(progress, message);
-                        });
-                    }
-
-                    @Override
-                    public void onCanceled(String tag) {
-                        mCore.getCallbackHandler().post(() -> {
-                            callback.onCancel(message);
-                        });
-
-                    }
-                });
+        mCore.getSendHandler().post(() -> {
+            ConcreteMessage message = mCore.getDbManager().getMessageWithMessageId(messageId);
+            if(message==null){
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
+                return;
             }
+            if (!(message.getContent() instanceof MediaMessageContent)) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE));
+                return;
+            }
+            MediaMessageContent content = (MediaMessageContent) message.getContent();
+            if (TextUtils.isEmpty(content.getUrl())) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_URL_EMPTY));
+                return;
+            }
+            String media = "file";
+            String name = (message.getMessageId() != null ? message.getMessageId() : String.valueOf(message.getClientMsgNo())) + "_" + FileUtils.getFileNameWithPath(content.getUrl());
+            if (content instanceof ImageMessage) {
+                media = "image";
+            } else if (content instanceof VoiceMessage) {
+                media = "voice";
+            } else if (content instanceof VideoMessage) {
+                media = "video";
+            }
+
+            String userId = mCore.getUserId();
+            String appKey = mCore.getAppKey();
+            Context context = mCore.getContext();
+            if (TextUtils.isEmpty(appKey) || TextUtils.isEmpty(userId)) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_APP_KEY_OR_USERID_EMPTY));
+                return;
+            }
+            String dir = appKey + "/" + userId + "/" + media;
+            String savePath = FileUtils.getMediaDownloadDir(context, dir, name);
+            if (TextUtils.isEmpty(savePath)) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY));
+                return;
+
+            }
+            MediaDownloadEngine.getInstance().download(message.getMessageId(), content.getUrl(), savePath, new MediaDownloadEngine.DownloadEngineCallback() {
+
+                @Override
+                public void onError(int errorCode) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+
+                }
+
+                @Override
+                public void onComplete(String savePath) {
+                    content.setLocalPath(savePath);
+                    mCore.getDbManager().updateMessageContentWithMessageId(message.getContent(), message.getContentType(), message.getMessageId());
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
+                }
+
+                @Override
+                public void onProgress(int progress) {
+                    mCore.getCallbackHandler().post(() -> callback.onProgress(progress, message));
+                }
+
+                @Override
+                public void onCanceled(String tag) {
+                    mCore.getCallbackHandler().post(() -> callback.onCancel(message));
+
+                }
+            });
         });
 
     }
@@ -859,7 +838,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         List<String> idList = new ArrayList<>(1);
         idList.add(messageId);
         List<Message> messages = getMessagesByMessageIds(idList);
-        if (messages.size() == 0) {
+        if (messages.isEmpty()) {
             int errorCode = JErrorCode.MESSAGE_NOT_EXIST;
             JLogger.e("MSG-Recall", "fail, code is " + errorCode);
             if (callback != null) {
@@ -915,6 +894,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void getRemoteMessages(Conversation conversation, int count, long startTime, JIMConst.PullDirection direction, IGetMessagesWithFinishCallback callback) {
+        getRemoteMessages(conversation, count, startTime, direction, null, callback);
+    }
+
+    public void getRemoteMessages(Conversation conversation,
+                                  int count,
+                                  long startTime,
+                                  JIMConst.PullDirection direction,
+                                  List<String> contentTypes,
+                                  IGetMessagesWithFinishCallback callback) {
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("MSG-Get", "getRemoteMessages, fail, errorCode is " + errorCode);
@@ -926,7 +914,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         if (count > 100) {
             count = 100;
         }
-        mCore.getWebSocket().queryHisMsg(conversation, startTime, count, direction, new QryHisMsgCallback() {
+        mCore.getWebSocket().queryHisMsg(conversation, startTime, count, direction, contentTypes, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-Get", "getRemoteMessages, success");
@@ -981,12 +969,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     //合并去重
                     List<Message> mergeList = mergeLocalAndRemoteMessages(localMessages == null ? new ArrayList<>() : localMessages, messages);
                     //消息排序
-                    Collections.sort(mergeList, new Comparator<Message>() {
-                        @Override
-                        public int compare(Message o1, Message o2) {
-                            return Long.compare(o1.getTimestamp(), o2.getTimestamp());
-                        }
-                    });
+                    Collections.sort(mergeList, (o1, o2) -> Long.compare(o1.getTimestamp(), o2.getTimestamp()));
                     //返回合并后的消息列表
                     if (callback != null) {
                         mCore.getCallbackHandler().post(() -> callback.onGetRemoteList(mergeList));
@@ -1002,6 +985,60 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 }
             });
         }
+    }
+
+    @Override
+    public void getMessages(Conversation conversation, JIMConst.PullDirection direction, GetMessageOptions options, IGetMessagesCallbackV2 callback) {
+        if (conversation == null || conversation.getConversationId().isEmpty()) {
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> {
+                    callback.onGetLocalMessages(new ArrayList<>(), JErrorCode.INVALID_PARAM);
+                    callback.onGetRemoteMessages(new ArrayList<>(), 0, false, JErrorCode.INVALID_PARAM);
+                });
+            }
+            return;
+        }
+        if (options == null) {
+            options = new GetMessageOptions();
+        }
+        if (options.getCount() <= 0 || options.getCount() > 100) {
+            options.setCount(100);
+        }
+        List<Message> localMessages = getMessages(conversation, options.getCount(), options.getStartTime(), direction, options.getContentTypes());
+
+        if (callback != null) {
+            mCore.getCallbackHandler().post(() -> callback.onGetLocalMessages(localMessages, JErrorCode.NONE));
+        }
+
+        getRemoteMessages(conversation, options.getCount(), options.getStartTime(), direction, options.getContentTypes(), new IGetMessagesWithFinishCallback() {
+            @Override
+            public void onSuccess(List<Message> messages, boolean isFinished) {
+                JLogger.i("MSG-Get", "get messages, success");
+                long timestamp;
+                if (messages != null && !messages.isEmpty()) {
+                    if (direction == JIMConst.PullDirection.NEWER) {
+                        Message m = messages.get(messages.size()-1);
+                        timestamp = m.getTimestamp();
+                    } else {
+                        Message m = messages.get(0);
+                        timestamp = m.getTimestamp();
+                    }
+                } else {
+                    timestamp = 0;
+                }
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onGetRemoteMessages(messages, timestamp, !isFinished, JErrorCode.NONE));
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-Get", "get messages fail, errorCode is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onGetRemoteMessages(new ArrayList<>(), 0, false, errorCode));
+                }
+            }
+        });
     }
 
     //判断是否需要同步远端数据
@@ -1197,7 +1234,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void broadcastMessage(MessageContent content, List<Conversation> conversations, IBroadcastMessageCallback callback) {
-        if (conversations.size() == 0) {
+        if (conversations.isEmpty()) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(callback::onComplete);
             }
@@ -1258,7 +1295,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                                       int processCount,
                                       int totalCount,
                                       IBroadcastMessageCallback callback) {
-        if (conversations.size() == 0) {
+        if (conversations.isEmpty()) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(callback::onComplete);
             }
@@ -1425,7 +1462,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
-    interface ISendReceiveListener {
+    public interface ISendReceiveListener {
         void onMessageSave(ConcreteMessage message);
 
         void onMessageSend(ConcreteMessage message);
@@ -1523,7 +1560,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         List<String> ids = new ArrayList<>(1);
         ids.add(messageId);
         List<ConcreteMessage> messages = mCore.getDbManager().getConcreteMessagesByMessageIds(ids);
-        if (messages.size() > 0) {
+        if (!messages.isEmpty()) {
             //通知会话更新
             notifyMessageRemoved(conversation, messages);
             return messages.get(0);

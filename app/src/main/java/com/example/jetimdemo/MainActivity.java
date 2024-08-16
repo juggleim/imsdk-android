@@ -29,6 +29,7 @@ import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.internal.uploader.FileUtil;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
@@ -79,15 +80,22 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
+
                             Conversation c = new Conversation(Conversation.ConversationType.GROUP, "VV0jm1B59");
-                            JIM.getInstance().getMessageManager().getMentionMessageList(c, 100, 0, JIMConst.PullDirection.OLDER, new IMessageManager.IGetMessagesWithFinishCallback() {
+                            GetMessageOptions options = new GetMessageOptions();
+                            options.setCount(100);
+                            List<String> types = new ArrayList<>();
+                            types.add("jg:text");
+//                            types.add("jgd:grpntf");
+                            options.setContentTypes(types);
+                            JIM.getInstance().getMessageManager().getMessages(c, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV2() {
                                 @Override
-                                public void onSuccess(List<Message> messages, boolean isFinished) {
+                                public void onGetLocalMessages(List<Message> messages, int code) {
                                     int i = 0;
                                 }
 
                                 @Override
-                                public void onError(int errorCode) {
+                                public void onGetRemoteMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
                                     int i = 0;
                                 }
                             });

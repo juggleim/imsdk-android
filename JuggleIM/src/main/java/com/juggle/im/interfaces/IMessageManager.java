@@ -2,6 +2,7 @@ package com.juggle.im.interfaces;
 
 import com.juggle.im.JIMConst;
 import com.juggle.im.model.Conversation;
+import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
@@ -53,6 +54,13 @@ public interface IMessageManager {
         void onGetRemoteList(List<Message> messages);
 
         void onGetRemoteListError(int errorCode);
+    }
+
+    interface IGetMessagesCallbackV2 {
+        //messages: 消息列表，code: 结果码，0 为成功
+        void onGetLocalMessages(List<Message> messages, int code);
+        //messages: 消息列表，timestamp: 消息时间戳，拉下一批消息的时候可以使用，hasMore: 是否还有更多消息，code: 结果码，0 为成功
+        void onGetRemoteMessages(List<Message> messages, long timestamp, boolean hasMore, int code);
     }
 
     interface IGetMessagesCallback {
@@ -204,6 +212,12 @@ public interface IMessageManager {
                                    long startTime,
                                    JIMConst.PullDirection direction,
                                    IGetLocalAndRemoteMessagesCallback callback);
+
+    /// 获取消息，结果按照消息时间正序排列（旧的在前，新的在后）。该接口必定回调两次，先回调本地的缓存消息（有可能存在缺失），再回调远端的消息。
+    void getMessages(Conversation conversation,
+                     JIMConst.PullDirection direction,
+                     GetMessageOptions options,
+                     IGetMessagesCallbackV2 callback);
 
     void sendReadReceipt(Conversation conversation,
                          List<String> messageIds,
