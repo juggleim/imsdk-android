@@ -24,7 +24,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         JLogger.i("CON-Connect", "token is " + token);
         //todo 校验，是否有连接
 
-        if (!mCore.getToken().equals(token)) {
+        if (mCore.getToken() != null && !mCore.getToken().equals(token)) {
             mCore.setToken(token);
             mCore.setUserId("");
         }
