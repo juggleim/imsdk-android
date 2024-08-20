@@ -8,7 +8,7 @@ import com.jet.im.kit.activities.viewholder.MessageViewHolder;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitContract;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitImpl;
 import com.jet.im.kit.model.MessageListUIParams;
-import com.jet.im.model.ConversationInfo;
+import com.juggle.im.model.ConversationInfo;
 import com.sendbird.android.message.BaseMessage;
 
 /**

@@ -8,16 +8,16 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.AnyThread
 import androidx.annotation.UiThread
-import com.jet.im.JetIM
-import com.jet.im.interfaces.IMessageManager.IDownloadMediaMessageCallback
+import com.juggle.im.JIM
+import com.juggle.im.interfaces.IMessageManager.IDownloadMediaMessageCallback
 import com.jet.im.kit.interfaces.OnResultHandler
 import com.jet.im.kit.internal.extensions.runOnUiThread
 import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.ClearableScheduledExecutorService
 import com.jet.im.kit.utils.FileUtils
 import com.jet.im.kit.vm.FileDownloader
-import com.jet.im.model.Message
-import com.jet.im.model.messages.VoiceMessage
+import com.juggle.im.model.Message
+import com.juggle.im.model.messages.VoiceMessage
 import com.sendbird.android.exception.SendbirdException
 import com.sendbird.android.message.FileMessage
 import java.io.File
@@ -68,7 +68,7 @@ internal class VoicePlayer(val key: String) {
         addOnUpdateListener(onUpdateListener)
         addOnProgressUpdateListener(onProgressUpdateListener)
         updateStatus(Status.PREPARING)
-        JetIM.getInstance().messageManager.downloadMediaMessage(id,
+        JIM.getInstance().messageManager.downloadMediaMessage(id,
             object : IDownloadMediaMessageCallback {
                 override fun onProgress(progress: Int, message: Message?) {
 

@@ -3,7 +3,7 @@ package com.jet.im.kit.model
 import com.sendbird.android.message.BaseMessage
 import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.DateUtils
-import com.jet.im.model.Message
+import com.juggle.im.model.Message
 import java.util.TreeSet
 import java.util.concurrent.ConcurrentHashMap
 
@@ -156,6 +156,7 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
         private fun createTimelineMessage(anchorMessage: Message): Message {
             var timelineMessage = Message()
             timelineMessage.content = TimelineMessage(anchorMessage.timestamp)
+            timelineMessage.timestamp=anchorMessage.timestamp
             return timelineMessage
         }
     }

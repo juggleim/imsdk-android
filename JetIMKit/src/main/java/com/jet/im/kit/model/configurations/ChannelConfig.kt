@@ -11,7 +11,7 @@ import com.jet.im.kit.internal.model.serializer.ReplyTypeAsStringSerializer
 import com.jet.im.kit.internal.model.serializer.ThreadReplySelectTypeAsStringSerializer
 import com.jet.im.kit.internal.model.template_messages.KeySet
 import com.jet.im.kit.utils.Available
-import com.jet.im.model.ConversationInfo
+import com.juggle.im.model.ConversationInfo
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

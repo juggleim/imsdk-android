@@ -9,7 +9,7 @@ import com.example.demo.common.consts.StringSet
 import com.example.demo.common.preferences.PreferenceUtils
 import com.example.demo.utils.SSLHelper
 import com.example.demo.utils.ToastUtils
-import com.jet.im.JetIM
+import com.juggle.im.JIM
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.adapter.SendbirdUIKitAdapter
 import com.jet.im.kit.consts.ReplyType
@@ -117,9 +117,9 @@ class BaseApplication : MultiDexApplication() {
         // initialize SendbirdUIKit
         val navi = ArrayList<String>()
         navi.add("https://nav.juggleim.com")
-        JetIM.getInstance().setServer(navi)
+        JIM.getInstance().setServer(navi)
         initUIKit(this)
-        JetIM.getInstance().init(this, "nsw3sue72begyv7y")
+        JIM.getInstance().init(this, "nsw3sue72begyv7y")
         // setup uikit configurations
         HttpsURLConnection.setDefaultSSLSocketFactory(SSLHelper.getTrustAllSSLSocketFactory())
         HttpsURLConnection.setDefaultHostnameVerifier(object :HostnameVerifier{

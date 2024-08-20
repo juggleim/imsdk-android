@@ -15,8 +15,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 
-import com.jet.im.model.ConversationInfo;
-import com.jet.im.model.Message;
+import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.Message;
 import com.sendbird.android.user.User;
 import com.jet.im.kit.R;
 import com.jet.im.kit.consts.KeyboardDisplayType;

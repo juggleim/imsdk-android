@@ -6,8 +6,8 @@ import com.sendbird.android.message.BaseMessage
 import com.jet.im.kit.activities.viewholder.MessageViewHolder
 import com.jet.im.kit.databinding.SbViewTimeLineMessageBinding
 import com.jet.im.kit.model.MessageListUIParams
-import com.jet.im.model.ConversationInfo
-import com.jet.im.model.Message
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
 
 internal class TimelineViewHolder internal constructor(
     val binding: SbViewTimeLineMessageBinding,

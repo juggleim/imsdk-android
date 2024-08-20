@@ -5,7 +5,7 @@ import com.jet.im.kit.activities.adapter.MessageListAdapter
 import com.jet.im.kit.model.ChannelListUIParams
 import com.jet.im.kit.model.MessageListUIParams
 import com.jet.im.kit.providers.AdapterProviders
-import com.jet.im.model.ConversationInfo
+import com.juggle.im.model.ConversationInfo
 
 /**
  * Interface definition to be invoked when message list adapter is created.

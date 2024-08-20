@@ -5,14 +5,14 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.jet.im.JetIM;
+import com.juggle.im.JIM;
 import com.jet.im.kit.R;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.internal.ui.channels.ChannelCoverView;
-import com.jet.im.model.Conversation;
-import com.jet.im.model.ConversationInfo;
-import com.jet.im.model.GroupInfo;
-import com.jet.im.model.UserInfo;
+import com.juggle.im.model.Conversation;
+import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GroupInfo;
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.channel.BaseChannel;
 import com.sendbird.android.channel.GroupChannel;
@@ -79,10 +79,10 @@ public class ChannelUtils {
 
     public static String makeTitleText(@NonNull Context context, @NonNull ConversationInfo channel) {
         if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.PRIVATE)) {
-            UserInfo info = JetIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
+            UserInfo info = JIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
             return info == null ? channel.getConversation().getConversationId() : android.text.TextUtils.isEmpty(info.getUserName()) ? info.getUserId() : info.getUserName();
         } else if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.GROUP)) {
-            GroupInfo info = JetIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
+            GroupInfo info = JIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
             return info == null ? channel.getConversation().getConversationId() : android.text.TextUtils.isEmpty(info.getGroupName()) ? info.getGroupId() : info.getGroupName();
         } else {
             return channel.getConversation().getConversationId();
@@ -131,12 +131,12 @@ public class ChannelUtils {
 
     public static void loadChannelCover(@NonNull ChannelCoverView coverView, @NonNull ConversationInfo channel) {
         if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.PRIVATE)) {
-            UserInfo info = JetIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
+            UserInfo info = JIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
             if (info != null) {
                 coverView.loadImage(info.getPortrait());
             }
         } else if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.GROUP)) {
-            GroupInfo info = JetIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
+            GroupInfo info = JIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
             if (info != null) {
                 coverView.loadImage(info.getPortrait());
             }

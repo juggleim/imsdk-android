@@ -12,8 +12,8 @@ import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.databinding.SbViewMyMessageStatusBinding
 import com.jet.im.kit.utils.DrawableUtils
-import com.jet.im.model.ConversationInfo
-import com.jet.im.model.Message
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
 
 internal class MyMessageStatusView @JvmOverloads constructor(
     context: Context,

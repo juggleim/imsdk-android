@@ -8,8 +8,8 @@ import com.jet.im.kit.activities.adapter.MessageListAdapter;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.providers.AdapterProviders;
-import com.jet.im.model.ConversationInfo;
-import com.jet.im.model.Message;
+import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.Message;
 
 /**
  * This class creates and performs a view corresponding the message list area in Sendbird UIKit.

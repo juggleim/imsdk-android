@@ -1,4 +1,4 @@
-package com.example.jetimdemo;
+package com.example.JIMdemo;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.example.jetimdemo", appContext.getPackageName());
+        assertEquals("com.example.JIMdemo", appContext.getPackageName());
     }
 }

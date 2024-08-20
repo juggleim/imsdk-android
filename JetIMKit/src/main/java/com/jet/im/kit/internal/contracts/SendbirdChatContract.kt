@@ -1,7 +1,7 @@
 package com.jet.im.kit.internal.contracts
 
 import android.content.Context
-import com.jet.im.interfaces.IMessageManager
+import com.juggle.im.interfaces.IMessageManager
 import com.sendbird.android.AppInfo
 import com.sendbird.android.ConnectionState
 import com.sendbird.android.handler.AuthenticationHandler

@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.jet.im.model.ConversationInfo;
+import com.juggle.im.model.ConversationInfo;
 import com.sendbird.android.channel.GroupChannel;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.internal.ui.components.HeaderView;

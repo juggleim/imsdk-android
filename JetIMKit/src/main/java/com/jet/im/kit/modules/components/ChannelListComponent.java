@@ -12,7 +12,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.jet.im.model.ConversationInfo;
+import com.juggle.im.model.ConversationInfo;
 import com.sendbird.android.channel.GroupChannel;
 import com.jet.im.kit.R;
 import com.jet.im.kit.activities.adapter.ChannelListAdapter;

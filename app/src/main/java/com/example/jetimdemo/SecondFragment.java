@@ -1,4 +1,4 @@
-package com.example.jetimdemo;
+package com.example.JIMdemo;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.example.jetimdemo.databinding.FragmentSecondBinding;
+import com.example.JIMdemo.databinding.FragmentSecondBinding;
 
 public class SecondFragment extends Fragment {
 

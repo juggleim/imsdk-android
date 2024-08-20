@@ -5,10 +5,10 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.jet.im.interfaces.IConversationManager;
+import com.juggle.im.interfaces.IConversationManager;
 import com.jet.im.kit.model.configurations.ChannelConfig;
 import com.jet.im.kit.model.configurations.UIKitConfig;
-import com.jet.im.model.Conversation;
+import com.juggle.im.model.Conversation;
 import com.sendbird.android.params.MessageListParams;
 
 import java.util.Objects;

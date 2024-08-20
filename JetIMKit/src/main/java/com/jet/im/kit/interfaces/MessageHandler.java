@@ -2,7 +2,7 @@ package com.jet.im.kit.interfaces;
 
 import androidx.annotation.Nullable;
 
-import com.jet.im.model.Message;
+import com.juggle.im.model.Message;
 
 import java.util.List;
 

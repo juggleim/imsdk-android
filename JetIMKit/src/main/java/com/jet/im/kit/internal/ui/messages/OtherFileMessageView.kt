@@ -11,8 +11,8 @@ import com.jet.im.kit.model.MessageListUIParams
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.kit.utils.ViewUtils
-import com.jet.im.model.ConversationInfo
-import com.jet.im.model.Message
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
 import com.sendbird.android.channel.GroupChannel
 import com.sendbird.android.message.BaseMessage
 import com.sendbird.android.message.FileMessage
@@ -70,7 +70,7 @@ internal class OtherFileMessageView @JvmOverloads constructor(
         params: MessageListUIParams
     ) {
         val messageGroupType = params.messageGroupType
-        val fileMessage = message.content as com.jet.im.model.messages.FileMessage
+        val fileMessage = message.content as com.juggle.im.model.messages.FileMessage
         val isSent = message.state == Message.MessageState.SENT
         val showProfile =
             messageGroupType == MessageGroupType.GROUPING_TYPE_SINGLE || messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL

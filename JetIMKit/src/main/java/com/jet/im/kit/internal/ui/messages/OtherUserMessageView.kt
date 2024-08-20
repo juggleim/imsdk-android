@@ -18,8 +18,8 @@ import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.kit.utils.ViewUtils
-import com.jet.im.model.ConversationInfo
-import com.jet.im.model.Message
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
 import com.sendbird.android.channel.GroupChannel
 import com.sendbird.android.message.BaseMessage
 import com.sendbird.android.message.SendingStatus

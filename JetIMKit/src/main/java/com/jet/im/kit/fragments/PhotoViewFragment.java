@@ -26,7 +26,7 @@ import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.github.chrisbanes.photoview.PhotoViewAttacher;
-import com.jet.im.model.Conversation;
+import com.juggle.im.model.Conversation;
 import com.sendbird.android.channel.BaseChannel;
 import com.sendbird.android.channel.ChannelType;
 import com.sendbird.android.channel.GroupChannel;

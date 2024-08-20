@@ -76,7 +76,7 @@ public class UserUtils {
     }
 
     @NonNull
-    public static String getDisplayName(@NonNull Context context, @Nullable com.jet.im.model.UserInfo userInfo) {
+    public static String getDisplayName(@NonNull Context context, @Nullable com.juggle.im.model.UserInfo userInfo) {
         String nickname = context.getString(R.string.sb_text_channel_list_title_unknown);
         if (userInfo == null) return nickname;
 

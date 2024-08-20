@@ -28,7 +28,7 @@ import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.kit.utils.SoftInputUtils
 import com.jet.im.kit.utils.TextUtils
 import com.jet.im.kit.utils.ViewUtils
-import com.jet.im.model.Message
+import com.juggle.im.model.Message
 import com.sendbird.android.message.FileMessage
 import com.sendbird.android.message.MultipleFilesMessage
 

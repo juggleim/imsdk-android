@@ -6,8 +6,8 @@ import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.jet.im.JetIM;
-import com.jet.im.interfaces.IConversationManager;
+import com.juggle.im.JIM;
+import com.juggle.im.interfaces.IConversationManager;
 import com.jet.im.kit.interfaces.AuthenticateHandler;
 import com.jet.im.kit.interfaces.OnCompleteHandler;
 import com.jet.im.kit.interfaces.OnPagedDataLoader;
@@ -20,7 +20,7 @@ import com.jet.im.kit.internal.contracts.TaskQueueImpl;
 import com.jet.im.kit.internal.tasks.JobTask;
 import com.jet.im.kit.internal.testmodel.ChannelListViewModelDataContract;
 import com.jet.im.kit.log.Logger;
-import com.jet.im.model.ConversationInfo;
+import com.juggle.im.model.ConversationInfo;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.exception.SendbirdException;
 
@@ -295,7 +295,7 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
      */
     @NonNull
     protected IConversationManager createGroupChannelListQuery() {
-        return JetIM.getInstance().getConversationManager();
+        return JIM.getInstance().getConversationManager();
     }
 
     @NonNull

@@ -1,9 +1,9 @@
 package com.jet.im.kit.internal.contracts
 
-import com.jet.im.JetIMConst
-import com.jet.im.interfaces.IConversationManager
 import com.jet.im.kit.cust.handler.ConversationCallbackHandler
-import com.jet.im.model.ConversationInfo
+import com.juggle.im.JIMConst
+import com.juggle.im.interfaces.IConversationManager
+import com.juggle.im.model.ConversationInfo
 
 internal class GroupChannelCollectionImpl(query: IConversationManager) :
     GroupChannelCollectionContract {
@@ -22,7 +22,7 @@ internal class GroupChannelCollectionImpl(query: IConversationManager) :
         val conversationInfoList = conversationManager.getConversationInfoList(
             10,
             timestamp,
-            JetIMConst.PullDirection.OLDER
+            JIMConst.PullDirection.OLDER
         )
         collection.addAll(conversationInfoList);
         if (conversationInfoList.size < 10) {

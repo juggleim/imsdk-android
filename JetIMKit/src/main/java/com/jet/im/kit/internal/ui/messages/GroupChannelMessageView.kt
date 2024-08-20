@@ -5,8 +5,8 @@ import android.util.AttributeSet
 import com.sendbird.android.channel.GroupChannel
 import com.sendbird.android.message.BaseMessage
 import com.jet.im.kit.model.MessageListUIParams
-import com.jet.im.model.ConversationInfo
-import com.jet.im.model.Message
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
 
 internal abstract class GroupChannelMessageView @JvmOverloads constructor(
     context: Context,

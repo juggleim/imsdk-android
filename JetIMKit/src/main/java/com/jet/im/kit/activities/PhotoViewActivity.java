@@ -10,10 +10,10 @@ import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
-import com.jet.im.model.Conversation;
-import com.jet.im.model.ConversationInfo;
-import com.jet.im.model.Message;
-import com.jet.im.model.messages.ImageMessage;
+import com.juggle.im.model.Conversation;
+import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.Message;
+import com.juggle.im.model.messages.ImageMessage;
 import com.sendbird.android.channel.ChannelType;
 import com.sendbird.android.message.FileMessage;
 import com.sendbird.android.message.MultipleFilesMessage;

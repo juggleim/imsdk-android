@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.annotation.AnyThread
 import androidx.annotation.UiThread
 import com.jet.im.kit.log.Logger
-import com.jet.im.model.messages.VoiceMessage
+import com.juggle.im.model.messages.VoiceMessage
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 

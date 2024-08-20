@@ -3,8 +3,8 @@ package com.jet.im.kit.model
 import com.sendbird.android.message.BaseMessage
 import com.sendbird.android.message.CustomizableMessage
 import com.jet.im.kit.utils.DateUtils
-import com.jet.im.model.Message
-import com.jet.im.model.MessageContent
+import com.juggle.im.model.Message
+import com.juggle.im.model.MessageContent
 
 open class TimelineMessage(private val time:Long) :
     MessageContent() {

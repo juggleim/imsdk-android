@@ -13,7 +13,7 @@ import com.jet.im.kit.internal.extensions.setTypeface
 import com.jet.im.kit.internal.model.notifications.NotificationConfig
 import com.jet.im.kit.utils.DateUtils
 import com.jet.im.kit.utils.DrawableUtils
-import com.jet.im.model.Message
+import com.juggle.im.model.Message
 
 internal class TimelineMessageView @JvmOverloads internal constructor(
     context: Context,

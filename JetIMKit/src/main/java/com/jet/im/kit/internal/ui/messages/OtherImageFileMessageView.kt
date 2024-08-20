@@ -17,9 +17,9 @@ import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.kit.utils.ViewUtils
-import com.jet.im.model.ConversationInfo
-import com.jet.im.model.Message
-import com.jet.im.model.messages.ImageMessage
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
+import com.juggle.im.model.messages.ImageMessage
 
 internal class OtherImageFileMessageView @JvmOverloads constructor(
     context: Context,

@@ -3,7 +3,7 @@ package com.jet.im.kit.utils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.jet.im.JetIM;
+import com.juggle.im.JIM;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
 import com.jet.im.kit.consts.MessageGroupType;
@@ -12,7 +12,7 @@ import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.model.TimelineMessage;
-import com.jet.im.model.Message;
+import com.juggle.im.model.Message;
 import com.sendbird.android.channel.NotificationData;
 import com.sendbird.android.message.AdminMessage;
 import com.sendbird.android.message.BaseMessage;
@@ -41,7 +41,7 @@ public class MessageUtils {
     }
 
     public static boolean isMine(@Nullable String senderId) {
-        String currentUser = JetIM.getInstance().getCurrentUserId();
+        String currentUser = JIM.getInstance().getCurrentUserId();
         if (currentUser != null) {
             return currentUser.equals(senderId);
         }

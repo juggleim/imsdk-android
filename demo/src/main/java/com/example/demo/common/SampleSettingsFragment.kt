@@ -32,7 +32,7 @@ import com.example.demo.common.preferences.PreferenceUtils
 import com.example.demo.common.widgets.WaitingDialog
 import com.example.demo.databinding.FragmentSampleSettingsBinding
 import com.example.demo.databinding.ViewCustomMenuTextButtonBinding
-import com.jet.im.JetIM
+import com.juggle.im.JIM
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.consts.DialogEditTextParams
 import com.jet.im.kit.interfaces.OnEditTextResultListener
@@ -360,7 +360,7 @@ class SampleSettingsFragment : Fragment() {
                 requireContext().getDrawable(R.drawable.shape_oval, homeBackgroundTint)
             binding.itemHome.setOnClickListener {
                 Logger.d("++ home clicked")
-                JetIM.getInstance().connectionManager.disconnect(false);
+                JIM.getInstance().connectionManager.disconnect(false);
                 startActivity(
                     Intent(
                         activity,

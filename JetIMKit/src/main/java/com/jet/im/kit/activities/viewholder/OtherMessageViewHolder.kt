@@ -4,9 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
-import com.sendbird.android.channel.BaseChannel
-import com.sendbird.android.message.BaseMessage
-import com.sendbird.android.message.Reaction
 import com.jet.im.kit.annotation.MessageViewHolderExperimental
 import com.jet.im.kit.consts.ClickableViewIdentifier
 import com.jet.im.kit.databinding.SbViewOtherMessageBinding
@@ -15,8 +12,9 @@ import com.jet.im.kit.interfaces.OnItemClickListener
 import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.internal.extensions.toComponentListContextThemeWrapper
 import com.jet.im.kit.model.MessageListUIParams
-import com.jet.im.model.ConversationInfo
-import com.jet.im.model.Message
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
+import com.sendbird.android.message.Reaction
 
 /**
  * This ViewHolder has a basic message template for 'Other message.'

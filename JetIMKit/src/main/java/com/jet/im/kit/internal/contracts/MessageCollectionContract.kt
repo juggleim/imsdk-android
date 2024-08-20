@@ -1,7 +1,7 @@
 package com.jet.im.kit.internal.contracts
 
 import com.jet.im.kit.interfaces.MessageHandler
-import com.jet.im.model.Message
+import com.juggle.im.model.Message
 import com.sendbird.android.collection.MessageCollectionInitPolicy
 import com.sendbird.android.handler.BaseMessagesHandler
 import com.sendbird.android.handler.MessageCollectionHandler

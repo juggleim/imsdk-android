@@ -16,11 +16,11 @@ import com.jet.im.kit.utils.ChannelUtils
 import com.jet.im.kit.utils.DateUtils
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.MessageUtils
-import com.jet.im.model.Conversation
-import com.jet.im.model.ConversationInfo
-import com.jet.im.model.messages.ImageMessage
-import com.jet.im.model.messages.TextMessage
-import com.jet.im.model.messages.VoiceMessage
+import com.juggle.im.model.Conversation
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.messages.ImageMessage
+import com.juggle.im.model.messages.TextMessage
+import com.juggle.im.model.messages.VoiceMessage
 import org.w3c.dom.Text
 
 internal class ChannelPreview @JvmOverloads constructor(

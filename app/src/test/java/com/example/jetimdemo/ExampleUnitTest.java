@@ -1,4 +1,4 @@
-package com.example.jetimdemo;
+package com.example.JIMdemo;
 
 import org.junit.Test;
 

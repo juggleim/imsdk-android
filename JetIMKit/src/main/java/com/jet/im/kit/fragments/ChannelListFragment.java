@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
 
-import com.jet.im.interfaces.IConversationManager;
+import com.juggle.im.interfaces.IConversationManager;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.activities.ChannelActivity;
@@ -30,7 +30,7 @@ import com.jet.im.kit.providers.ModuleProviders;
 import com.jet.im.kit.providers.ViewModelProviders;
 import com.jet.im.kit.vm.ChannelListViewModel;
 import com.jet.im.kit.widgets.StatusFrameView;
-import com.jet.im.model.ConversationInfo;
+import com.juggle.im.model.ConversationInfo;
 import com.sendbird.android.channel.GroupChannel;
 
 /**

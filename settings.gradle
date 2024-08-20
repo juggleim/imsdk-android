@@ -17,9 +17,9 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "JetIMDemo"
+rootProject.name = "JIMDemo"
 include ':app'
-include ':JetIM'
+include ':JuggleIM'
 include ':JetIMKit'
 include ':demo'
 include ':HWPlugin'

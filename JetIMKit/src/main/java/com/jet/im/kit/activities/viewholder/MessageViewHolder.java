@@ -6,8 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.jet.im.model.ConversationInfo;
-import com.jet.im.model.Message;
+import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.Message;
 import com.sendbird.android.channel.BaseChannel;
 import com.sendbird.android.message.BaseMessage;
 import com.jet.im.kit.consts.MessageGroupType;

@@ -28,7 +28,6 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
-import com.jet.im.JetIM;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.consts.StringSet;
@@ -43,11 +42,12 @@ import com.jet.im.kit.model.FileInfo;
 import com.jet.im.kit.model.MessageUIConfig;
 import com.jet.im.kit.model.TextUIConfig;
 import com.jet.im.kit.vm.PendingMessageRepository;
-import com.jet.im.model.Message;
-import com.jet.im.model.UserInfo;
-import com.jet.im.model.messages.ImageMessage;
-import com.jet.im.model.messages.TextMessage;
-import com.jet.im.model.messages.VoiceMessage;
+import com.juggle.im.JIM;
+import com.juggle.im.model.Message;
+import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.messages.ImageMessage;
+import com.juggle.im.model.messages.TextMessage;
+import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FileMessage;
 import com.sendbird.android.message.OGMetaData;
@@ -209,7 +209,7 @@ public class ViewUtils {
             return;
         }
 
-        final UserInfo sender = JetIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId());
+        final UserInfo sender = JIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId());
         final Spannable nickname = new SpannableString(UserUtils.getDisplayName(tvNickname.getContext(), sender));
         if (uiConfig != null) {
             final boolean isMine = MessageUtils.isMine(message);
@@ -248,7 +248,7 @@ public class ViewUtils {
         if (message == null) {
             return;
         }
-        final UserInfo sender = JetIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId());
+        final UserInfo sender = JIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId());
 
         String url = "";
         String plainUrl = "";
@@ -496,7 +496,7 @@ public class ViewUtils {
         drawFilename(tvFilename, message.getName(), MessageUtils.isMine(message), uiConfig);
     }
 
-    public static void drawFilename(@NonNull TextView tvFilename, @Nullable Message message, @Nullable com.jet.im.model.messages.FileMessage fileMessage, @Nullable MessageUIConfig uiConfig) {
+    public static void drawFilename(@NonNull TextView tvFilename, @Nullable Message message, @Nullable com.juggle.im.model.messages.FileMessage fileMessage, @Nullable MessageUIConfig uiConfig) {
         if (message == null || fileMessage == null) {
             return;
         }

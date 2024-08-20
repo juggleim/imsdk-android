@@ -10,55 +10,39 @@ import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.jet.im.interfaces.IMessageManager;
-import com.jet.im.kit.interfaces.MessageHandler;
-import com.jet.im.model.Conversation;
-import com.jet.im.model.ConversationInfo;
-import com.jet.im.model.Message;
-import com.sendbird.android.SendbirdChat;
-import com.sendbird.android.channel.BaseChannel;
-import com.sendbird.android.channel.GroupChannel;
-import com.sendbird.android.collection.CollectionEventSource;
-import com.sendbird.android.collection.GroupChannelContext;
-import com.sendbird.android.collection.MessageCollectionInitPolicy;
-import com.sendbird.android.collection.MessageContext;
-import com.sendbird.android.exception.SendbirdException;
-import com.sendbird.android.handler.ConnectionHandler;
-import com.sendbird.android.handler.GroupChannelHandler;
-import com.sendbird.android.handler.MessageCollectionHandler;
-import com.sendbird.android.handler.MessageCollectionInitHandler;
-import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.message.Feedback;
-import com.sendbird.android.message.FeedbackRating;
-import com.sendbird.android.message.FileMessage;
-import com.sendbird.android.message.SendingStatus;
-import com.sendbird.android.params.MessageCollectionCreateParams;
-import com.sendbird.android.params.MessageListParams;
-import com.sendbird.android.params.common.MessagePayloadFilter;
-import com.sendbird.android.user.User;
 import com.jet.im.kit.consts.MessageLoadState;
 import com.jet.im.kit.consts.ReplyType;
 import com.jet.im.kit.consts.StringSet;
-import com.jet.im.kit.consts.TypingIndicatorType;
-import com.jet.im.kit.interfaces.OnCompleteHandler;
-import com.jet.im.kit.internal.contracts.MessageCollectionImpl;
 import com.jet.im.kit.internal.contracts.MessageCollectionContract;
-import com.jet.im.kit.internal.contracts.SendbirdChatImpl;
+import com.jet.im.kit.internal.contracts.MessageCollectionImpl;
 import com.jet.im.kit.internal.contracts.SendbirdChatContract;
-import com.jet.im.kit.internal.contracts.SendbirdUIKitImpl;
+import com.jet.im.kit.internal.contracts.SendbirdChatImpl;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitContract;
+import com.jet.im.kit.internal.contracts.SendbirdUIKitImpl;
 import com.jet.im.kit.log.Logger;
-import com.jet.im.kit.model.SuggestedRepliesMessage;
-import com.jet.im.kit.model.TypingIndicatorMessage;
 import com.jet.im.kit.model.configurations.ChannelConfig;
-import com.jet.im.kit.model.configurations.UIKitConfig;
 import com.jet.im.kit.utils.Available;
 import com.jet.im.kit.utils.MessageUtils;
 import com.jet.im.kit.widgets.StatusFrameView;
+import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.model.Conversation;
+import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.Message;
+import com.sendbird.android.collection.CollectionEventSource;
+import com.sendbird.android.collection.MessageContext;
+import com.sendbird.android.exception.SendbirdException;
+import com.sendbird.android.message.BaseMessage;
+import com.sendbird.android.message.Feedback;
+import com.sendbird.android.message.FeedbackRating;
+import com.sendbird.android.message.SendingStatus;
+import com.sendbird.android.params.MessageListParams;
+import com.sendbird.android.params.common.MessagePayloadFilter;
+import com.sendbird.android.user.User;
 
 import org.jetbrains.annotations.TestOnly;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -67,7 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * ViewModel preparing and managing data related with the list of messages in a channel
- *
+ * <p>
  * since 3.0.0
  */
 public class ChannelViewModel extends BaseMessageListViewModel {
@@ -107,7 +91,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
 
     /**
      * Class that holds message data in a channel.
-     *
+     * <p>
      * since 3.0.0
      */
     public static class ChannelMessageData {
@@ -174,11 +158,6 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
                 notifyDataSetChanged(new MessageContext(CollectionEventSource.EVENT_MESSAGE_DELETED, SendingStatus.SUCCEEDED));
             }
-
-            @Override
-            public void onSendMessageSuccess(Message message) {
-                ChannelViewModel.this.onMessagesUpdated( channel, message);
-            }
         });
     }
 
@@ -229,14 +208,15 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             this.messageListParams = createMessageListParams();
         }
         this.messageListParams.setReverse(true);
-        this.collection =new MessageCollectionImpl(channel);
+        this.collection = new MessageCollectionImpl(channel);
         Logger.i(">> ChannelViewModel::initMessageCollection() collection=%s", collection);
     }
 
     @Override
     void onMessagesUpdated(@NonNull ConversationInfo channel, @NonNull Message message) {
-        super.onMessagesUpdated(channel,message);
+        super.onMessagesUpdated(channel, message);
     }
+
     private synchronized void disposeMessageCollection() {
         Logger.i(">> ChannelViewModel::disposeMessageCollection()");
         if (this.collection != null) {
@@ -367,15 +347,17 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     public LiveData<Pair<BaseMessage, SendbirdException>> onFeedbackDeleted() {
         return feedbackDeleted;
     }
-
+    boolean hasNext = true;
     @Override
     public boolean hasNext() {
-        return collection == null || collection.getHasNext();
+        return hasNext;
     }
+
+    boolean hasPrevious = true;
 
     @Override
     public boolean hasPrevious() {
-        return collection == null || collection.getHasPrevious();
+        return hasPrevious;
     }
 
     /**
@@ -430,7 +412,6 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     }
 
 
-
     private void markAsRead() {
         Logger.dev("markAsRead");
 //        if (channel != null) channel.markAsRead(null);
@@ -483,7 +464,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * If the request is succeed, you can observe updated data through {@link #getMessageList()}.
      *
      * @param startingPoint Timestamp that is the starting point when the message list is fetched
-     * since 3.0.0
+     *                      since 3.0.0
      */
     @UiThread
     public synchronized boolean loadInitial(final long startingPoint) {
@@ -496,20 +477,38 @@ public class ChannelViewModel extends BaseMessageListViewModel {
 
         messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
         cachedMessages.clear();
-        collection.initialize(new MessageHandler() {
-            @Override
-            public void onResult(List<Message> list, @Nullable Exception e) {
-                if (e == null && list != null) {
-                    cachedMessages.clear();
-                    cachedMessages.addAll(list);
-                    notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
-                    if (list.size() > 0) {
-                        markAsRead();
+        JIM.getInstance().getMessageManager().getLocalAndRemoteMessages(conversation,
+                20, startingPoint, JIMConst.PullDirection.OLDER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
+                    @Override
+                    public void onGetLocalList(List<Message> messages, boolean hasRemote) {
+                        if (!hasRemote) {
+                            cachedMessages.clear();
+                            cachedMessages.addAll(messages);
+                            notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
+                            if (!messages.isEmpty()) {
+                                markAsRead();
+                            }
+                            messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
+                        }
                     }
-                }
-                messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-            }
-        });
+
+                    @Override
+                    public void onGetRemoteList(List<Message> messages) {
+                        cachedMessages.clear();
+                        cachedMessages.addAll(messages);
+                        notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
+                        if (!messages.isEmpty()) {
+                            markAsRead();
+                        }
+                        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
+                    }
+
+                    @Override
+                    public void onGetRemoteListError(int errorCode) {
+                        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
+                    }
+                });
+
         return true;
     }
 
@@ -520,41 +519,59 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      *
      * @return Returns the list of <code>BaseMessage</code>s if no error occurs
      * @throws Exception Throws exception if getting the message list are failed
-     * since 3.0.0
+     *                   since 3.0.0
      */
     @WorkerThread
     @NonNull
     @Override
     public List<Message> loadPrevious() throws Exception {
-//        if (!hasPrevious() || collection == null) return Collections.emptyList();
-//        Logger.i(">> ChannelViewModel::loadPrevious()");
-//
-//        final AtomicReference<List<BaseMessage>> result = new AtomicReference<>();
-//        final AtomicReference<Exception> error = new AtomicReference<>();
-//        final CountDownLatch lock = new CountDownLatch(1);
-//
-//        messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
-//        collection.loadPrevious((messages, e) -> {
-//            Logger.d("++ privious size = %s", messages == null ? 0 : messages.size());
-//            try {
-//                if (e == null) {
-//                    if (messages != null) {
-//                        cachedMessages.addAll(messages);
-//                    }
-//                    result.set(messages);
-//                    notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
-//                }
-//                error.set(e);
-//            } finally {
-//                lock.countDown();
-//            }
-//        });
-//        lock.await();
-//
-//        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-//        if (error.get() != null) throw error.get();
-//        return result.get();
-        return new ArrayList<>();
+        if (!hasPrevious()) return Collections.emptyList();
+
+        final AtomicReference<List<Message>> result = new AtomicReference<>();
+        final CountDownLatch lock = new CountDownLatch(1);
+
+        messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
+        Message oldestMessage = cachedMessages.getOldestMessage();
+        long startingPoint = 0;
+        if (oldestMessage != null) {
+            startingPoint = oldestMessage.getTimestamp();
+        }
+        JIM.getInstance().getMessageManager().getLocalAndRemoteMessages(conversation,
+                20, startingPoint, JIMConst.PullDirection.OLDER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
+                    @Override
+                    public void onGetLocalList(List<Message> messages, boolean hasRemote) {
+                        if (!hasRemote) {
+                            if(messages.size()<20){
+                                hasPrevious=false;
+                            }
+                            cachedMessages.addAll(messages);
+                            result.set(messages);
+                            notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
+                            lock.countDown();
+                        }
+                    }
+
+                    @Override
+                    public void onGetRemoteList(List<Message> messages) {
+                        if(messages.size()<20){
+                            hasPrevious=false;
+                        }
+                        cachedMessages.addAll(messages);
+                        result.set(messages);
+                        notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
+                        lock.countDown();
+                    }
+
+                    @Override
+                    public void onGetRemoteListError(int errorCode) {
+                        result.set(Collections.emptyList());
+                        notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
+                        lock.countDown();
+                    }
+                });
+        lock.await();
+        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
+        return result.get();
     }
 
     /**
@@ -564,39 +581,59 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      *
      * @return Returns the list of <code>BaseMessage</code>s if no error occurs
      * @throws Exception Throws exception if getting the message list are failed
-     * since 3.0.0
+     *                   since 3.0.0
      */
     @WorkerThread
     @NonNull
     @Override
     public List<Message> loadNext() throws Exception {
-//        if (!hasNext() || collection == null) return Collections.emptyList();
-//
-//        Logger.i(">> ChannelViewModel::loadNext()");
-//        final AtomicReference<List<BaseMessage>> result = new AtomicReference<>();
-//        final AtomicReference<Exception> error = new AtomicReference<>();
-//        final CountDownLatch lock = new CountDownLatch(1);
-//
-//        messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
-//        collection.loadNext((messages, e) -> {
-//            try {
-//                if (e == null) {
-//                    messages = messages == null ? Collections.emptyList() : messages;
-//                    cachedMessages.addAll(messages);
-//                    result.set(messages);
-//                    notifyDataSetChanged(StringSet.ACTION_NEXT);
-//                }
-//                error.set(e);
-//            } finally {
-//                lock.countDown();
-//            }
-//        });
-//        lock.await();
-//
-//        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-//        if (error.get() != null) throw error.get();
-//        return result.get();
-        return new ArrayList<>();
+        if (!hasNext() || collection == null) return Collections.emptyList();
+
+        final AtomicReference<List<Message>> result = new AtomicReference<>();
+        final CountDownLatch lock = new CountDownLatch(1);
+
+        messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
+        Message oldestMessage = cachedMessages.getLatestMessage();
+        long startingPoint = 0;
+        if (oldestMessage != null) {
+            startingPoint = oldestMessage.getTimestamp();
+        }
+        JIM.getInstance().getMessageManager().getLocalAndRemoteMessages(conversation,
+                20, startingPoint, JIMConst.PullDirection.NEWER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
+                    @Override
+                    public void onGetLocalList(List<Message> messages, boolean hasRemote) {
+                        if (!hasRemote) {
+                            if(messages.size()<20){
+                                hasNext=false;
+                            }
+                            cachedMessages.addAll(messages);
+                            result.set(messages);
+                            notifyDataSetChanged(StringSet.ACTION_NEXT);
+                            lock.countDown();
+                        }
+                    }
+
+                    @Override
+                    public void onGetRemoteList(List<Message> messages) {
+                        if(messages.size()<20){
+                            hasNext=false;
+                        }
+                        cachedMessages.addAll(messages);
+                        result.set(messages);
+                        notifyDataSetChanged(StringSet.ACTION_NEXT);
+                        lock.countDown();
+                    }
+
+                    @Override
+                    public void onGetRemoteListError(int errorCode) {
+                        result.set(Collections.emptyList());
+                        notifyDataSetChanged(StringSet.ACTION_NEXT);
+                        lock.countDown();
+                    }
+                });
+        lock.await();
+        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
+        return result.get();
     }
 
     /**
@@ -623,9 +660,9 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * Submits feedback for the message.
      *
      * @param message The message for feedback.
-     * @param rating The rating for the message.
+     * @param rating  The rating for the message.
      * @param comment The comment for the message.
-     * since 3.13.0
+     *                since 3.13.0
      */
     public void submitFeedback(@NonNull BaseMessage message, @NonNull FeedbackRating rating, @Nullable String comment) {
         // If using BaseMessage without copying it, the properties of the message are updated immediately when updating the feedback,
@@ -649,7 +686,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * Removes feedback for the message.
      *
      * @param message The message for removing feedback.
-     * since 3.13.0
+     *                since 3.13.0
      */
     public void removeFeedback(@NonNull BaseMessage message) {
         // If using BaseMessage without copying it, the properties of the message are updated immediately when updating the feedback,

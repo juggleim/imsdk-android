@@ -51,12 +51,12 @@ import com.jet.im.kit.vm.ChannelViewModel;
 import com.jet.im.kit.widgets.MentionEditText;
 import com.jet.im.kit.widgets.MessageInputView;
 import com.jet.im.kit.widgets.StatusFrameView;
-import com.jet.im.model.Conversation;
-import com.jet.im.model.ConversationInfo;
-import com.jet.im.model.Message;
-import com.jet.im.model.MessageContent;
-import com.jet.im.model.messages.TextMessage;
-import com.jet.im.model.messages.VoiceMessage;
+import com.juggle.im.model.Conversation;
+import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.messages.TextMessage;
+import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Feedback;
@@ -281,7 +281,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                                 final MessageListParams messageListParams = viewModel.getMessageListParams();
                                 final Message latestMessage = adapter.getItem(messageListParams != null && messageListParams.getReverse() ? 0 : adapter.getItemCount() - 1);
                                 MessageContent content = latestMessage.getContent();
-                                if (content instanceof com.jet.im.model.messages.FileMessage) {
+                                if (content instanceof com.juggle.im.model.messages.FileMessage) {
                                     // Download from files already sent for quick image loading.
                                     //todo 下载
 //                                    FileDownloader.downloadThumbnail(context, (com.jet.im.model.messages.FileMessage) content);
@@ -544,8 +544,8 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             }
             return true;
         } else if (key == R.string.sb_text_channel_anchor_save) {
-            if (message.getContent() instanceof com.jet.im.model.messages.FileMessage) {
-                saveFileMessage((com.jet.im.model.messages.FileMessage) message.getContent());
+            if (message.getContent() instanceof com.juggle.im.model.messages.FileMessage) {
+                saveFileMessage((com.juggle.im.model.messages.FileMessage) message.getContent());
             }
             return true;
         } else if (key == R.string.sb_text_channel_anchor_retry) {

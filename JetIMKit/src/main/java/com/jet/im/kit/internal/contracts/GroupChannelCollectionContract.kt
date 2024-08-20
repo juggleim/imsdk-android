@@ -1,8 +1,8 @@
 package com.jet.im.kit.internal.contracts
 
-import com.jet.im.interfaces.IConversationManager
+import com.juggle.im.interfaces.IConversationManager
 import com.jet.im.kit.cust.handler.ConversationCallbackHandler
-import com.jet.im.model.ConversationInfo
+import com.juggle.im.model.ConversationInfo
 
 internal interface GroupChannelCollectionContract {
     fun setConversationCollectionHandler(handler: IConversationManager.IConversationListener)

@@ -27,7 +27,7 @@ import com.example.demo.http.CustomCallback;
 import com.example.demo.http.ServiceManager;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.activities.ChannelActivity;
-import com.jet.im.model.Conversation;
+import com.juggle.im.model.Conversation;
 
 import java.util.ArrayList;
 import java.util.List;

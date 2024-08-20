@@ -46,7 +46,7 @@ dependencies {
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
 
     implementation 'com.github.bumptech.glide:glide:4.13.0'
-    implementation project(':JetIM')
+    implementation project(':JuggleIM')
     annotationProcessor 'com.github.bumptech.glide:compiler:4.13.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'

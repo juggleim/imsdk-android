@@ -1,12 +1,12 @@
-package com.example.jetimdemo;
+package com.example.JIMdemo;
 
 import android.app.Application;
 import android.net.SSLCertificateSocketFactory;
 
-import com.jet.im.JetIM;
-import com.jet.im.internal.logger.JLogConfig;
-import com.jet.im.internal.logger.JLogLevel;
-import com.jet.im.push.PushConfig;
+import com.juggle.im.JIM;
+import com.juggle.im.internal.logger.JLogConfig;
+import com.juggle.im.internal.logger.JLogLevel;
+import com.juggle.im.push.PushConfig;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -25,12 +25,12 @@ public class JetIMApp extends Application {
         super.onCreate();
         List<String> serverList = new ArrayList<>();
         serverList.add("http://120.48.178.248:8083");
-        JetIM.getInstance().setServer(serverList);
-        JetIM.InitConfig initConfig = new JetIM.InitConfig.Builder()
+        JIM.getInstance().setServer(serverList);
+        JIM.InitConfig initConfig = new JIM.InitConfig.Builder()
                 .setPushConfig(new PushConfig.Builder().build())
                 .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build())
                 .build();
-        JetIM.getInstance().init(this, "appkey", initConfig);
+        JIM.getInstance().init(this, "appkey", initConfig);
         try {
             TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {

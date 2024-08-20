@@ -13,8 +13,8 @@ import com.jet.im.kit.interfaces.OnItemClickListener
 import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.internal.interfaces.OnFeedbackRatingClickListener
 import com.jet.im.kit.model.MessageListUIParams
-import com.jet.im.model.ConversationInfo
-import com.jet.im.model.Message
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
 
 internal class OtherUserMessageViewHolder internal constructor(
     val binding: SbViewOtherUserMessageBinding,

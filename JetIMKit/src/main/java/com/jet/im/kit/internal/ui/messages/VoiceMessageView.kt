@@ -17,8 +17,8 @@ import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.kit.utils.TextUtils
 import com.jet.im.kit.utils.ViewUtils
-import com.jet.im.model.Message
-import com.jet.im.model.messages.VoiceMessage
+import com.juggle.im.model.Message
+import com.juggle.im.model.messages.VoiceMessage
 
 internal class VoiceMessageView @JvmOverloads internal constructor(
     context: Context,

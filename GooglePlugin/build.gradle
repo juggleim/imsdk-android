@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.jet.im.push.google'
+    namespace 'com.juggle.im.push.google'
     compileSdk 33
 
     defaultConfig {
-        minSdk 21
+        minSdk 19
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -30,7 +30,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:23.1.2'
     // Google Play Service
     implementation 'com.google.android.gms:play-services-gcm:17.0.0'
-    implementation project(path: ':JetIM')
+    implementation project(path: ':JuggleIM')
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     testImplementation 'junit:junit:4.13.2'

@@ -2,7 +2,7 @@ package com.jet.im.kit.interfaces;
 
 import androidx.annotation.NonNull;
 
-import com.jet.im.model.Message;
+import com.juggle.im.model.Message;
 import com.sendbird.android.message.BaseMessage;
 
 import java.util.List;
