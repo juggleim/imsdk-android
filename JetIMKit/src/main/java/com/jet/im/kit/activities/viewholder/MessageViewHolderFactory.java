@@ -185,6 +185,13 @@ public class MessageViewHolderFactory {
                 type = MessageType.VIEW_TYPE_FILE_MESSAGE_OTHER;
             }
         }
+        else if (content instanceof FileMessage) {
+            if (MessageUtils.isMine(message)) {
+                type = MessageType.VIEW_TYPE_FILE_MESSAGE_ME;
+            } else {
+                type = MessageType.VIEW_TYPE_FILE_MESSAGE_OTHER;
+            }
+        }
 //        else if (message instanceof MultipleFilesMessage && MessageExtensionsKt.containsOnlyImageFiles((MultipleFilesMessage) message)) {
 //            if (MessageUtils.isMine(message)) {
 //                type = MessageType.VIEW_TYPE_MULTIPLE_FILES_MESSAGE_ME;
