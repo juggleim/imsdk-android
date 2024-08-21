@@ -17,6 +17,14 @@ public class ConversationInfo {
         mUnreadCount = unreadCount;
     }
 
+    public boolean hasUnread() {
+        return mHasUnread;
+    }
+
+    public void setUnread(boolean hasUnread) {
+        mHasUnread = hasUnread;
+    }
+
     public long getSortTime() {
         return mSortTime;
     }
@@ -75,6 +83,7 @@ public class ConversationInfo {
 
     private Conversation mConversation;
     private int mUnreadCount;
+    private boolean mHasUnread;
     private long mSortTime;
     private Message mLastMessage;
     private boolean mIsTop;

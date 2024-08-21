@@ -266,6 +266,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
                 mCore.getDbManager().setMentionInfo(conversation, "");
+                mCore.getDbManager().setUnread(conversation, false);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
                 }
@@ -311,6 +312,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().clearTotalUnreadCount();
                 mCore.getDbManager().clearMentionInfo();
+                mCore.getDbManager().clearUnreadTag();
                 noticeTotalUnreadCountChange();
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
@@ -320,6 +322,45 @@ public class ConversationManager implements IConversationManager, MessageManager
             @Override
             public void onError(int errorCode) {
                 JLogger.e("CONV-ClearTotal", "fail, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void setUnread(Conversation conversation, ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-SetUnread", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        mCore.getWebSocket().setUnread(conversation, mCore.getUserId(), new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                JLogger.i("CONV-SetUnread", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
+                mCore.getDbManager().setUnread(conversation, true);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+                ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
+                if (conversationInfo != null && mListenerMap != null) {
+                    List<ConversationInfo> list = new ArrayList<>();
+                    list.add(conversationInfo);
+                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(list));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-SetUnread", "fail, code is " + errorCode);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
                 }
@@ -581,6 +622,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     if (!totalUnreadCountHasChanged) totalUnreadCountHasChanged = true;
                     mCore.getDbManager().clearUnreadCount(conversation.getConversation(), conversation.getLastReadMessageIndex());
                     mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
+                    mCore.getDbManager().setUnread(conversation.getConversation(), false);
                     break;
                 case TopConvMessage.CONTENT_TYPE:
                     mCore.getDbManager().setTop(conversation.getConversation(), conversation.isTop(), conversation.getTopTime());
@@ -614,6 +656,7 @@ public class ConversationManager implements IConversationManager, MessageManager
     public void onConversationsClearTotalUnread(long clearTime) {
         mCore.getDbManager().clearTotalUnreadCount();
         mCore.getDbManager().clearMentionInfo();
+        mCore.getDbManager().clearUnreadTag();
         noticeTotalUnreadCountChange();
     }
 

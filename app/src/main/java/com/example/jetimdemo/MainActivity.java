@@ -80,11 +80,13 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "rdyIjfi8R");
+
 
 
 
                         }
-                    }, 1000);
+                    }, 500);
 
 
                 }

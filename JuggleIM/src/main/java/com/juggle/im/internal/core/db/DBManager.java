@@ -217,6 +217,14 @@ public class DBManager {
         execSQL(ConversationSql.sqlSetTop(conversation, isTop, topTime));
     }
 
+    public void setUnread(Conversation conversation, boolean isUnread) {
+        execSQL(ConversationSql.sqlSetUnread(conversation, isUnread));
+    }
+
+    public void clearUnreadTag() {
+        execSQL(ConversationSql.sqlClearUnreadTag());
+    }
+
     public void setMentionInfo(Conversation conversation, String mentionInfoJson) {
         execSQL(ConversationSql.sqlSetMention(conversation, mentionInfoJson));
     }

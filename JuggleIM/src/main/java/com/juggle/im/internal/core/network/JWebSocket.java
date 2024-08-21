@@ -236,6 +236,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void setUnread(Conversation conversation, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.markUnread(conversation, userId, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "setUnread, conversation is " + conversation);
+        sendWhenOpen(bytes);
+    }
+
     public void getMergedMessageList(String containerMsgId,
                                      long timestamp,
                                      int count,

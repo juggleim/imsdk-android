@@ -467,6 +467,26 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] markUnread(Conversation conversation, String userId, int index) {
+        Appmessages.Conversation pbConversation = Appmessages.Conversation.newBuilder()
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setTargetId(conversation.getConversationId())
+                .setUnreadTag(1)
+                .build();
+        Appmessages.ConversationsReq req = Appmessages.ConversationsReq.newBuilder()
+                .addConversations(pbConversation)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(MARK_UNREAD)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] getMergedMessageList(String containerMsgId,
                                 long timestamp,
                                 int count,
@@ -1100,6 +1120,7 @@ class PBData {
                 info.setMentionUserList(mentionUserList);
             }
         }
+        info.setUnread(conversation.getUnreadTag()==1);
         return info;
     }
 
@@ -1349,6 +1370,7 @@ class PBData {
     private static final String ADD_CONVERSATION = "add_conver";
     private static final String SET_USER_UNDISTURB = "set_user_undisturb";
     private static final String GET_USER_UNDISTURB = "get_user_undisturb";
+    private static final String MARK_UNREAD = "mark_unread";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -1380,6 +1402,7 @@ class PBData {
             put(ADD_CONVERSATION, PBRcvObj.PBRcvType.addConversationAck);
             put(SET_USER_UNDISTURB, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(GET_USER_UNDISTURB, PBRcvObj.PBRcvType.globalMuteAck);
+            put(MARK_UNREAD, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
         }
     };
 

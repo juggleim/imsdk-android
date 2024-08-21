@@ -326,6 +326,7 @@ message Conversation{
   int64 syncTime = 14;
   int32 isDelete = 15;
   int64 latestUnreadIndex = 16;
+  int32 unreadTag = 17;
 }
 
 enum UpdLatestMsgAction{

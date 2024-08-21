@@ -23,9 +23,12 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-
+    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
+        if (oldVersion == 1 && newVersion == 2) {
+            sqLiteDatabase.execSQL(ConversationSql.SQL_ADD_COLUMN_UNREAD_TAG);
+//            oldVersion = 2;
+        }
     }
 
-    private final static int version = 1;
+    private final static int version = 2;
 }

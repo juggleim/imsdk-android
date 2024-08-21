@@ -70,12 +70,14 @@ class ConversationSql {
         lastMessage.setSeqNo(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_SEQ_NO));
         lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
         info.setLastMessage(lastMessage);
+        boolean hasUnread = CursorHelper.readInt(cursor, COL_UNREAD_TAG) != 0;
+        info.setUnread(hasUnread);
         return info;
     }
 
     static Object[] argsWithUpdateConcreteConversationInfo(ConcreteConversationInfo info) {
         ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
-        Object[] args = new Object[21];
+        Object[] args = new Object[22];
 
         args[0] = info.getSortTime();
         args[1] = lastMessage == null ? null : lastMessage.getMessageId();
@@ -109,14 +111,15 @@ class ConversationSql {
             args[17] = "";
         }
         args[18] = lastMessage == null ? 0 : lastMessage.getSeqNo();
-        args[19] = info.getConversation().getConversationType().getValue();
-        args[20] = info.getConversation().getConversationId();
+        args[19] = info.hasUnread();
+        args[20] = info.getConversation().getConversationType().getValue();
+        args[21] = info.getConversation().getConversationId();
         return args;
     }
 
     static Object[] argsWithInsertConcreteConversationInfo(ConcreteConversationInfo info) {
         ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
-        Object[] args = new Object[21];
+        Object[] args = new Object[22];
         args[0] = info.getConversation().getConversationType().getValue();
         args[1] = info.getConversation().getConversationId();
         args[2] = info.getSortTime();
@@ -150,6 +153,7 @@ class ConversationSql {
             args[19] = "";
         }
         args[20] = lastMessage == null ? 0 : lastMessage.getSeqNo();
+        args[21] = info.hasUnread();
         return args;
     }
 
@@ -236,6 +240,14 @@ class ConversationSql {
         return String.format("UPDATE conversation_info SET is_top = %s, top_time = %s WHERE conversation_type = %s AND conversation_id = '%s'", isTop ? 1 : 0, isTop ? topTime : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
 
+    static String sqlSetUnread(Conversation conversation, boolean isUnread) {
+        return String.format("UPDATE conversation_info SET unread_tag = %s WHERE conversation_type = %s AND conversation_id = '%s'", isUnread ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
+    }
+
+    static String sqlClearUnreadTag() {
+        return "UPDATE conversation_info SET unread_tag = 0";
+    }
+
     static String sqlSetTopTime(Conversation conversation, long time) {
         return String.format("UPDATE conversation_info SET top_time = %s WHERE conversation_type = %s AND conversation_id = '%s'", time, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
@@ -273,21 +285,23 @@ class ConversationSql {
             + "last_message_sender VARCHAR (64),"
             + "last_message_content TEXT,"
             + "last_message_mention_info TEXT,"
-            + "last_message_seq_no INTEGER"
+            + "last_message_seq_no INTEGER,"
+            + "unread_tag BOOLEAN"
             + ")";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation ON conversation_info(conversation_type, conversation_id)";
+    static final String SQL_ADD_COLUMN_UNREAD_TAG = "ALTER TABLE conversation_info ADD COLUMN unread_tag BOOLEAN";
     static final String SQL_INSERT_CONVERSATION = "INSERT OR REPLACE INTO conversation_info"
             + "(conversation_type, conversation_id, timestamp, last_message_id,"
             + "last_read_message_index, last_message_index, is_top, top_time, mute, mention_info,"
             + "last_message_type, last_message_client_uid, last_message_client_msg_no, last_message_direction, last_message_state,"
             + "last_message_has_read, last_message_timestamp, last_message_sender, last_message_content, last_message_mention_info,"
-            + "last_message_seq_no)"
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + "last_message_seq_no, unread_tag) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     static final String SQL_UPDATE_CONVERSATION = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_read_message_index=?, "
             + "last_message_index=?, is_top=?, top_time=?, mute=?, mention_info=?, last_message_type=?,  "
             + "last_message_client_uid=?, last_message_client_msg_no=?, last_message_direction=?, last_message_state=?, "
             + "last_message_has_read=?, last_message_timestamp=?, last_message_sender=?, "
-            + "last_message_content=?, last_message_mention_info=?, last_message_seq_no=? WHERE conversation_type = ? "
+            + "last_message_content=?, last_message_mention_info=?, last_message_seq_no=?, unread_tag=? WHERE conversation_type = ? "
             + "AND conversation_id = ?";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY is_top DESC, top_time DESC, timestamp DESC";
     static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET last_message_id=?, last_message_type=?,"
@@ -371,4 +385,5 @@ class ConversationSql {
     static final String COL_LAST_MESSAGE_SEQ_NO = "last_message_seq_no";
     static final String COL_LAST_MESSAGE_MENTION_INFO = "last_message_mention_info";
     static final String COL_TOTAL_COUNT = "total_count";
+    static final String COL_UNREAD_TAG = "unread_tag";
 }

@@ -1573,8 +1573,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         mCore.getDbManager().insertMessages(messagesToSave);
         updateUserInfo(messagesToSave);
 
-        //合并普通消息
-        List<ConcreteMessage> messagesToUpdateConversation = new ArrayList<>();
         //合并同一类型不同会话的cmd消息列表
         Map<String, Map<Conversation, List<ConcreteMessage>>> mergeSameTypeMessages = new HashMap<>();
         long sendTime = 0;
@@ -1733,9 +1731,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 continue;
             }
 
-            //合并普通消息
-            messagesToUpdateConversation.add(message);
-
             //执行回调
             if (mListenerMap != null) {
                 for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
@@ -1745,7 +1740,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         //处理合并的普通消息
         if (mSendReceiveListener != null) {
-            mSendReceiveListener.onMessageReceive(messagesToUpdateConversation);
+            mSendReceiveListener.onMessageReceive(messagesToSave);
         }
         //处理合并的cmd消息
         for (Map.Entry<String, Map<Conversation, List<ConcreteMessage>>> conversationEntry : mergeSameTypeMessages.entrySet()) {

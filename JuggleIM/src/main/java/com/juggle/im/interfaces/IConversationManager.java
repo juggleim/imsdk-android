@@ -57,6 +57,8 @@ public interface IConversationManager {
 
     void clearTotalUnreadCount(ISimpleCallback callback);
 
+    void setUnread(Conversation conversation, ISimpleCallback callback);
+
     void addListener(String key, IConversationListener listener);
 
     void removeListener(String key);
