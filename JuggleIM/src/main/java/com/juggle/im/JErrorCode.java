@@ -32,6 +32,7 @@ public class JErrorCode {
     public static final int OPERATION_TIMEOUT = 21004;
     public static final int CONNECTION_UNAVAILABLE = 21005;
     public static final int SERVER_SET_ERROR = 21006;
+    public static final int CONNECTION_ALREADY_EXIST = 21007;
 
     public static final int MESSAGE_NOT_EXIST = 22001;
     public static final int MESSAGE_ALREADY_RECALLED = 22002;

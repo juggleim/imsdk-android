@@ -1,5 +1,7 @@
 package com.juggle.im.internal;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.juggle.im.JErrorCode;
@@ -22,46 +24,47 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     @Override
     public void connect(String token) {
         JLogger.i("CON-Connect", "token is " + token);
-        //todo 校验，是否有连接
-
-        if (mCore.getToken() != null && !mCore.getToken().equals(token)) {
+        if (mCore.getToken() != null && mCore.getToken().equals(token)) {
+            //如果是已连接成功或者连接中而且 token 跟之前的一样的话，直接 return
+            if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTED) {
+                JLogger.i("CON-Connect", "connection already exist");
+                if (mConnectionStatusListenerMap != null) {
+                    for (Map.Entry<String, IConnectionStatusListener> entry :
+                            mConnectionStatusListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> {
+                            entry.getValue().onStatusChange(JIMConst.ConnectionStatus.CONNECTED, JErrorCode.CONNECTION_ALREADY_EXIST, "");
+                        });
+                    }
+                }
+                return;
+            } else if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTING
+                || mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
+                JLogger.i("CON-Connect", "same token is connecting");
+                return;
+            }
+            internalConnect(token);
+        } else {
             mCore.setToken(token);
             mCore.setUserId("");
+
+            if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTED
+            || mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTING
+            || mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
+                internalDisconnect(false);
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                mainHandler.postDelayed(() -> {
+                    internalConnect(token);
+                }, 200);
+            } else {
+                internalConnect(token);
+            }
         }
-        openDB();
-        changeStatus(JIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
-
-        NaviTask task = new NaviTask(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
-            @Override
-            public void onSuccess(String userId, List<String> servers) {
-                mCore.getSendHandler().post(() -> {
-                    JLogger.i("CON-Navi", "success, servers is " + servers);
-                    mCore.setServers(servers);
-                    connectWebSocket(token);
-                });
-            }
-
-            @Override
-            public void onError(int errorCode) {
-                JLogger.i("CON-Navi", "fail, errorCode is " + errorCode);
-                if (checkConnectionFailure(errorCode)) {
-                    changeStatus(JIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
-                } else {
-                    changeStatus(JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
-                }
-            }
-        });
-
-        task.start();
     }
 
     @Override
     public void disconnect(boolean receivePush) {
         JLogger.i("CON-Disconnect", "user disconnect receivePush is " + receivePush);
-        if (mCore.getWebSocket() != null) {
-            mCore.getWebSocket().disconnect(receivePush);
-        }
-        changeStatus(JIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE, "");
+        internalDisconnect(receivePush);
     }
 
     @Override
@@ -264,10 +267,45 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
                 stopReconnectTimer();
                 //todo 重连整理
                 if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
-                    connect(mCore.getToken());
+                    internalConnect(mCore.getToken());
                 }
             }
         }, RECONNECT_INTERVAL);
+    }
+
+    private void internalConnect(String token) {
+        openDB();
+        changeStatus(JIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
+
+        NaviTask task = new NaviTask(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
+            @Override
+            public void onSuccess(String userId, List<String> servers) {
+                mCore.getSendHandler().post(() -> {
+                    JLogger.i("CON-Navi", "success, servers is " + servers);
+                    mCore.setServers(servers);
+                    connectWebSocket(token);
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.i("CON-Navi", "fail, errorCode is " + errorCode);
+                if (checkConnectionFailure(errorCode)) {
+                    changeStatus(JIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
+                } else {
+                    changeStatus(JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
+                }
+            }
+        });
+
+        task.start();
+    }
+
+    private void internalDisconnect(boolean receivePush) {
+        if (mCore.getWebSocket() != null) {
+            mCore.getWebSocket().disconnect(receivePush);
+        }
+        changeStatus(JIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE, "");
     }
 
     private void dbStatusNotice(boolean isOpen) {

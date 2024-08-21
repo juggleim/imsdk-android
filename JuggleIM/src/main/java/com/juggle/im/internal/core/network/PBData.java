@@ -40,6 +40,10 @@ import app_messages.Connect;
 import app_messages.Pushtoken;
 
 class PBData {
+    void resetDataConverter() {
+        mConverter = new SimpleDataConverter();
+    }
+
     byte[] connectData(String appKey,
                        String token,
                        String deviceId,
@@ -81,11 +85,13 @@ class PBData {
             }
         }
         Connect.ConnectMsgBody body = builder.build();
+        byte[] payload = mConverter.encode(body.toByteArray());
+
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.connect)
                 .setQos(Qos.yes)
-                .setConnectMsgBody(body)
+                .setPayload(ByteString.copyFrom(payload))
                 .build();
         return msg.toByteArray();
     }
@@ -96,11 +102,12 @@ class PBData {
                 .setCode(code)
                 .setTimestamp(System.currentTimeMillis())
                 .build();
+        byte[] payload = mConverter.encode(body.toByteArray());
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.disconnect)
                 .setQos(Qos.no)
-                .setDisconnectMsgBody(body)
+                .setPayload(ByteString.copyFrom(payload))
                 .build();
         return msg.toByteArray();
     }
@@ -643,12 +650,12 @@ class PBData {
         Connect.PublishAckMsgBody body = Connect.PublishAckMsgBody.newBuilder()
                 .setIndex(index)
                 .build();
-
+        byte[] payload = mConverter.encode(body.toByteArray());
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.publishAck)
                 .setQos(Qos.no)
-                .setPubAckMsgBody(body)
+                .setPayload(ByteString.copyFrom(payload))
                 .build();
         return msg.toByteArray();
     }
@@ -666,87 +673,92 @@ class PBData {
                 obj.setRcvType(PBRcvObj.PBRcvType.pong);
                 return obj;
             }
-            switch (msg.getTestofCase()) {
-                case CONNECTACKMSGBODY:
+            byte[] decodeData = mConverter.decode(msg.getPayload().toByteArray());
+            switch (msg.getCmd()) {
+                case CmdType.connectAck:
                     obj.setRcvType(PBRcvObj.PBRcvType.connectAck);
                     PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
-                    ack.code = msg.getConnectAckMsgBody().getCode();
-                    ack.userId = msg.getConnectAckMsgBody().getUserId();
-                    ack.session = msg.getConnectAckMsgBody().getSession();
-                    ack.extra = msg.getConnectAckMsgBody().getExt();
+                    Connect.ConnectAckMsgBody connectAckMsgBody = Connect.ConnectAckMsgBody.parseFrom(decodeData);
+                    ack.code = connectAckMsgBody.getCode();
+                    ack.userId = connectAckMsgBody.getUserId();
+                    ack.session = connectAckMsgBody.getSession();
+                    ack.extra = connectAckMsgBody.getExt();
                     obj.mConnectAck = ack;
                     break;
 
-                case PUBACKMSGBODY: {
-                    int type = getTypeInCmdMap(msg.getPubAckMsgBody().getIndex());
+                case CmdType.publishAck: {
+                    Connect.PublishAckMsgBody publishAckMsgBody = Connect.PublishAckMsgBody.parseFrom(decodeData);
+                    int type = getTypeInCmdMap(publishAckMsgBody.getIndex());
                     obj.setRcvType(type);
                     if (type == PBRcvObj.PBRcvType.cmdMatchError) {
                         break;
                     }
                     PBRcvObj.PublishMsgAck a = new PBRcvObj.PublishMsgAck();
-                    a.index = msg.getPubAckMsgBody().getIndex();
-                    a.code = msg.getPubAckMsgBody().getCode();
-                    a.msgId = msg.getPubAckMsgBody().getMsgId();
-                    a.timestamp = msg.getPubAckMsgBody().getTimestamp();
-                    a.seqNo = msg.getPubAckMsgBody().getMsgSeqNo();
+                    a.index = publishAckMsgBody.getIndex();
+                    a.code = publishAckMsgBody.getCode();
+                    a.msgId = publishAckMsgBody.getMsgId();
+                    a.timestamp = publishAckMsgBody.getTimestamp();
+                    a.seqNo = publishAckMsgBody.getMsgSeqNo();
                     obj.mPublishMsgAck = a;
                 }
                 break;
 
-                case QRYACKMSGBODY:
-                    int type = getTypeInCmdMap(msg.getQryAckMsgBody().getIndex());
+                case CmdType.queryAck:
+                    Connect.QueryAckMsgBody queryAckMsgBody = Connect.QueryAckMsgBody.parseFrom(decodeData);
+                    int type = getTypeInCmdMap(queryAckMsgBody.getIndex());
                     obj.setRcvType(type);
 
                     switch (type) {
                         case PBRcvObj.PBRcvType.qryHisMessagesAck:
-                            obj = qryHisMsgAckWithImWebsocketMsg(msg);
+                            obj = qryHisMsgAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.syncConversationsAck:
-                            obj = syncConversationsAckWithImWebsocketMsg(msg);
+                            obj = syncConversationsAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.syncMessagesAck:
-                            obj = syncMsgAckWithImWebsocketMsg(msg);
+                            obj = syncMsgAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.qryReadDetailAck:
-                            obj = qryReadDetailAckWithImWebsocketMsg(msg);
+                            obj = qryReadDetailAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.simpleQryAck:
-                            obj = simpleQryAckWithImWebsocketMsg(msg);
+                            obj = simpleQryAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp:
-                            obj = simpleQryAckCallbackTimestampWithImWebsocketMsg(msg);
+                            obj = simpleQryAckCallbackTimestampWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.conversationSetTopAck:
-                            obj = conversationSetTopAckWithImWebsocketMsg(msg);
+                            obj = conversationSetTopAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.qryFileCredAck:
-                            obj = qryFileCredAckWithImWebsocketMsg(msg);
+                            obj = qryFileCredAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.addConversationAck:
-                            obj = addConversationAckWithImWebsocketMsg(msg);
+                            obj = addConversationAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.globalMuteAck:
-                            obj = globalMuteAckWithImWebsocketMsg(msg);
+                            obj = globalMuteAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         default:
                             break;
                     }
                     break;
 
-                case PUBLISHMSGBODY:
-                    if (msg.getPublishMsgBody().getTopic().equals(NTF)) {
-                        Appmessages.Notify ntf = Appmessages.Notify.parseFrom(msg.getPublishMsgBody().getData());
+                case CmdType.publish:
+                    Connect.PublishMsgBody publishMsgBody = Connect.PublishMsgBody.parseFrom(decodeData);
+                    if (publishMsgBody.getTopic().equals(NTF)) {
+                        Appmessages.Notify ntf = Appmessages.Notify.parseFrom(publishMsgBody.getData());
                         if (ntf.getType() == Appmessages.NotifyType.Msg) {
                             obj.setRcvType(PBRcvObj.PBRcvType.publishMsgNtf);
                             PBRcvObj.PublishMsgNtf n = new PBRcvObj.PublishMsgNtf();
                             n.syncTime = ntf.getSyncTime();
                             obj.mPublishMsgNtf = n;
                         }
-                    } else if (msg.getPublishMsgBody().getTopic().equals(MSG)) {
-                        Appmessages.DownMsg downMsg = Appmessages.DownMsg.parseFrom(msg.getPublishMsgBody().getData());
+                    } else if (publishMsgBody.getTopic().equals(MSG)) {
+                        Appmessages.DownMsg downMsg = Appmessages.DownMsg.parseFrom(publishMsgBody.getData());
                         PBRcvObj.PublishMsgBody body = new PBRcvObj.PublishMsgBody();
                         body.rcvMessage = messageWithDownMsg(downMsg);
-                        body.index = msg.getPublishMsgBody().getIndex();
+                        body.index = publishMsgBody.getIndex();
                         body.qos = msg.getQos();
 
                         obj.setRcvType(PBRcvObj.PBRcvType.publishMsg);
@@ -754,15 +766,15 @@ class PBData {
                     }
                     break;
 
-                case DISCONNECTMSGBODY:
+                case CmdType.disconnect:
+                    Connect.DisconnectMsgBody disconnectMsgBody = Connect.DisconnectMsgBody.parseFrom(decodeData);
                     obj.setRcvType(PBRcvObj.PBRcvType.disconnectMsg);
                     PBRcvObj.DisconnectMsg m = new PBRcvObj.DisconnectMsg();
-                    m.code = msg.getDisconnectMsgBody().getCode();
-                    m.timestamp = msg.getDisconnectMsgBody().getTimestamp();
-                    m.extra = msg.getDisconnectMsgBody().getExt();
+                    m.code = disconnectMsgBody.getCode();
+                    m.timestamp = disconnectMsgBody.getTimestamp();
+                    m.extra = disconnectMsgBody.getExt();
                     obj.mDisconnectMsg = m;
                     break;
-
             }
         } catch (InvalidProtocolBufferException e) {
             JLogger.e("PB-Parse", "rcvObjWithBytes msg parse error, msgType is " + obj.getRcvType() + ", exception is " + e.getMessage());
@@ -772,11 +784,11 @@ class PBData {
     }
 
     @NonNull
-    private PBRcvObj qryHisMsgAckWithImWebsocketMsg(@NonNull Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj qryHisMsgAckWithImWebsocketMsg(@NonNull Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
-        Appmessages.DownMsgSet set = Appmessages.DownMsgSet.parseFrom(msg.getQryAckMsgBody().getData());
+        Appmessages.DownMsgSet set = Appmessages.DownMsgSet.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.qryHisMessagesAck);
-        PBRcvObj.QryHisMsgAck a = new PBRcvObj.QryHisMsgAck(msg.getQryAckMsgBody());
+        PBRcvObj.QryHisMsgAck a = new PBRcvObj.QryHisMsgAck(body);
         a.isFinished = set.getIsFinished();
         List<ConcreteMessage> list = new ArrayList<>();
         for (Appmessages.DownMsg downMsg : set.getMsgsList()) {
@@ -788,11 +800,11 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj syncConversationsAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj syncConversationsAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
-        Appmessages.QryConversationsResp resp = Appmessages.QryConversationsResp.parseFrom(msg.getQryAckMsgBody().getData());
+        Appmessages.QryConversationsResp resp = Appmessages.QryConversationsResp.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.syncConversationsAck);
-        PBRcvObj.SyncConvAck a = new PBRcvObj.SyncConvAck(msg.getQryAckMsgBody());
+        PBRcvObj.SyncConvAck a = new PBRcvObj.SyncConvAck(body);
         a.isFinished = resp.getIsFinished();
         List<ConcreteConversationInfo> list = new ArrayList<>();
         List<ConcreteConversationInfo> deletedList = new ArrayList<>();
@@ -810,12 +822,12 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj syncMsgAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj syncMsgAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
-        Appmessages.DownMsgSet set = Appmessages.DownMsgSet.parseFrom(msg.getQryAckMsgBody().getData());
+        Appmessages.DownMsgSet set = Appmessages.DownMsgSet.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.syncMessagesAck);
         //sync 和 query history 共用一个 ack
-        PBRcvObj.QryHisMsgAck a = new PBRcvObj.QryHisMsgAck(msg.getQryAckMsgBody());
+        PBRcvObj.QryHisMsgAck a = new PBRcvObj.QryHisMsgAck(body);
         a.isFinished = set.getIsFinished();
         List<ConcreteMessage> list = new ArrayList<>();
         for (Appmessages.DownMsg downMsg : set.getMsgsList()) {
@@ -827,35 +839,35 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj simpleQryAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) {
+    private PBRcvObj simpleQryAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) {
         PBRcvObj obj = new PBRcvObj();
         obj.setRcvType(PBRcvObj.PBRcvType.simpleQryAck);
-        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(msg.getQryAckMsgBody());
+        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(body);
         return obj;
     }
 
-    private PBRcvObj simpleQryAckCallbackTimestampWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj simpleQryAckCallbackTimestampWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         obj.setRcvType(PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
-        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(msg.getQryAckMsgBody());
+        obj.mSimpleQryAck = new PBRcvObj.SimpleQryAck(body);
         return obj;
     }
 
-    private PBRcvObj conversationSetTopAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj conversationSetTopAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         obj.setRcvType(PBRcvObj.PBRcvType.conversationSetTopAck);
-        Appmessages.TopConversResp resp = Appmessages.TopConversResp.parseFrom(msg.getQryAckMsgBody().getData());
-        PBRcvObj.TimestampQryAck a = new PBRcvObj.TimestampQryAck(msg.getQryAckMsgBody());
+        Appmessages.TopConversResp resp = Appmessages.TopConversResp.parseFrom(body.getData());
+        PBRcvObj.TimestampQryAck a = new PBRcvObj.TimestampQryAck(body);
         a.operationTime = resp.getOptTime();
         obj.mTimestampQryAck = a;
         return obj;
     }
 
-    private PBRcvObj qryReadDetailAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj qryReadDetailAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
-        Appmessages.QryReadDetailResp resp = Appmessages.QryReadDetailResp.parseFrom(msg.getQryAckMsgBody().getData());
+        Appmessages.QryReadDetailResp resp = Appmessages.QryReadDetailResp.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.qryReadDetailAck);
-        PBRcvObj.QryReadDetailAck a = new PBRcvObj.QryReadDetailAck(msg.getQryAckMsgBody());
+        PBRcvObj.QryReadDetailAck a = new PBRcvObj.QryReadDetailAck(body);
         List<UserInfo> readMembers = new ArrayList<>();
         List<UserInfo> unreadMembers = new ArrayList<>();
         for (Appmessages.MemberReadDetailItem item : resp.getReadMembersList()) {
@@ -872,11 +884,11 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj qryFileCredAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj qryFileCredAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         obj.setRcvType(PBRcvObj.PBRcvType.qryFileCredAck);
-        Appmessages.QryFileCredResp resp = Appmessages.QryFileCredResp.parseFrom(msg.getQryAckMsgBody().getData());
-        PBRcvObj.QryFileCredAck a = new PBRcvObj.QryFileCredAck(msg.getQryAckMsgBody());
+        Appmessages.QryFileCredResp resp = Appmessages.QryFileCredResp.parseFrom(body.getData());
+        PBRcvObj.QryFileCredAck a = new PBRcvObj.QryFileCredAck(body);
         a.ossType = UploadOssType.setValue(resp.getOssType().getNumber());
         if (resp.getQiNiuCred() != null) {
             UploadQiNiuCred qiNiuCred = new UploadQiNiuCred();
@@ -893,21 +905,21 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj addConversationAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj addConversationAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         obj.setRcvType(PBRcvObj.PBRcvType.addConversationAck);
-        Appmessages.Conversation resp = Appmessages.Conversation.parseFrom(msg.getQryAckMsgBody().getData());
-        PBRcvObj.ConversationInfoAck a = new PBRcvObj.ConversationInfoAck(msg.getQryAckMsgBody());
+        Appmessages.Conversation resp = Appmessages.Conversation.parseFrom(body.getData());
+        PBRcvObj.ConversationInfoAck a = new PBRcvObj.ConversationInfoAck(body);
         a.conversationInfo = conversationInfoWithPBConversation(resp);
         obj.mConversationInfoAck = a;
         return obj;
     }
 
-    private PBRcvObj globalMuteAckWithImWebsocketMsg(Connect.ImWebsocketMsg msg) throws InvalidProtocolBufferException {
+    private PBRcvObj globalMuteAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         obj.setRcvType(PBRcvObj.PBRcvType.globalMuteAck);
-        Appmessages.UserUndisturb resp = Appmessages.UserUndisturb.parseFrom(msg.getQryAckMsgBody().getData());
-        PBRcvObj.GlobalMuteAck a = new PBRcvObj.GlobalMuteAck(msg.getQryAckMsgBody());
+        Appmessages.UserUndisturb resp = Appmessages.UserUndisturb.parseFrom(body.getData());
+        PBRcvObj.GlobalMuteAck a = new PBRcvObj.GlobalMuteAck(body);
         a.isMute = resp.getSwitch();
         a.timezone = resp.getTimezone();
         List<TimePeriod> periods = new ArrayList<>();
@@ -923,20 +935,22 @@ class PBData {
     }
 
     private Connect.ImWebsocketMsg createImWebsocketMsgWithPublishMsg(Connect.PublishMsgBody publishMsgBody) {
+        byte[] payload = mConverter.encode(publishMsgBody.toByteArray());
         return Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.publish)
                 .setQos(Qos.yes)
-                .setPublishMsgBody(publishMsgBody)
+                .setPayload(ByteString.copyFrom(payload))
                 .build();
     }
 
     private Connect.ImWebsocketMsg createImWebsocketMsgWithQueryMsg(Connect.QueryMsgBody body) {
+        byte[] payload = mConverter.encode(body.toByteArray());
         return Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.query)
                 .setQos(Qos.yes)
-                .setQryMsgBody(body)
+                .setPayload(ByteString.copyFrom(payload))
                 .build();
     }
 
@@ -1310,7 +1324,7 @@ class PBData {
         private static final int yes = 1;
     }
 
-    private static final String PROTO_ID = "1";
+    private static final String PROTO_ID = "jug9le1m";
     private static final int PROTOCOL_VERSION = 1;
     private static final String SDK_VERSION = "1.0.0";
     private static final int PLATFORM_ANDROID = 1;
@@ -1370,5 +1384,6 @@ class PBData {
     };
 
     private final ConcurrentHashMap<Integer, String> mMsgCmdMap = new ConcurrentHashMap<>();
+    private IDataConverter mConverter = new SimpleDataConverter();
 
 }

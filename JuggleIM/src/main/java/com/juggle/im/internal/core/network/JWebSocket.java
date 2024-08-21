@@ -543,6 +543,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     }
 
     private void sendConnectMsg() {
+        mPbData.resetDataConverter();
         byte[] bytes = mPbData.connectData(mAppKey,
                 mToken,
                 mDeviceId,
