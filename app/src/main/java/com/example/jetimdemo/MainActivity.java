@@ -82,6 +82,32 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             Conversation c = new Conversation(Conversation.ConversationType.GROUP, "rdyIjfi8R");
 
+                            int c1 = JIM.getInstance().getConversationManager().getTotalUnreadCount();
+                            JIM.getInstance().getConversationManager().setUnread(c, new IConversationManager.ISimpleCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    int c2 = JIM.getInstance().getConversationManager().getTotalUnreadCount();
+                                    JIM.getInstance().getConversationManager().clearTotalUnreadCount(new IConversationManager.ISimpleCallback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            int c3 = JIM.getInstance().getConversationManager().getTotalUnreadCount();
+                                            int i = 1;
+                                        }
+
+                                        @Override
+                                        public void onError(int errorCode) {
+
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onError(int errorCode) {
+
+                                }
+                            });
+
+
 
 
 
