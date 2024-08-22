@@ -774,7 +774,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             pushRemainCmdAndCallbackError();
             mConnectListener.onWebSocketClose();
         });
-    }
+    } 
 
     private void resetWebSocketClient() {
         mWebSocketClient = null;
