@@ -275,6 +275,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     info.setLastReadMessageIndex(info.getLastMessageIndex());
                     info.setUnreadCount(0);
                     info.setMentionInfo(null);
+                    info.setUnread(false);
 
                     List<ConversationInfo> list = new ArrayList<>();
                     list.add(info);
@@ -354,6 +355,9 @@ public class ConversationManager implements IConversationManager, MessageManager
                     list.add(conversationInfo);
                     for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
                         mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(list));
+                    }
+                    if (conversationInfo.getUnreadCount() == 0) {
+                        noticeTotalUnreadCountChange();
                     }
                 }
             }
