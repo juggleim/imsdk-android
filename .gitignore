@@ -10,8 +10,14 @@
 /.idea/assetWizardSettings.xml
 .DS_Store
 /build
-JetIM/build
+JuggleIM/build
 /captures
 .externalNativeBuild
 .cxx
+.idea
 local.properties
+OPPOPlugin/sdk/build
+XMPlugin/sdk/build
+VIVOPlugin/sdk/build
+
+

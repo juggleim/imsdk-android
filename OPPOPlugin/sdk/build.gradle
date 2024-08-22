@@ -1,0 +1,2 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('com.heytap.msp_3.5.1.aar'))

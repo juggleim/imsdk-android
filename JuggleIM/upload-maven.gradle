@@ -1,0 +1,47 @@
+apply plugin: 'maven-publish'
+//apply plugin: 'signing'
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate() lifecycle method.
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            maven(MavenPublication) {
+
+                // Applies the component for the release build variant.
+                from components.release
+                // You can then customize attributes of the publication as shown below.
+                groupId = 'com.juggle.im'
+                artifactId = 'juggle'
+                version = '1.1.0'
+                pom {
+                    name = 'JuggleIM'
+                    description = 'JuggleIM Android SDK'
+                    licenses {
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                allowInsecureProtocol = true
+                url = 'http://120.48.178.248:8281/repository/maven-releases/'
+                credentials {
+                    username 'admin'
+                    password 'jugglechat'
+                }
+            }
+        }
+    }
+}
+//signing {
+//    sign publishing.publications
+//}
+//
+//tasks.withType(GenerateModuleMetadata) {
+//    enabled = GENERATE_MODULE_METADATA.toBoolean()
+//}

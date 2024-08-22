@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application>
+        <meta-data
+            android:name="com.vivo.push.api_key"
+            android:value="${VIVO_APPKEY}"
+            tools:replace="android:value" />
+        <meta-data
+            android:name="com.vivo.push.app_id"
+            android:value="${VIVO_APPID}"
+            tools:replace="android:value" />
+
+        <receiver
+            android:name=".VIVOPushMessageReceiver"
+            android:exported="false">
+            <intent-filter>
+                <!--接收push消息-->
+                <action android:name="com.vivo.pushclient.action.RECEIVE" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
