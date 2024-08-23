@@ -349,7 +349,7 @@ public class DBManager {
     //被删除的消息也能查出来
     public List<Message> getMessagesByMessageIds(List<String> messageIds) {
         List<Message> result = new ArrayList<>();
-        if (messageIds.size() == 0) {
+        if (messageIds.isEmpty()) {
             return result;
         }
         String sql = MessageSql.sqlGetMessagesByMessageIds(messageIds.size());
@@ -374,7 +374,7 @@ public class DBManager {
     //被删除的消息也能查出来
     public List<ConcreteMessage> getConcreteMessagesByMessageIds(List<String> messageIds) {
         List<ConcreteMessage> result = new ArrayList<>();
-        if (messageIds.size() == 0) {
+        if (messageIds.isEmpty()) {
             return result;
         }
         String sql = MessageSql.sqlGetMessagesByMessageIds(messageIds.size());
