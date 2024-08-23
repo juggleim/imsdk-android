@@ -27,6 +27,7 @@ import com.juggle.im.internal.model.messages.DeleteConvMessage;
 import com.juggle.im.internal.model.messages.DeleteMsgMessage;
 import com.juggle.im.internal.model.messages.GroupReadNtfMessage;
 import com.juggle.im.internal.model.messages.LogCommandMessage;
+import com.juggle.im.internal.model.messages.MarkUnreadMessage;
 import com.juggle.im.internal.model.messages.ReadNtfMessage;
 import com.juggle.im.internal.model.messages.RecallCmdMessage;
 import com.juggle.im.internal.model.messages.TopConvMessage;
@@ -90,6 +91,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(SnapshotPackedVideoMessage.class);
         ContentTypeCenter.getInstance().registerContentType(AddConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ClearTotalUnreadMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(MarkUnreadMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -1016,13 +1018,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 JLogger.i("MSG-Get", "get messages, success");
                 long timestamp;
                 if (messages != null && !messages.isEmpty()) {
+                    Message m;
                     if (direction == JIMConst.PullDirection.NEWER) {
-                        Message m = messages.get(messages.size()-1);
-                        timestamp = m.getTimestamp();
+                        m = messages.get(messages.size() - 1);
                     } else {
-                        Message m = messages.get(0);
-                        timestamp = m.getTimestamp();
+                        m = messages.get(0);
                     }
+                    timestamp = m.getTimestamp();
                 } else {
                     timestamp = 0;
                 }
@@ -1464,26 +1466,17 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     public interface ISendReceiveListener {
         void onMessageSave(ConcreteMessage message);
-
         void onMessageSend(ConcreteMessage message);
-
         void onMessageReceive(List<ConcreteMessage> messages);
-
         void onMessagesRead(Conversation conversation, List<String> messageIds);
-
         void onMessagesSetState(Conversation conversation, long clientMsgNo, Message.MessageState state);
-
         void onMessageRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastMessage);
-
         void onMessageClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastMessage);
-
         void onConversationsAdd(ConcreteConversationInfo conversations);
-
         void onConversationsDelete(List<Conversation> conversations);
-
         void onConversationsUpdate(String updateType, List<ConcreteConversationInfo> conversations);
-
         void onConversationsClearTotalUnread(long clearTime);
+        void onConversationSetUnread(Conversation conversation);
     }
 
     public void setSendReceiveListener(ISendReceiveListener sendReceiveListener) {
@@ -1721,6 +1714,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 continue;
             }
 
+            //mark unread
+            if (message.getContentType().equals(MarkUnreadMessage.CONTENT_TYPE)) {
+                MarkUnreadMessage markUnreadMessage = (MarkUnreadMessage) message.getContent();
+                handleMarkUnreadMessage(markUnreadMessage);
+                continue;
+            }
+
             //cmd消息不回调
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
@@ -1868,6 +1868,14 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private void handleAddConvMessage(ConcreteConversationInfo conversationInfo) {
         if (mSendReceiveListener != null) {
             mSendReceiveListener.onConversationsAdd(conversationInfo);
+        }
+    }
+
+    private void handleMarkUnreadMessage(MarkUnreadMessage markUnreadMessage) {
+        for (Conversation conversation : markUnreadMessage.getConversations()) {
+            if (mSendReceiveListener != null) {
+                mSendReceiveListener.onConversationSetUnread(conversation);
+            }
         }
     }
 
