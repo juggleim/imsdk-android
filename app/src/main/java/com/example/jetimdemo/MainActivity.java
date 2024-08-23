@@ -82,10 +82,6 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             Conversation c = new Conversation(Conversation.ConversationType.GROUP, "rdyIjfi8R");
 
-                            int c1 = JIM.getInstance().getConversationManager().getTotalUnreadCount();
-
-                            List<Message> messages = JIM.getInstance().getMessageManager().getMessages(c, 100, 0, JIMConst.PullDirection.OLDER);
-                            int i = 1;
 
 
 

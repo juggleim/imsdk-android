@@ -6,7 +6,6 @@ import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.internal.core.JIMCore;
-import com.juggle.im.internal.core.db.DBManager;
 import com.juggle.im.internal.core.network.AddConversationCallback;
 import com.juggle.im.internal.core.network.SyncConversationsCallback;
 import com.juggle.im.internal.core.network.WebSocketTimestampCallback;
@@ -345,20 +344,9 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onSuccess(long timestamp) {
                 JLogger.i("CONV-SetUnread", "success");
                 mMessageManager.updateMessageSendSyncTime(timestamp);
-                mCore.getDbManager().setUnread(conversation, true);
+                setDBUnreadAndNotice(conversation);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
-                }
-                ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
-                if (conversationInfo != null && mListenerMap != null) {
-                    List<ConversationInfo> list = new ArrayList<>();
-                    list.add(conversationInfo);
-                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                        mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(list));
-                    }
-                    if (conversationInfo.getUnreadCount() == 0) {
-                        noticeTotalUnreadCountChange();
-                    }
                 }
             }
 
@@ -428,14 +416,14 @@ public class ConversationManager implements IConversationManager, MessageManager
             public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, List<ConcreteConversationInfo> deleteConversationInfoList, boolean isFinished) {
                 JLogger.i("CONV-Sync", "success, conversation count is " + (conversationInfoList == null ? 0 : conversationInfoList.size()) + ", delete count is " + (deleteConversationInfoList == null ? 0 : deleteConversationInfoList.size()));
                 long syncTime = 0;
-                if (conversationInfoList != null && conversationInfoList.size() > 0) {
+                if (conversationInfoList != null && !conversationInfoList.isEmpty()) {
                     updateUserInfo(conversationInfoList);
                     ConcreteConversationInfo last = conversationInfoList.get(conversationInfoList.size() - 1);
                     if (last.getSyncTime() > syncTime) {
                         syncTime = last.getSyncTime();
                     }
                     mCore.getDbManager().insertConversations(conversationInfoList, (insertList, updateList) -> {
-                        if (insertList.size() > 0) {
+                        if (!insertList.isEmpty()) {
                             if (mListenerMap != null) {
                                 List<ConversationInfo> l = new ArrayList<>(insertList);
                                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
@@ -443,7 +431,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                                 }
                             }
                         }
-                        if (updateList.size() > 0) {
+                        if (!updateList.isEmpty()) {
                             if (mListenerMap != null) {
                                 List<ConversationInfo> l = new ArrayList<>(updateList);
                                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
@@ -455,7 +443,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                     });
                     noticeTotalUnreadCountChange();
                 }
-                if (deleteConversationInfoList != null && deleteConversationInfoList.size() > 0) {
+                if (deleteConversationInfoList != null && !deleteConversationInfoList.isEmpty()) {
                     updateUserInfo(deleteConversationInfoList);
                     ConcreteConversationInfo last = deleteConversationInfoList.get(deleteConversationInfoList.size() - 1);
                     if (last.getSyncTime() > syncTime) {
@@ -664,6 +652,11 @@ public class ConversationManager implements IConversationManager, MessageManager
         noticeTotalUnreadCountChange();
     }
 
+    @Override
+    public void onConversationSetUnread(Conversation conversation) {
+        setDBUnreadAndNotice(conversation);
+    }
+
     interface ICompleteCallback {
         void onComplete();
     }
@@ -682,23 +675,20 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         if (conversationInfoMap.isEmpty()) return;
         //统一更新数据库
-        mCore.getDbManager().insertConversations(new ArrayList<>(conversationInfoMap.values()), new DBManager.IDbInsertConversationsCallback() {
-            @Override
-            public void onComplete(List<ConcreteConversationInfo> insertList, List<ConcreteConversationInfo> updateList) {
-                //通知回调
-                if (mListenerMap == null) return;
-                if (!insertList.isEmpty()) {
-                    List<ConversationInfo> l = new ArrayList<>(insertList);
-                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                        mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoAdd(l));
-                    }
+        mCore.getDbManager().insertConversations(new ArrayList<>(conversationInfoMap.values()), (insertList, updateList) -> {
+            //通知回调
+            if (mListenerMap == null) return;
+            if (!insertList.isEmpty()) {
+                List<ConversationInfo> l = new ArrayList<>(insertList);
+                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoAdd(l));
                 }
-                if (!updateList.isEmpty()) {
-                    List<ConversationInfo> l = new ArrayList<>(updateList);
-                    for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                        mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(l));
+            }
+            if (!updateList.isEmpty()) {
+                List<ConversationInfo> l = new ArrayList<>(updateList);
+                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(l));
 
-                    }
                 }
             }
         });
@@ -977,6 +967,21 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
+    private void setDBUnreadAndNotice(Conversation conversation) {
+        mCore.getDbManager().setUnread(conversation, true);
+        ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
+        if (conversationInfo != null && mListenerMap != null) {
+            List<ConversationInfo> list = new ArrayList<>();
+            list.add(conversationInfo);
+            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(list));
+            }
+            if (conversationInfo.getUnreadCount() == 0) {
+                noticeTotalUnreadCountChange();
+            }
+        }
+    }
+
     private ConcreteConversationInfo doConversationsAdd(ConcreteConversationInfo
                                                                 conversationInfo) {
         if (conversationInfo == null || conversationInfo.getConversation() == null) return null;
@@ -989,7 +994,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         ConcreteConversationInfo old = mCore.getDbManager().getConversationInfo(conversationInfo.getConversation());
         if (old == null) {
             mCore.getDbManager().insertConversations(convList, (insertList, updateList) -> {
-                if (insertList.size() > 0) {
+                if (!insertList.isEmpty()) {
                     if (mListenerMap != null) {
                         List<ConversationInfo> l = new ArrayList<>(insertList);
                         for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
