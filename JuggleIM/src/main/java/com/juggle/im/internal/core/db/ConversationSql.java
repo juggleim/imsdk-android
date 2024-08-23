@@ -43,33 +43,33 @@ class ConversationSql {
         long lastMessageClientMsgNo = CursorHelper.readLong(cursor, COL_LAST_MESSAGE_CLIENT_MSG_NO);
         if (TextUtils.isEmpty(lastMessageId) && TextUtils.isEmpty(lastMessageClientUid) && lastMessageClientMsgNo <= 0) {
             info.setLastMessage(null);
-            return info;
+        } else {
+            ConcreteMessage lastMessage = new ConcreteMessage();
+            lastMessage.setConversation(c);
+            lastMessage.setContentType(CursorHelper.readString(cursor, COL_LAST_MESSAGE_TYPE));
+            lastMessage.setMessageId(lastMessageId);
+            lastMessage.setClientUid(lastMessageClientUid);
+            lastMessage.setClientMsgNo(lastMessageClientMsgNo);
+            Message.MessageDirection direction = Message.MessageDirection.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_DIRECTION));
+            lastMessage.setDirection(direction);
+            Message.MessageState state = Message.MessageState.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_STATE));
+            lastMessage.setState(state);
+            boolean hasRead = CursorHelper.readInt(cursor, COL_LAST_MESSAGE_HAS_READ) != 0;
+            lastMessage.setHasRead(hasRead);
+            lastMessage.setTimestamp(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_TIMESTAMP));
+            lastMessage.setSenderUserId(CursorHelper.readString(cursor, COL_LAST_MESSAGE_SENDER));
+            String content = CursorHelper.readString(cursor, COL_LAST_MESSAGE_CONTENT);
+            if (content != null) {
+                lastMessage.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), lastMessage.getContentType()));
+            }
+            String mentionInfoStr = CursorHelper.readString(cursor, COL_LAST_MESSAGE_MENTION_INFO);
+            if (!TextUtils.isEmpty(mentionInfoStr)) {
+                lastMessage.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
+            }
+            lastMessage.setSeqNo(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_SEQ_NO));
+            lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
+            info.setLastMessage(lastMessage);
         }
-        ConcreteMessage lastMessage = new ConcreteMessage();
-        lastMessage.setConversation(c);
-        lastMessage.setContentType(CursorHelper.readString(cursor, COL_LAST_MESSAGE_TYPE));
-        lastMessage.setMessageId(lastMessageId);
-        lastMessage.setClientUid(lastMessageClientUid);
-        lastMessage.setClientMsgNo(lastMessageClientMsgNo);
-        Message.MessageDirection direction = Message.MessageDirection.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_DIRECTION));
-        lastMessage.setDirection(direction);
-        Message.MessageState state = Message.MessageState.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_STATE));
-        lastMessage.setState(state);
-        boolean hasRead = CursorHelper.readInt(cursor, COL_LAST_MESSAGE_HAS_READ) != 0;
-        lastMessage.setHasRead(hasRead);
-        lastMessage.setTimestamp(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_TIMESTAMP));
-        lastMessage.setSenderUserId(CursorHelper.readString(cursor, COL_LAST_MESSAGE_SENDER));
-        String content = CursorHelper.readString(cursor, COL_LAST_MESSAGE_CONTENT);
-        if (content != null) {
-            lastMessage.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), lastMessage.getContentType()));
-        }
-        String mentionInfoStr = CursorHelper.readString(cursor, COL_LAST_MESSAGE_MENTION_INFO);
-        if (!TextUtils.isEmpty(mentionInfoStr)) {
-            lastMessage.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
-        }
-        lastMessage.setSeqNo(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_SEQ_NO));
-        lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
-        info.setLastMessage(lastMessage);
         boolean hasUnread = CursorHelper.readInt(cursor, COL_UNREAD_TAG) != 0;
         info.setUnread(hasUnread);
         return info;
@@ -81,7 +81,6 @@ class ConversationSql {
 
         args[0] = info.getSortTime();
         args[1] = lastMessage == null ? null : lastMessage.getMessageId();
-        ;
         args[2] = info.getLastReadMessageIndex();
         args[3] = info.getLastMessageIndex();
         args[4] = info.isTop();
