@@ -146,6 +146,7 @@ class PBRcvObj {
         static final int qryFileCredAck = 15;
         static final int addConversationAck = 16;
         static final int globalMuteAck = 17;
+        static final int qryFirstUnreadMsgAck = 20;
     }
 
     public int getRcvType() {

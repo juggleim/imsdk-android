@@ -81,19 +81,54 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
 
-                            int totalCount = JIM.getInstance().getConversationManager().getTotalUnreadCount();
-                            int[] types1 = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
-                            int[] types2 = {Conversation.ConversationType.PRIVATE.getValue()};
-                            int[] types3 = {Conversation.ConversationType.GROUP.getValue()};
-                            int[] types4 = {};
-                            int[] types5 = null;
-                            int count1 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types1);
-                            int count2 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types2);
-                            int count3 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types3);
-                            int count4 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types4);
-                            int count5 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types5);
-                            Log.i("lifei", "totalCount is " + totalCount + ", count1 is " + count1 + ", count2 is " + count2 + ", count3 is " + count3 + ", count4 is " + count4 + ", count5 is " + count5);
+//                            int totalCount = JIM.getInstance().getConversationManager().getTotalUnreadCount();
+//                            int[] types1 = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
+//                            int[] types2 = {Conversation.ConversationType.PRIVATE.getValue()};
+//                            int[] types3 = {Conversation.ConversationType.GROUP.getValue()};
+//                            int[] types4 = {};
+//                            int[] types5 = null;
+//                            int count1 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types1);
+//                            int count2 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types2);
+//                            int count3 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types3);
+//                            int count4 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types4);
+//                            int count5 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types5);
+//                            Log.i("lifei", "totalCount is " + totalCount + ", count1 is " + count1 + ", count2 is " + count2 + ", count3 is " + count3 + ", count4 is " + count4 + ", count5 is " + count5);
 
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "nkXFkybGA");
+//                            JIM.getInstance().getConversationManager().clearUnreadCount(c, new IConversationManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    JIM.getInstance().getMessageManager().getFirstUnreadMessage(c, new IMessageManager.IGetMessagesCallback() {
+//                                        @Override
+//                                        public void onSuccess(List<Message> messages) {
+//                                            int i = 1;
+//                                        }
+//
+//                                        @Override
+//                                        public void onError(int errorCode) {
+//                                            int i = 1;
+//
+//                                        }
+//                                    });
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//
+//                                }
+//                            });
+                            JIM.getInstance().getMessageManager().getFirstUnreadMessage(c, new IMessageManager.IGetMessagesCallback() {
+                                @Override
+                                public void onSuccess(List<Message> messages) {
+                                    int i = 1;
+                                }
+
+                                @Override
+                                public void onError(int errorCode) {
+                                    int i = 1;
+
+                                }
+                            });
 
 
 

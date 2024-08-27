@@ -185,7 +185,6 @@ class PBData {
                 topic = C_MSG;
                 break;
             case SYSTEM:
-                //todo 系统消息还没做
                 break;
         }
 
@@ -269,9 +268,11 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] clearUnreadCountData(Conversation conversation, String userId, long msgIndex, int index) {
+    byte[] clearUnreadCountData(Conversation conversation, String userId, long msgIndex, String msgId, long timestamp, int index) {
         Appmessages.Conversation.Builder builder = pbConversationFromConversation(conversation);
         builder.setLatestReadIndex(msgIndex);
+        builder.setLatestReadMsgId(msgId);
+        builder.setLatestReadMsgTime(timestamp);
         Appmessages.Conversation c = builder.build();
         Appmessages.ClearUnreadReq req = Appmessages.ClearUnreadReq.newBuilder()
                 .addConversations(c)
@@ -657,6 +658,22 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] qryFirstUnreadMessage(Conversation conversation, int index) {
+        Appmessages.QryFirstUnreadMsgReq req = Appmessages.QryFirstUnreadMsgReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelType(channelTypeFromConversationType(conversation.getConversationType()))
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_FIRST_UNREAD_MSG)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -758,6 +775,9 @@ class PBData {
                             break;
                         case PBRcvObj.PBRcvType.globalMuteAck:
                             obj = globalMuteAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.qryFirstUnreadMsgAck:
+                            obj = qryFirstUnreadMsgAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         default:
                             break;
@@ -951,6 +971,22 @@ class PBData {
         }
         a.periods = periods;
         obj.mGlobalMuteAck = a;
+        return obj;
+    }
+
+    private PBRcvObj qryFirstUnreadMsgAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.qryFirstUnreadMsgAck);
+        PBRcvObj.QryHisMsgAck a = new PBRcvObj.QryHisMsgAck(body);
+        a.isFinished = true;
+        List<ConcreteMessage> messages = new ArrayList<>();
+        if (!body.getData().isEmpty()) {
+            Appmessages.DownMsg downMsg = Appmessages.DownMsg.parseFrom(body.getData());
+            ConcreteMessage message = messageWithDownMsg(downMsg);
+            messages.add(message);
+        }
+        a.msgList = messages;
+        obj.mQryHisMsgAck = a;
         return obj;
     }
 
@@ -1371,6 +1407,7 @@ class PBData {
     private static final String SET_USER_UNDISTURB = "set_user_undisturb";
     private static final String GET_USER_UNDISTURB = "get_user_undisturb";
     private static final String MARK_UNREAD = "mark_unread";
+    private static final String QRY_FIRST_UNREAD_MSG = "qry_first_unread_msg";
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
@@ -1403,6 +1440,7 @@ class PBData {
             put(SET_USER_UNDISTURB, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(GET_USER_UNDISTURB, PBRcvObj.PBRcvType.globalMuteAck);
             put(MARK_UNREAD, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(QRY_FIRST_UNREAD_MSG, PBRcvObj.PBRcvType.qryFirstUnreadMsgAck);
         }
     };
 

@@ -180,9 +180,11 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     public void clearUnreadCount(Conversation conversation,
                                  String userId,
                                  long msgIndex,
+                                 String msgId,
+                                 long timestamp,
                                  WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, mCmdIndex++);
+        byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, msgId, timestamp, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "clearUnreadCount, conversation is " + conversation + ", msgIndex is " + msgIndex);
         sendWhenOpen(bytes);
@@ -318,6 +320,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.getGlobalMute(userId, mCmdIndex++);
         JLogger.i("WS-Send", "getGlobalMute");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getFirstUnreadMessage(Conversation conversation, QryHisMsgCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.qryFirstUnreadMessage(conversation, mCmdIndex++);
+        JLogger.i("WS-Send", "getFirstUnreadMessage");
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }
@@ -485,7 +495,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.globalMuteAck:
                 handleGlobalMuteAck(obj.mGlobalMuteAck);
                 break;
-
+            case PBRcvObj.PBRcvType.qryFirstUnreadMsgAck:
+                handleFirstUnreadMsgAck(obj.mQryHisMsgAck);
+                break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
                 break;
@@ -760,6 +772,20 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.isMute, ack.timezone, ack.periods);
+            }
+        }
+    }
+
+    private void handleFirstUnreadMsgAck(PBRcvObj.QryHisMsgAck ack) {
+        JLogger.i("WS-Receive", "handleFirstUnreadMsgAck, code is " + ack.code);
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof QryHisMsgCallback) {
+            QryHisMsgCallback callback = (QryHisMsgCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.msgList, ack.isFinished);
             }
         }
     }

@@ -526,6 +526,28 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void getFirstUnreadMessage(Conversation conversation, IGetMessagesCallback callback) {
+        mCore.getWebSocket().getFirstUnreadMessage(conversation, new QryHisMsgCallback() {
+            @Override
+            public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
+                JLogger.i("MSG-FirstUnread", "success");
+                if (callback != null) {
+                    List<Message> result = new ArrayList<>(messages);
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(result));
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-FirstUnread", "error, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
     public List<Message> searchMessage(String searchContent, int count, long timestamp, JIMConst.PullDirection direction) {
         return getMessages(
                 count, timestamp, direction,
