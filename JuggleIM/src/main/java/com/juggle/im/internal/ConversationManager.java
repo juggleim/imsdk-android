@@ -240,6 +240,11 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public int getUnreadCountWithTypes(int[] conversationTypes) {
+        return mCore.getDbManager().getUnreadCountWithTypes(conversationTypes);
+    }
+
+    @Override
     public void clearUnreadCount(Conversation conversation, ISimpleCallback callback) {
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;

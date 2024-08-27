@@ -261,6 +261,18 @@ public class DBManager {
         return count;
     }
 
+    public int getUnreadCountWithTypes(int[] conversationTypes) {
+        Cursor cursor = rawQuery(ConversationSql.sqlGetUnreadCountWithTypes(conversationTypes), null);
+        int count = 0;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+            }
+            cursor.close();
+        }
+        return count;
+    }
+
     public void updateSortTime(Conversation conversation, long sortTime) {
         execSQL(ConversationSql.sqlUpdateSortTime(conversation, sortTime));
     }

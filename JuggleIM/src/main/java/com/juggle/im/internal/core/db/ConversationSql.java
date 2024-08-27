@@ -231,6 +231,10 @@ class ConversationSql {
 
     static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index = last_read_message_index AND unread_tag = 1 THEN 1 WHEN last_message_index - last_read_message_index > 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info WHERE mute = 0";
 
+    static String sqlGetUnreadCountWithTypes(int[] conversationTypes) {
+        return SQL_GET_TOTAL_UNREAD_COUNT + sqlAndConversationTypeIn(conversationTypes);
+    }
+
     static String sqlSetMute(Conversation conversation, boolean isMute) {
         return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
     }
@@ -325,16 +329,7 @@ class ConversationSql {
         } else {
             sql.append(" timestamp > ").append(timestamp);
         }
-        if (conversationTypes != null && conversationTypes.length > 0) {
-            sql.append(" AND conversation_type in (");
-            for (int i = 0; i < conversationTypes.length; i++) {
-                if (i > 0) {
-                    sql.append(", ");
-                }
-                sql.append(conversationTypes[i]);
-            }
-            sql.append(")");
-        }
+        sql.append(sqlAndConversationTypeIn(conversationTypes));
         sql.append(" ORDER BY is_top DESC, top_time DESC, timestamp DESC").append(" LIMIT ").append(count);
         return sql.toString();
     }
@@ -347,6 +342,13 @@ class ConversationSql {
         } else {
             sql.append(" timestamp > ").append(timestamp);
         }
+        sql.append(sqlAndConversationTypeIn(conversationTypes));
+        sql.append(" ORDER BY top_time DESC").append(" LIMIT ").append(count);
+        return sql.toString();
+    }
+
+    private static String sqlAndConversationTypeIn(int[] conversationTypes) {
+        StringBuilder sql = new StringBuilder();
         if (conversationTypes != null && conversationTypes.length > 0) {
             sql.append(" AND conversation_type in (");
             for (int i = 0; i < conversationTypes.length; i++) {
@@ -357,7 +359,6 @@ class ConversationSql {
             }
             sql.append(")");
         }
-        sql.append(" ORDER BY top_time DESC").append(" LIMIT ").append(count);
         return sql.toString();
     }
 

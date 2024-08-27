@@ -80,7 +80,19 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "rdyIjfi8R");
+
+                            int totalCount = JIM.getInstance().getConversationManager().getTotalUnreadCount();
+                            int[] types1 = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
+                            int[] types2 = {Conversation.ConversationType.PRIVATE.getValue()};
+                            int[] types3 = {Conversation.ConversationType.GROUP.getValue()};
+                            int[] types4 = {};
+                            int[] types5 = null;
+                            int count1 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types1);
+                            int count2 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types2);
+                            int count3 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types3);
+                            int count4 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types4);
+                            int count5 = JIM.getInstance().getConversationManager().getUnreadCountWithTypes(types5);
+                            Log.i("lifei", "totalCount is " + totalCount + ", count1 is " + count1 + ", count2 is " + count2 + ", count3 is " + count3 + ", count4 is " + count4 + ", count5 is " + count5);
 
 
 
