@@ -293,12 +293,12 @@ class MessageSql {
         return sql;
     }
 
-    static String sqlUpdateLocalAttribute(String messageId, String localAttribute) {
-        return String.format("UPDATE message SET local_attribute = '%s' WHERE message_uid = '%s'", localAttribute, messageId);
+    static String sqlUpdateLocalAttribute(String messageId) {
+        return String.format("UPDATE message SET local_attribute = ? WHERE message_uid = '%s'", messageId);
     }
 
-    static String sqlUpdateLocalAttribute(long clientMsgNo, String localAttribute) {
-        return String.format("UPDATE message SET local_attribute = '%s' WHERE id = '%s'", localAttribute, clientMsgNo);
+    static String sqlUpdateLocalAttribute(long clientMsgNo) {
+        return String.format("UPDATE message SET local_attribute = ? WHERE id = '%s'", clientMsgNo);
     }
 
     static String sqlGetLocalAttribute(String messageId) {

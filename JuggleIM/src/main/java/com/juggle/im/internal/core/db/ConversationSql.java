@@ -209,8 +209,8 @@ class ConversationSql {
         return String.format("DELETE FROM conversation_info WHERE conversation_type = %s AND conversation_id = ?", type);
     }
 
-    static String sqlSetDraft(Conversation conversation, String draft) {
-        return String.format("UPDATE conversation_info SET draft = '%s' WHERE conversation_type = %s AND conversation_id = '%s'", draft, conversation.getConversationType().getValue(), conversation.getConversationId());
+    static String sqlSetDraft(Conversation conversation) {
+        return String.format("UPDATE conversation_info SET draft = ? WHERE conversation_type = %s AND conversation_id = '%s'", conversation.getConversationType().getValue(), conversation.getConversationId());
     }
 
     static String sqlClearUnreadCount(Conversation conversation, long msgIndex) {

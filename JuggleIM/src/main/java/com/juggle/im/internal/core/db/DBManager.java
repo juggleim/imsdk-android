@@ -206,7 +206,7 @@ public class DBManager {
     }
 
     public void setDraft(Conversation conversation, String draft) {
-        execSQL(ConversationSql.sqlSetDraft(conversation, draft));
+        execSQL(ConversationSql.sqlSetDraft(conversation), new Object[]{draft == null ? "" : draft});
     }
 
     public void setMute(Conversation conversation, boolean isMute) {
@@ -437,7 +437,7 @@ public class DBManager {
 
     public void updateLocalAttribute(String messageId, String attribute) {
         if (TextUtils.isEmpty(messageId)) return;
-        execSQL(MessageSql.sqlUpdateLocalAttribute(messageId, attribute == null ? "" : attribute));
+        execSQL(MessageSql.sqlUpdateLocalAttribute(messageId), new Object[]{attribute == null ? "" : attribute});
     }
 
     public String getLocalAttribute(String messageId) {
@@ -455,7 +455,7 @@ public class DBManager {
     }
 
     public void updateLocalAttribute(long clientMsgNo, String attribute) {
-        execSQL(MessageSql.sqlUpdateLocalAttribute(clientMsgNo, attribute == null ? "" : attribute));
+        execSQL(MessageSql.sqlUpdateLocalAttribute(clientMsgNo), new Object[]{attribute == null ? "" : attribute});
     }
 
     public String getLocalAttribute(long clientMsgNo) {
