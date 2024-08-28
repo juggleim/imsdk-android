@@ -88,6 +88,10 @@ public class JIM {
         return mUserInfoManager;
     }
 
+    public String getCurrentUserId() {
+        return mCore.getUserId();
+    }
+
     public String getDeviceId(Context context) {
         return JUtility.getDeviceId(context);
     }
