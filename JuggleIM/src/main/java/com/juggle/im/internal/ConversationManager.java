@@ -263,7 +263,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             }
             return;
         }
-        mCore.getWebSocket().clearUnreadCount(conversation, mCore.getUserId(), info.getLastMessageIndex(), info.getLastMessage().getMessageId(), info.getLastMessage().getTimestamp(), new WebSocketTimestampCallback() {
+        mCore.getWebSocket().clearUnreadCount(conversation, mCore.getUserId(), info.getLastMessageIndex(), info.getLastMessage() == null ? "" : info.getLastMessage().getMessageId(), info.getLastMessage() == null ? 0L : info.getLastMessage().getTimestamp(), new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("CONV-ClearUnread", "success");
