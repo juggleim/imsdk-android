@@ -580,6 +580,17 @@ public class DBManager {
         execSQL(MessageSql.sqlClearMessages(conversation, startTime, senderId));
     }
 
+    public void clearChatroomMessageExclude(List<String> chatroomIds) {
+        String[] args = chatroomIds.toArray(new String[0]);
+        execSQL(MessageSql.sqlClearChatroomMessagesExclude(chatroomIds.size()), args);
+    }
+
+    public void clearChatroomMessage(String chatroomId) {
+        String[] args = new String[1];
+        args[0] = chatroomId;
+        execSQL(MessageSql.SQL_CLEAR_CHATROOM_MESSAGES_IN, args);
+    }
+
     public UserInfo getUserInfo(String userId) {
         if (TextUtils.isEmpty(userId)) {
             return null;

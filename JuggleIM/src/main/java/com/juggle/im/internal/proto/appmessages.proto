@@ -124,6 +124,9 @@ enum NotifyType {
   Default = 0;
   Msg = 1;
   ChatroomMsg = 2;
+  ChatroomAtt =3;
+  ChatroomEvent = 4;  // 聊天室事件通知，如有人加入/退出
+  ChatroomDestroy = 5; // 聊天室销毁
 }
 message SyncMsgReq{
   int64 syncTime = 1;//收件箱同步时间
@@ -329,11 +332,6 @@ message Conversation{
   int32 unreadTag = 17;
   string latestReadMsgId = 18;
   int64 latestReadMsgTime = 19;
-}
-
-message QryFirstUnreadMsgReq{
-  string targetId = 1;
-  ChannelType channelType = 2;
 }
 
 enum UpdLatestMsgAction{
@@ -692,11 +690,19 @@ message QryGrpMemberSettingsResp{
   map<string,string> memberSettings = 6;
 }
 
+message QryFirstUnreadMsgReq{
+  string targetId = 1;
+  ChannelType channelType = 2;
+}
+
 // chatroom
 message SyncChatroomReq{
   string chatroomId = 1;
   int64 syncTime = 2;
   int64 attSyncTime = 3;
+}
+message SyncChatroomMsgResp{
+  repeated DownMsg msgs = 1;
 }
 message SyncChatroomResp{
   DownMsgSet msgs = 1;
@@ -735,10 +741,32 @@ enum ChatMembersDispatchType {
   JoinChatroom = 1;
   QuitChatroom = 2;
 }
+message ChatAttBatchReq{
+  repeated ChatAttReq atts = 1;
+}
 message ChatAttReq{
   string key = 1;
   string value = 2;
-  bool isForce = 3;
+  bool isForce = 3;  //是否强制覆盖，否：则该key已有值时，不覆盖
+  bool isAutoDel = 4; //是否在该属性所有者离开房间时自动删除；否：则不自动删除；
+  UpMsg msg = 5; //设置属性时，同时发送一条聊天室消息；
+}
+message ChatAttBatchResp{
+  repeated ChatAttResp attResps = 1;
+}
+message ChatAttResp{
+  string key = 1;
+  int32 code = 2; // 设置属性时的返回码
+  int64 attTime = 3;  //属性的设置时间
+
+  //当设置属性时，附带发送消息时，下列属性有效
+  int32 msgCode = 11; // 消息发送的响应码
+  string msgId = 12;  //消息的id
+  int64 msgTime = 13; //消息的时间戳
+  int64 msgSeq = 14; //消息的序号
+}
+message SyncChatroomAttResp{
+  repeated ChatAttItem atts = 1;
 }
 message ChatAttItem{
   string key = 1;
@@ -874,4 +902,21 @@ message BusinessLog {
   string method = 5;
   string message = 6;
   string appKey = 9;
+}
+
+message PushSwitch{
+  int32 switch = 1;  //0：关闭；1：开启；
+}
+
+message ChrmEvent{
+  ChrmEventType eventType = 1;
+  string chatId = 2;
+  string userId = 3;
+  int64 eventTime = 4;
+}
+enum ChrmEventType{
+  Join = 0;  //加入聊天室通知
+  Quit = 1;  // 主动退出聊天室通知
+  Kick = 2;   // 踢出聊天室通知
+  Fallout = 3;  // 自动掉出聊天室通知
 }

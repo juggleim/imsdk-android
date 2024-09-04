@@ -8,6 +8,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.juggle.im.JIMConst;
 import com.juggle.im.internal.ContentTypeCenter;
+import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.MergeInfo;
@@ -658,6 +659,111 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] joinChatroom(String chatroomId, int index) {
+        Appmessages.ChatroomInfo info = Appmessages.ChatroomInfo.newBuilder()
+                .setChatId(chatroomId)
+                .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(C_JOIN)
+                .setTargetId(chatroomId)
+                .setData(info.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] quitChatroom(String chatroomId, int index) {
+        Appmessages.ChatroomInfo info = Appmessages.ChatroomInfo.newBuilder()
+                .setChatId(chatroomId)
+                .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(C_QUIT)
+                .setTargetId(chatroomId)
+                .setData(info.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] syncChatroomMessages(String chatroomId, long syncTime, int index) {
+        Appmessages.SyncChatroomReq req = Appmessages.SyncChatroomReq.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSyncTime(syncTime)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(SYNC_CHATROOM_MESSAGE)
+                .setTargetId(chatroomId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] syncChatroomAttributes(String chatroomId, long syncTime, int index) {
+        Appmessages.SyncChatroomReq req = Appmessages.SyncChatroomReq.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSyncTime(syncTime)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(SYNC_CHATROOM_ATTS)
+                .setTargetId(chatroomId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] setAttributes(String chatroomId, Map<String, String> attributes, int index) {
+        Appmessages.ChatAttBatchReq.Builder builder = Appmessages.ChatAttBatchReq.newBuilder();
+        for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            Appmessages.ChatAttReq req = Appmessages.ChatAttReq.newBuilder()
+                    .setKey(entry.getKey())
+                    .setValue(entry.getValue())
+                    .setIsForce(false)
+                    .build();
+            builder.addAtts(req);
+        }
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(BATCH_ADD_ATT)
+                .setTargetId(chatroomId)
+                .setData(builder.build().toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] removeAttributes(String chatroomId, List<String> keys, int index) {
+        Appmessages.ChatAttBatchReq.Builder builder = Appmessages.ChatAttBatchReq.newBuilder();
+        for (String key : keys) {
+            Appmessages.ChatAttReq req = Appmessages.ChatAttReq.newBuilder()
+                    .setKey(key)
+                    .setIsForce(false)
+                    .build();
+            builder.addAtts(req);
+        }
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(BATCH_DEL_ATT)
+                .setTargetId(chatroomId)
+                .setData(builder.build().toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] qryFirstUnreadMessage(Conversation conversation, int index) {
         Appmessages.QryFirstUnreadMsgReq req = Appmessages.QryFirstUnreadMsgReq.newBuilder()
                 .setTargetId(conversation.getConversationId())
@@ -779,6 +885,18 @@ class PBData {
                         case PBRcvObj.PBRcvType.qryFirstUnreadMsgAck:
                             obj = qryFirstUnreadMsgAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
+                        case PBRcvObj.PBRcvType.syncChatroomMsgAck:
+                            obj = syncChatroomMsgAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.setChatroomAttrAck:
+                            obj = setChatroomAttrAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.removeChatroomAttrAck:
+                            obj = removeChatroomAttrAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.syncChatroomAttrsAck:
+                            obj = syncChatroomAttrsAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
                         default:
                             break;
                     }
@@ -793,6 +911,24 @@ class PBData {
                             PBRcvObj.PublishMsgNtf n = new PBRcvObj.PublishMsgNtf();
                             n.syncTime = ntf.getSyncTime();
                             obj.mPublishMsgNtf = n;
+                        } else if (ntf.getType() == Appmessages.NotifyType.ChatroomMsg) {
+                            obj.setRcvType(PBRcvObj.PBRcvType.publishChatroomMsgNtf);
+                            PBRcvObj.PublishMsgNtf n = new PBRcvObj.PublishMsgNtf();
+                            n.syncTime = ntf.getSyncTime();
+                            n.chatroomId = ntf.getChatroomId();
+                            obj.mPublishMsgNtf = n;
+                        } else if (ntf.getType() == Appmessages.NotifyType.ChatroomAtt) {
+                            obj.setRcvType(PBRcvObj.PBRcvType.publishChatroomAttrNtf);
+                            PBRcvObj.PublishMsgNtf n = new PBRcvObj.PublishMsgNtf();
+                            n.syncTime = ntf.getSyncTime();
+                            n.chatroomId = ntf.getChatroomId();
+                            obj.mPublishMsgNtf = n;
+                        } else if (ntf.getType() == Appmessages.NotifyType.ChatroomDestroy) {
+                            obj.setRcvType(PBRcvObj.PBRcvType.chatroomDestroyNtf);
+                            PBRcvObj.PublishMsgNtf n = new PBRcvObj.PublishMsgNtf();
+                            n.syncTime = ntf.getSyncTime();
+                            n.chatroomId = ntf.getChatroomId();
+                            obj.mPublishMsgNtf = n;
                         }
                     } else if (publishMsgBody.getTopic().equals(MSG)) {
                         Appmessages.DownMsg downMsg = Appmessages.DownMsg.parseFrom(publishMsgBody.getData());
@@ -803,6 +939,13 @@ class PBData {
 
                         obj.setRcvType(PBRcvObj.PBRcvType.publishMsg);
                         obj.mPublishMsgBody = body;
+                    } else if (publishMsgBody.getTopic().equals(C_USER_NTF)) {
+                        Appmessages.ChrmEvent event = Appmessages.ChrmEvent.parseFrom(publishMsgBody.getData());
+                        obj.setRcvType(PBRcvObj.PBRcvType.chatroomEventNtf);
+                        PBRcvObj.PublishMsgNtf n = new PBRcvObj.PublishMsgNtf();
+                        n.chatroomId = event.getChatId();
+                        n.type = PBRcvObj.PBChatroomEventType.setValue(event.getEventType().getNumber());
+                        obj.mPublishMsgNtf = n;
                     }
                     break;
 
@@ -876,6 +1019,78 @@ class PBData {
         }
         a.msgList = list;
         obj.mQryHisMsgAck = a;
+        return obj;
+    }
+
+    private PBRcvObj syncChatroomMsgAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.SyncChatroomMsgResp resp = Appmessages.SyncChatroomMsgResp.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.syncChatroomMsgAck);
+        PBRcvObj.QryHisMsgAck a = new PBRcvObj.QryHisMsgAck(body);
+        a.isFinished = true;
+        List<ConcreteMessage> list = new ArrayList<>();
+        for (Appmessages.DownMsg downMsg : resp.getMsgsList()) {
+            ConcreteMessage concreteMessage = messageWithDownMsg(downMsg);
+            list.add(concreteMessage);
+        }
+        a.msgList = list;
+        obj.mQryHisMsgAck = a;
+        return obj;
+    }
+
+    private PBRcvObj syncChatroomAttrsAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.SyncChatroomAttResp resp = Appmessages.SyncChatroomAttResp.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.syncChatroomAttrsAck);
+        PBRcvObj.ChatroomAttrsAck a = new PBRcvObj.ChatroomAttrsAck(body);
+        List<ChatroomAttributeItem> list = new ArrayList<>();
+        for (Appmessages.ChatAttItem chatAttItem : resp.getAttsList()) {
+            ChatroomAttributeItem item = new ChatroomAttributeItem();
+            item.setKey(chatAttItem.getKey());
+            item.setValue(chatAttItem.getValue());
+            item.setTimestamp(chatAttItem.getAttTime());
+            item.setUserId(chatAttItem.getUserId());
+            item.setType(ChatroomAttributeItem.ChatroomAttrOptType.setValue(chatAttItem.getOptType().getNumber()));
+            list.add(item);
+        }
+        a.items = list;
+        obj.mChatroomAttrsAck = a;
+        return obj;
+    }
+
+    private PBRcvObj setChatroomAttrAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.setChatroomAttrAck);
+        PBRcvObj.ChatroomAttrsAck a = new PBRcvObj.ChatroomAttrsAck(body);
+        List<ChatroomAttributeItem> list = new ArrayList<>();
+        Appmessages.ChatAttBatchResp batchResp = Appmessages.ChatAttBatchResp.parseFrom(body.getData());
+        for (Appmessages.ChatAttResp resp : batchResp.getAttRespsList()) {
+            ChatroomAttributeItem item = new ChatroomAttributeItem();
+            item.setKey(resp.getKey());
+            item.setCode(resp.getCode());
+            item.setTimestamp(resp.getAttTime());
+            list.add(item);
+        }
+        a.items = list;
+        obj.mChatroomAttrsAck = a;
+        return obj;
+    }
+
+    private PBRcvObj removeChatroomAttrAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.removeChatroomAttrAck);
+        PBRcvObj.ChatroomAttrsAck a = new PBRcvObj.ChatroomAttrsAck(body);
+        List<ChatroomAttributeItem> list = new ArrayList<>();
+        Appmessages.ChatAttBatchResp batchResp = Appmessages.ChatAttBatchResp.parseFrom(body.getData());
+        for (Appmessages.ChatAttResp resp : batchResp.getAttRespsList()) {
+            ChatroomAttributeItem item = new ChatroomAttributeItem();
+            item.setKey(resp.getKey());
+            item.setCode(resp.getCode());
+            item.setTimestamp(resp.getAttTime());
+            list.add(item);
+        }
+        a.items = list;
+        obj.mChatroomAttrsAck = a;
         return obj;
     }
 
@@ -1408,11 +1623,19 @@ class PBData {
     private static final String GET_USER_UNDISTURB = "get_user_undisturb";
     private static final String MARK_UNREAD = "mark_unread";
     private static final String QRY_FIRST_UNREAD_MSG = "qry_first_unread_msg";
+    private static final String SYNC_CHATROOM_MESSAGE = "c_sync_msgs";
+    private static final String SYNC_CHATROOM_ATTS = "c_sync_atts";
+    private static final String BATCH_ADD_ATT = "c_batch_add_att";
+    private static final String BATCH_DEL_ATT = "c_batch_del_att";
+    private static final String C_JOIN = "c_join";
+    private static final String C_QUIT = "c_quit";
+
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
     private static final String NTF = "ntf";
     private static final String MSG = "msg";
+    private static final String C_USER_NTF = "c_user_ntf";
     private static final HashMap<String, Integer> sCmdAckMap = new HashMap<String, Integer>() {
         {
             put(QRY_HIS_MSG, PBRcvObj.PBRcvType.qryHisMessagesAck);
@@ -1439,8 +1662,14 @@ class PBData {
             put(ADD_CONVERSATION, PBRcvObj.PBRcvType.addConversationAck);
             put(SET_USER_UNDISTURB, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(GET_USER_UNDISTURB, PBRcvObj.PBRcvType.globalMuteAck);
+            put(C_JOIN, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(C_QUIT, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(MARK_UNREAD, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_FIRST_UNREAD_MSG, PBRcvObj.PBRcvType.qryFirstUnreadMsgAck);
+            put(SYNC_CHATROOM_MESSAGE, PBRcvObj.PBRcvType.syncChatroomMsgAck);
+            put(BATCH_ADD_ATT, PBRcvObj.PBRcvType.setChatroomAttrAck);
+            put(SYNC_CHATROOM_ATTS, PBRcvObj.PBRcvType.syncChatroomAttrsAck);
+            put(BATCH_DEL_ATT, PBRcvObj.PBRcvType.removeChatroomAttrAck);
         }
     };
 

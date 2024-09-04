@@ -28,6 +28,21 @@ public class JErrorCode {
     //不是群成员
     public static final int NOT_GROUP_MEMBER = 13002;
 
+    //聊天室默认错误
+    public static final int CHATROOM_UNKNOWN_ERROR = 14000;
+    //非聊天室成员
+    public static final int NOT_CHATROOM_MEMBER = 14001;
+    //聊天室属性已满（最多 100 个）
+    public static final int CHATROOM_ATTRIBUTES_COUNT_EXCEED = 14002;
+    //无权限操作聊天室属性（非当前用户设置的 key）
+    public static final int CHATROOM_KEY_UNAUTHORIZED = 14003;
+    //聊天室属性不存在
+    public static final int CHATROOM_ATTRIBUTE_NOT_EXIST = 14004;
+    //聊天室不存在
+    public static final int CHATROOM_NOT_EXIST = 14005;
+    //聊天室已销毁
+    public static final int CHATROOM_DESTROYED = 14006;
+
     public static final int INVALID_PARAM = 21003;
     public static final int OPERATION_TIMEOUT = 21004;
     public static final int CONNECTION_UNAVAILABLE = 21005;
@@ -46,4 +61,6 @@ public class JErrorCode {
     public static final int MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY = 23005;
     public static final int MESSAGE_DOWNLOAD_ERROR = 23006;
     public static final int FILE_SAVED_FAILED = 23007;
+    //批量设置聊天室属性失败
+    public static final int CHATROOM_BATCH_SET_ATTRIBUTE_FAIL = 24001;
 }

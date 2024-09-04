@@ -64,6 +64,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     @Override
     public void disconnect(boolean receivePush) {
         JLogger.i("CON-Disconnect", "user disconnect receivePush is " + receivePush);
+        mChatroomManager.userDisconnect();
         internalDisconnect(receivePush);
     }
 
@@ -113,13 +114,14 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         }
     }
 
-    public ConnectionManager(JIMCore core, ConversationManager conversationManager, MessageManager messageManager, UserInfoManager userInfoManager) {
+    public ConnectionManager(JIMCore core, ConversationManager conversationManager, MessageManager messageManager, UserInfoManager userInfoManager, ChatroomManager chatroomManager) {
         this.mCore = core;
         this.mCore.setConnectionStatus(JIMCore.ConnectionStatusInternal.IDLE);
         this.mCore.getWebSocket().setConnectionListener(this);
         this.mConversationManager = conversationManager;
         this.mMessageManager = messageManager;
         this.mUserInfoManager = userInfoManager;
+        this.mChatroomManager = chatroomManager;
     }
 
     @Override
@@ -129,6 +131,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             openDB();
             mMessageManager.connectSuccess();
             mConversationManager.connectSuccess();
+            mChatroomManager.connectSuccess();
             changeStatus(JIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
             mConversationManager.syncConversations(mMessageManager::syncMessage);
             PushManager.getInstance().getToken(mCore.getContext());
@@ -355,6 +358,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     private final ConversationManager mConversationManager;
     private final MessageManager mMessageManager;
     private final UserInfoManager mUserInfoManager;
+    private final ChatroomManager mChatroomManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
     private PushChannel mPushChannel;
