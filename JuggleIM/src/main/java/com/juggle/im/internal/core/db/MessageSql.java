@@ -278,11 +278,11 @@ class MessageSql {
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_NO = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE id = ?";
 
     static String sqlDeleteMessagesByMessageId(int count) {
-        return "UPDATE message SET is_deleted = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
+        return "UPDATE message SET is_deleted = 1 WHERE message_uid IN " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
 
     static String sqlDeleteMessagesByClientMsgNo(int count) {
-        return "UPDATE message SET is_deleted = 1 WHERE id in " + CursorHelper.getQuestionMarkPlaceholder(count);
+        return "UPDATE message SET is_deleted = 1 WHERE id IN " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
 
     static String sqlClearMessages(Conversation conversation, long startTime, String senderId) {
@@ -293,12 +293,17 @@ class MessageSql {
         return sql;
     }
 
-    static String sqlUpdateLocalAttribute(String messageId, String localAttribute) {
-        return String.format("UPDATE message SET local_attribute = '%s' WHERE message_uid = '%s'", localAttribute, messageId);
+    static String sqlClearChatroomMessagesExclude(int count) {
+        return "DELETE FROM message WHERE conversation_type = 3 AND conversation_id NOT IN " + CursorHelper.getQuestionMarkPlaceholder(count);
+    }
+    static final String SQL_CLEAR_CHATROOM_MESSAGES_IN = "DELETE FROM message WHERE conversation_type = 3 AND conversation_id = ?";
+
+    static String sqlUpdateLocalAttribute(String messageId) {
+        return String.format("UPDATE message SET local_attribute = ? WHERE message_uid = '%s'", messageId);
     }
 
-    static String sqlUpdateLocalAttribute(long clientMsgNo, String localAttribute) {
-        return String.format("UPDATE message SET local_attribute = '%s' WHERE id = '%s'", localAttribute, clientMsgNo);
+    static String sqlUpdateLocalAttribute(long clientMsgNo) {
+        return String.format("UPDATE message SET local_attribute = ? WHERE id = '%s'", clientMsgNo);
     }
 
     static String sqlGetLocalAttribute(String messageId) {

@@ -153,6 +153,14 @@ public interface IMessageManager {
 
     List<Message> getMessagesByClientMsgNos(long[] clientMsgNos);
 
+    /**
+     * 获取会话中第一条未读消息。
+     *
+     * @param conversation 会话标识。
+     * @param callback  下载文件的回调。参考 {@link IDownloadMediaMessageCallback}。
+     */
+    void getFirstUnreadMessage(Conversation conversation, IGetMessagesCallback callback);
+
     List<Message> searchMessage(
             String searchContent,
             int count,

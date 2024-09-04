@@ -43,33 +43,33 @@ class ConversationSql {
         long lastMessageClientMsgNo = CursorHelper.readLong(cursor, COL_LAST_MESSAGE_CLIENT_MSG_NO);
         if (TextUtils.isEmpty(lastMessageId) && TextUtils.isEmpty(lastMessageClientUid) && lastMessageClientMsgNo <= 0) {
             info.setLastMessage(null);
-            return info;
+        } else {
+            ConcreteMessage lastMessage = new ConcreteMessage();
+            lastMessage.setConversation(c);
+            lastMessage.setContentType(CursorHelper.readString(cursor, COL_LAST_MESSAGE_TYPE));
+            lastMessage.setMessageId(lastMessageId);
+            lastMessage.setClientUid(lastMessageClientUid);
+            lastMessage.setClientMsgNo(lastMessageClientMsgNo);
+            Message.MessageDirection direction = Message.MessageDirection.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_DIRECTION));
+            lastMessage.setDirection(direction);
+            Message.MessageState state = Message.MessageState.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_STATE));
+            lastMessage.setState(state);
+            boolean hasRead = CursorHelper.readInt(cursor, COL_LAST_MESSAGE_HAS_READ) != 0;
+            lastMessage.setHasRead(hasRead);
+            lastMessage.setTimestamp(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_TIMESTAMP));
+            lastMessage.setSenderUserId(CursorHelper.readString(cursor, COL_LAST_MESSAGE_SENDER));
+            String content = CursorHelper.readString(cursor, COL_LAST_MESSAGE_CONTENT);
+            if (content != null) {
+                lastMessage.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), lastMessage.getContentType()));
+            }
+            String mentionInfoStr = CursorHelper.readString(cursor, COL_LAST_MESSAGE_MENTION_INFO);
+            if (!TextUtils.isEmpty(mentionInfoStr)) {
+                lastMessage.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
+            }
+            lastMessage.setSeqNo(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_SEQ_NO));
+            lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
+            info.setLastMessage(lastMessage);
         }
-        ConcreteMessage lastMessage = new ConcreteMessage();
-        lastMessage.setConversation(c);
-        lastMessage.setContentType(CursorHelper.readString(cursor, COL_LAST_MESSAGE_TYPE));
-        lastMessage.setMessageId(lastMessageId);
-        lastMessage.setClientUid(lastMessageClientUid);
-        lastMessage.setClientMsgNo(lastMessageClientMsgNo);
-        Message.MessageDirection direction = Message.MessageDirection.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_DIRECTION));
-        lastMessage.setDirection(direction);
-        Message.MessageState state = Message.MessageState.setValue(CursorHelper.readInt(cursor, COL_LAST_MESSAGE_STATE));
-        lastMessage.setState(state);
-        boolean hasRead = CursorHelper.readInt(cursor, COL_LAST_MESSAGE_HAS_READ) != 0;
-        lastMessage.setHasRead(hasRead);
-        lastMessage.setTimestamp(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_TIMESTAMP));
-        lastMessage.setSenderUserId(CursorHelper.readString(cursor, COL_LAST_MESSAGE_SENDER));
-        String content = CursorHelper.readString(cursor, COL_LAST_MESSAGE_CONTENT);
-        if (content != null) {
-            lastMessage.setContent(ContentTypeCenter.getInstance().getContent(content.getBytes(StandardCharsets.UTF_8), lastMessage.getContentType()));
-        }
-        String mentionInfoStr = CursorHelper.readString(cursor, COL_LAST_MESSAGE_MENTION_INFO);
-        if (!TextUtils.isEmpty(mentionInfoStr)) {
-            lastMessage.setMentionInfo(new MessageMentionInfo(mentionInfoStr));
-        }
-        lastMessage.setSeqNo(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_SEQ_NO));
-        lastMessage.setMsgIndex(CursorHelper.readLong(cursor, COL_LAST_MESSAGE_INDEX));
-        info.setLastMessage(lastMessage);
         boolean hasUnread = CursorHelper.readInt(cursor, COL_UNREAD_TAG) != 0;
         info.setUnread(hasUnread);
         return info;
@@ -81,7 +81,6 @@ class ConversationSql {
 
         args[0] = info.getSortTime();
         args[1] = lastMessage == null ? null : lastMessage.getMessageId();
-        ;
         args[2] = info.getLastReadMessageIndex();
         args[3] = info.getLastMessageIndex();
         args[4] = info.isTop();
@@ -210,8 +209,8 @@ class ConversationSql {
         return String.format("DELETE FROM conversation_info WHERE conversation_type = %s AND conversation_id = ?", type);
     }
 
-    static String sqlSetDraft(Conversation conversation, String draft) {
-        return String.format("UPDATE conversation_info SET draft = '%s' WHERE conversation_type = %s AND conversation_id = '%s'", draft, conversation.getConversationType().getValue(), conversation.getConversationId());
+    static String sqlSetDraft(Conversation conversation) {
+        return String.format("UPDATE conversation_info SET draft = ? WHERE conversation_type = %s AND conversation_id = '%s'", conversation.getConversationType().getValue(), conversation.getConversationId());
     }
 
     static String sqlClearUnreadCount(Conversation conversation, long msgIndex) {
@@ -230,7 +229,11 @@ class ConversationSql {
         return String.format("UPDATE conversation_info SET last_message_state = %s WHERE conversation_type = %s AND conversation_id = '%s' AND last_message_client_msg_no = %s", state, conversation.getConversationType().getValue(), conversation.getConversationId(), clientMsgNo);
     }
 
-    static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index - last_read_message_index >= 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info WHERE mute = 0";
+    static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index = last_read_message_index AND unread_tag = 1 THEN 1 WHEN last_message_index - last_read_message_index > 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info WHERE mute = 0";
+
+    static String sqlGetUnreadCountWithTypes(int[] conversationTypes) {
+        return SQL_GET_TOTAL_UNREAD_COUNT + sqlAndConversationTypeIn(conversationTypes);
+    }
 
     static String sqlSetMute(Conversation conversation, boolean isMute) {
         return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
@@ -326,16 +329,7 @@ class ConversationSql {
         } else {
             sql.append(" timestamp > ").append(timestamp);
         }
-        if (conversationTypes != null && conversationTypes.length > 0) {
-            sql.append(" AND conversation_type in (");
-            for (int i = 0; i < conversationTypes.length; i++) {
-                if (i > 0) {
-                    sql.append(", ");
-                }
-                sql.append(conversationTypes[i]);
-            }
-            sql.append(")");
-        }
+        sql.append(sqlAndConversationTypeIn(conversationTypes));
         sql.append(" ORDER BY is_top DESC, top_time DESC, timestamp DESC").append(" LIMIT ").append(count);
         return sql.toString();
     }
@@ -348,6 +342,13 @@ class ConversationSql {
         } else {
             sql.append(" timestamp > ").append(timestamp);
         }
+        sql.append(sqlAndConversationTypeIn(conversationTypes));
+        sql.append(" ORDER BY top_time DESC").append(" LIMIT ").append(count);
+        return sql.toString();
+    }
+
+    private static String sqlAndConversationTypeIn(int[] conversationTypes) {
+        StringBuilder sql = new StringBuilder();
         if (conversationTypes != null && conversationTypes.length > 0) {
             sql.append(" AND conversation_type in (");
             for (int i = 0; i < conversationTypes.length; i++) {
@@ -358,7 +359,6 @@ class ConversationSql {
             }
             sql.append(")");
         }
-        sql.append(" ORDER BY top_time DESC").append(" LIMIT ").append(count);
         return sql.toString();
     }
 

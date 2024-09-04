@@ -1,8 +1,8 @@
 package com.juggle.im.internal;
 
 public class ConstInternal {
-    public static final String WEB_SOCKET_URL = "120.48.178.248:9002";
-    public static final String NAVI_URL = "http://120.48.178.248:8083";
+    public static final String WEB_SOCKET_URL = "ws.juggleim.com";
+    public static final String NAVI_URL = "https://nav.juggleim.com";
     public static final String LOG_UPLOAD_URL = "https://imlog.gxjipei.com/api/upload-log";
     public static final String PLATFORM = "Android";
     public static final String LOG_UPLOAD_HEADER_APP_KEY = "x-appkey";

@@ -27,6 +27,7 @@ import com.juggle.im.internal.model.messages.DeleteConvMessage;
 import com.juggle.im.internal.model.messages.DeleteMsgMessage;
 import com.juggle.im.internal.model.messages.GroupReadNtfMessage;
 import com.juggle.im.internal.model.messages.LogCommandMessage;
+import com.juggle.im.internal.model.messages.MarkUnreadMessage;
 import com.juggle.im.internal.model.messages.ReadNtfMessage;
 import com.juggle.im.internal.model.messages.RecallCmdMessage;
 import com.juggle.im.internal.model.messages.TopConvMessage;
@@ -65,10 +66,11 @@ import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMessageListener {
-    public MessageManager(JIMCore core, UserInfoManager userInfoManager) {
+    public MessageManager(JIMCore core, UserInfoManager userInfoManager, ChatroomManager chatroomManager) {
         this.mCore = core;
         this.mCore.getWebSocket().setMessageListener(this);
         this.mUserInfoManager = userInfoManager;
+        this.mChatroomManager = chatroomManager;
         ContentTypeCenter.getInstance().registerContentType(TextMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ImageMessage.class);
         ContentTypeCenter.getInstance().registerContentType(FileMessage.class);
@@ -90,6 +92,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(SnapshotPackedVideoMessage.class);
         ContentTypeCenter.getInstance().registerContentType(AddConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ClearTotalUnreadMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(MarkUnreadMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -127,8 +130,10 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         list.add(message);
         mCore.getDbManager().insertMessages(list);
         //回调通知
-        if (mSendReceiveListener != null) {
-            mSendReceiveListener.onMessageSave(message);
+        if (conversation.getConversationType() != Conversation.ConversationType.CHATROOM) {
+            if (mSendReceiveListener != null) {
+                mSendReceiveListener.onMessageSave(message);
+            }
         }
         //返回消息
         return message;
@@ -169,7 +174,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo) {
                 JLogger.i("MSG-Send", "success, clientMsgNo is " + clientMsgNo);
-                updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, seqNo);
                 message.setClientMsgNo(clientMsgNo);
                 message.setMessageId(msgId);
@@ -184,9 +188,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     }
                     mCore.getDbManager().updateMessageContentWithMessageId(message.getContent(), message.getContentType(), message.getMessageId());
                 }
-
-                if (mSendReceiveListener != null) {
-                    mSendReceiveListener.onMessageSend(message);
+                if (message.getConversation().getConversationType() != Conversation.ConversationType.CHATROOM) {
+                    updateMessageSendSyncTime(timestamp);
+                    if (mSendReceiveListener != null) {
+                        mSendReceiveListener.onMessageSend(message);
+                    }
                 }
 
                 if (callback != null) {
@@ -521,6 +527,28 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     @Override
     public List<Message> getMessagesByClientMsgNos(long[] clientMsgNos) {
         return mCore.getDbManager().getMessagesByClientMsgNos(clientMsgNos);
+    }
+
+    @Override
+    public void getFirstUnreadMessage(Conversation conversation, IGetMessagesCallback callback) {
+        mCore.getWebSocket().getFirstUnreadMessage(conversation, new QryHisMsgCallback() {
+            @Override
+            public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
+                JLogger.i("MSG-FirstUnread", "success");
+                if (callback != null) {
+                    List<Message> result = new ArrayList<>(messages);
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(result));
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-FirstUnread", "error, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
     }
 
     @Override
@@ -918,9 +946,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-Get", "getRemoteMessages, success");
-                List<ConcreteMessage> messagesToSave = messagesToSave(messages);
-                mCore.getDbManager().insertMessages(messagesToSave);
-                updateUserInfo(messagesToSave);
+                insertRemoteMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(result, isFinished));
@@ -1016,13 +1042,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 JLogger.i("MSG-Get", "get messages, success");
                 long timestamp;
                 if (messages != null && !messages.isEmpty()) {
+                    Message m;
                     if (direction == JIMConst.PullDirection.NEWER) {
-                        Message m = messages.get(messages.size()-1);
-                        timestamp = m.getTimestamp();
+                        m = messages.get(messages.size() - 1);
                     } else {
-                        Message m = messages.get(0);
-                        timestamp = m.getTimestamp();
+                        m = messages.get(0);
                     }
+                    timestamp = m.getTimestamp();
                 } else {
                     timestamp = 0;
                 }
@@ -1163,7 +1189,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-GetMerge", "success");
-                mCore.getDbManager().insertMessages(messages);
+                insertRemoteMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(result));
@@ -1195,7 +1221,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-GetMention", "success");
-                mCore.getDbManager().insertMessages(messages);
+                insertRemoteMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(result, isFinished));
@@ -1342,8 +1368,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         //查询消息
         List<Message> messages = getMessagesByClientMsgNos(new long[]{clientMsgNo});
         //通知会话更新
-        if (mSendReceiveListener != null && messages != null && !messages.isEmpty()) {
-            mSendReceiveListener.onMessagesSetState(messages.get(0).getConversation(), clientMsgNo, state);
+        if (messages == null || messages.isEmpty()) {
+            return;
+        }
+        Message m = messages.get(0);
+        if (m.getConversation().getConversationType() == Conversation.ConversationType.CHATROOM) {
+            return;
+        }
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onMessagesSetState(m.getConversation(), clientMsgNo, state);
         }
     }
 
@@ -1452,6 +1485,37 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void onChatroomMessageReceive(List<ConcreteMessage> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return;
+        }
+        List<ConcreteMessage> messagesToSave = messagesToSave(messages);
+        insertRemoteMessages(messagesToSave);
+
+        ConcreteMessage lastMessage = messages.get(messages.size()-1);
+        mChatroomManager.setSyncTime(lastMessage.getConversation().getConversationId(), lastMessage.getTimestamp());
+
+        for (ConcreteMessage message : messages) {
+            //cmd消息不回调
+            if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
+                continue;
+            }
+
+            //已存在的消息不回调
+            if (message.isExisted()) {
+                continue;
+            }
+
+            //执行回调
+            if (mListenerMap != null) {
+                for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onMessageReceive(message));
+                }
+            }
+        }
+    }
+
+    @Override
     public void onSyncNotify(long syncTime) {
         if (mSyncProcessing) {
             return;
@@ -1462,28 +1526,30 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
+    @Override
+    public void onChatroomSyncNotify(String chatroomId, long syncTime) {
+        if (!mChatroomManager.isChatroomAvailable(chatroomId)) {
+            return;
+        }
+        long cachedSyncTime = mChatroomManager.getSyncTimeForChatroom(chatroomId);
+        if (syncTime > cachedSyncTime) {
+            syncChatroomMessages(chatroomId, cachedSyncTime);
+        }
+    }
+
     public interface ISendReceiveListener {
         void onMessageSave(ConcreteMessage message);
-
         void onMessageSend(ConcreteMessage message);
-
         void onMessageReceive(List<ConcreteMessage> messages);
-
         void onMessagesRead(Conversation conversation, List<String> messageIds);
-
         void onMessagesSetState(Conversation conversation, long clientMsgNo, Message.MessageState state);
-
         void onMessageRemove(Conversation conversation, List<ConcreteMessage> removedMessages, ConcreteMessage lastMessage);
-
         void onMessageClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastMessage);
-
         void onConversationsAdd(ConcreteConversationInfo conversations);
-
         void onConversationsDelete(List<Conversation> conversations);
-
         void onConversationsUpdate(String updateType, List<ConcreteConversationInfo> conversations);
-
         void onConversationsClearTotalUnread(long clearTime);
+        void onConversationSetUnread(Conversation conversation);
     }
 
     public void setSendReceiveListener(ISendReceiveListener sendReceiveListener) {
@@ -1549,8 +1615,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         List<ConcreteMessage> list = new ArrayList<>();
         list.add((ConcreteMessage) message.getReferredMessage());
         List<ConcreteMessage> messagesToSave = messagesToSave(list);
-        mCore.getDbManager().insertMessages(messagesToSave);
-        updateUserInfo(messagesToSave);
+        insertRemoteMessages(messagesToSave);
     }
 
     private Message handleRecallCmdMessage(Conversation conversation, String messageId, Map<String, String> extra) {
@@ -1570,8 +1635,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     private void handleReceiveMessages(List<ConcreteMessage> messages, boolean isSync) {
         List<ConcreteMessage> messagesToSave = messagesToSave(messages);
-        mCore.getDbManager().insertMessages(messagesToSave);
-        updateUserInfo(messagesToSave);
+        insertRemoteMessages(messagesToSave);
 
         //合并同一类型不同会话的cmd消息列表
         Map<String, Map<Conversation, List<ConcreteMessage>>> mergeSameTypeMessages = new HashMap<>();
@@ -1718,6 +1782,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             if (message.getContentType().equals(AddConvMessage.CONTENT_TYPE)) {
                 AddConvMessage addConvMessage = (AddConvMessage) message.getContent();
                 handleAddConvMessage(addConvMessage.getConversationInfo());
+                continue;
+            }
+
+            //mark unread
+            if (message.getContentType().equals(MarkUnreadMessage.CONTENT_TYPE)) {
+                MarkUnreadMessage markUnreadMessage = (MarkUnreadMessage) message.getContent();
+                handleMarkUnreadMessage(markUnreadMessage);
                 continue;
             }
 
@@ -1871,6 +1942,14 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
+    private void handleMarkUnreadMessage(MarkUnreadMessage markUnreadMessage) {
+        for (Conversation conversation : markUnreadMessage.getConversations()) {
+            if (mSendReceiveListener != null) {
+                mSendReceiveListener.onConversationSetUnread(conversation);
+            }
+        }
+    }
+
     //通知会话更新最新信息
     private void notifyMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages) {
         if (mSendReceiveListener != null) {
@@ -1896,6 +1975,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
+    private void syncChatroomMessages(String chatroomId, long syncTime) {
+        JLogger.i("MSG-ChrmSync", "id is " + chatroomId + ", time is " + syncTime);
+        mCore.getWebSocket().syncChatroomMessages(chatroomId, syncTime);
+    }
+
     private void updateUserInfo(List<ConcreteMessage> messages) {
         Map<String, GroupInfo> groupInfoMap = new HashMap<>();
         Map<String, UserInfo> userInfoMap = new HashMap<>();
@@ -1918,6 +2002,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         mUserInfoManager.insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
     }
 
+    private void insertRemoteMessages(List<ConcreteMessage> messages) {
+        mCore.getDbManager().insertMessages(messages);
+        updateUserInfo(messages);
+    }
+
     private String createClientUid() {
         long result = System.currentTimeMillis();
         result = result % 1000000;
@@ -1927,6 +2016,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     private final JIMCore mCore;
     private final UserInfoManager mUserInfoManager;
+    private final ChatroomManager mChatroomManager;
     private int mIncreaseId = 0;
     private boolean mSyncProcessing = true;
     private long mCachedReceiveTime = -1;

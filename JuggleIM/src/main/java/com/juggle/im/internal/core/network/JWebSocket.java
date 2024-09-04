@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.internal.ConstInternal;
+import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.MergeInfo;
 import com.juggle.im.internal.model.upload.UploadFileType;
@@ -76,6 +77,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public void setMessageListener(IWebSocketMessageListener listener) {
         mMessageListener = listener;
+    }
+
+    public void setChatroomListener(IWebSocketChatroomListener listener) {
+        mChatroomListener = listener;
     }
 
     public void sendIMMessage(MessageContent content,
@@ -180,9 +185,11 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     public void clearUnreadCount(Conversation conversation,
                                  String userId,
                                  long msgIndex,
+                                 String msgId,
+                                 long timestamp,
                                  WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, mCmdIndex++);
+        byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, msgId, timestamp, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "clearUnreadCount, conversation is " + conversation + ", msgIndex is " + msgIndex);
         sendWhenOpen(bytes);
@@ -322,6 +329,62 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void getFirstUnreadMessage(Conversation conversation, QryHisMsgCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.qryFirstUnreadMessage(conversation, mCmdIndex++);
+        JLogger.i("WS-Send", "getFirstUnreadMessage");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void joinChatroom(String chatroomId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.joinChatroom(chatroomId, mCmdIndex++);
+        JLogger.i("WS-Send", "joinChatroom");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void quitChatroom(String chatroomId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.quitChatroom(chatroomId, mCmdIndex++);
+        JLogger.i("WS-Send", "quitChatroom");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void setAttributes(String chatroomId, Map<String, String> attributes, UpdateChatroomAttrCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.setAttributes(chatroomId, attributes, mCmdIndex++);
+        JLogger.i("WS-Send", "setAttributes");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void removeAttributes(String chatroomId, List<String> keys, UpdateChatroomAttrCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.removeAttributes(chatroomId, keys, mCmdIndex++);
+        JLogger.i("WS-Send", "removeAttributes");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void syncChatroomMessages(String chatroomId, long syncTime) {
+        byte[] bytes = mPbData.syncChatroomMessages(chatroomId, syncTime, mCmdIndex++);
+        JLogger.i("WS-Send", "syncChatroomMessages");
+        sendWhenOpen(bytes);
+    }
+
+    public void syncChatroomAttributes(String chatroomId, long syncTime) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.syncChatroomAttributes(chatroomId, syncTime, mCmdIndex++);
+        JLogger.i("WS-Send", "syncChatroomAttributes");
+        ChatroomWebSocketCallback callback = new ChatroomWebSocketCallback();
+        callback.mChatroomId = chatroomId;
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void startHeartbeat() {
         mHeartbeatManager.start(false);
     }
@@ -380,6 +443,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof AddConversationCallback) {
             AddConversationCallback sCallback = (AddConversationCallback) callback;
             sCallback.onError(errorCode);
+        } else if (callback instanceof GetGlobalMuteCallback) {
+            GetGlobalMuteCallback sCallback = (GetGlobalMuteCallback) callback;
+            sCallback.onError(errorCode);
+        } else if (callback instanceof UpdateChatroomAttrCallback) {
+            UpdateChatroomAttrCallback sCallback = (UpdateChatroomAttrCallback) callback;
+            sCallback.onComplete(errorCode, null);
         }
     }
 
@@ -400,7 +469,17 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
         void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished);
 
+        void onChatroomMessageReceive(List<ConcreteMessage> messages);
         void onSyncNotify(long syncTime);
+        void onChatroomSyncNotify(String chatroomId, long syncTime);
+    }
+
+    public interface IWebSocketChatroomListener {
+        void onSyncChatroomAttrNotify(String chatroomId, long syncTime);
+        void onAttributesSync(String chatroomId, List<ChatroomAttributeItem> items);
+        void onChatroomDestroy(String chatroomId);
+        void onChatroomQuit(String chatroomId);
+        void onChatroomKick(String chatroomId);
     }
 
     @Override
@@ -485,7 +564,31 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.globalMuteAck:
                 handleGlobalMuteAck(obj.mGlobalMuteAck);
                 break;
-
+            case PBRcvObj.PBRcvType.qryFirstUnreadMsgAck:
+                handleFirstUnreadMsgAck(obj.mQryHisMsgAck);
+                break;
+            case PBRcvObj.PBRcvType.publishChatroomMsgNtf:
+                handlePublishChatroomMsgNtf(obj.mPublishMsgNtf);
+                break;
+            case PBRcvObj.PBRcvType.publishChatroomAttrNtf:
+                handlePublishChatroomAttrNtf(obj.mPublishMsgNtf);
+                break;
+            case PBRcvObj.PBRcvType.syncChatroomMsgAck:
+                handleSyncChatroomMsgAck(obj.mQryHisMsgAck);
+                break;
+            case PBRcvObj.PBRcvType.setChatroomAttrAck:
+            case PBRcvObj.PBRcvType.removeChatroomAttrAck:
+                handleChatroomAttrAck(obj.mChatroomAttrsAck);
+                break;
+            case PBRcvObj.PBRcvType.syncChatroomAttrsAck:
+                handleSyncChatroomAttrAck(obj.mChatroomAttrsAck);
+                break;
+            case PBRcvObj.PBRcvType.chatroomDestroyNtf:
+                handleChatroomDestroyNtf(obj.mPublishMsgNtf);
+                break;
+            case PBRcvObj.PBRcvType.chatroomEventNtf:
+                handleChatroomEventNtf(obj.mPublishMsgNtf);
+                break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
                 break;
@@ -636,6 +739,70 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
+    private void handleSyncChatroomMsgAck(PBRcvObj.QryHisMsgAck ack) {
+        JLogger.i("WS-Receive", "handleSyncChatroomMsgAck");
+        if (mMessageListener != null) {
+            mMessageListener.onChatroomMessageReceive(ack.msgList);
+        }
+    }
+
+    private void handlePublishChatroomMsgNtf(PBRcvObj.PublishMsgNtf ntf) {
+        JLogger.i("WS-Receive", "handlePublishChatroomMsgNtf");
+        if (mMessageListener != null) {
+            mMessageListener.onChatroomSyncNotify(ntf.chatroomId, ntf.syncTime);
+        }
+    }
+
+    private void handlePublishChatroomAttrNtf(PBRcvObj.PublishMsgNtf ntf) {
+        JLogger.i("WS-Receive", "handlePublishChatroomAttrNtf");
+        if (mChatroomListener != null) {
+            mChatroomListener.onSyncChatroomAttrNotify(ntf.chatroomId, ntf.syncTime);
+        }
+    }
+
+    private void handleChatroomAttrAck(PBRcvObj.ChatroomAttrsAck ack) {
+        JLogger.i("WS-Receive", "handleChatroomAttrAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof UpdateChatroomAttrCallback) {
+            UpdateChatroomAttrCallback callback = (UpdateChatroomAttrCallback) c;
+            callback.onComplete(ack.code, ack.items);
+        }
+    }
+
+    private void handleSyncChatroomAttrAck(PBRcvObj.ChatroomAttrsAck ack) {
+        JLogger.i("WS-Receive", "handleSyncChatroomAttrAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof ChatroomWebSocketCallback) {
+            ChatroomWebSocketCallback callback = (ChatroomWebSocketCallback) c;
+            if (mChatroomListener != null) {
+                mChatroomListener.onAttributesSync(callback.mChatroomId, ack.items);
+            }
+        }
+    }
+
+    private void handleChatroomDestroyNtf(PBRcvObj.PublishMsgNtf ntf) {
+        JLogger.i("WS-Receive", "handleChatroomDestroyNtf");
+        if (mChatroomListener != null) {
+            mChatroomListener.onChatroomDestroy(ntf.chatroomId);
+        }
+    }
+
+    private void handleChatroomEventNtf(PBRcvObj.PublishMsgNtf ntf) {
+        JLogger.i("WS-Receive", "handleChatroomEventNtf");
+        if (ntf.type == PBRcvObj.PBChatroomEventType.QUIT
+        || ntf.type == PBRcvObj.PBChatroomEventType.FALLOUT) {
+            if (mChatroomListener != null) {
+                mChatroomListener.onChatroomQuit(ntf.chatroomId);
+            }
+        } else if (ntf.type == PBRcvObj.PBChatroomEventType.KICK) {
+            if (mChatroomListener != null) {
+                mChatroomListener.onChatroomKick(ntf.chatroomId);
+            }
+        }
+    }
+
     private void handleReceiveMessage(PBRcvObj.PublishMsgBody body) {
         JLogger.i("WS-Receive", "handleReceiveMessage");
         boolean needAck = false;
@@ -764,6 +931,20 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
+    private void handleFirstUnreadMsgAck(PBRcvObj.QryHisMsgAck ack) {
+        JLogger.i("WS-Receive", "handleFirstUnreadMsgAck, code is " + ack.code);
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof QryHisMsgCallback) {
+            QryHisMsgCallback callback = (QryHisMsgCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.msgList, ack.isFinished);
+            }
+        }
+    }
+
     private void sendWhenOpen(byte[] bytes) {
         mSendHandler.post(() -> {
             if (mWebSocketClient != null && mWebSocketClient.isOpen()) {
@@ -808,6 +989,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private final HeartbeatManager mHeartbeatManager;
     private IWebSocketConnectListener mConnectListener;
     private IWebSocketMessageListener mMessageListener;
+    private IWebSocketChatroomListener mChatroomListener;
     private Integer mCmdIndex = 0;
     private JWebSocketClient mWebSocketClient;
     private boolean mIsCompeteFinish;

@@ -23,6 +23,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.jetimdemo.databinding.ActivityMainBinding;
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.interfaces.IMessageManager;
@@ -50,7 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements IChatroomManager.IChatroomListener, IChatroomManager.IChatroomAttributesListener {
 
     private final String TOKEN1 = "CgZhcHBrZXkaIDAr072n8uOcw5YBeKCcQ+QCw4m6YWhgt99U787/dEJS";
     private final String TOKEN2 = "CgZhcHBrZXkaINodQgLnbhTbt0SzC8b/JFwjgUAdIfUZTEFK8DvDLgM1";
@@ -59,11 +60,11 @@ public class MainActivity extends AppCompatActivity {
     private final String TOKEN5 = "CgZhcHBrZXkaIOx2upLCsmsefp8U/KNb52UGnAEu/xf+im3QaUd0HTC2";
     //nsw3sue72begyv7y,AVaoVF4zG
     private final String TOKEN6 = "ChBuc3czc3VlNzJiZWd5djd5GiAH3t-KKHZ0UOZNG6mfNL8m2hAUbN4RYH0iskZQTm6M7Q==";
+    private final String TOKEN1181 = "ChBuc3czc3VlNzJiZWd5djd5GiB3vwQOFxILM02aHvzk0yXsSWIyWy-vkA4CLovMyoelAQ==";
+    private final String TOKEN1182 = "ChBuc3czc3VlNzJiZWd5djd5GiDuv7mgMhk4e9roYlO9WeWer6_KZGn-hpJGuiMKsCI7Yw==";
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
-
-    private int mConnectCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +81,24 @@ public class MainActivity extends AppCompatActivity {
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "rdyIjfi8R");
+//                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "123");
+//                            TextMessage t = new TextMessage("ttt");
+//                            Message m = JIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
+//                                @Override
+//                                public void onSuccess(Message message) {
+//                                    Log.i("lifei", "send ttt success");
+//                                }
+//
+//                                @Override
+//                                public void onError(Message message, int errorCode) {
+//                                    Log.i("lifei", "send ttt error");
+//                                }
+//                            });
+//                            Log.i("lifei", "seqNo is " + m.getClientMsgNo());
+                            JIM.getInstance().getChatroomManager().joinChatroom("chatroom1001");
+
+
+
 
 
 
@@ -102,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        JIM.getInstance().getConnectionManager().connect("ChBuc3czc3VlNzJiZWd5djd5GiDuv7mgMhk4e9roYlO9WeWer6_KZGn-hpJGuiMKsCI7Yw==");
+        JIM.getInstance().getConnectionManager().connect(TOKEN1181);
         JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {
@@ -205,6 +223,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("lifei", "onTotalUnreadMessageCountUpdate, count is " + count);
             }
         });
+        JIM.getInstance().getChatroomManager().addListener("main", this);
+        JIM.getInstance().getChatroomManager().addAttributesListener("main", this);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -408,5 +428,76 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return null;
+    }
+
+    @Override
+    public void onAttributesUpdate(String chatroomId, Map<String, String> attributes) {
+        Log.i("lifei", "onAttributesUpdate, chatroomId is " + chatroomId + ", count is " + attributes);
+    }
+
+    @Override
+    public void onAttributesDelete(String chatroomId, Map<String, String> attributes) {
+        Log.i("lifei", "onAttributesDelete, chatroomId is " + chatroomId + ", count is " + attributes);
+    }
+
+    @Override
+    public void onChatroomJoin(String chatroomId) {
+        Log.i("lifei", "onChatroomJoin, chatroomId is " + chatroomId);
+
+
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        mainHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                JIM.getInstance().getChatroomManager().getAllAttributes("chatroom1001", new IChatroomManager.IChatroomAttributesCallback() {
+                    @Override
+                    public void onComplete(int errorCode, Map<String, String> attributes) {
+                        int i = 1;
+                    }
+                });
+            }
+        }, 500);
+//        Map<String, String> attributes = new HashMap<>();
+//        attributes.put("AndroidKey3", "value3");
+//        attributes.put("AndroidKey2", "value2.1");
+////        JIM.getInstance().getChatroomManager().setAttributes("chatroom1001", attributes, new IChatroomManager.IChatroomAttributesUpdateCallback() {
+////            @Override
+////            public void onComplete(int errorCode, Map<String, Integer> failedKeys) {
+////                int i = 1;
+////            }
+////        });
+//        List<String> keys = new ArrayList<>();
+//        keys.add("Key2");
+//        JIM.getInstance().getChatroomManager().removeAttributes("chatroom1001", keys, new IChatroomManager.IChatroomAttributesUpdateCallback() {
+//            @Override
+//            public void onComplete(int errorCode, Map<String, Integer> failedKeys) {
+//                int i = 1;
+//            }
+//        });
+    }
+
+    @Override
+    public void onChatroomQuit(String chatroomId) {
+        Log.i("lifei", "onChatroomQuit, chatroomId is " + chatroomId);
+    }
+
+    @Override
+    public void onChatroomJoinFail(String chatroomId, int errorCode) {
+        Log.i("lifei", "onChatroomJoinFail, chatroomId is " + chatroomId + ", errorCode is " + errorCode);
+    }
+
+    @Override
+    public void onChatroomQuitFail(String chatroomId, int errorCode) {
+        Log.i("lifei", "onChatroomQuitFail, chatroomId is " + chatroomId + ", errorCode is " + errorCode);
+    }
+
+    @Override
+    public void onChatroomKick(String chatroomId) {
+        Log.i("lifei", "onChatroomKick, chatroomId is " + chatroomId);
+    }
+
+    @Override
+    public void onChatroomDestroy(String chatroomId) {
+        Log.i("lifei", "onChatroomDestroy, chatroomId is " + chatroomId);
     }
 }

@@ -1,5 +1,6 @@
 package com.juggle.im.internal.core.network;
 
+import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.upload.UploadOssType;
@@ -117,8 +118,18 @@ class PBRcvObj {
         }
     }
 
+    static class ChatroomAttrsAck extends QryAck {
+        List<ChatroomAttributeItem> items;
+
+        ChatroomAttrsAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
     static class PublishMsgNtf {
         long syncTime;
+        String chatroomId;
+        PBChatroomEventType type;
     }
 
     static class DisconnectMsg {
@@ -146,6 +157,38 @@ class PBRcvObj {
         static final int qryFileCredAck = 15;
         static final int addConversationAck = 16;
         static final int globalMuteAck = 17;
+        static final int publishChatroomMsgNtf = 18;
+        static final int syncChatroomMsgAck = 19;
+        static final int qryFirstUnreadMsgAck = 20;
+        static final int setChatroomAttrAck = 21;
+        static final int publishChatroomAttrNtf = 22;
+        static final int syncChatroomAttrsAck = 23;
+        static final int removeChatroomAttrAck = 24;
+        static final int chatroomDestroyNtf = 25;
+        static final int chatroomEventNtf = 26;
+    }
+
+    public enum PBChatroomEventType {
+        JOIN(0),
+        QUIT(1),
+        KICK(2),
+        FALLOUT(3);
+        /// 系统会话
+        PBChatroomEventType(int value) {
+            this.mValue = value;
+        }
+        public int getValue() {
+            return mValue;
+        }
+        public static PBChatroomEventType setValue(int value) {
+            for (PBChatroomEventType t : PBChatroomEventType.values()) {
+                if (value == t.mValue) {
+                    return t;
+                }
+            }
+            return JOIN;
+        }
+        private final int mValue;
     }
 
     public int getRcvType() {
@@ -169,6 +212,7 @@ class PBRcvObj {
     QryFileCredAck mQryFileCredAck;
     ConversationInfoAck mConversationInfoAck;
     GlobalMuteAck mGlobalMuteAck;
+    ChatroomAttrsAck mChatroomAttrsAck;
     private int mRcvType;
 }
 

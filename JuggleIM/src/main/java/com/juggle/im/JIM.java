@@ -4,10 +4,12 @@ import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
 
+import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.interfaces.IUserInfoManager;
+import com.juggle.im.internal.ChatroomManager;
 import com.juggle.im.internal.ConnectionManager;
 import com.juggle.im.internal.ConversationManager;
 import com.juggle.im.internal.MessageManager;
@@ -84,8 +86,16 @@ public class JIM {
         return mConversationManager;
     }
 
+    public IChatroomManager getChatroomManager() {
+        return mChatroomManager;
+    }
+
     public IUserInfoManager getUserInfoManager() {
         return mUserInfoManager;
+    }
+
+    public String getCurrentUserId() {
+        return mCore.getUserId();
     }
 
     public String getDeviceId(Context context) {
@@ -99,19 +109,20 @@ public class JIM {
         JIMCore core = new JIMCore();
         mCore = core;
         mUserInfoManager = new UserInfoManager(core);
-        mMessageManager = new MessageManager(core, mUserInfoManager);
+        mChatroomManager = new ChatroomManager(core);
+        mMessageManager = new MessageManager(core, mUserInfoManager, mChatroomManager);
         mConversationManager = new ConversationManager(core, mUserInfoManager, mMessageManager);
         mMessageManager.setSendReceiveListener(mConversationManager);
-        mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager, mUserInfoManager);
-        mUploadManager = new UploadManager(core);
-        mMessageManager.setDefaultMessageUploadProvider(mUploadManager);
+        mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager, mUserInfoManager, mChatroomManager);
+        UploadManager uploadManager = new UploadManager(core);
+        mMessageManager.setDefaultMessageUploadProvider(uploadManager);
     }
 
     private final ConnectionManager mConnectionManager;
     private final MessageManager mMessageManager;
+    private final ChatroomManager mChatroomManager;
     private final ConversationManager mConversationManager;
     private final UserInfoManager mUserInfoManager;
-    private final UploadManager mUploadManager;
     private final JIMCore mCore;
 
     public static class InitConfig {

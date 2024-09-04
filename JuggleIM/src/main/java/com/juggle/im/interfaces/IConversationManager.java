@@ -53,6 +53,8 @@ public interface IConversationManager {
 
     int getTotalUnreadCount();
 
+    int getUnreadCountWithTypes(int[] conversationTypes);
+
     void clearUnreadCount(Conversation conversation, ISimpleCallback callback);
 
     void clearTotalUnreadCount(ISimpleCallback callback);

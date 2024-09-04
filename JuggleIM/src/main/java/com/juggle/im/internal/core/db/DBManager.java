@@ -206,7 +206,7 @@ public class DBManager {
     }
 
     public void setDraft(Conversation conversation, String draft) {
-        execSQL(ConversationSql.sqlSetDraft(conversation, draft));
+        execSQL(ConversationSql.sqlSetDraft(conversation), new Object[]{draft == null ? "" : draft});
     }
 
     public void setMute(Conversation conversation, boolean isMute) {
@@ -251,6 +251,18 @@ public class DBManager {
 
     public int getTotalUnreadCount() {
         Cursor cursor = rawQuery(ConversationSql.SQL_GET_TOTAL_UNREAD_COUNT, null);
+        int count = 0;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+            }
+            cursor.close();
+        }
+        return count;
+    }
+
+    public int getUnreadCountWithTypes(int[] conversationTypes) {
+        Cursor cursor = rawQuery(ConversationSql.sqlGetUnreadCountWithTypes(conversationTypes), null);
         int count = 0;
         if (cursor != null) {
             if (cursor.moveToFirst()) {
@@ -349,7 +361,7 @@ public class DBManager {
     //被删除的消息也能查出来
     public List<Message> getMessagesByMessageIds(List<String> messageIds) {
         List<Message> result = new ArrayList<>();
-        if (messageIds.size() == 0) {
+        if (messageIds.isEmpty()) {
             return result;
         }
         String sql = MessageSql.sqlGetMessagesByMessageIds(messageIds.size());
@@ -374,7 +386,7 @@ public class DBManager {
     //被删除的消息也能查出来
     public List<ConcreteMessage> getConcreteMessagesByMessageIds(List<String> messageIds) {
         List<ConcreteMessage> result = new ArrayList<>();
-        if (messageIds.size() == 0) {
+        if (messageIds.isEmpty()) {
             return result;
         }
         String sql = MessageSql.sqlGetMessagesByMessageIds(messageIds.size());
@@ -437,7 +449,7 @@ public class DBManager {
 
     public void updateLocalAttribute(String messageId, String attribute) {
         if (TextUtils.isEmpty(messageId)) return;
-        execSQL(MessageSql.sqlUpdateLocalAttribute(messageId, attribute == null ? "" : attribute));
+        execSQL(MessageSql.sqlUpdateLocalAttribute(messageId), new Object[]{attribute == null ? "" : attribute});
     }
 
     public String getLocalAttribute(String messageId) {
@@ -455,7 +467,7 @@ public class DBManager {
     }
 
     public void updateLocalAttribute(long clientMsgNo, String attribute) {
-        execSQL(MessageSql.sqlUpdateLocalAttribute(clientMsgNo, attribute == null ? "" : attribute));
+        execSQL(MessageSql.sqlUpdateLocalAttribute(clientMsgNo), new Object[]{attribute == null ? "" : attribute});
     }
 
     public String getLocalAttribute(long clientMsgNo) {
@@ -566,6 +578,17 @@ public class DBManager {
 
     public void clearMessages(Conversation conversation, long startTime, String senderId) {
         execSQL(MessageSql.sqlClearMessages(conversation, startTime, senderId));
+    }
+
+    public void clearChatroomMessageExclude(List<String> chatroomIds) {
+        String[] args = chatroomIds.toArray(new String[0]);
+        execSQL(MessageSql.sqlClearChatroomMessagesExclude(chatroomIds.size()), args);
+    }
+
+    public void clearChatroomMessage(String chatroomId) {
+        String[] args = new String[1];
+        args[0] = chatroomId;
+        execSQL(MessageSql.SQL_CLEAR_CHATROOM_MESSAGES_IN, args);
     }
 
     public UserInfo getUserInfo(String userId) {
