@@ -26,6 +26,8 @@ public interface IChatroomManager {
      * @param attributes 聊天室属性，key 和 value 都是字符串，最多支持设置 100 个不同的属性。
      *                   非当前用户设置的 key 在客户端不能进行操作（返回 JErrorCode.CHATROOM_KEY_UNAUTHORIZED）。
      * @param callback 完成回调
+     *                 code 返回 JErrorCode.NONE 时表示所有属性都设置成功。
+     *                 其它 code 表示存在设置失败的 key，所有设置失败的 key 都会回调，并返回对应的错误码，可以从 JErrorCode 的定义中找到对应的错误码。
      */
     void setAttributes(String chatroomId, Map<String, String> attributes, IChatroomAttributesUpdateCallback callback);
 
@@ -34,7 +36,9 @@ public interface IChatroomManager {
      *
      * @param chatroomId 聊天室 id
      * @param keys 待删除的属性 key 列表。非当前用户设置的 key 不能删除。
-     * @param callback 完成回调
+     * @param callback 完成回调。
+     *                 code 返回 JErrorCode.NONE 时表示所有属性都删除成功。
+     *                 其它 code 表示存在删除失败的 key，所有删除失败的 key 都会回调，并返回对应的错误码，可以从 JErrorCode 的定义中找到对应的错误码。
      */
     void removeAttributes(String chatroomId, List<String> keys, IChatroomAttributesUpdateCallback callback);
 
