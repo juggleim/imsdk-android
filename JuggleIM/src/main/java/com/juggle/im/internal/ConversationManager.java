@@ -671,6 +671,9 @@ public class ConversationManager implements IConversationManager, MessageManager
         //逐条处理消息
         Map<Conversation, ConcreteConversationInfo> conversationInfoMap = new HashMap<>();
         for (ConcreteMessage message : messages) {
+            if (message.getTimestamp() <= mCore.getConversationSyncTime()) {
+                continue;
+            }
             processSingleMessage(message, conversationInfoMap);
         }
         if (conversationInfoMap.isEmpty()) return;
