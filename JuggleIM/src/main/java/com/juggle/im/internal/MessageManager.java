@@ -126,13 +126,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
         }
         //保存消息
-        List<ConcreteMessage> list = new ArrayList<>(1);
-        list.add(message);
-        mCore.getDbManager().insertMessages(list);
-        //回调通知
-        if (conversation.getConversationType() != Conversation.ConversationType.CHATROOM) {
-            if (mSendReceiveListener != null) {
-                mSendReceiveListener.onMessageSave(message);
+        if ((message.getFlags() & MessageContent.MessageFlag.IS_SAVE.getValue()) != 0) {
+            List<ConcreteMessage> list = new ArrayList<>(1);
+            list.add(message);
+            mCore.getDbManager().insertMessages(list);
+            //回调通知
+            if (conversation.getConversationType() != Conversation.ConversationType.CHATROOM) {
+                if (mSendReceiveListener != null) {
+                    mSendReceiveListener.onMessageSave(message);
+                }
             }
         }
         //返回消息

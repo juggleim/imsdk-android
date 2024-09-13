@@ -98,7 +98,7 @@ class PBData {
     }
 
     byte[] disconnectData(boolean receivePush) {
-        int code = receivePush ? 0 : 1;
+        int code = receivePush ? 0 : 11012;
         Connect.DisconnectMsgBody body = Connect.DisconnectMsgBody.newBuilder()
                 .setCode(code)
                 .setTimestamp(System.currentTimeMillis())
