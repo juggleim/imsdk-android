@@ -1071,8 +1071,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     //判断是否需要同步远端数据
     private boolean isRemoteMessagesNeeded(List<Message> localMessages, int count, long firstMessageSeqNo) {
-        //如果本地消息数量不满足分页需求数量，且本地首条消息不是该会话的首条消息，需要获取远端消息
-        if (localMessages.size() < count && firstMessageSeqNo != 1) {
+        //如果本地消息数量不满足分页需求数量，需要获取远端消息
+        if (localMessages.size() < count) {
             return true;
         }
         //判断本地列表中的消息是否连续，不连续时需要获取远端消息
@@ -1080,7 +1080,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         for (int i = 0; i < localMessages.size(); i++) {
             if (i == 0) continue;
             ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
-            if (Message.MessageState.SENT == m.getState() && m.getSeqNo() > 0) {
+            if (Message.MessageState.SENT == m.getState() && m.getSeqNo() != 0) {
                 if (m.getSeqNo() > ++expectedSeqNo) {
                     return true;
                 }
