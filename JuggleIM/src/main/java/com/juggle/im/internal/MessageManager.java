@@ -1454,6 +1454,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     @Override
     public boolean onMessageReceive(ConcreteMessage message) {
         if (mSyncProcessing) {
+            mSyncNotifyTime = message.getTimestamp();
             return false;
         }
         List<ConcreteMessage> list = new ArrayList<>();
