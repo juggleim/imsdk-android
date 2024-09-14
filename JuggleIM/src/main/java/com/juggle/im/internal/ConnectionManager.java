@@ -261,7 +261,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
 
     private void reconnect() {
         JLogger.i("CON-Reconnect", "reconnect");
-        //todo 线程控制，间隔控制
+        //todo 线程控制
         if (mReconnectTimer != null) {
             return;
         }

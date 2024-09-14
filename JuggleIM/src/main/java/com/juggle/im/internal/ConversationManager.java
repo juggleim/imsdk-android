@@ -14,6 +14,7 @@ import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.messages.ClearUnreadMessage;
 import com.juggle.im.internal.model.messages.TopConvMessage;
 import com.juggle.im.internal.model.messages.UnDisturbConvMessage;
+import com.juggle.im.internal.util.IntervalGenerator;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
@@ -29,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConversationManager implements IConversationManager, MessageManager.ISendReceiveListener {
@@ -406,96 +409,8 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     void syncConversations(ICompleteCallback callback) {
-        if (mCore.getWebSocket() == null) {
-            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
-            JLogger.e("CONV-Sync", "fail, code is " + errorCode);
-            if (callback != null) {
-                callback.onComplete();
-            }
-            return;
-        }
         mSyncProcessing = true;
-        JLogger.i("CONV-Sync", "sync time is " + mCore.getConversationSyncTime());
-        mCore.getWebSocket().syncConversations(mCore.getConversationSyncTime(), CONVERSATION_SYNC_COUNT, mCore.getUserId(), new SyncConversationsCallback() {
-            @Override
-            public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, List<ConcreteConversationInfo> deleteConversationInfoList, boolean isFinished) {
-                JLogger.i("CONV-Sync", "success, conversation count is " + (conversationInfoList == null ? 0 : conversationInfoList.size()) + ", delete count is " + (deleteConversationInfoList == null ? 0 : deleteConversationInfoList.size()));
-                long syncTime = 0;
-                if (conversationInfoList != null && !conversationInfoList.isEmpty()) {
-                    updateUserInfo(conversationInfoList);
-                    ConcreteConversationInfo last = conversationInfoList.get(conversationInfoList.size() - 1);
-                    if (last.getSyncTime() > syncTime) {
-                        syncTime = last.getSyncTime();
-                    }
-                    mCore.getDbManager().insertConversations(conversationInfoList, (insertList, updateList) -> {
-                        if (!insertList.isEmpty()) {
-                            if (mListenerMap != null) {
-                                List<ConversationInfo> l = new ArrayList<>(insertList);
-                                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoAdd(l));
-                                }
-                            }
-                        }
-                        if (!updateList.isEmpty()) {
-                            if (mListenerMap != null) {
-                                List<ConversationInfo> l = new ArrayList<>(updateList);
-                                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(l));
-
-                                }
-                            }
-                        }
-                    });
-                    noticeTotalUnreadCountChange();
-                }
-                if (deleteConversationInfoList != null && !deleteConversationInfoList.isEmpty()) {
-                    updateUserInfo(deleteConversationInfoList);
-                    ConcreteConversationInfo last = deleteConversationInfoList.get(deleteConversationInfoList.size() - 1);
-                    if (last.getSyncTime() > syncTime) {
-                        syncTime = last.getSyncTime();
-                    }
-                    List<Conversation> deleteConversationList = new ArrayList<>();
-                    for (ConcreteConversationInfo info : deleteConversationInfoList) {
-                        deleteConversationList.add(info.getConversation());
-                    }
-                    mCore.getDbManager().deleteConversationInfo(deleteConversationList);
-                    List<ConversationInfo> l = new ArrayList<>(deleteConversationInfoList);
-                    if (mListenerMap != null) {
-                        for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                            mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoDelete(l));
-                        }
-                    }
-                }
-                if (syncTime > 0) {
-                    mCore.setConversationSyncTime(syncTime);
-                }
-                if (!isFinished) {
-                    syncConversations(callback);
-                } else {
-                    mSyncProcessing = false;
-                    if (mCachedSyncTime > 0) {
-                        mCore.setConversationSyncTime(mCachedSyncTime);
-                        mCachedSyncTime = -1;
-                    }
-                    if (mSyncListenerMap != null) {
-                        for (Map.Entry<String, IConversationSyncListener> entry : mSyncListenerMap.entrySet()) {
-                            mCore.getCallbackHandler().post(() -> entry.getValue().onConversationSyncComplete());
-                        }
-                    }
-                    if (callback != null) {
-                        callback.onComplete();
-                    }
-                }
-            }
-
-            @Override
-            public void onError(int errorCode) {
-                JLogger.e("CONV-Sync", "fail, code is " + errorCode);
-                if (callback != null) {
-                    callback.onComplete();
-                }
-            }
-        });
+        internalSyncConversations(callback);
     }
 
     @Override
@@ -664,6 +579,115 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     interface ICompleteCallback {
         void onComplete();
+    }
+
+    private void internalSyncConversations(ICompleteCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-Sync", "fail, code is " + errorCode);
+            if (callback != null) {
+                callback.onComplete();
+            }
+            return;
+        }
+        JLogger.i("CONV-Sync", "sync time is " + mCore.getConversationSyncTime());
+        mCore.getWebSocket().syncConversations(mCore.getConversationSyncTime(), CONVERSATION_SYNC_COUNT, mCore.getUserId(), new SyncConversationsCallback() {
+            @Override
+            public void onSuccess(List<ConcreteConversationInfo> conversationInfoList, List<ConcreteConversationInfo> deleteConversationInfoList, boolean isFinished) {
+                JLogger.i("CONV-Sync", "success, conversation count is " + (conversationInfoList == null ? 0 : conversationInfoList.size()) + ", delete count is " + (deleteConversationInfoList == null ? 0 : deleteConversationInfoList.size()));
+                mIntervalGenerator.reset();
+                long syncTime = 0;
+                if (conversationInfoList != null && !conversationInfoList.isEmpty()) {
+                    updateUserInfo(conversationInfoList);
+                    ConcreteConversationInfo last = conversationInfoList.get(conversationInfoList.size() - 1);
+                    if (last.getSyncTime() > syncTime) {
+                        syncTime = last.getSyncTime();
+                    }
+                    mCore.getDbManager().insertConversations(conversationInfoList, (insertList, updateList) -> {
+                        if (!insertList.isEmpty()) {
+                            if (mListenerMap != null) {
+                                List<ConversationInfo> l = new ArrayList<>(insertList);
+                                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoAdd(l));
+                                }
+                            }
+                        }
+                        if (!updateList.isEmpty()) {
+                            if (mListenerMap != null) {
+                                List<ConversationInfo> l = new ArrayList<>(updateList);
+                                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(l));
+
+                                }
+                            }
+                        }
+                    });
+                    noticeTotalUnreadCountChange();
+                }
+                if (deleteConversationInfoList != null && !deleteConversationInfoList.isEmpty()) {
+                    updateUserInfo(deleteConversationInfoList);
+                    ConcreteConversationInfo last = deleteConversationInfoList.get(deleteConversationInfoList.size() - 1);
+                    if (last.getSyncTime() > syncTime) {
+                        syncTime = last.getSyncTime();
+                    }
+                    List<Conversation> deleteConversationList = new ArrayList<>();
+                    for (ConcreteConversationInfo info : deleteConversationInfoList) {
+                        deleteConversationList.add(info.getConversation());
+                    }
+                    mCore.getDbManager().deleteConversationInfo(deleteConversationList);
+                    List<ConversationInfo> l = new ArrayList<>(deleteConversationInfoList);
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                            mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoDelete(l));
+                        }
+                    }
+                }
+                if (syncTime > 0) {
+                    mCore.setConversationSyncTime(syncTime);
+                }
+                if (!isFinished) {
+                    internalSyncConversations(callback);
+                } else {
+                    mSyncProcessing = false;
+                    if (mCachedSyncTime > 0) {
+                        mCore.setConversationSyncTime(mCachedSyncTime);
+                        mCachedSyncTime = -1;
+                    }
+                    if (mSyncListenerMap != null) {
+                        for (Map.Entry<String, IConversationSyncListener> entry : mSyncListenerMap.entrySet()) {
+                            mCore.getCallbackHandler().post(() -> entry.getValue().onConversationSyncComplete());
+                        }
+                    }
+                    if (callback != null) {
+                        callback.onComplete();
+                    }
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-Sync", "fail, code is " + errorCode);
+
+                if (mSyncRetryTimer != null) {
+                    return;
+                }
+                mSyncRetryTimer = new Timer();
+                mSyncRetryTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        stopSyncTimer();
+                        internalSyncConversations(callback);
+                    }
+                }, mIntervalGenerator.getNextInterval() * 1000L);
+            }
+        });
+    }
+
+    private void stopSyncTimer() {
+        if (mSyncRetryTimer != null) {
+            mSyncRetryTimer.cancel();
+            mSyncRetryTimer = null;
+        }
     }
 
     private void addOrUpdateConversationIfNeed(ConcreteMessage message) {
@@ -1036,6 +1060,8 @@ public class ConversationManager implements IConversationManager, MessageManager
     private boolean mSyncProcessing = true;
     private long mCachedSyncTime;
     private static final int CONVERSATION_SYNC_COUNT = 100;
+    private final IntervalGenerator mIntervalGenerator = new IntervalGenerator();
+    private Timer mSyncRetryTimer;
 
     private interface ConversationUpdater {
         boolean update();
