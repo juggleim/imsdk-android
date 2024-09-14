@@ -36,7 +36,6 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
             public void onSuccess(long timestamp) {
                 JLogger.i("CHRM-Join", "success");
                 changeStatus(chatroomId, CachedChatroom.ChatroomStatus.JOINED);
-                mCore.getWebSocket().syncChatroomMessages(chatroomId, getSyncTimeForChatroom(chatroomId));
                 mCore.getWebSocket().syncChatroomAttributes(chatroomId, getAttrSyncTimeForChatroom(chatroomId));
                 if (mListenerMap != null) {
                     for (Map.Entry<String, IChatroomListener> entry : mListenerMap.entrySet()) {
