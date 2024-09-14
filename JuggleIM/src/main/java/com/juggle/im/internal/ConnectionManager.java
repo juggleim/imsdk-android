@@ -10,6 +10,7 @@ import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.JWebSocket;
 import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
+import com.juggle.im.internal.util.IntervalGenerator;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.push.PushChannel;
 import com.juggle.im.push.PushManager;
@@ -127,6 +128,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     @Override
     public void onConnectComplete(int errorCode, String userId, String session, String extra) {
         if (errorCode == ConstInternal.ErrorCode.NONE) {
+            mIntervalGenerator.reset();
             mCore.setUserId(userId);
             openDB();
             mMessageManager.connectSuccess();
@@ -273,7 +275,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
                     internalConnect(mCore.getToken());
                 }
             }
-        }, RECONNECT_INTERVAL);
+        }, mIntervalGenerator.getNextInterval() * 1000L);
     }
 
     private void internalConnect(String token) {
@@ -363,5 +365,5 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     private Timer mReconnectTimer;
     private PushChannel mPushChannel;
     private String mPushToken;
-    private static final int RECONNECT_INTERVAL = 5 * 1000;
+    private final IntervalGenerator mIntervalGenerator = new IntervalGenerator();
 }
