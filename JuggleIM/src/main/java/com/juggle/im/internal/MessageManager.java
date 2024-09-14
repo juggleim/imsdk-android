@@ -1457,6 +1457,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public boolean onMessageReceive(ConcreteMessage message) {
+        JLogger.i("MSG-Rcv", "direct message id is " + message.getMessageId());
         if (mSyncProcessing) {
             mSyncNotifyTime = message.getTimestamp();
             return false;
@@ -1469,6 +1470,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
+        JLogger.i("MSG-Rcv", "messages count is " + messages.size() + ", isFinish is " + isFinished);
         handleReceiveMessages(messages, true);
 
         if (!isFinished) {
@@ -1495,6 +1497,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void onChatroomMessageReceive(List<ConcreteMessage> messages) {
+        JLogger.i("MSG-Rcv", "chatroom messages count is " + messages.size());
         if (messages == null || messages.isEmpty()) {
             checkChatroomSyncMap();
             return;

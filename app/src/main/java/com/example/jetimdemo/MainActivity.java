@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 //                                }
 //                            });
 //                            Log.i("lifei", "seqNo is " + m.getClientMsgNo());
-                            JIM.getInstance().getChatroomManager().joinChatroom("chatroom1001");
+                            JIM.getInstance().getChatroomManager().joinChatroom("chatroom1002");
 
 
 
