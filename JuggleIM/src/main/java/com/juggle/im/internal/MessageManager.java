@@ -1468,6 +1468,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
         if (!isFinished) {
             sync();
+        } else if (mSyncNotifyTime > mCore.getMessageReceiveTime()) {
+            sync();
         } else {
             mSyncProcessing = false;
             if (mCachedSendTime > 0) {
@@ -1520,6 +1522,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     @Override
     public void onSyncNotify(long syncTime) {
         if (mSyncProcessing) {
+            mSyncNotifyTime = syncTime;
             return;
         }
         if (syncTime > mCore.getMessageReceiveTime()) {
@@ -1591,6 +1594,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     void connectSuccess() {
         mSyncProcessing = true;
+        mSyncNotifyTime = 0;
     }
 
     private List<ConcreteMessage> messagesToSave(List<ConcreteMessage> messages) {
@@ -2023,6 +2027,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private boolean mSyncProcessing = true;
     private long mCachedReceiveTime = -1;
     private long mCachedSendTime = -1;
+    private long mSyncNotifyTime;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
