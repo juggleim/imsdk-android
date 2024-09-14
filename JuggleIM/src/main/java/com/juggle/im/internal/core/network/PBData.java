@@ -1,5 +1,7 @@
 package com.juggle.im.internal.core.network;
 
+import static com.juggle.im.internal.ConstInternal.SDK_VERSION;
+
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -98,7 +100,7 @@ class PBData {
     }
 
     byte[] disconnectData(boolean receivePush) {
-        int code = receivePush ? 0 : 1;
+        int code = receivePush ? 0 : 11012;
         Connect.DisconnectMsgBody body = Connect.DisconnectMsgBody.newBuilder()
                 .setCode(code)
                 .setTimestamp(System.currentTimeMillis())
@@ -1598,7 +1600,6 @@ class PBData {
 
     private static final String PROTO_ID = "jug9le1m";
     private static final int PROTOCOL_VERSION = 1;
-    private static final String SDK_VERSION = "1.0.0";
     private static final int PLATFORM_ANDROID = 1;
     private static final String QRY_HIS_MSG = "qry_hismsgs";
     private static final String QRY_HISMSG_BY_IDS = "qry_hismsg_by_ids";

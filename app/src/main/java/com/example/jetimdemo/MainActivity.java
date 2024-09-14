@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 //                                }
 //                            });
 //                            Log.i("lifei", "seqNo is " + m.getClientMsgNo());
-                            JIM.getInstance().getChatroomManager().joinChatroom("chatroom1001");
+                            JIM.getInstance().getChatroomManager().joinChatroom("chatroom1002");
 
 
 
@@ -432,12 +432,12 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 
     @Override
     public void onAttributesUpdate(String chatroomId, Map<String, String> attributes) {
-        Log.i("lifei", "onAttributesUpdate, chatroomId is " + chatroomId + ", count is " + attributes);
+        Log.i("lifei", "onAttributesUpdate, chatroomId is " + chatroomId + ", attributes is " + attributes);
     }
 
     @Override
     public void onAttributesDelete(String chatroomId, Map<String, String> attributes) {
-        Log.i("lifei", "onAttributesDelete, chatroomId is " + chatroomId + ", count is " + attributes);
+        Log.i("lifei", "onAttributesDelete, chatroomId is " + chatroomId + ", attributes is " + attributes);
     }
 
     @Override
@@ -458,22 +458,22 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
             }
         }, 500);
 //        Map<String, String> attributes = new HashMap<>();
-//        attributes.put("AndroidKey3", "value3");
-//        attributes.put("AndroidKey2", "value2.1");
-////        JIM.getInstance().getChatroomManager().setAttributes("chatroom1001", attributes, new IChatroomManager.IChatroomAttributesUpdateCallback() {
-////            @Override
-////            public void onComplete(int errorCode, Map<String, Integer> failedKeys) {
-////                int i = 1;
-////            }
-////        });
-//        List<String> keys = new ArrayList<>();
-//        keys.add("Key2");
-//        JIM.getInstance().getChatroomManager().removeAttributes("chatroom1001", keys, new IChatroomManager.IChatroomAttributesUpdateCallback() {
+//        attributes.put("key1", "value1");
+//        attributes.put("key2", "value2");
+//        JIM.getInstance().getChatroomManager().setAttributes("chatroom1001", attributes, new IChatroomManager.IChatroomAttributesUpdateCallback() {
 //            @Override
 //            public void onComplete(int errorCode, Map<String, Integer> failedKeys) {
 //                int i = 1;
 //            }
 //        });
+        List<String> keys = new ArrayList<>();
+        keys.add("Key2");
+        JIM.getInstance().getChatroomManager().removeAttributes("chatroom1001", keys, new IChatroomManager.IChatroomAttributesUpdateCallback() {
+            @Override
+            public void onComplete(int errorCode, Map<String, Integer> failedKeys) {
+                int i = 1;
+            }
+        });
     }
 
     @Override

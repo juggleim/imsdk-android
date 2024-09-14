@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.interfaces.IMessageUploadProvider;
 import com.juggle.im.internal.core.JIMCore;
@@ -59,18 +60,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMessageListener {
+public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMessageListener, IChatroomManager.IChatroomListener {
     public MessageManager(JIMCore core, UserInfoManager userInfoManager, ChatroomManager chatroomManager) {
         this.mCore = core;
         this.mCore.getWebSocket().setMessageListener(this);
         this.mUserInfoManager = userInfoManager;
         this.mChatroomManager = chatroomManager;
+        chatroomManager.addListener("MessageManager", this);
+        this.mChatroomSyncMap = new ConcurrentHashMap<>();
         ContentTypeCenter.getInstance().registerContentType(TextMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ImageMessage.class);
         ContentTypeCenter.getInstance().registerContentType(FileMessage.class);
@@ -126,13 +130,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
         }
         //保存消息
-        List<ConcreteMessage> list = new ArrayList<>(1);
-        list.add(message);
-        mCore.getDbManager().insertMessages(list);
-        //回调通知
-        if (conversation.getConversationType() != Conversation.ConversationType.CHATROOM) {
-            if (mSendReceiveListener != null) {
-                mSendReceiveListener.onMessageSave(message);
+        if ((message.getFlags() & MessageContent.MessageFlag.IS_SAVE.getValue()) != 0) {
+            List<ConcreteMessage> list = new ArrayList<>(1);
+            list.add(message);
+            mCore.getDbManager().insertMessages(list);
+            //回调通知
+            if (conversation.getConversationType() != Conversation.ConversationType.CHATROOM) {
+                if (mSendReceiveListener != null) {
+                    mSendReceiveListener.onMessageSave(message);
+                }
             }
         }
         //返回消息
@@ -1069,8 +1075,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     //判断是否需要同步远端数据
     private boolean isRemoteMessagesNeeded(List<Message> localMessages, int count, long firstMessageSeqNo) {
-        //如果本地消息数量不满足分页需求数量，且本地首条消息不是该会话的首条消息，需要获取远端消息
-        if (localMessages.size() < count && firstMessageSeqNo != 1) {
+        //如果本地消息数量不满足分页需求数量，需要获取远端消息
+        if (localMessages.size() < count) {
             return true;
         }
         //判断本地列表中的消息是否连续，不连续时需要获取远端消息
@@ -1078,7 +1084,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         for (int i = 0; i < localMessages.size(); i++) {
             if (i == 0) continue;
             ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
-            if (Message.MessageState.SENT == m.getState() && m.getSeqNo() > 0) {
+            if (Message.MessageState.SENT == m.getState() && m.getSeqNo() != 0) {
                 if (m.getSeqNo() > ++expectedSeqNo) {
                     return true;
                 }
@@ -1451,7 +1457,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public boolean onMessageReceive(ConcreteMessage message) {
+        JLogger.i("MSG-Rcv", "direct message id is " + message.getMessageId());
         if (mSyncProcessing) {
+            mSyncNotifyTime = message.getTimestamp();
             return false;
         }
         List<ConcreteMessage> list = new ArrayList<>();
@@ -1462,9 +1470,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
+        JLogger.i("MSG-Rcv", "messages count is " + messages.size() + ", isFinish is " + isFinished);
         handleReceiveMessages(messages, true);
 
         if (!isFinished) {
+            sync();
+        } else if (mSyncNotifyTime > mCore.getMessageReceiveTime()) {
             sync();
         } else {
             mSyncProcessing = false;
@@ -1486,7 +1497,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void onChatroomMessageReceive(List<ConcreteMessage> messages) {
+        JLogger.i("MSG-Rcv", "chatroom messages count is " + messages.size());
         if (messages == null || messages.isEmpty()) {
+            checkChatroomSyncMap();
             return;
         }
         List<ConcreteMessage> messagesToSave = messagesToSave(messages);
@@ -1513,11 +1526,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 }
             }
         }
+        checkChatroomSyncMap();
     }
 
     @Override
     public void onSyncNotify(long syncTime) {
         if (mSyncProcessing) {
+            mSyncNotifyTime = syncTime;
             return;
         }
         if (syncTime > mCore.getMessageReceiveTime()) {
@@ -1528,13 +1543,42 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void onChatroomSyncNotify(String chatroomId, long syncTime) {
-        if (!mChatroomManager.isChatroomAvailable(chatroomId)) {
+        if (mChatroomSyncProcessing) {
+            mChatroomSyncMap.put(chatroomId, syncTime);
             return;
         }
-        long cachedSyncTime = mChatroomManager.getSyncTimeForChatroom(chatroomId);
-        if (syncTime > cachedSyncTime) {
-            syncChatroomMessages(chatroomId, cachedSyncTime);
-        }
+        syncChatroomMessages(chatroomId, syncTime);
+    }
+
+    @Override
+    public void onChatroomJoin(String chatroomId) {
+        long time = mChatroomManager.getSyncTimeForChatroom(chatroomId) + 1;
+        onChatroomSyncNotify(chatroomId, time);
+    }
+
+    @Override
+    public void onChatroomQuit(String chatroomId) {
+
+    }
+
+    @Override
+    public void onChatroomJoinFail(String chatroomId, int errorCode) {
+
+    }
+
+    @Override
+    public void onChatroomQuitFail(String chatroomId, int errorCode) {
+
+    }
+
+    @Override
+    public void onChatroomKick(String chatroomId) {
+
+    }
+
+    @Override
+    public void onChatroomDestroy(String chatroomId) {
+
     }
 
     public interface ISendReceiveListener {
@@ -1589,6 +1633,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     void connectSuccess() {
         mSyncProcessing = true;
+        mSyncNotifyTime = 0;
     }
 
     private List<ConcreteMessage> messagesToSave(List<ConcreteMessage> messages) {
@@ -1975,8 +2020,33 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
-    private void syncChatroomMessages(String chatroomId, long syncTime) {
+    private void checkChatroomSyncMap() {
+        Iterator<Map.Entry<String, Long>> iterator = mChatroomSyncMap.entrySet().iterator();
+        if (iterator.hasNext()) {
+            Map.Entry<String, Long> firstEntry = iterator.next();
+            mChatroomSyncMap.remove(firstEntry.getKey());
+            syncChatroomMessages(firstEntry.getKey(), firstEntry.getValue());
+        } else {
+            mChatroomSyncProcessing = false;
+        }
+    }
+
+    private void syncChatroomMessages(String chatroomId, long time) {
+        if (!mChatroomManager.isChatroomAvailable(chatroomId)) {
+            checkChatroomSyncMap();
+            return;
+        }
+        long cachedSyncTime = mChatroomManager.getSyncTimeForChatroom(chatroomId);
+        if (time > cachedSyncTime) {
+            webSocketSyncChatroomMessage(chatroomId, cachedSyncTime);
+        } else {
+            checkChatroomSyncMap();
+        }
+    }
+
+    private void webSocketSyncChatroomMessage(String chatroomId, long syncTime) {
         JLogger.i("MSG-ChrmSync", "id is " + chatroomId + ", time is " + syncTime);
+        mChatroomSyncProcessing = true;
         mCore.getWebSocket().syncChatroomMessages(chatroomId, syncTime);
     }
 
@@ -2021,6 +2091,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private boolean mSyncProcessing = true;
     private long mCachedReceiveTime = -1;
     private long mCachedSendTime = -1;
+    private long mSyncNotifyTime;
+    private boolean mChatroomSyncProcessing;
+    private ConcurrentHashMap<String, Long> mChatroomSyncMap;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
