@@ -10,12 +10,15 @@ import com.juggle.im.internal.core.network.UpdateChatroomAttrCallback;
 import com.juggle.im.internal.core.network.WebSocketTimestampCallback;
 import com.juggle.im.internal.model.CachedChatroom;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
+import com.juggle.im.internal.util.IntervalGenerator;
 import com.juggle.im.internal.util.JLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketChatroomListener {
@@ -36,7 +39,7 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
             public void onSuccess(long timestamp) {
                 JLogger.i("CHRM-Join", "success");
                 changeStatus(chatroomId, CachedChatroom.ChatroomStatus.JOINED);
-                mCore.getWebSocket().syncChatroomAttributes(chatroomId, getAttrSyncTimeForChatroom(chatroomId));
+                syncChatroomAttr(chatroomId, getAttrSyncTimeForChatroom(chatroomId));
                 if (mListenerMap != null) {
                     for (Map.Entry<String, IChatroomListener> entry : mListenerMap.entrySet()) {
                         mCore.getCallbackHandler().post(() -> entry.getValue().onChatroomJoin(chatroomId));
@@ -333,7 +336,24 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
     }
 
     @Override
-    public void onAttributesSync(String chatroomId, List<ChatroomAttributeItem> items) {
+    public void onAttributesSync(String chatroomId, List<ChatroomAttributeItem> items, int code) {
+        JLogger.i("CHRM-AttrSync", "code is " + code + ", count is " + items.size());
+        if (code != ConstInternal.ErrorCode.NONE) {
+            if (mAttrRetryTimer != null) {
+                return;
+            }
+            mAttrRetryTimer = new Timer();
+            mAttrRetryTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    stopAttrRetryTimer();
+                    syncChatroomAttr(chatroomId, getAttrSyncTimeForChatroom(chatroomId));
+                }
+            }, mIntervalGenerator.getNextInterval() * 1000L);
+            return;
+        }
+
+        mIntervalGenerator.reset();
         if (items.isEmpty()) {
             return;
         }
@@ -401,13 +421,22 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
         }
     }
 
-    void syncChatroomAttr(String chatroomId, long syncTime) {
+    private void syncChatroomAttr(String chatroomId, long syncTime) {
         JLogger.i("CHRM-AttrSync", "id is " + chatroomId + ", time is " + syncTime);
         mCore.getWebSocket().syncChatroomAttributes(chatroomId, syncTime);
+    }
+
+    private void stopAttrRetryTimer() {
+        if (mAttrRetryTimer != null) {
+            mAttrRetryTimer.cancel();
+            mAttrRetryTimer = null;
+        }
     }
 
     private final JIMCore mCore;
     private ConcurrentHashMap<String, IChatroomListener> mListenerMap;
     private ConcurrentHashMap<String, IChatroomAttributesListener> mAttributesListenerMap;
     private final ConcurrentHashMap<String, CachedChatroom> mCachedChatroomMap;
+    private final IntervalGenerator mIntervalGenerator = new IntervalGenerator();
+    private Timer mAttrRetryTimer;
 }

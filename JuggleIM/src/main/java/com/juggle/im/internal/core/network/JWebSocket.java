@@ -476,7 +476,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public interface IWebSocketChatroomListener {
         void onSyncChatroomAttrNotify(String chatroomId, long syncTime);
-        void onAttributesSync(String chatroomId, List<ChatroomAttributeItem> items);
+        void onAttributesSync(String chatroomId, List<ChatroomAttributeItem> items, int code);
         void onChatroomDestroy(String chatroomId);
         void onChatroomQuit(String chatroomId);
         void onChatroomKick(String chatroomId);
@@ -777,7 +777,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         if (c instanceof ChatroomWebSocketCallback) {
             ChatroomWebSocketCallback callback = (ChatroomWebSocketCallback) c;
             if (mChatroomListener != null) {
-                mChatroomListener.onAttributesSync(callback.mChatroomId, ack.items);
+                mChatroomListener.onAttributesSync(callback.mChatroomId, ack.items, ack.code);
             }
         }
     }
@@ -1001,4 +1001,5 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private static final String WSS_HEAD_PREFIX = "wss://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
     private static final int MAX_CONCURRENT_COUNT = 5;
+
 }

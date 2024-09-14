@@ -432,12 +432,12 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 
     @Override
     public void onAttributesUpdate(String chatroomId, Map<String, String> attributes) {
-        Log.i("lifei", "onAttributesUpdate, chatroomId is " + chatroomId + ", count is " + attributes);
+        Log.i("lifei", "onAttributesUpdate, chatroomId is " + chatroomId + ", attributes is " + attributes);
     }
 
     @Override
     public void onAttributesDelete(String chatroomId, Map<String, String> attributes) {
-        Log.i("lifei", "onAttributesDelete, chatroomId is " + chatroomId + ", count is " + attributes);
+        Log.i("lifei", "onAttributesDelete, chatroomId is " + chatroomId + ", attributes is " + attributes);
     }
 
     @Override
