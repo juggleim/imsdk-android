@@ -129,6 +129,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 message.setReferredMessage(referMsg);
             }
         }
+        if (options != null && options.getPushData() != null) {
+            message.setPushData(options.getPushData());
+        }
         //保存消息
         if ((message.getFlags() & MessageContent.MessageFlag.IS_SAVE.getValue()) != 0) {
             List<ConcreteMessage> list = new ArrayList<>(1);
@@ -234,6 +237,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 mergeInfo,
                 message.hasMentionInfo() ? message.getMentionInfo() : null,
                 (ConcreteMessage) message.getReferredMessage(),
+                message.getPushData(),
                 isBroadcast,
                 mCore.getUserId(),
                 messageCallback

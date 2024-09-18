@@ -35,6 +35,8 @@ import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.MessageOptions;
+import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
@@ -81,21 +83,23 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-//                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "123");
-//                            TextMessage t = new TextMessage("ttt");
-//                            Message m = JIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
-//                                @Override
-//                                public void onSuccess(Message message) {
-//                                    Log.i("lifei", "send ttt success");
-//                                }
-//
-//                                @Override
-//                                public void onError(Message message, int errorCode) {
-//                                    Log.i("lifei", "send ttt error");
-//                                }
-//                            });
-//                            Log.i("lifei", "seqNo is " + m.getClientMsgNo());
-                            JIM.getInstance().getChatroomManager().joinChatroom("chatroom1002");
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "NT9cTOPsU");
+//                            MessageOptions o = new MessageOptions();
+//                            PushData pushData = new PushData();
+////                            pushData.setContent("Android push");
+//                            o.setPushData(pushData);
+                            TextMessage t = new TextMessage("text message");
+                            JIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
+                                @Override
+                                public void onSuccess(Message message) {
+
+                                }
+
+                                @Override
+                                public void onError(Message message, int errorCode) {
+
+                                }
+                            });
 
 
 

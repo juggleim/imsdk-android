@@ -17,6 +17,7 @@ import com.juggle.im.model.Conversation;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
+import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.push.PushChannel;
 
@@ -89,6 +90,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               MergeInfo mergeInfo,
                               MessageMentionInfo mentionInfo,
                               ConcreteMessage referMsg,
+                              PushData pushData,
                               boolean isBroadcast,
                               String userId,
                               SendMessageCallback callback) {
@@ -115,7 +117,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 conversation.getConversationType(),
                 conversation.getConversationId(),
                 mentionInfo,
-                referMsg);
+                referMsg,
+                pushData);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "send message");
         sendWhenOpen(bytes);

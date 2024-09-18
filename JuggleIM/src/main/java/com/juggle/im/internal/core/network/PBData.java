@@ -26,6 +26,7 @@ import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
+import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.MergeMessage;
@@ -126,7 +127,8 @@ class PBData {
                            Conversation.ConversationType conversationType,
                            String conversationId,
                            MessageMentionInfo mentionInfo,
-                           ConcreteMessage referMsg) {
+                           ConcreteMessage referMsg,
+                           PushData pushData) {
         ByteString byteString = ByteString.copyFrom(msgData);
         Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
         upMsgBuilder.setMsgType(contentType)
@@ -174,6 +176,17 @@ class PBData {
             Appmessages.DownMsg downMsg = downMsgWithMessage(referMsg);
             upMsgBuilder.setReferMsg(downMsg);
         }
+        if (pushData != null) {
+            Appmessages.PushData.Builder pbPushData = Appmessages.PushData.newBuilder();
+            if (pushData.getContent() != null) {
+                pbPushData.setPushText(pushData.getContent());
+            }
+            if (pushData.getExtra() != null) {
+                pbPushData.setPushExtraData(pushData.getExtra());
+            }
+            upMsgBuilder.setPushData(pbPushData);
+        }
+
         Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
         String topic = "";
