@@ -84,12 +84,13 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
                             Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "NT9cTOPsU");
-//                            MessageOptions o = new MessageOptions();
-//                            PushData pushData = new PushData();
-////                            pushData.setContent("Android push");
-//                            o.setPushData(pushData);
-                            TextMessage t = new TextMessage("text message");
-                            JIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
+                            MessageOptions o = new MessageOptions();
+                            PushData pushData = new PushData();
+                            pushData.setContent("Android push 2222");
+                            pushData.setExtra("Android extra 123123");
+                            o.setPushData(pushData);
+                            TextMessage t = new TextMessage("text message 111111");
+                            JIM.getInstance().getMessageManager().sendMessage(t, c, o, new IMessageManager.ISendMessageCallback() {
                                 @Override
                                 public void onSuccess(Message message) {
 
