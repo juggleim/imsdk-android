@@ -192,10 +192,10 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             JLogger.i("CON-BG", "Foreground");
             mIntervalGenerator.reset();
             mIsForeground = true;
-            if (mCore.getConnectionStatus() != JIMCore.ConnectionStatusInternal.CONNECTED) {
+            if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
                 stopReconnectTimer();
                 reconnect();
-            } else {
+            } else if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTED) {
                 mCore.getWebSocket().pushSwitch(false, mCore.getUserId());
             }
         }
