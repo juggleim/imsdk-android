@@ -11,6 +11,7 @@ import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.interfaces.IUserInfoManager;
 import com.juggle.im.internal.ChatroomManager;
 import com.juggle.im.internal.ConnectionManager;
+import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.ConversationManager;
 import com.juggle.im.internal.MessageManager;
 import com.juggle.im.internal.UploadManager;
@@ -65,6 +66,10 @@ public class JIM {
         mCore.setAppKey(appKey);
         mCore.setUserId("");
         mCore.setToken("");
+    }
+
+    public String getSDKVersion() {
+        return ConstInternal.SDK_VERSION;
     }
 
     public void setServer(List<String> serverUrls) {

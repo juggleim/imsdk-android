@@ -9,7 +9,7 @@
     <string name="text_title_notification_sample">Token4</string>
     <string name="text_title_uikit_sample_app">UIKit sample app</string>
 
-    <string name="text_version_info">UI Kit v%1$s &#160;&#160;&#160;&#160; SDK v%2$s</string>
+    <string name="text_version_info">UIKit v%1$s &#160;&#160;&#160;&#160; SDK v%2$s</string>
     <string name="text_hint_code">Verify Code(000000)</string>
     <string name="text_hint_phone">Phone Number</string>
     <string name="text_hint_nickname">Nickname</string>

@@ -15,6 +15,7 @@ import com.juggle.chat.databinding.ActivityLoginBinding
 import com.juggle.chat.http.CustomCallback
 import com.juggle.chat.http.ServiceManager
 import com.jet.im.kit.SendbirdUIKit
+import com.juggle.im.JIM
 import com.sendbird.android.SendbirdChat.sdkVersion
 
 /**
@@ -32,8 +33,8 @@ open class LoginActivity : AppCompatActivity() {
 //            phone.setText("15822865925")
             versionInfo.text = String.format(
                 resources.getString(R.string.text_version_info),
-                "1.0.0",
-                sdkVersion
+                JIM.getInstance().sdkVersion,
+                JIM.getInstance().sdkVersion
             )
 
             saveButton.setOnClickListener {
