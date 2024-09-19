@@ -1125,6 +1125,14 @@
     <item name="android:textColor">@color/primary_300</item>
   </style>
 
+  <style name="SendbirdCaption2Primary400">
+    <item name="android:fontFamily">sans-serif</item>
+    <item name="android:textStyle">normal</item>
+    <item name="android:textSize">8sp</item>
+    <item name="android:lineSpacingExtra">0sp</item>
+    <item name="android:textColor">@color/primary_300</item>
+  </style>
+
   <style name="SendbirdCaption2Error200">
     <item name="android:fontFamily">sans-serif</item>
     <item name="android:textStyle">normal</item>

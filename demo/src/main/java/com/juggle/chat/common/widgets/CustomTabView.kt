@@ -32,7 +32,7 @@ class CustomTabView @JvmOverloads constructor(
             val badgeBackgroundRes =
                 if (isDarkMode) R.drawable.shape_badge_background_dark else R.drawable.shape_badge_background
             val titleTextAppearance =
-                if (isDarkMode) com.jet.im.kit.R.style.SendbirdCaption2Primary200 else com.jet.im.kit.R.style.SendbirdCaption2Primary300
+                if (isDarkMode) com.jet.im.kit.R.style.SendbirdCaption2Primary200 else com.jet.im.kit.R.style.SendbirdCaption2Primary400
             badge.setAppearance(context, badgeTextAppearance)
             badge.setBackgroundResource(badgeBackgroundRes)
             title.setAppearance(context, titleTextAppearance)

@@ -40,7 +40,7 @@ class GroupChannelMainActivity : AppCompatActivity() {
                     0 -> {
                         unreadCountTab = CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
-                            setTitle(getString(R.string.text_tab_channels))
+                            setTitle(getString(R.string.text_tab_conversations))
                             setIcon(R.drawable.icon_chat_filled)
                         }
                         unreadCountTab
@@ -50,7 +50,7 @@ class GroupChannelMainActivity : AppCompatActivity() {
                         CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
                             setTitle(getString(R.string.text_tab_friends))
-                            setIcon(R.drawable.icon_chat_filled)
+                            setIcon(com.jet.im.kit.R.drawable.icon_members)
                         }
                     }
 
@@ -58,14 +58,14 @@ class GroupChannelMainActivity : AppCompatActivity() {
                         CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
                             setTitle(getString(R.string.text_tab_groups))
-                            setIcon(R.drawable.icon_chat_filled)
+                            setIcon(com.jet.im.kit.R.drawable.icon_group)
                         }
                     }
                     3 -> {
                         CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
                             setTitle(getString(R.string.text_tab_chatroom))
-                            setIcon(R.drawable.icon_chat_filled)
+                            setIcon(com.jet.im.kit.R.drawable.icon_chatroom)
                         }
                     }
 
