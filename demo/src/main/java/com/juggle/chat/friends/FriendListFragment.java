@@ -49,7 +49,7 @@ public class FriendListFragment extends Fragment {
         });
         binding.rvList.setAdapter(adapter);
         binding.rvList.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.tvTitle.setTitle("friend");
+        binding.tvTitle.setTitle("Friends");
         binding.tvTitle.setOnRightIconClickListener(new TitleBar.OnRightIconClickListener() {
             @Override
             public void onRightIconClick(View v) {
