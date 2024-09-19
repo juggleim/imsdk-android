@@ -1,8 +1,14 @@
 package com.juggle.im.internal;
 
+import android.app.Activity;
+import android.app.Application;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
@@ -21,7 +27,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSocketConnectListener {
+public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSocketConnectListener, Application.ActivityLifecycleCallbacks {
     @Override
     public void connect(String token) {
         JLogger.i("CON-Connect", "token is " + token);
@@ -125,6 +131,10 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         this.mChatroomManager = chatroomManager;
     }
 
+    public void init() {
+        ((Application)mCore.getContext()).registerActivityLifecycleCallbacks(this);
+    }
+
     @Override
     public void onConnectComplete(int errorCode, String userId, String session, String extra) {
         if (errorCode == ConstInternal.ErrorCode.NONE) {
@@ -164,6 +174,57 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     @Override
     public void onTimeOut() {
         handleWebsocketFail();
+    }
+
+    @Override
+    public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle savedInstanceState) {
+        //Do nothing
+    }
+
+    @Override
+    public void onActivityStarted(@NonNull Activity activity) {
+        //Do nothing
+    }
+
+    @Override
+    public void onActivityResumed(@NonNull Activity activity) {
+        if (mTopForegroundActivity == null) {
+            JLogger.i("CON-BG", "Foreground");
+            mIntervalGenerator.reset();
+            mIsForeground = true;
+            if (mCore.getConnectionStatus() != JIMCore.ConnectionStatusInternal.CONNECTED) {
+                stopReconnectTimer();
+                reconnect();
+            } else {
+                mCore.getWebSocket().pushSwitch(false, mCore.getUserId());
+            }
+        }
+        mTopForegroundActivity = activity;
+    }
+
+    @Override
+    public void onActivityPaused(@NonNull Activity activity) {
+        //Do nothing
+    }
+
+    @Override
+    public void onActivityStopped(@NonNull Activity activity) {
+        if (mTopForegroundActivity == activity) {
+            JLogger.i("CON-BG", "Background");
+            mIsForeground = false;
+            mCore.getWebSocket().pushSwitch(true, mCore.getUserId());
+            mTopForegroundActivity = null;
+        }
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+        //Do nothing
+    }
+
+    @Override
+    public void onActivityDestroyed(@NonNull Activity activity) {
+        //Do nothing
     }
 
     private void connectWebSocket(String token) {
@@ -366,4 +427,6 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     private PushChannel mPushChannel;
     private String mPushToken;
     private final IntervalGenerator mIntervalGenerator = new IntervalGenerator();
+    private boolean mIsForeground;
+    private Activity mTopForegroundActivity;
 }

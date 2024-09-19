@@ -795,6 +795,21 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] pushSwitch(boolean enablePush, String userId, int index) {
+        Appmessages.PushSwitch ps = Appmessages.PushSwitch.newBuilder()
+                .setSwitch(enablePush ? 1 : 0)
+                .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(PUSH_SWITCH)
+                .setTargetId(userId)
+                .setData(ps.toByteString())
+                .build();
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -1643,6 +1658,7 @@ class PBData {
     private static final String BATCH_DEL_ATT = "c_batch_del_att";
     private static final String C_JOIN = "c_join";
     private static final String C_QUIT = "c_quit";
+    private static final String PUSH_SWITCH = "push_switch";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";

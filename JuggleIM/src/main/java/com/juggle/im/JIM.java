@@ -52,6 +52,7 @@ public class JIM {
         }
         //保存context
         mCore.setContext(context);
+        mConnectionManager.init();
         //初始化日志
         JLogger.getInstance().init(initConfig.getJLogConfig());
         //初始化push
