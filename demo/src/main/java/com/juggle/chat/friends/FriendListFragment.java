@@ -31,7 +31,7 @@ import com.juggle.im.model.Conversation;
  */
 public class FriendListFragment extends Fragment {
     private FragmentFriendsGroupsBinding binding;
-    private StateHeaderComponent headerComponent = new StateHeaderComponent();
+    private final StateHeaderComponent headerComponent = new StateHeaderComponent();
     private final CommonAdapter<FriendBean> adapter = new FriendAdapter();
 
     @Nullable
@@ -41,13 +41,8 @@ public class FriendListFragment extends Fragment {
         headerComponent.getParams().setTitle("Friends");
         headerComponent.getParams().setUseLeftButton(false);
         headerComponent.getParams().setRightButtonText("Add");
-        View header = headerComponent.onCreateView(requireContext(),inflater, binding.headerComponent, savedInstanceState);
-        headerComponent.setOnRightButtonClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(AddFriendListActivity.newIntent(getContext()));
-            }
-        });
+        headerComponent.setOnRightButtonClickListener(v -> startActivity(AddFriendListActivity.newIntent(getContext())));
+        View header = headerComponent.onCreateView(requireContext(), inflater, binding.headerComponent, savedInstanceState);
         binding.headerComponent.addView(header);
         adapter.setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener<FriendBean>() {
             @Override

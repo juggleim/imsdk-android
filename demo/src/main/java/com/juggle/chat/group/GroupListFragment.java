@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
+import com.jet.im.kit.modules.components.StateHeaderComponent;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.GroupBean;
 import com.juggle.chat.bean.HttpResult;
@@ -35,6 +36,7 @@ import com.juggle.im.model.Conversation;
  */
 public class GroupListFragment extends Fragment {
     private FragmentGroupsBinding binding;
+    private final StateHeaderComponent headerComponent = new StateHeaderComponent();
     private CommonAdapter<GroupBean> adapter;
 
 
@@ -42,6 +44,12 @@ public class GroupListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentGroupsBinding.inflate(inflater, container, false);
+        headerComponent.getParams().setTitle("Groups");
+        headerComponent.getParams().setUseLeftButton(false);
+        headerComponent.getParams().setRightButtonText("Add");
+        headerComponent.setOnRightButtonClickListener(v -> startActivity(SelectGroupMemberActivity.newIntent(getContext())));
+        View header = headerComponent.onCreateView(requireContext(), inflater, binding.headerComponent, savedInstanceState);
+        binding.headerComponent.addView(header);
         adapter = new CommonAdapter<GroupBean>(R.layout.sb_view_member_list_item) {
 
             @Override
@@ -68,13 +76,6 @@ public class GroupListFragment extends Fragment {
         });
         binding.rvList.setAdapter(adapter);
         binding.rvList.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.tvTitle.setTitle("Groups");
-        binding.tvTitle.setOnRightIconClickListener(new TitleBar.OnRightIconClickListener() {
-            @Override
-            public void onRightIconClick(View v) {
-                startActivity(SelectGroupMemberActivity.newIntent(getContext()));
-            }
-        });
         return binding.getRoot();
     }
 
