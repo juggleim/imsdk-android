@@ -5,11 +5,11 @@
     android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <com.juggle.chat.common.widgets.TitleBar
-        android:id="@+id/tv_title"
+    <FrameLayout
+        android:id="@+id/headerComponent"
         android:layout_width="match_parent"
-        app:title="Chat Room"
-        android:layout_height="44dp"/>
+        android:layout_height="wrap_content"
+        />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_list"
         android:layout_width="match_parent"
