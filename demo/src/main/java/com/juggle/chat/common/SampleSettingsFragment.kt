@@ -285,7 +285,7 @@ class SampleSettingsFragment : Fragment() {
             loadUserProfileUrl(SendbirdUIKit.avatar)
             binding.tvUserId.text = SendbirdUIKit.userId
             binding.tvNickname.text = SendbirdUIKit.nickname
-            
+
             val iconTint =
                 if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.background_700 else com.jet.im.kit.R.color.background_50
             val themeBackgroundTint =

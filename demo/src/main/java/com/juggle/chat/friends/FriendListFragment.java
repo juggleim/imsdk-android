@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.jet.im.kit.modules.components.StateHeaderComponent;
 import com.juggle.chat.bean.FriendBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
@@ -30,12 +31,24 @@ import com.juggle.im.model.Conversation;
  */
 public class FriendListFragment extends Fragment {
     private FragmentFriendsGroupsBinding binding;
-    private CommonAdapter<FriendBean> adapter=new FriendAdapter();
+    private StateHeaderComponent headerComponent = new StateHeaderComponent();
+    private final CommonAdapter<FriendBean> adapter = new FriendAdapter();
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentFriendsGroupsBinding.inflate(inflater, container, false);
+        headerComponent.getParams().setTitle("Friends");
+        headerComponent.getParams().setUseLeftButton(false);
+        headerComponent.getParams().setRightButtonText("Add");
+        View header = headerComponent.onCreateView(requireContext(),inflater, binding.headerComponent, savedInstanceState);
+        headerComponent.setOnRightButtonClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(AddFriendListActivity.newIntent(getContext()));
+            }
+        });
+        binding.headerComponent.addView(header);
         adapter.setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener<FriendBean>() {
             @Override
             public void onItemClick(View view, RecyclerView.ViewHolder holder, FriendBean friendBean, int position) {
@@ -49,13 +62,6 @@ public class FriendListFragment extends Fragment {
         });
         binding.rvList.setAdapter(adapter);
         binding.rvList.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.tvTitle.setTitle("Friends");
-        binding.tvTitle.setOnRightIconClickListener(new TitleBar.OnRightIconClickListener() {
-            @Override
-            public void onRightIconClick(View v) {
-                startActivity(AddFriendListActivity.newIntent(getContext()));
-            }
-        });
         return binding.getRoot();
     }
 
