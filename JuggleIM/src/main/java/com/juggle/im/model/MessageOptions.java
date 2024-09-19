@@ -7,6 +7,7 @@ package com.juggle.im.model;
 public class MessageOptions {
     private String mReferredMessageId;
     private MessageMentionInfo mMentionInfo;
+    private PushData mPushData;
 
     public String getReferredMessageId() {
         return mReferredMessageId;
@@ -22,5 +23,13 @@ public class MessageOptions {
 
     public void setMentionInfo(MessageMentionInfo mentionInfo) {
         this.mMentionInfo = mentionInfo;
+    }
+
+    public PushData getPushData() {
+        return mPushData;
+    }
+
+    public void setPushData(PushData pushData) {
+        mPushData = pushData;
     }
 }

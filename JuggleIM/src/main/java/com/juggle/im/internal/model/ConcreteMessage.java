@@ -2,6 +2,7 @@ package com.juggle.im.internal.model;
 
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.PushData;
 import com.juggle.im.model.UserInfo;
 
 public class ConcreteMessage extends Message {
@@ -69,6 +70,15 @@ public class ConcreteMessage extends Message {
         this.mReferMsgId = referMsgId;
     }
 
+    public PushData getPushData() {
+        return mPushData;
+    }
+
+    public void setPushData(PushData pushData) {
+        mPushData = pushData;
+    }
+
+
     private long mSeqNo;
     private long mMsgIndex;
     private String mClientUid;
@@ -77,4 +87,5 @@ public class ConcreteMessage extends Message {
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;
     private String mReferMsgId;
+    private PushData mPushData;
 }
