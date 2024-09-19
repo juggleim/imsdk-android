@@ -66,6 +66,8 @@ public class SendbirdUIKit {
     private static volatile SendbirdUIKitAdapter adapter;
     public static volatile String token;
     public static volatile String userId;
+    public static volatile String nickname;
+    public static volatile String avatar;
 
     public static volatile String authorization;
 

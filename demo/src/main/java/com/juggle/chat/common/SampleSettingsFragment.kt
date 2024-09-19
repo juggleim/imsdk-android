@@ -282,15 +282,10 @@ class SampleSettingsFragment : Fragment() {
                 showEditProfileDialog()
             }
 
-            JIM.getInstance().userInfoManager.getUserInfo(SendbirdUIKit.userId)?.let {
-                loadUserProfileUrl(it.portrait)
-                binding.tvUserId.text = it.userId
-                binding.tvNickname.text = it.userName
-            } ?: run {
-                loadUserProfileUrl(PreferenceUtils.profileUrl)
-                binding.tvUserId.text = PreferenceUtils.userId
-                binding.tvNickname.text = PreferenceUtils.nickname
-            }
+            loadUserProfileUrl(SendbirdUIKit.avatar)
+            binding.tvUserId.text = SendbirdUIKit.userId
+            binding.tvNickname.text = SendbirdUIKit.nickname
+            
             val iconTint =
                 if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.background_700 else com.jet.im.kit.R.color.background_50
             val themeBackgroundTint =
@@ -319,7 +314,7 @@ class SampleSettingsFragment : Fragment() {
             )
             binding.ivDisturbIcon.background =
                 requireContext().getDrawable(R.drawable.shape_oval, disturbBackgroundTint)
-            binding.itemDisturb.visibility = if (useDoNotDisturb) View.VISIBLE else View.GONE
+//            binding.itemDisturb.visibility = if (useDoNotDisturb) View.VISIBLE else View.GONE
             if (useDoNotDisturb) {
                 binding.itemDisturb.setOnClickListener {
                     Logger.d("++ disturb clicked")

@@ -73,6 +73,9 @@ open class LoginActivity : AppCompatActivity() {
                 SendbirdUIKit.token = k?.im_token
                 SendbirdUIKit.authorization = k?.authorization ?: ""
                 SendbirdUIKit.userId = k?.user_id ?: ""
+                SendbirdUIKit.nickname = k?.nickname ?: ""
+                SendbirdUIKit.avatar = k?.avatar ?: ""
+
                 startActivity(
                     Intent(
                         this@LoginActivity,
