@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "829353727046",
+    "project_id": "jugglechat-592fd",
+    "storage_bucket": "jugglechat-592fd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829353727046:android:771771d751e89e5a8ba647",
+        "android_client_info": {
+          "package_name": "com.juggle.chat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBV5Tae2j8NvCU-WwrmKf4whhQWWwH7v2k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

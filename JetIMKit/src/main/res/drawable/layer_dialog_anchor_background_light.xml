@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/contextualmenu_light" />
+
+    <item>
+        <inset
+            android:insetTop="@dimen/sb_size_13"
+            android:insetBottom="@dimen/sb_size_19"
+            android:insetLeft="@dimen/sb_size_16"
+            android:insetRight="@dimen/sb_size_16">
+            <shape android:shape="rectangle">
+                <solid android:color="@color/background_50"/>
+                <padding android:top="@dimen/sb_size_2"
+                    android:bottom="@dimen/sb_size_2"
+                    android:right="@dimen/sb_size_2"
+                    android:left="@dimen/sb_size_2"/>
+                <corners android:radius="@dimen/sb_size_8"/>
+            </shape>
+        </inset>
+    </item>
+</layer-list>

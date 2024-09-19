@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/titleBar"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="?attr/actionBarSize"
+        android:paddingStart="@dimen/sb_size_20"
+        android:paddingLeft="@dimen/sb_size_20"
+        android:paddingEnd="@dimen/sb_size_4"
+        android:paddingRight="@dimen/sb_size_4"
+        app:titleTextAppearance="@style/SendbirdH1OnLight01"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/border"/>
+
+    <View
+        android:id="@+id/border"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_1"
+        android:background="@color/onlight_04"
+        app:layout_constraintTop_toBottomOf="@id/titleBar"
+        app:layout_constraintBottom_toTopOf="@id/description"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:textAppearance="@style/SendbirdBody3OnLight02"
+        android:layout_marginTop="@dimen/sb_size_16"
+        android:layout_marginBottom="@dimen/sb_size_4"
+        android:layout_marginStart="@dimen/sb_size_16"
+        android:layout_marginLeft="@dimen/sb_size_16"
+        app:layout_constraintTop_toBottomOf="@id/border"
+        app:layout_constraintBottom_toTopOf="@id/viewPager"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_0"
+        app:layout_constraintTop_toBottomOf="@id/description"
+        app:layout_constraintBottom_toTopOf="@id/tabLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_56"
+        app:tabIndicatorHeight="@dimen/sb_size_0"
+        app:tabMaxWidth="@dimen/sb_size_0"
+        app:tabGravity="fill"
+        app:tabMode="fixed"
+        app:layout_constraintTop_toBottomOf="@id/viewPager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

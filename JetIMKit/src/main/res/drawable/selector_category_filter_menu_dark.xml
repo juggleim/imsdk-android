@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:state_checked="true"
+        android:drawable="@drawable/sb_shape_category_filter_primary_200"/>
+    <item
+        android:state_checked="false"
+        android:drawable="@drawable/sb_shape_category_filter_background_500"/>
+</selector>

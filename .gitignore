@@ -19,5 +19,6 @@ local.properties
 OPPOPlugin/sdk/build
 XMPlugin/sdk/build
 VIVOPlugin/sdk/build
-
+demo/build
+JetIMKit/build
 

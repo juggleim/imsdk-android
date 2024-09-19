@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fillViewport="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+    <LinearLayout
+        android:id="@+id/rootView"
+        android:padding="@dimen/sb_size_16"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_weight="1"
+                android:text="@string/sb_text_channel_settings_notification"
+                />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/scSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvDescription"
+            android:layout_marginTop="@dimen/sb_size_8"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sb_text_push_setting_description"
+            />
+
+        <View
+            android:id="@+id/divider1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/sb_size_15" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:id="@+id/vgOptionContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/vgOptionAll"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_56">
+
+                <TextView
+                    android:id="@+id/tvOptionAll"
+                    android:text="@string/sb_text_push_setting_option_all"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+
+                <CheckBox
+                    android:id="@+id/all"
+                    android:button="@null"
+                    android:padding="@dimen/sb_size_0"
+                    android:layout_width="@dimen/sb_size_24"
+                    android:layout_height="@dimen/sb_size_24"/>
+            </LinearLayout>
+
+            <View
+                android:id="@+id/divider2"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"/>
+
+            <LinearLayout
+                android:id="@+id/vgMentionsOnly"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_56">
+
+                <TextView
+                    android:id="@+id/tvOptionMentionsOnly"
+                    android:text="@string/sb_text_push_setting_mentions_only"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+
+                <CheckBox
+                    android:id="@+id/mentionsOnly"
+                    android:button="@null"
+                    android:padding="@dimen/sb_size_0"
+                    android:layout_width="@dimen/sb_size_24"
+                    android:layout_height="@dimen/sb_size_24"/>
+            </LinearLayout>
+
+            <View
+                android:id="@+id/divider3"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

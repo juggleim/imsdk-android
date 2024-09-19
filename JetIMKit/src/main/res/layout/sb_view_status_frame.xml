@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    android:id="@+id/frameParentPanel"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:id="@+id/alertPanel"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/ivAlertIcon"
+            android:minWidth="@dimen/sb_size_48"
+            android:minHeight="@dimen/sb_size_48"
+            android:importantForAccessibility="no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/ivAlertText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/sb_size_20"
+            android:gravity="center"/>
+
+        <LinearLayout
+            android:id="@+id/actionPanel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/sb_size_8"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/ivAction"
+                android:layout_width="@dimen/sb_size_20"
+                android:layout_height="@dimen/sb_size_20"
+                android:importantForAccessibility="no"
+                android:scaleType="centerCrop"
+                android:src="@drawable/icon_refresh"/>
+
+            <View
+                android:layout_width="@dimen/sb_size_12"
+                android:layout_height="@dimen/sb_size_0"/>
+
+            <TextView
+                android:id="@+id/tvAction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/progressPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.jet.im.kit.internal.ui.widgets.ProgressView
+            android:id="@+id/progress"
+            android:layout_gravity="center"
+            android:layout_width="@dimen/sb_size_60"
+            android:layout_height="@dimen/sb_size_60"/>
+
+    </FrameLayout>
+</FrameLayout>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/sb_size_12"
+    android:paddingRight="@dimen/sb_size_12"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <com.jet.im.kit.internal.ui.messages.MyMessageStatusView
+        android:id="@+id/ivStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintBottom_toBottomOf="@id/tvSentAt"
+        app:layout_constraintEnd_toStartOf="@id/tvSentAt"
+        app:layout_constraintStart_toStartOf="@id/contentLeftView"
+        app:layout_constraintHorizontal_bias="1"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        android:layout_marginStart="@dimen/sb_size_0" />
+
+    <TextView
+        android:id="@+id/tvSentAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintBottom_toBottomOf="@id/brBottom"
+        app:layout_constraintEnd_toEndOf="@id/contentLeftView"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/ivStatus"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        android:layout_marginStart="@dimen/sb_size_0" />
+
+    <View
+        android:id="@+id/contentLeftView"
+        android:layout_width="@dimen/sb_size_90"
+        android:layout_height="@dimen/sb_size_0"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintBottom_toBottomOf="@+id/brBottom"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/contentPanelWithReactions"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentPanelWithReactions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="@dimen/sb_message_max_width"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintBottom_toTopOf="@+id/brBottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/contentLeftView"
+        app:layout_constraintTop_toTopOf="parent">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/contentPanel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            app:layout_constraintWidth_min="@dimen/sb_voice_message_min_width"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
+            app:layout_constraintBottom_toBottomOf="parent" >
+
+            <com.jet.im.kit.internal.ui.messages.VoiceMessageView
+                android:id="@+id/voiceMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/contentBarrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="contentPanel"
+            app:barrierDirection="end" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/brBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="contentPanelWithReactions, tvSentAt, ivStatus" />
+</androidx.constraintlayout.widget.ConstraintLayout>

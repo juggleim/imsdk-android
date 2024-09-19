@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="@dimen/sb_size_10"
+    android:paddingBottom="@dimen/sb_size_0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+
+    <ImageView
+        android:id="@+id/ivProfile"
+        android:layout_width="@dimen/sb_size_56"
+        android:layout_height="@dimen/sb_size_56"
+        android:scaleType="centerCrop"
+        android:layout_marginStart="@dimen/sb_size_16"
+        android:contentDescription="@string/sb_sender_profile_description"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/leftGL"
+        android:orientation="vertical"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_0"
+        app:layout_constraintGuide_begin="@dimen/sb_size_88"
+        />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/rightGL"
+        android:orientation="vertical"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_0"
+        app:layout_constraintGuide_end="@dimen/sb_size_16"
+        />
+
+    <TextView
+        android:id="@+id/tvUserName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        app:layout_constrainedWidth="true"
+        android:singleLine="true"
+        android:ellipsize="end"
+        app:flow_horizontalBias="0.0"
+        app:layout_constraintLeft_toRightOf="@+id/leftGL"
+        app:layout_constraintRight_toLeftOf="@+id/tvSentAt"
+        app:layout_constraintBottom_toTopOf="@id/brMiddle"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvSentAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        app:layout_constraintBottom_toTopOf="@id/brMiddle"
+        app:layout_constraintRight_toLeftOf="@id/rightGL"
+        app:layout_constraintTop_toTopOf="parent"
+        android:paddingStart="@dimen/sb_size_10"
+        android:paddingEnd="@dimen/sb_size_0" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/brMiddle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvUserName, tvSentAt"
+        />
+
+    <ImageView
+        android:id="@+id/ivIcon"
+        android:scaleType="centerCrop"
+        android:layout_width="@dimen/sb_size_26"
+        android:layout_height="@dimen/sb_size_26"
+        android:layout_marginTop="@dimen/sb_size_4"
+        android:padding="@dimen/sb_size_4"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toEndOf="@id/leftGL"
+        app:layout_constraintEnd_toStartOf="@id/tvMessage"
+        app:layout_constraintTop_toBottomOf="@id/brMiddle"
+        android:layout_marginEnd="4dp"
+        />
+
+    <TextView
+        android:id="@+id/tvMessage"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:layout_marginTop="@dimen/sb_size_4"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintStart_toEndOf="@id/ivIcon"
+        app:layout_constraintEnd_toEndOf="@id/rightGL"
+        app:layout_constraintTop_toBottomOf="@id/brMiddle"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/brBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvMessage, ivProfile, ivIcon"
+        />
+
+    <ImageView
+        android:id="@+id/ivDivider"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_1"
+        android:layout_marginTop="@dimen/sb_size_8"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="@id/leftGL"
+        app:layout_constraintTop_toBottomOf="@id/brBottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

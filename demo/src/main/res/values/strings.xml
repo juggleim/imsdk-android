@@ -1,0 +1,130 @@
+<resources>
+    <string name="app_name">JuggleChat</string>
+
+    <!-- LOGIN -->
+    <string name="text_title_login_activity">JuggleChat</string>
+    <string name="text_title_basic_sample">Token1</string>
+    <string name="text_title_ai_chat_bot_sample">Token3</string>
+    <string name="text_title_customization_sample">Token2</string>
+    <string name="text_title_notification_sample">Token4</string>
+    <string name="text_title_uikit_sample_app">UIKit sample app</string>
+
+    <string name="text_version_info">UI Kit v%1$s &#160;&#160;&#160;&#160; SDK v%2$s</string>
+    <string name="text_hint_code">Verify Code(000000)</string>
+    <string name="text_hint_phone">Phone Number</string>
+    <string name="text_hint_nickname">Nickname</string>
+    <string name="text_sign_in">SIGN IN</string>
+    <string name="text_sign_out">SIGN OUT</string>
+    <string name="text_sign_out_lower">Sign out</string>
+    <string name="text_select_sample">Select sample apps</string>
+
+    <string name="text_settings_header_title">My settings</string>
+    <string name="text_settings_header_edit_button">Edit</string>
+    <string name="text_settings_user_id_badge">User ID</string>
+    <string name="text_settings_theme_title">Dark theme</string>
+    <string name="text_settings_disturb_title">Do not disturb</string>
+    <string name="text_settings_home_title">Exit to home</string>
+    <string name="text_settings_change_user_nickname">Change nickname</string>
+    <string name="text_settings_change_user_profile_image">Change profile image</string>
+
+    <string name="text_tab_channels">Channels</string>
+    <string name="text_tab_settings">Settings</string>
+    <string name="text_tab_friends">Friends</string>
+    <string name="text_tab_groups">Groups</string>
+    <string name="text_tab_chatroom">Room</string>
+    <string name="text_tab_badge_max_count">99+</string>
+    <string name="text_tab_notifications">Notifications</string>
+
+    <string name="text_use_feed_channel_only">Use feed channel only</string>
+    <string name="text_home">Home</string>
+    <string name="text_send">Send</string>
+    <string name="text_group_channel">Group channel</string>
+    <string name="text_open_channel">Open channel</string>
+    <string name="text_ai_chatbot">Talk to an AI Chatbot</string>
+    <string name="text_custom_sample">Custom sample</string>
+    <string name="text_group_channel_description">1 on 1, Group chat with members</string>
+    <string name="text_open_channel_description">Live streams, Open community chat</string>
+    <string name="text_ai_chatbot_description">1 on 1, Group chat with bots</string>
+    <string name="text_create_community">Create community</string>
+    <string name="text_live_streams">Live streams</string>
+    <string name="text_community">Community</string>
+    <string name="text_live_streaming_description">Preset channels developed by UIKit</string>
+    <string name="text_header_create_button">Create</string>
+    <string name="text_input_channel_name_hint">Enter channel name</string>
+    <string name="text_live">LIVE</string>
+    <string name="text_participants">%s participants</string>
+    <string name="text_error_update_user_information">Couldn\&#39;t update user information.</string>
+    <string name="text_error_update_do_not_disturb">Couldn\&#39;t update disturb setting.</string>
+    <string name="sb_text_need_to_allow_permission_notification">%s\nneeds permission to receive push notification. Go to Settings to allow access</string>
+    <string name="sb_text_dialog_not_supported_title">Enable this feature</string>
+    <string name="text_not_supported">This feature is disabled by default. To enable it, follow instructions in README.md in the sample repository.</string>
+    <string name="sb_text_go_to_readme">Go to README</string>
+
+    <!-- Notifications -->
+    <string name="text_notification_home">Notification Home</string>
+    <string name="text_notification_chat_and_feed_type">Chat and Feed channels</string>
+    <string name="text_notification_feed_type_only">Feed channel only</string>
+
+
+    <!-- Customizations -->
+    <!--  Global Customization  -->
+    <string name="text_list_title_global">Global Customization</string>
+    <string name="text_title_fragment_providers_sample">Fragment Providers</string>
+    <string name="text_desc_fragment_providers_sample">Using Builder and FragmentProviders, implement channel fragment that does not use the header component.</string>
+    <string name="text_title_module_providers_sample">Module Providers</string>
+    <string name="text_desc_module_providers_sample">Using ModuleProviders, implement channel module that has custom header component.</string>
+    <string name="text_title_viewmodel_providers_sample">ViewModel Providers</string>
+    <string name="text_desc_viewmodel_providers_sample">Using ViewModelProviders, create a channel to sends text messages with prefixes.</string>
+    <string name="text_title_adapter_providers_sample">Adapter Providers</string>
+    <string name="text_desc_adapter_providers_sample">Using AdapterProviders, create a message list that does not use message grouping.</string>
+
+    <!--  Channel Customization  -->
+    <string name="text_list_title_channel">Channel Customization</string>
+    <string name="text_title_message_ui_sample">Message UI</string>
+    <string name="text_desc_message_ui_sample">Customize the existing message UI.</string>
+    <string name="text_title_new_message_type_sample">New Message Type</string>
+    <string name="text_desc_new_message_type_sample">Declare a new custom message type and implement the sending and rendering of it.</string>
+    <string name="text_title_message_click_sample">Message Click</string>
+    <string name="text_desc_message_click_sample">Implement a toast notification on message click.</string>
+    <string name="text_title_message_menu_sample">Message Menu</string>
+    <string name="text_desc_message_menu_sample">Implement adding and removing menu items in the long-click menu for messages.</string>
+    <string name="text_title_message_data_sample">Message Data</string>
+    <string name="text_desc_message_data_sample">Customize message data using message parameters before sending.</string>
+    <string name="text_title_message_filtering_sample">Message Filtering</string>
+    <string name="text_desc_message_filtering_sample">Implement message filtering using the filter options provided in MessageListParams.</string>
+    <string name="text_title_channel_layout_sample">Channel Layout</string>
+    <string name="text_desc_channel_layout_sample">Add additional views to the existing channel view from within a module.</string>
+    <string name="text_title_input_menu_sample">Input Menu</string>
+    <string name="text_desc_input_menu_sample">Reconfigure the input menu.</string>
+    <string name="text_title_channel_header_sample">Channel Header</string>
+    <string name="text_desc_channel_header_sample">Implement a new header by inheriting the ChannelHeaderComponent.</string>
+
+    <!--  Channel List Customization  -->
+    <string name="text_list_title_channel_list">Channel List Customization</string>
+    <string name="text_title_channel_item_ui_sample">Channel Item UI</string>
+    <string name="text_desc_channel_item_ui_sample">Customize the channel item UI.</string>
+    <string name="text_title_new_channel_item_type_sample">New Channel Item Type</string>
+    <string name="text_desc_new_channel_item_type_sample">Display a new type of channel item.</string>
+    <string name="text_title_channel_item_filtering">Channel Item Filtering</string>
+    <string name="text_desc_channel_item_filtering">Filter channels using GroupChannelListQueryParams.</string>
+    <string name="text_channel_typing_indicator_single">%s is typing&#8230;</string>
+    <string name="text_channel_typing_indicator_double">%s and %s are typing&#8230;</string>
+    <string name="text_channel_typing_indicator_multiple">Several people are typing&#8230;</string>
+
+    <!--  User List Customization  -->
+    <string name="text_list_title_user_list">User List Customization</string>
+    <string name="text_title_user_item_ui_sample">User Item UI</string>
+    <string name="text_desc_user_item_ui_sample">Customize the user item view for the user selection screen.</string>
+    <string name="text_title_user_item_select_sample">User Item Select</string>
+    <string name="text_desc_user_item_select_sample">Limit the number of users that can be selected on the user selection screen.</string>
+    <string name="text_title_user_item_filtering">User Item Filtering</string>
+    <string name="text_desc_user_item_filtering">Implement filtering for users based on a specific criteria for display.</string>
+    <string name="text_title_user_item_custom_datasource">User Item Custom Data Source</string>
+    <string name="text_desc_user_item_custom_datasource">Retrieve user data from external sources.</string>
+
+    <string name="text_list_item_nickname_format">#%d. %s</string>
+
+    <string name="text_resend">Resend</string>
+    <string name="text_delete">Delete</string>
+    <string name="text_custom_header">Custom Header</string>
+</resources>

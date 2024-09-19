@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/ivOgImage"
+        android:layout_width="@dimen/sb_default_thumbnail_width"
+        android:layout_height="@dimen/sb_default_thumbnail_height"
+        android:importantForAccessibility="no"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintBottom_toTopOf="@id/phOgTop"
+        app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"  />
+
+    <ImageView
+        android:id="@+id/ivOgImageOverlay"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_0"
+        android:background="@drawable/selector_message_og_image_overlay"
+        android:duplicateParentState="true"
+        android:contentDescription="@string/sb_view_ogtag_image_description"
+        app:layout_constraintStart_toStartOf="@id/ivOgImage"
+        app:layout_constraintEnd_toEndOf="@id/ivOgImage"
+        app:layout_constraintTop_toTopOf="@id/ivOgImage"
+        app:layout_constraintBottom_toBottomOf="@id/ivOgImage" />
+
+    <androidx.constraintlayout.widget.Placeholder
+        android:id="@+id/phOgTop"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_8"
+        app:layout_constraintBottom_toTopOf="@id/tvOgTitle"
+        app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ivOgImage"/>
+
+    <TextView
+        android:id="@+id/tvOgTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="@dimen/sb_message_max_width"
+        android:maxLines="10"
+        android:paddingStart="@dimen/sb_size_12"
+        android:paddingLeft="@dimen/sb_size_12"
+        android:paddingEnd="@dimen/sb_size_12"
+        android:paddingRight="@dimen/sb_size_12"
+        android:paddingBottom="@dimen/sb_size_4"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintBottom_toTopOf="@id/tvOgDescription"
+        app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/phOgTop" />
+
+    <TextView
+        android:id="@+id/tvOgDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="@dimen/sb_message_max_width"
+        android:paddingStart="@dimen/sb_size_12"
+        android:paddingLeft="@dimen/sb_size_12"
+        android:paddingEnd="@dimen/sb_size_12"
+        android:paddingRight="@dimen/sb_size_12"
+        android:paddingBottom="@dimen/sb_size_4"
+        android:singleLine="true"
+        android:ellipsize="end"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintBottom_toTopOf="@id/tvOgUrl"
+        app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvOgTitle" />
+
+    <TextView
+        android:id="@+id/tvOgUrl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="@dimen/sb_message_max_width"
+        android:paddingStart="@dimen/sb_size_12"
+        android:paddingLeft="@dimen/sb_size_12"
+        android:paddingEnd="@dimen/sb_size_12"
+        android:paddingRight="@dimen/sb_size_12"
+        android:paddingTop="@dimen/sb_size_4"
+        android:paddingBottom="@dimen/sb_size_4"
+        android:singleLine="true"
+        android:ellipsize="end"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintBottom_toTopOf="@id/phOgBottom"
+        app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvOgDescription" />
+
+    <androidx.constraintlayout.widget.Placeholder
+        android:id="@+id/phOgBottom"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="@dimen/sb_size_8"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvOgUrl"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/contentBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="ivOgImage,tvOgTitle,tvOgDescription,tvOgUrl" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

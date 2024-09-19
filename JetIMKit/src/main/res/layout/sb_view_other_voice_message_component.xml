@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/sb_size_12"
+    android:paddingRight="@dimen/sb_size_12"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <ImageView
+        android:id="@+id/ivProfileView"
+        android:layout_width="@dimen/sb_size_26"
+        android:layout_height="@dimen/sb_size_26"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/sb_sender_profile_description"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintBottom_toTopOf="@id/brBottom"
+        app:layout_constraintEnd_toStartOf="@id/contentPanelWithReactions"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvNickname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/sb_size_50"
+        android:paddingRight="@dimen/sb_size_50"
+        android:paddingBottom="@dimen/sb_size_4"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/contentTopBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvNickname" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentPanelWithReactions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="@dimen/sb_message_max_width"
+        android:layout_marginStart="@dimen/sb_size_12"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintBottom_toTopOf="@id/brBottom"
+        app:layout_constraintEnd_toStartOf="@id/tvSentAt"
+        app:layout_constraintStart_toEndOf="@id/ivProfileView"
+        app:layout_constraintTop_toBottomOf="@id/contentTopBarrier" >
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/contentPanel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            app:layout_constraintWidth_min="@dimen/sb_voice_message_min_width"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
+            app:layout_constraintBottom_toBottomOf="parent" >
+
+            <com.jet.im.kit.internal.ui.messages.VoiceMessageView
+                android:id="@+id/voiceMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/contentBarrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="contentPanel"
+            app:barrierDirection="end" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/tvSentAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/brBottom"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/contentPanelWithReactions"
+        android:layout_marginEnd="@dimen/sb_size_0"
+        android:layout_marginStart="@dimen/sb_size_4" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/brBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="ivProfileView,contentPanelWithReactions,tvSentAt" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

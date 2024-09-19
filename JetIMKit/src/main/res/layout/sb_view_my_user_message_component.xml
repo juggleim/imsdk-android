@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/sb_size_12"
+    android:paddingRight="@dimen/sb_size_12"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/brBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="contentPanel, tvSentAt, ivStatus" />
+
+    <com.jet.im.kit.internal.ui.messages.MyMessageStatusView
+        android:id="@+id/ivStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_0"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintEnd_toStartOf="@+id/tvSentAt"
+        app:layout_constraintBottom_toBottomOf="@+id/tvSentAt"
+        app:layout_constraintStart_toStartOf="@id/contentLeftView"/>
+
+    <TextView
+        android:id="@+id/tvSentAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_0"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toEndOf="@id/ivStatus"
+        app:layout_constraintEnd_toEndOf="@+id/contentLeftView"
+        app:layout_constraintBottom_toTopOf="@+id/brBottom"
+        />
+
+    <View
+        android:id="@+id/contentLeftView"
+        android:layout_width="@dimen/sb_size_90"
+        android:layout_height="@dimen/sb_size_0"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintBottom_toBottomOf="@+id/brBottom"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/contentPanel"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:addStatesFromChildren="true"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@+id/contentLeftView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/brBottom"
+        >
+
+        <View
+            android:id="@+id/ogtagBackground"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="@dimen/sb_size_0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/ovOgtag"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+        <com.jet.im.kit.internal.ui.widgets.AutoLinkTextView
+            android:id="@+id/tvMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="@dimen/sb_message_max_width"
+            android:paddingTop="@dimen/sb_size_7"
+            android:paddingBottom="@dimen/sb_size_7"
+            android:paddingRight="@dimen/sb_size_12"
+            android:paddingLeft="@dimen/sb_size_12"
+            android:paddingStart="@dimen/sb_size_12"
+            android:paddingEnd="@dimen/sb_size_12"
+            app:sb_auto_link_text_view_linkify_mask="all"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/ovOgtag"
+            />
+
+        <FrameLayout
+            android:id="@+id/ovOgtag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvMessage"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

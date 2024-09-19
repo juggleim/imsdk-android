@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/vgMemberItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/sb_size_16"
+    android:paddingTop="@dimen/sb_size_10"
+    android:paddingRight="@dimen/sb_size_16"
+    android:paddingBottom="@dimen/sb_size_10"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/ivProfile"
+        android:layout_width="@dimen/sb_size_36"
+        android:layout_height="@dimen/sb_size_36"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/sb_view_member_item_profile_description"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/ivProfileOverlay"
+        android:layout_width="@dimen/sb_size_36"
+        android:layout_height="@dimen/sb_size_36"
+        android:scaleType="centerCrop"
+        android:src="@drawable/icon_mute"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="@id/ivProfile"
+        app:layout_constraintEnd_toEndOf="@id/ivProfile"
+        app:layout_constraintTop_toTopOf="@id/ivProfile"
+        app:layout_constraintBottom_toBottomOf="@id/ivProfile" />
+
+    <TextView
+        android:id="@+id/tvNickname"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/sb_size_16"
+        android:layout_marginRight="@dimen/sb_size_16"
+        app:layout_constraintLeft_toRightOf="@+id/ivProfile"
+        app:layout_constraintRight_toLeftOf="@+id/tvDescription"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <TextView
+        android:id="@+id/tvDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/tvNickname"
+        app:layout_constraintEnd_toStartOf="@+id/ivAction"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <ImageButton
+        android:id="@+id/ivAction"
+        android:layout_width="@dimen/sb_size_24"
+        android:layout_height="@dimen/sb_size_24"
+        android:layout_gravity="center"
+        android:src="@drawable/icon_more"
+        android:visibility="gone"
+        android:layout_marginStart="@dimen/sb_size_8"
+        android:padding="@dimen/sb_size_0"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/sb_view_member_item_action_button_description"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tvDescription"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
