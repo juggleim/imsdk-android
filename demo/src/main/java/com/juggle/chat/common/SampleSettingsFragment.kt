@@ -96,7 +96,6 @@ class SampleSettingsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SendbirdUIKit.connect { _ -> initPage() }
     }
 
     override fun onCreateView(
@@ -117,6 +116,7 @@ class SampleSettingsFragment : Fragment() {
                 savedInstanceState
             )
         binding.headerComponent.addView(header)
+        initPage()
         return binding.root
     }
 
