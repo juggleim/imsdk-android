@@ -13,7 +13,7 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.juggle.im'
                 artifactId = 'juggle'
-                version = '1.7.1'
+                version = '1.7.2'
                 pom {
                     name = 'JuggleIM'
                     description = 'JuggleIM Android SDK'
@@ -28,7 +28,6 @@ afterEvaluate {
         }
         repositories {
             maven {
-                allowInsecureProtocol = true
                 url = 'https://maven.jugglechat.com/repository/maven-releases/'
                 credentials {
                     username 'admin'
