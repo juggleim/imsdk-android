@@ -18,6 +18,9 @@ import com.jet.im.kit.consts.TypingIndicatorType
 import com.jet.im.kit.interfaces.CustomParamsHandler
 import com.jet.im.kit.interfaces.UserInfo
 import com.jet.im.kit.model.configurations.UIKitConfig
+import com.juggle.im.JIM.InitConfig
+import com.juggle.im.internal.logger.JLogConfig
+import com.juggle.im.internal.logger.JLogLevel
 import com.sendbird.android.exception.SendbirdException
 import com.sendbird.android.handler.InitResultHandler
 import com.sendbird.android.params.OpenChannelCreateParams
@@ -119,7 +122,9 @@ class BaseApplication : MultiDexApplication() {
         navi.add("https://nav.juggleim.com")
         JIM.getInstance().setServer(navi)
         initUIKit(this)
-        JIM.getInstance().init(this, "nsw3sue72begyv7y")
+        val logConfig = JLogConfig.Builder(this).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build()
+        val initConfig = InitConfig.Builder().setJLogConfig(logConfig).build()
+        JIM.getInstance().init(this, "nsw3sue72begyv7y", initConfig)
         // setup uikit configurations
         HttpsURLConnection.setDefaultSSLSocketFactory(SSLHelper.getTrustAllSSLSocketFactory())
         HttpsURLConnection.setDefaultHostnameVerifier(object :HostnameVerifier{
