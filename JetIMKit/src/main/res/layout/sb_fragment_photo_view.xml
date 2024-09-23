@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <com.github.chrisbanes.photoview.PhotoView
+        android:id="@+id/ivPhoto"
+        android:scaleType="fitCenter"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background_700" />
+
+    <FrameLayout
+        android:id="@+id/vgHeader"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_56"
+        android:background="@color/overlay_01"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingRight="@dimen/sb_size_64"
+            android:paddingLeft="@dimen/sb_size_64">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:gravity="center_horizontal"
+                android:textAppearance="@style/SendbirdH2OnDark01"
+                android:textSize="@dimen/sb_text_size_16"
+                android:ellipsize="end"
+                android:singleLine="true"/>
+
+            <TextView
+                android:id="@+id/tvCreatedAt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:gravity="center_horizontal"
+                android:lineSpacingExtra="0sp"
+                android:textAppearance="@style/SendbirdCaption2OnDark01"
+                android:textColor="@color/ondark_01"
+                android:textSize="@dimen/sb_text_size_12"
+                android:textStyle="normal"
+                android:ellipsize="end"
+                android:singleLine="true" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/ivClose"
+            android:layout_width="@dimen/sb_size_24"
+            android:layout_height="@dimen/sb_size_24"
+            android:scaleType="centerCrop"
+            android:layout_margin="@dimen/sb_size_16"
+            android:src="@drawable/icon_close"
+            android:contentDescription="@string/sb_fragment_photo_view_close_description"
+            app:tint="@color/ondark_01" />
+    </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/vgBottom"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_56"
+        android:layout_alignParentBottom="true"
+        android:background="@color/overlay_01"
+        android:paddingLeft="@dimen/sb_size_16"
+        android:paddingRight="@dimen/sb_size_16">
+
+        <ImageView
+            android:id="@+id/ivDownload"
+            android:layout_width="@dimen/sb_size_24"
+            android:layout_height="@dimen/sb_size_24"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="@dimen/sb_size_16"
+            android:layout_marginBottom="@dimen/sb_size_16"
+            android:src="@drawable/icon_download"
+            android:contentDescription="@string/sb_fragment_photo_view_save_description"
+            app:tint="@color/ondark_01" />
+
+        <ImageView
+            android:id="@+id/ivDelete"
+            android:layout_width="@dimen/sb_size_24"
+            android:layout_height="@dimen/sb_size_24"
+            android:scaleType="centerCrop"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="@dimen/sb_size_16"
+            android:layout_marginBottom="@dimen/sb_size_16"
+            android:src="@drawable/icon_delete"
+            android:contentDescription="@string/sb_fragment_photo_view_delete_description"
+            app:tint="@color/ondark_01" />
+    </RelativeLayout>
+
+    <com.jet.im.kit.internal.ui.widgets.ProgressView
+        android:id="@+id/loading"
+        android:layout_centerInParent="true"
+        android:layout_width="@dimen/sb_size_60"
+        android:layout_height="@dimen/sb_size_60"
+        android:layout_gravity="center"/>
+
+</RelativeLayout>

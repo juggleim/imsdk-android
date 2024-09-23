@@ -340,6 +340,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void pushSwitch(boolean enablePush, String userId) {
+        byte[] bytes = mPbData.pushSwitch(enablePush, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "push switch, enable is " + enablePush);
+        sendWhenOpen(bytes);
+    }
+
     public void joinChatroom(String chatroomId, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.joinChatroom(chatroomId, mCmdIndex++);

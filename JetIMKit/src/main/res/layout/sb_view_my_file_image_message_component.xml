@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/sb_size_12"
+    android:paddingRight="@dimen/sb_size_12"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/tvSentAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_0"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        app:layout_constraintBottom_toBottomOf="@+id/brBottom"
+        app:layout_constraintEnd_toEndOf="@+id/contentLeftView"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toEndOf="@+id/ivStatus" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/brBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="contentPanel, tvSentAt, ivStatus" />
+
+    <com.jet.im.kit.internal.ui.messages.MyMessageStatusView
+        android:id="@+id/ivStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_0"
+        android:layout_marginEnd="@dimen/sb_size_4"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintBottom_toBottomOf="@+id/tvSentAt"
+        app:layout_constraintEnd_toStartOf="@+id/tvSentAt"
+        app:layout_constraintStart_toStartOf="@id/contentLeftView" />
+
+    <View
+        android:id="@+id/contentLeftView"
+        android:layout_width="@dimen/sb_size_90"
+        android:layout_height="@dimen/sb_size_0"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintBottom_toBottomOf="@+id/brBottom"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/contentPanel"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintWidth_max="@dimen/sb_default_thumbnail_width"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintBottom_toTopOf="@+id/brBottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/contentLeftView"
+        app:layout_constraintTop_toTopOf="parent" >
+        <com.jet.im.kit.internal.ui.widgets.RoundCornerView
+            android:id="@+id/ivThumbnail"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/sb_size_0"
+            android:background="@drawable/sb_shape_image_message_background"
+            app:layout_constraintDimensionRatio="3:2"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <ImageView
+            android:id="@+id/ivThumbnailOverlay"
+            android:background="@drawable/selector_file_message_bubble"
+            android:scaleType="centerInside"
+            android:contentDescription="@string/sb_view_my_file_image_message_description"
+            app:layout_constraintStart_toStartOf="@id/ivThumbnail"
+            app:layout_constraintEnd_toEndOf="@id/ivThumbnail"
+            app:layout_constraintTop_toTopOf="@id/ivThumbnail"
+            app:layout_constraintBottom_toBottomOf="@id/ivThumbnail"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="@dimen/sb_size_0"/>
+
+        <ImageView
+            android:id="@+id/ivThumbnailIcon"
+            android:background="@drawable/selector_file_message_bubble"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="@id/ivThumbnail"
+            app:layout_constraintEnd_toEndOf="@id/ivThumbnail"
+            app:layout_constraintTop_toTopOf="@id/ivThumbnail"
+            app:layout_constraintBottom_toBottomOf="@id/ivThumbnail"
+            android:layout_width="@dimen/sb_size_48"
+            android:layout_height="@dimen/sb_size_48"/>
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/contentBarrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="ivThumbnail"
+            app:barrierDirection="end" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

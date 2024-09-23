@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/messageInputParent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/ivReplyDivider"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_1"
+        android:visibility="gone"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/quoteReplyPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/sb_size_12"
+        android:paddingBottom="@dimen/sb_size_12"
+        android:paddingLeft="@dimen/sb_size_16"
+        android:paddingRight="@dimen/sb_size_16"
+        android:visibility="gone"
+        >
+
+        <com.jet.im.kit.internal.ui.widgets.RoundCornerView
+            android:id="@+id/ivQuoteReplyMessageImage"
+            android:layout_width="@dimen/sb_size_32"
+            android:layout_height="@dimen/sb_size_32"
+            android:layout_marginEnd="@dimen/sb_size_8"
+            android:background="@drawable/sb_shape_image_message_background"
+            android:scaleType="centerInside"
+            app:layout_constraintEnd_toStartOf="@id/tvQuoteReplyTitle"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/ivQuoteReplyMessageIcon"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerInside"
+            android:importantForAccessibility="no"
+            app:layout_constraintStart_toStartOf="@id/ivQuoteReplyMessageImage"
+            app:layout_constraintEnd_toEndOf="@id/ivQuoteReplyMessageImage"
+            app:layout_constraintTop_toTopOf="@id/ivQuoteReplyMessageImage"
+            app:layout_constraintBottom_toBottomOf="@id/ivQuoteReplyMessageImage" />
+
+        <TextView
+            android:id="@+id/tvQuoteReplyTitle"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textAppearance="@style/SendbirdCaption1OnLight01"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/ivQuoteReplyMessageImage"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/tvQuoteReplyMessage"
+            app:layout_constraintEnd_toStartOf="@id/ivQuoteReplyClose"
+            />
+
+        <TextView
+            android:id="@+id/tvQuoteReplyMessage"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textAppearance="@style/SendbirdCaption2OnLight03"
+            android:layout_marginTop="@dimen/sb_size_4"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="@id/tvQuoteReplyTitle"
+            app:layout_constraintEnd_toEndOf="@id/tvQuoteReplyTitle"
+            app:layout_constraintStart_toEndOf="@id/ivQuoteReplyMessageImage"
+            app:layout_constraintTop_toBottomOf="@id/tvQuoteReplyTitle"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/ivQuoteReplyClose"
+            android:layout_width="@dimen/sb_size_22"
+            android:layout_height="@dimen/sb_size_22"
+            android:src="@drawable/icon_close"
+            android:contentDescription="@string/sb_view_message_input_close_reply_description"
+            app:layout_constraintStart_toEndOf="@id/tvQuoteReplyTitle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="@dimen/sb_size_16" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/inputPanel"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/sb_size_8"
+            android:paddingEnd="@dimen/sb_size_16"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/ibtnAdd"
+                android:layout_width="@dimen/sb_size_40"
+                android:layout_height="@dimen/sb_size_40"
+                android:src="@drawable/icon_add"
+                android:padding="@dimen/sb_size_8"
+                android:layout_marginEnd="@dimen/sb_size_4"
+                android:layout_marginStart="@dimen/sb_size_0"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/sb_view_message_input_add_button_description"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/etInputText"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.jet.im.kit.widgets.MentionEditText
+                android:id="@+id/etInputText"
+                android:layout_width="@dimen/sb_size_0"
+                android:layout_height="wrap_content"
+                android:hint="@string/sb_text_channel_input_text_hint"
+                android:maxLines="3"
+                android:layout_marginTop="@dimen/sb_size_10"
+                android:layout_marginBottom="@dimen/sb_size_10"
+                android:paddingLeft="@dimen/sb_size_20"
+                android:paddingRight="@dimen/sb_size_20"
+                android:imeOptions="flagNoExtractUi"
+                android:inputType="textCapSentences|textMultiLine"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/ibtnSend"
+                app:layout_constraintStart_toEndOf="@id/ibtnAdd"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <requestFocus />
+            </com.jet.im.kit.widgets.MentionEditText>
+
+            <ImageButton
+                android:id="@+id/ibtnSend"
+                android:src="@drawable/icon_send"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                android:layout_marginEnd="@dimen/sb_size_0"
+                android:layout_marginStart="@dimen/sb_size_12"
+                android:visibility="gone"
+                android:padding="@dimen/sb_size_0"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/sb_view_message_input_send_button_description"
+                app:layout_constraintStart_toEndOf="@id/etInputText"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/ibtnVoiceRecorder" />
+
+            <ImageButton
+                android:id="@+id/ibtnVoiceRecorder"
+                android:src="@drawable/icon_voice_message_on"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                android:layout_marginEnd="@dimen/sb_size_0"
+                android:layout_marginStart="@dimen/sb_size_12"
+                android:padding="@dimen/sb_size_0"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/sb_view_message_input_voice_recorder_button_description"
+                app:layout_constraintStart_toEndOf="@id/ibtnSend"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <FrameLayout
+            android:id="@+id/editPanel"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_56"
+            android:paddingLeft="@dimen/sb_size_16"
+            android:paddingRight="@dimen/sb_size_16"
+            android:visibility="gone">
+
+            <Button
+                android:layout_gravity="start|center_vertical"
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/sb_size_40"
+                android:paddingRight="@dimen/sb_size_4"
+                android:paddingLeft="@dimen/sb_size_4"
+                android:text="@string/sb_text_button_cancel"/>
+
+            <Button
+                android:layout_gravity="end|center_vertical"
+                android:id="@+id/btnSave"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/sb_size_40"
+                android:paddingRight="@dimen/sb_size_4"
+                android:paddingLeft="@dimen/sb_size_4"
+                android:text="@string/sb_text_button_save"/>
+
+        </FrameLayout>
+
+    </LinearLayout>
+</LinearLayout>

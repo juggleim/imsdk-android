@@ -1,0 +1,32 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme.Dark">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/primary_200</item>
+        <item name="colorPrimaryDark">@color/background_500</item>
+        <item name="colorAccent">@color/secondary_200</item>
+        <item name="widget_entry_button">@style/Widget.Dark.EntryButton</item>
+    </style>
+    <style name="Widget.Dark" parent="android:Widget"/>
+    <style name="Widget.Dark.EntryButton">
+        <item name="background_color">@drawable/selector_home_channel_type_button_dark</item>
+        <item name="title_text_appearance">@style/EntryButtonTitle.Dark</item>
+        <item name="description_text_appearance">@style/EntryButtonDescription.Dark</item>
+        <item name="icon_tint">@color/ondark_03</item>
+    </style>
+
+    <style name="EntryButtonTitle.Dark">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/ondark_01</item>
+    </style>
+
+    <style name="EntryButtonDescription.Dark">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/ondark_02</item>
+    </style>
+</resources>

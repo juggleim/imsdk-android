@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/root"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_56"
+        android:paddingLeft="@dimen/sb_size_8"
+        android:paddingRight="@dimen/sb_size_8">
+
+        <ImageButton
+            android:id="@+id/leftButton"
+            android:layout_width="@dimen/sb_size_40"
+            android:layout_height="@dimen/sb_size_40"
+            android:padding="@dimen/sb_size_8"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            android:contentDescription="@string/sb_view_header_left_button_description"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/profileView"
+            />
+
+        <com.jet.im.kit.internal.ui.channels.ChannelCoverView
+            android:id="@+id/profileView"
+            android:layout_width="@dimen/sb_size_34"
+            android:layout_height="@dimen/sb_size_34"
+            android:layout_marginStart="@dimen/sb_size_8"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/leftButton"
+            app:layout_constraintEnd_toStartOf="@id/titlePanel"/>
+
+        <LinearLayout
+            android:id="@+id/titlePanel"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginLeft="@dimen/sb_size_8"
+            android:layout_marginRight="@dimen/sb_size_8"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/profileView"
+            app:layout_constraintEnd_toStartOf="@id/rightButton">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
+                />
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:ellipsize="middle"
+                />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/rightButton"
+            android:layout_width="@dimen/sb_size_40"
+            android:layout_height="@dimen/sb_size_40"
+            android:padding="@dimen/sb_size_8"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center"
+            android:contentDescription="@string/sb_view_header_right_button_description"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/titlePanel"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/elevationView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_1"/>
+
+</LinearLayout>

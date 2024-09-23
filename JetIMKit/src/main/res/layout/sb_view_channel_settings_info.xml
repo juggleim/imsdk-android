@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_channel_setting_height_132"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingLeft="@dimen/sb_size_16"
+        android:paddingRight="@dimen/sb_size_16">
+
+        <com.jet.im.kit.internal.ui.channels.ChannelCoverView
+            android:id="@+id/ccvChannelImage"
+            android:layout_width="@dimen/sb_size_64"
+            android:layout_height="@dimen/sb_size_64"
+            android:layout_margin="@dimen/sb_size_8"/>
+
+        <TextView
+            android:id="@+id/tvChannelName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_1"
+        android:layout_marginLeft="@dimen/sb_size_16"
+        android:layout_marginRight="@dimen/sb_size_16"/>
+</LinearLayout>

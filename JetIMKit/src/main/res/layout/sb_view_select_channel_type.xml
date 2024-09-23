@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/root"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:text="@string/sb_text_select_channel_type"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/sb_size_56"
+        android:layout_marginStart="@dimen/sb_size_24"
+        android:layout_marginEnd="@dimen/sb_size_0" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_72">
+
+        <LinearLayout
+            android:id="@+id/vgGroup"
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/ivIconGroup"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                android:scaleType="centerCrop"
+                android:importantForAccessibility="no"/>
+            <TextView
+                android:id="@+id/tvMenuGroupChat"
+                android:layout_marginTop="@dimen/sb_size_4"
+                android:text="@string/sb_text_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/vgSuperGroup"
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/ivIconSuperGroup"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                android:scaleType="centerCrop"
+                android:importantForAccessibility="no"/>
+            <TextView
+                android:id="@+id/tvMenuSuperGroupChat"
+                android:layout_marginTop="@dimen/sb_size_4"
+                android:text="@string/sb_text_super_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/vgBroadcast"
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/ivIconBroadcast"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                android:scaleType="centerCrop"
+                android:importantForAccessibility="no"/>
+            <TextView
+                android:id="@+id/tvMenuBroadcastChant"
+                android:layout_marginTop="@dimen/sb_size_4"
+                android:text="@string/sb_text_broadcast"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

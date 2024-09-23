@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.jet.im.kit.internal.ui.widgets.VoiceProgressView
+        android:id="@+id/voiceProgressView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_44"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <ImageView
+        android:id="@+id/ibtnPlay"
+        android:layout_width="@dimen/sb_size_28"
+        android:layout_height="@dimen/sb_size_28"
+        android:layout_marginStart="@dimen/sb_size_12"
+        android:contentDescription="@string/sb_view_voice_message_play_button_description"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ImageView
+        android:id="@+id/ibtnPause"
+        android:layout_width="@dimen/sb_size_28"
+        android:layout_height="@dimen/sb_size_28"
+        android:layout_marginStart="@dimen/sb_size_12"
+        android:contentDescription="@string/sb_view_voice_message_pause_button_description"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone"/>
+
+    <com.jet.im.kit.internal.ui.widgets.ProgressView
+        android:id="@+id/loading"
+        android:layout_width="@dimen/sb_size_28"
+        android:layout_height="@dimen/sb_size_28"
+        android:layout_marginStart="@dimen/sb_size_12"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/timelineView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/ondark_01"
+        android:text="00:00"
+        android:layout_marginEnd="@dimen/sb_size_12"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

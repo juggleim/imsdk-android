@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/sb_size_16"
+    android:paddingRight="@dimen/sb_size_16"
+    android:paddingTop="@dimen/sb_size_8"
+    android:paddingBottom="@dimen/sb_size_8"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/tvLabel"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/sb_size_4"
+        android:ellipsize="end"
+        android:gravity="bottom"
+        android:singleLine="true"
+        android:layout_marginBottom="@dimen/sb_size_4"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/contentPanel"
+        app:layout_constraintEnd_toStartOf="@id/ivUnreadIndicator"
+        app:layout_constraintBottom_toTopOf="@id/contentTopBarrier"
+        />
+
+    <ImageView
+        android:id="@+id/ivUnreadIndicator"
+        android:layout_width="@dimen/sb_size_6"
+        android:layout_height="@dimen/sb_size_6"
+        android:layout_marginStart="@dimen/sb_size_4"
+        android:layout_marginBottom="@dimen/sb_size_4"
+        android:contentDescription="@string/sb_view_feed_notification_unread_indicator_description"
+        app:layout_constraintStart_toEndOf="@id/tvLabel"
+        app:layout_constraintEnd_toStartOf="@id/tvSentAt"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/contentTopBarrier"
+    />
+
+    <TextView
+        android:id="@+id/tvSentAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end|bottom"
+        android:layout_marginBottom="@dimen/sb_size_4"
+        android:layout_marginStart="@dimen/sb_size_4"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/ivUnreadIndicator"
+        app:layout_constraintEnd_toEndOf="@+id/contentPanel"
+        app:layout_constraintBottom_toTopOf="@id/contentTopBarrier"
+        />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/contentTopBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/sb_size_4"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvLabel, tvSentAt, ivUnreadIndicator" />
+
+    <com.jet.im.kit.internal.ui.widgets.RoundCornerLayout
+        android:id="@+id/contentPanel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintWidth_max="380dp"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contentTopBarrier"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+</androidx.constraintlayout.widget.ConstraintLayout>

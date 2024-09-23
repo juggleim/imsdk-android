@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/sb_size_24">
+
+        <TextView
+            android:id="@+id/mainTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/sb_size_24"
+            android:layout_marginRight="@dimen/sb_size_24"
+            android:layout_marginBottom="@dimen/sb_size_24"
+            android:textSize="@dimen/sb_text_size_24"
+            android:textStyle="bold"
+            android:textColor="@color/onlight_01"
+            android:fontFamily="sans-serif"
+            android:text="@string/text_notification_home"/>
+
+        <com.juggle.chat.common.widgets.EntryButton
+            android:id="@+id/feedOnlyButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="@string/text_notification_feed_type_only"
+            android:layout_marginStart="@dimen/sb_size_24"
+            android:layout_marginEnd="@dimen/sb_size_24"
+            android:layout_marginBottom="@dimen/sb_size_16"/>
+
+        <com.juggle.chat.common.widgets.EntryButton
+            android:id="@+id/chatAndFeedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:title="@string/text_notification_chat_and_feed_type"
+            android:layout_marginStart="@dimen/sb_size_24"
+            android:layout_marginEnd="@dimen/sb_size_24"
+            android:layout_marginBottom="@dimen/sb_size_16"/>
+
+        <Button
+            android:id="@+id/btSignOut"
+            android:layout_marginTop="@dimen/sb_size_16"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_48"
+            android:layout_marginLeft="@dimen/sb_size_24"
+            android:layout_marginRight="@dimen/sb_size_24"
+            android:textSize="@dimen/sb_text_size_14"
+            android:fontFamily="sans-serif"
+            android:textStyle="bold"
+            android:textColor="@color/onlight_01"
+            android:lineSpacingExtra="@dimen/sb_size_2"
+            android:background="@drawable/selector_home_signout_button"
+            android:text="@string/text_sign_out" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <FrameLayout
+        android:id="@+id/channelView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="@dimen/sb_size_64"
+        android:layout_height="@dimen/sb_size_64"
+        app:fabCustomSize="@dimen/sb_size_64"
+        android:src="@drawable/icon_plus"
+        android:layout_gravity="end|bottom"
+        android:layout_marginBottom="@dimen/sb_size_64"
+        android:layout_marginEnd="@dimen/sb_size_16"
+        />
+
+</FrameLayout>

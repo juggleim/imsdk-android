@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/sb_size_12"
+    android:paddingEnd="@dimen/sb_size_12"
+    android:paddingBottom="@dimen/sb_size_16"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        android:id="@+id/tvNickname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/sb_size_12"
+        android:paddingEnd="@dimen/sb_size_12"
+        android:paddingBottom="@dimen/sb_size_4"
+        app:layout_constraintStart_toStartOf="@id/contentPanel"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/nicknameBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvNickname" />
+
+    <ImageView
+        android:id="@+id/ivProfileView"
+        android:layout_width="@dimen/sb_size_26"
+        android:layout_height="@dimen/sb_size_26"
+        android:scaleType="centerCrop"
+        android:importantForAccessibility="no"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nicknameBarrier"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="1" />
+
+    <TextView
+        android:id="@+id/tvSentAt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_4"
+        app:layout_constraintStart_toEndOf="@id/contentPanel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <FrameLayout
+        android:id="@+id/contentPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_12"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/ivProfileView"
+        app:layout_constraintEnd_toStartOf="@id/tvSentAt"
+        app:layout_constraintTop_toBottomOf="@id/nicknameBarrier"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/formEnabledLayout"
+            android:layout_width="@dimen/sb_forms_message_width"
+            android:layout_height="match_parent"
+            android:paddingTop="@dimen/sb_size_16"
+            android:paddingBottom="@dimen/sb_size_16"
+            android:paddingStart="@dimen/sb_size_12"
+            android:paddingEnd="@dimen/sb_size_12">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFormFields"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <Button
+                android:id="@+id/buttonSubmit"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_36"
+                android:text="@string/sb_forms_submit"
+                android:layout_marginTop="@dimen/sb_size_12"
+                app:layout_constraintTop_toBottomOf="@id/rvFormFields"
+                app:layout_constraintBottom_toBottomOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.jet.im.kit.internal.ui.widgets.AutoLinkTextView
+            android:id="@+id/tvMessageFormDisabled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="@dimen/sb_message_max_width"
+            android:paddingTop="@dimen/sb_size_7"
+            android:paddingBottom="@dimen/sb_size_7"
+            android:paddingRight="@dimen/sb_size_12"
+            android:paddingLeft="@dimen/sb_size_12"
+            android:paddingStart="@dimen/sb_size_12"
+            android:paddingEnd="@dimen/sb_size_12"
+            app:sb_auto_link_text_view_linkify_mask="all"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="parent"/>
+    </FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

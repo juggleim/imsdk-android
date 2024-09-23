@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ImageView
+        android:id="@+id/ivStatus"
+        android:layout_width="@dimen/sb_size_16"
+        android:layout_height="@dimen/sb_size_16"
+        android:importantForAccessibility="no"
+        android:visibility="gone"/>
+
+    <com.jet.im.kit.internal.ui.widgets.MessageProgressView
+        android:id="@+id/mpvProgressStatus"
+        android:layout_width="@dimen/sb_size_16"
+        android:layout_height="@dimen/sb_size_16"
+        android:visibility="gone"/>
+
+</FrameLayout>

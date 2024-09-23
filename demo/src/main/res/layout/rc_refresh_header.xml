@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:paddingTop="20dp"
+    tools:paddingBottom="20dp"
+    tools:background="#eee"
+    tools:parentTag="android.widget.RelativeLayout">
+
+    <ImageView
+        android:id="@+id/rc_refresh_progress"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/rc_refresh"
+        android:layout_centerInParent="true" />
+
+
+</merge>

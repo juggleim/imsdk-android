@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sb_fragment_photo_view_close_description">close</string>
+    <string name="sb_fragment_photo_view_save_description">save</string>
+    <string name="sb_fragment_photo_view_delete_description">delete</string>
+    <string name="sb_view_channel_list_item_broadcast_icon_description">broadcast channel</string>
+    <string name="sb_view_channel_list_item_frozen_icon_description">frozen channel</string>
+    <string name="sb_view_channel_profile_input_select_channel_cover_description">select channel cover</string>
+    <string name="sb_view_channel_profile_input_clear_channel_name_description">clear channel name</string>
+    <string name="sb_view_feed_notification_unread_indicator_description">unread message</string>
+    <string name="sb_view_header_left_button_description">back</string>
+    <string name="sb_view_header_right_button_description">menu</string>
+    <string name="sb_view_image_file_description">image file</string>
+    <string name="sb_view_member_item_profile_description">member profile</string>
+    <string name="sb_view_member_item_action_button_description">action</string>
+    <string name="sb_view_message_input_close_reply_description">close reply</string>
+    <string name="sb_view_message_input_add_button_description">add</string>
+    <string name="sb_view_message_input_send_button_description">send message</string>
+    <string name="sb_view_message_input_voice_recorder_button_description">send voice message</string>
+    <string name="sb_view_message_recycler_view_scroll_to_bottom_description">scroll to bottom</string>
+    <string name="sb_view_my_file_image_message_description">my image message</string>
+    <string name="sb_view_my_file_video_message_description">my video message</string>
+    <string name="sb_view_my_quoted_file_message_description">my replied file message</string>
+    <string name="sb_view_ogtag_image_description">ogtag</string>
+    <string name="sb_view_open_channel_file_image_message_description">image message</string>
+    <string name="sb_view_open_channel_file_video_message_description">video message</string>
+    <string name="sb_view_other_file_image_message_description">other image message</string>
+    <string name="sb_view_other_file_video_message_description">other video message</string>
+    <string name="sb_view_other_quoted_file_message_description">other replied file message</string>
+    <string name="sb_view_parent_message_info_menu_icon_description">parent message menu</string>
+    <string name="sb_view_search_bar_clear_button_description">clear text</string>
+    <string name="sb_view_suggested_mention_item_profile_description">suggested mention profile</string>
+    <string name="sb_view_toast_success_description">success</string>
+    <string name="sb_view_toast_error_description">error</string>
+    <string name="sb_view_voice_message_play_button_description">play</string>
+    <string name="sb_view_voice_message_pause_button_description">pause</string>
+    <string name="sb_view_voice_message_input_record_button_description">record</string>
+    <string name="sb_view_voice_message_input_play_button_description">play</string>
+    <string name="sb_view_voice_message_input_stop_button_description">stop</string>
+    <string name="sb_view_voice_message_input_pause_button_description">pause</string>
+    <string name="sb_view_voice_message_input_send_button_description">send</string>
+
+    <!--  placeholder  -->
+    <string name="sb_edittext_hint_default_description">enter text</string>
+    <string name="sb_emoji_default_description">emoji</string>
+    <string name="sb_sender_profile_description">sender profile</string>
+    <string name="sb_channel_cover_description">channel cover</string>
+</resources>
+

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/toastPanel"
+    android:orientation="horizontal"
+    android:layout_width="wrap_content"
+    android:layout_height="@dimen/sb_size_48"
+    android:gravity="center"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <FrameLayout
+        android:id="@+id/iconPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/sb_size_8"
+        android:layout_marginLeft="@dimen/sb_size_8">
+
+        <ImageView
+            android:id="@+id/ivSuccess"
+            android:layout_width="@dimen/sb_size_20"
+            android:layout_height="@dimen/sb_size_20"
+            android:src="@drawable/icon_done"
+            android:contentDescription="@string/sb_view_toast_success_description"/>
+
+        <ImageView
+            android:id="@+id/ivError"
+            android:layout_width="@dimen/sb_size_20"
+            android:layout_height="@dimen/sb_size_20"
+            android:src="@drawable/icon_error"
+            android:contentDescription="@string/sb_view_toast_error_description"/>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tvToastText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/sb_size_16"
+        android:maxLines="2"
+        android:ellipsize="end"/>
+
+</LinearLayout>

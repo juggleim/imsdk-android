@@ -50,6 +50,6 @@ public class GooglePush implements IPush {
 
     @Override
     public PushChannel getType() {
-        return PushChannel.XIAOMI;
+        return PushChannel.GOOGLE;
     }
 }
