@@ -927,7 +927,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
-    //更新会话的通用方法
+    //更新会话的通用方法log
     private void updateConversationLastMessage(ConcreteConversationInfo info, ConcreteMessage
             lastMessage, ConversationUpdater mentionUpdater) {
         //判断会话最新消息是否有变化

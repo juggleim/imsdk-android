@@ -86,6 +86,24 @@ class PBData {
                 case XIAOMI:
                     builder.setPushChannel("Xiaomi");
                     break;
+                case OPPO:
+                    builder.setPushChannel("Oppo");
+                    break;
+                case HONOR:
+                    builder.setPushChannel("");
+                    break;
+                case VIVO:
+                    builder.setPushChannel("Vivo");
+                    break;
+                case MEIZU:
+                    builder.setPushChannel("");
+                    break;
+                case GOOGLE:
+                    builder.setPushChannel("FCM");
+                    break;
+                case JIGUANG:
+                    builder.setPushChannel("Jpush");
+                    break;
             }
         }
         Connect.ConnectMsgBody body = builder.build();

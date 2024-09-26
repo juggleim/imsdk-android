@@ -694,11 +694,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         //按conversation过滤
         List<String> deleteIdList = new ArrayList<>();
         List<ConcreteMessage> deleteList = new ArrayList<>();
+        List<Long> clientMsgNoList = new ArrayList<>();
         for (int i = messages.size() - 1; i >= 0; i--) {
             Message temp = messages.get(i);
             if (temp.getConversation().equals(conversation)) {
                 deleteIdList.add(temp.getMessageId());
                 deleteList.add((ConcreteMessage) temp);
+                clientMsgNoList.add(temp.getClientMsgNo());
             }
         }
         //判空
@@ -728,9 +730,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 //通知会话更新
                 notifyMessageRemoved(conversation, deleteList);
                 //执行回调
-                if (callback != null) {
-                    mCore.getCallbackHandler().post(callback::onSuccess);
-                }
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageDelete(conversation, clientMsgNoList);
+                        }
+                    }
+                });
             }
 
             @Override
@@ -787,9 +796,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             mCore.getDbManager().deleteMessageByClientMsgNo(deleteClientMsgNoList);
             //通知会话更新
             notifyMessageRemoved(conversation, deleteLocalList);
-            if (callback != null) {
-                mCore.getCallbackHandler().post(callback::onSuccess);
-            }
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onSuccess();
+                }
+                if (mListenerMap != null) {
+                    for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                        entry.getValue().onMessageDelete(conversation, deleteClientMsgNoList);
+                    }
+                }
+            });
             return;
         }
         //判空
@@ -813,9 +829,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 deleteLocalList.addAll(deleteRemoteList);
                 notifyMessageRemoved(conversation, deleteLocalList);
                 //执行回调
-                if (callback != null) {
-                    mCore.getCallbackHandler().post(callback::onSuccess);
-                }
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageDelete(conversation, deleteClientMsgNoList);
+                        }
+                    }
+                });
             }
 
             @Override
@@ -856,9 +879,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 //通知会话更新
                 notifyMessageCleared(conversation, finalStartTime, null);
                 //执行回调
-                if (callback != null) {
-                    mCore.getCallbackHandler().post(callback::onSuccess);
-                }
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageClear(conversation, finalStartTime, "");
+                        }
+                    }
+                });
             }
 
             @Override
@@ -915,9 +945,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 List<ConcreteMessage> messageList = new ArrayList<>();
                 messageList.add((ConcreteMessage) m);
                 notifyMessageRemoved(m.getConversation(), messageList);
-                if (callback != null) {
-                    mCore.getCallbackHandler().post(() -> callback.onSuccess(m));
-                }
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess(m);
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageRecall(m);
+                        }
+                    }
+                });
             }
 
             @Override
@@ -2097,7 +2134,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private long mCachedSendTime = -1;
     private long mSyncNotifyTime;
     private boolean mChatroomSyncProcessing;
-    private ConcurrentHashMap<String, Long> mChatroomSyncMap;
+    private final ConcurrentHashMap<String, Long> mChatroomSyncMap;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
