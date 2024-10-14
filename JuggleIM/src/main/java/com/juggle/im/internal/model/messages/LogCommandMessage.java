@@ -34,6 +34,9 @@ public class LogCommandMessage extends MessageContent {
             if (jsonObject.has(END_TIME)) {
                 mEndTime = jsonObject.optLong(END_TIME);
             }
+            if (jsonObject.has(PLATFORM)) {
+                mPlatform = jsonObject.optString(PLATFORM);
+            }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "LogCommandMessage decode JSONException " + e.getMessage());
         }
@@ -46,6 +49,7 @@ public class LogCommandMessage extends MessageContent {
 
     private long mStartTime;
     private long mEndTime;
+    private String mPlatform;
 
     public long getStartTime() {
         return mStartTime;
@@ -55,7 +59,12 @@ public class LogCommandMessage extends MessageContent {
         return mEndTime;
     }
 
+    public String getPlatform() {
+        return mPlatform;
+    }
+
     public static final String CONTENT_TYPE = "jg:logcmd";
     private static final String START_TIME = "start";
     private static final String END_TIME = "end";
+    private static final String PLATFORM = "platform";
 }

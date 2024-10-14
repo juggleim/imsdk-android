@@ -114,6 +114,7 @@ public class JIM {
     private JIM() {
         JIMCore core = new JIMCore();
         mCore = core;
+        JLogger.getInstance().setCore(core);
         mUserInfoManager = new UserInfoManager(core);
         mChatroomManager = new ChatroomManager(core);
         mMessageManager = new MessageManager(core, mUserInfoManager, mChatroomManager);

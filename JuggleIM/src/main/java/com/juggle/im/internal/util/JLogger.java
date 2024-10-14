@@ -4,7 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.juggle.im.internal.ConstInternal;
+import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.logger.IJLog;
 import com.juggle.im.internal.logger.JLogConfig;
 import com.juggle.im.internal.logger.JLogLevel;
@@ -12,8 +12,6 @@ import com.juggle.im.internal.logger.action.ActionManager;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class JLogger implements IJLog {
     public static JLogger getInstance() {
@@ -34,6 +32,7 @@ public class JLogger implements IJLog {
 
     private JLogConfig mJLogConfig;
     private ActionManager mActionManager;
+    private JIMCore mCore;
 
     public static void e(String tag, String... msg) {
         String logTag = generateLogTag(tag);
@@ -130,19 +129,12 @@ public class JLogger implements IJLog {
     }
 
     @Override
-    public void uploadLog(long startTime, long endTime, String appKey, String token, Callback callback) {
+    public void uploadLog(String messageId, long startTime, long endTime, Callback callback) {
         if (mJLogConfig == null || mActionManager == null) {
             callback.onError(-1, "IJLog not initialized yet");
             return;
         }
-        if (TextUtils.isEmpty(appKey) || TextUtils.isEmpty(token)) {
-            callback.onError(-1, "appKey or token is empty");
-            return;
-        }
-        final Map<String, String> headers = new HashMap<>();
-        headers.put(ConstInternal.LOG_UPLOAD_HEADER_APP_KEY, appKey);
-        headers.put(ConstInternal.LOG_UPLOAD_HEADER_TOKEN, token);
-        mActionManager.addUploadAction(startTime, endTime, ConstInternal.LOG_UPLOAD_URL, headers, callback);
+        mActionManager.addUploadAction(mCore, messageId, startTime, endTime, callback);
     }
 
     @Override
@@ -178,5 +170,9 @@ public class JLogger implements IJLog {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void setCore(JIMCore core) {
+        mCore = core;
     }
 }

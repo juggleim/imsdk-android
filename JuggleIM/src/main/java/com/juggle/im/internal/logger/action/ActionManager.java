@@ -2,12 +2,12 @@ package com.juggle.im.internal.logger.action;
 
 import android.os.Looper;
 
+import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.logger.IJLog;
 import com.juggle.im.internal.logger.JLogConfig;
 import com.juggle.im.internal.logger.JLogLevel;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -66,10 +66,10 @@ public class ActionManager {
         }
     }
 
-    public void addUploadAction(long startTime, long endTime, String url, Map<String, String> headers, IJLog.Callback callback) {
+    public void addUploadAction(JIMCore core, String messageId, long startTime, long endTime, IJLog.Callback callback) {
         UploadDefaultRunnable runnable = new UploadDefaultRunnable();
-        runnable.setUploadUrl(url);
-        runnable.setRequestHeader(headers);
+        runnable.setMessageId(messageId);
+        runnable.setCore(core);
         UploadAction action = new UploadAction.Builder()
                 .setStartTime(startTime)
                 .setEndTime(endTime)

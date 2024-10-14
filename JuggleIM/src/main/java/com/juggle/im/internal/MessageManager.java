@@ -1859,8 +1859,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
             //log command
             if (message.getContentType().equals(LogCommandMessage.CONTENT_TYPE)) {
-                LogCommandMessage logCommandMessage = (LogCommandMessage) message.getContent();
-                handleLogCommandCmdMessage(logCommandMessage.getStartTime(), logCommandMessage.getEndTime());
+                handleLogCommandCmdMessage(message);
                 continue;
             }
 
@@ -2008,11 +2007,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
-    private void handleLogCommandCmdMessage(long startTime, long endTime) {
-        JLogger.getInstance().uploadLog(startTime, endTime, mCore.getAppKey(), mCore.getToken(), new IJLog.Callback() {
+    private void handleLogCommandCmdMessage(ConcreteMessage message) {
+        LogCommandMessage content = (LogCommandMessage) message.getContent();
+
+        if (!content.getPlatform().equals("Android")) {
+            return;
+        }
+        JLogger.getInstance().uploadLog(message.getMessageId(), content.getStartTime(), content.getEndTime(), new IJLog.Callback() {
             @Override
             public void onSuccess() {
-                JLogger.i("J-Logger", "uploadLogger success, startTime is " + startTime + ", endTime is " + endTime);
+                JLogger.i("J-Logger", "uploadLogger success, startTime is " + content.getStartTime() + ", endTime is " + content.getEndTime());
             }
 
             @Override

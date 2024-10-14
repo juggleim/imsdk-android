@@ -122,7 +122,7 @@ class BaseApplication : MultiDexApplication() {
         navi.add("https://nav.juggleim.com")
         JIM.getInstance().setServer(navi)
         initUIKit(this)
-        val logConfig = JLogConfig.Builder(this).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build()
+        val logConfig = JLogConfig.Builder(this).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).setLogWriteLevel(JLogLevel.JLogLevelVerbose).build()
         val initConfig = InitConfig.Builder().setJLogConfig(logConfig).build()
         JIM.getInstance().init(this, "nsw3sue72begyv7y", initConfig)
         // setup uikit configurations
