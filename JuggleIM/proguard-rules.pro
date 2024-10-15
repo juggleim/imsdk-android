@@ -31,3 +31,5 @@
 -keep class com.juggle.im.JIMConst {*;}
 -keep class com.juggle.im.JIMConst$* {*;}
 -keep class * implements com.juggle.im.model.MessageContent {*;}
+-keep class com.google.protobuf.** {*;}
+-keep class app_messages.** {*;}
