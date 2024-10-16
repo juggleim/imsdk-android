@@ -20,5 +20,6 @@ OPPOPlugin/sdk/build
 XMPlugin/sdk/build
 VIVOPlugin/sdk/build
 demo/build
+demo/release
 JetIMKit/build
 

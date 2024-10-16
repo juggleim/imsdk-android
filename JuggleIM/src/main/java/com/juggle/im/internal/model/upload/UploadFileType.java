@@ -9,7 +9,8 @@ public enum UploadFileType {
     IMAGE(1),
     AUDIO(2),
     VIDEO(3),
-    FILE(4);
+    FILE(4),
+    LOG(5);
 
     UploadFileType(int value) {
         this.mValue = value;

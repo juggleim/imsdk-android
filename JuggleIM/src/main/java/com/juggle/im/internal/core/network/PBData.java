@@ -86,6 +86,24 @@ class PBData {
                 case XIAOMI:
                     builder.setPushChannel("Xiaomi");
                     break;
+                case OPPO:
+                    builder.setPushChannel("Oppo");
+                    break;
+                case HONOR:
+                    builder.setPushChannel("");
+                    break;
+                case VIVO:
+                    builder.setPushChannel("Vivo");
+                    break;
+                case MEIZU:
+                    builder.setPushChannel("");
+                    break;
+                case GOOGLE:
+                    builder.setPushChannel("FCM");
+                    break;
+                case JIGUANG:
+                    builder.setPushChannel("Jpush");
+                    break;
             }
         }
         Connect.ConnectMsgBody body = builder.build();
@@ -805,6 +823,24 @@ class PBData {
                 .setTopic(PUSH_SWITCH)
                 .setTargetId(userId)
                 .setData(ps.toByteString())
+                .build();
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] uploadLogStatus(int result, String userId, String messageId, String url, int index) {
+        Appmessages.UploadLogStatusReq.Builder builder = Appmessages.UploadLogStatusReq.newBuilder();
+        builder.setMsgId(messageId);
+        if (!TextUtils.isEmpty(url)) {
+            builder.setLogUrl(url);
+        }
+        builder.setState(result);
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(UPLOAD_LOG_STATUS)
+                .setTargetId(userId)
+                .setData(builder.build().toByteString())
                 .build();
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
@@ -1659,6 +1695,7 @@ class PBData {
     private static final String C_JOIN = "c_join";
     private static final String C_QUIT = "c_quit";
     private static final String PUSH_SWITCH = "push_switch";
+    private static final String UPLOAD_LOG_STATUS = "upd_log_state";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";

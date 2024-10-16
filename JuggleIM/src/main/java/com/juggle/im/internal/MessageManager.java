@@ -426,6 +426,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public List<Message> getMessages(int count, long timestamp, JIMConst.PullDirection pullDirection, MessageQueryOptions messageQueryOptions) {
+        if (count > 100) {
+            count = 100;
+        }
         return mCore.getDbManager().getMessages(
                 count,
                 timestamp,
@@ -694,11 +697,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         //按conversation过滤
         List<String> deleteIdList = new ArrayList<>();
         List<ConcreteMessage> deleteList = new ArrayList<>();
+        List<Long> clientMsgNoList = new ArrayList<>();
         for (int i = messages.size() - 1; i >= 0; i--) {
             Message temp = messages.get(i);
             if (temp.getConversation().equals(conversation)) {
                 deleteIdList.add(temp.getMessageId());
                 deleteList.add((ConcreteMessage) temp);
+                clientMsgNoList.add(temp.getClientMsgNo());
             }
         }
         //判空
@@ -728,9 +733,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 //通知会话更新
                 notifyMessageRemoved(conversation, deleteList);
                 //执行回调
-                if (callback != null) {
-                    mCore.getCallbackHandler().post(callback::onSuccess);
-                }
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageDelete(conversation, clientMsgNoList);
+                        }
+                    }
+                });
             }
 
             @Override
@@ -787,9 +799,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             mCore.getDbManager().deleteMessageByClientMsgNo(deleteClientMsgNoList);
             //通知会话更新
             notifyMessageRemoved(conversation, deleteLocalList);
-            if (callback != null) {
-                mCore.getCallbackHandler().post(callback::onSuccess);
-            }
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onSuccess();
+                }
+                if (mListenerMap != null) {
+                    for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                        entry.getValue().onMessageDelete(conversation, deleteClientMsgNoList);
+                    }
+                }
+            });
             return;
         }
         //判空
@@ -813,9 +832,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 deleteLocalList.addAll(deleteRemoteList);
                 notifyMessageRemoved(conversation, deleteLocalList);
                 //执行回调
-                if (callback != null) {
-                    mCore.getCallbackHandler().post(callback::onSuccess);
-                }
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageDelete(conversation, deleteClientMsgNoList);
+                        }
+                    }
+                });
             }
 
             @Override
@@ -856,9 +882,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 //通知会话更新
                 notifyMessageCleared(conversation, finalStartTime, null);
                 //执行回调
-                if (callback != null) {
-                    mCore.getCallbackHandler().post(callback::onSuccess);
-                }
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageClear(conversation, finalStartTime, "");
+                        }
+                    }
+                });
             }
 
             @Override
@@ -915,9 +948,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 List<ConcreteMessage> messageList = new ArrayList<>();
                 messageList.add((ConcreteMessage) m);
                 notifyMessageRemoved(m.getConversation(), messageList);
-                if (callback != null) {
-                    mCore.getCallbackHandler().post(() -> callback.onSuccess(m));
-                }
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess(m);
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageRecall(m);
+                        }
+                    }
+                });
             }
 
             @Override
@@ -935,12 +975,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         getRemoteMessages(conversation, count, startTime, direction, null, callback);
     }
 
-    public void getRemoteMessages(Conversation conversation,
-                                  int count,
-                                  long startTime,
-                                  JIMConst.PullDirection direction,
-                                  List<String> contentTypes,
-                                  IGetMessagesWithFinishCallback callback) {
+    private void internalGetRemoteMessages(Conversation conversation,
+                                           int count,
+                                           long startTime,
+                                           JIMConst.PullDirection direction,
+                                           List<String> contentTypes,
+                                           IGetMessagesWithFinishCallback callback) {
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("MSG-Get", "getRemoteMessages, fail, errorCode is " + errorCode);
@@ -948,9 +988,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
             }
             return;
-        }
-        if (count > 100) {
-            count = 100;
         }
         mCore.getWebSocket().queryHisMsg(conversation, startTime, count, direction, contentTypes, new QryHisMsgCallback() {
             @Override
@@ -971,6 +1008,18 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 }
             }
         });
+    }
+
+    public void getRemoteMessages(Conversation conversation,
+                                  int count,
+                                  long startTime,
+                                  JIMConst.PullDirection direction,
+                                  List<String> contentTypes,
+                                  IGetMessagesWithFinishCallback callback) {
+        if (count > 100) {
+            count = 100;
+        }
+        internalGetRemoteMessages(conversation, count, startTime, direction, contentTypes, callback);
     }
 
     @Override
@@ -1075,6 +1124,107 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 }
             }
         });
+    }
+
+    @Override
+    public void getMessages(Conversation conversation, JIMConst.PullDirection direction, GetMessageOptions options, IGetMessagesCallbackV3 callback) {
+        if (conversation == null || conversation.getConversationId().isEmpty()) {
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> {
+                    callback.onGetMessages(new ArrayList<>(), 0, false, JErrorCode.INVALID_PARAM);
+                });
+            }
+            return;
+        }
+        if (options == null) {
+            options = new GetMessageOptions();
+        }
+        final int count;
+        if (options.getCount() <= 0 || options.getCount() > 100) {
+            count = 100;
+        } else {
+            count = options.getCount();
+        }
+        List<Message> localMessages = mCore.getDbManager().getMessages(
+                count+1,
+                options.getStartTime(),
+                direction,
+                null,
+                null,
+                options.getContentTypes(),
+                null,
+                null,
+                Collections.singletonList(conversation));
+
+        boolean needRemote = false;
+        if (localMessages.size() < count) {
+            needRemote = true;
+        } else {
+            long seqNo = -1;
+            for (int i = 0; i < localMessages.size(); i++) {
+                ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
+                if (m.getSeqNo() < 0) {
+                    needRemote = true;
+                    break;
+                }
+                if (m.getState() == Message.MessageState.SENT && m.getSeqNo() > 0) {
+                    if (seqNo < 0) {
+                        seqNo = m.getSeqNo();
+                    } else {
+                        if (m.getSeqNo() != ++seqNo) {
+                            needRemote = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (needRemote) {
+            internalGetRemoteMessages(conversation, count + 1, options.getStartTime(), direction, options.getContentTypes(), new IGetMessagesWithFinishCallback() {
+                @Override
+                public void onSuccess(List<Message> messages, boolean isFinished) {
+                    //合并去重
+                    List<Message> mergeList = mergeLocalAndRemoteMessages(localMessages, messages);
+                    //消息排序
+                    Collections.sort(mergeList, (o1, o2) -> Long.compare(o1.getTimestamp(), o2.getTimestamp()));
+                    completeCallbackForGetMessages(mergeList, count, direction, !isFinished, JErrorCode.NONE, callback);
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    boolean hasMore = localMessages.size() >= count + 1;
+                    completeCallbackForGetMessages(localMessages, count, direction, hasMore, errorCode, callback);
+                }
+            });
+        } else {
+            boolean hasMore = localMessages.size() >= count + 1;
+            completeCallbackForGetMessages(localMessages, count, direction, hasMore, JErrorCode.NONE, callback);
+        }
+
+    }
+
+    private void completeCallbackForGetMessages(List<Message> messages, int count, JIMConst.PullDirection direction, boolean hasMore, int code, IGetMessagesCallbackV3 callback) {
+        if (messages.size() > count) {
+            if (direction == JIMConst.PullDirection.NEWER) {
+                messages = messages.subList(0, count);
+            } else {
+                messages = messages.subList(messages.size() - count, messages.size());
+            }
+        }
+        Message baseMessage;
+        if (direction == JIMConst.PullDirection.NEWER) {
+            baseMessage = messages.get(messages.size() - 1);
+        } else {
+            baseMessage = messages.get(0);
+        }
+        long timestamp = baseMessage.getTimestamp();
+        if (callback != null) {
+            List<Message> finalMessages = messages;
+            mCore.getCallbackHandler().post(() -> {
+                callback.onGetMessages(finalMessages, timestamp, hasMore, code);
+            });
+        }
     }
 
     //判断是否需要同步远端数据
@@ -1822,8 +1972,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
             //log command
             if (message.getContentType().equals(LogCommandMessage.CONTENT_TYPE)) {
-                LogCommandMessage logCommandMessage = (LogCommandMessage) message.getContent();
-                handleLogCommandCmdMessage(logCommandMessage.getStartTime(), logCommandMessage.getEndTime());
+                handleLogCommandCmdMessage(message);
                 continue;
             }
 
@@ -1971,11 +2120,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
-    private void handleLogCommandCmdMessage(long startTime, long endTime) {
-        JLogger.getInstance().uploadLog(startTime, endTime, mCore.getAppKey(), mCore.getToken(), new IJLog.Callback() {
+    private void handleLogCommandCmdMessage(ConcreteMessage message) {
+        LogCommandMessage content = (LogCommandMessage) message.getContent();
+
+        if (!content.getPlatform().equals("Android")) {
+            return;
+        }
+        JLogger.getInstance().uploadLog(message.getMessageId(), content.getStartTime(), content.getEndTime(), new IJLog.Callback() {
             @Override
             public void onSuccess() {
-                JLogger.i("J-Logger", "uploadLogger success, startTime is " + startTime + ", endTime is " + endTime);
+                JLogger.i("J-Logger", "uploadLogger success, startTime is " + content.getStartTime() + ", endTime is " + content.getEndTime());
             }
 
             @Override
@@ -2097,7 +2251,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private long mCachedSendTime = -1;
     private long mSyncNotifyTime;
     private boolean mChatroomSyncProcessing;
-    private ConcurrentHashMap<String, Long> mChatroomSyncMap;
+    private final ConcurrentHashMap<String, Long> mChatroomSyncMap;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;

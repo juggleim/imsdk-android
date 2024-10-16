@@ -34,9 +34,9 @@ class ChannelDiffCallback extends DiffUtil.Callback {
 
     @Override
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-        final ChannelListAdapter.ChannelInfo oldChannel = oldChannelList.get(oldItemPosition);
-        final ChannelListAdapter.ChannelInfo newChannel = newChannelList.get(newItemPosition);
-
-        return oldChannel.equals(newChannel);
+        //todo 比较值
+        ChannelListAdapter.ChannelInfo oldChannel = oldChannelList.get(oldItemPosition);
+        ChannelListAdapter.ChannelInfo newChannel = newChannelList.get(newItemPosition);
+        return newChannel.getUpdateTime() == oldChannel.getUpdateTime();
     }
 }

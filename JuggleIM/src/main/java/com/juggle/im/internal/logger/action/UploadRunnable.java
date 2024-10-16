@@ -2,8 +2,6 @@ package com.juggle.im.internal.logger.action;
 
 import android.text.TextUtils;
 
-import java.io.File;
-
 /**
  * @author Ye_Guli
  * @create 2024-05-23 11:05
@@ -22,13 +20,7 @@ abstract class UploadRunnable implements Runnable {
             finish();
             return;
         }
-        if (TextUtils.isEmpty(mUploadAction.mUploadLocalPath)) {
-            notifyUploadActionCallbackFail(-1, "upload file empty");
-            finish();
-            return;
-        }
-        File file = new File(mUploadAction.mUploadLocalPath);
-        doRealUpload(file);
+        doRealUpload(mUploadAction.mUploadLocalPath);
     }
 
     void setUploadAction(UploadAction action) {
@@ -56,7 +48,7 @@ abstract class UploadRunnable implements Runnable {
         }
     }
 
-    public abstract void doRealUpload(File logFile);
+    public abstract void doRealUpload(String filePath);
 
     interface OnUploadCallBackListener {
         void onCallBack(int statusCode);

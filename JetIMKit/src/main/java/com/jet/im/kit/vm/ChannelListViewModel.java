@@ -28,6 +28,7 @@ import org.jetbrains.annotations.TestOnly;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -73,22 +74,66 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         this.collectionHandler = new IConversationManager.IConversationListener() {
             @Override
             public void onConversationInfoAdd(List<ConversationInfo> conversationInfoList) {
-                notifyChannelChanged();
+                List<ConversationInfo> list = channelList.getValue();
+                if (list == null || list.isEmpty()) {
+                    channelList.postValue(conversationInfoList);
+                    return;
+                }
+                list.addAll(0, conversationInfoList);
+                channelList.postValue(list);
             }
 
             @Override
             public void onConversationInfoUpdate(List<ConversationInfo> conversationInfoList) {
-                notifyChannelChanged();
+                List<ConversationInfo> list = channelList.getValue();
+                if (list == null || list.isEmpty()) {
+                    channelList.postValue(conversationInfoList);
+                    return;
+                }
+                for (ConversationInfo newInfo : conversationInfoList) {
+                    int index = -1;
+                    for (int i = 0; i < list.size(); i++) {
+                        ConversationInfo oldInfo = list.get(i);
+                        if (newInfo.getConversation().equals(oldInfo.getConversation())) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index != -1) {
+                        list.remove(index);
+                    }
+                    list.add(0, newInfo);
+                }
+
+                channelList.postValue(list);
             }
 
             @Override
             public void onConversationInfoDelete(List<ConversationInfo> conversationInfoList) {
-                notifyChannelChanged();
+                List<ConversationInfo> list = channelList.getValue();
+                if (list == null || list.isEmpty()) {
+                    return;
+                }
+                for (ConversationInfo newInfo : conversationInfoList) {
+                    int index = -1;
+                    for (int i = 0; i < list.size(); i++) {
+                        ConversationInfo oldInfo = list.get(i);
+                        if (newInfo.getConversation().equals(oldInfo.getConversation())) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index != -1) {
+                        list.remove(index);
+                    }
+                }
+
+                channelList.postValue(list);
             }
 
             @Override
             public void onTotalUnreadMessageCountUpdate(int count) {
-                notifyChannelChanged();
+//                notifyChannelChanged();
             }
         };
     }

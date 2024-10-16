@@ -346,6 +346,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void uploadLogStatus(int result, String userId, String messageId, String url) {
+        byte[] bytes = mPbData.uploadLogStatus(result, userId, messageId, url, mCmdIndex++);
+        JLogger.i("WS-Send", "upload log status, result is " + result);
+        sendWhenOpen(bytes);
+    }
+
     public void joinChatroom(String chatroomId, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.joinChatroom(chatroomId, mCmdIndex++);

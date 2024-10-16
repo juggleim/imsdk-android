@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import com.juggle.im.interfaces.IMessageUploadProvider;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.QryUploadFileCredCallback;
+import com.juggle.im.internal.logger.IJLog;
 import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.model.upload.UploadOssType;
 import com.juggle.im.internal.model.upload.UploadPreSignCred;
@@ -32,6 +33,61 @@ public class UploadManager implements IMessageUploadProvider {
     }
 
     private final JIMCore mCore;
+
+    public void uploadLog(String filePath, String messageId, IJLog.Callback callback) {
+        if (mCore.getWebSocket() == null) {
+            JLogger.e("J-Uploader", "upload log fail, webSocket is null");
+            if (callback != null) {
+                callback.onError(-1, "upload log fail, webSocket is null");
+            }
+            return;
+        }
+        if (TextUtils.isEmpty(filePath)) {
+            JLogger.e("J-Uploader", "upload log fail, log zip file not exist");
+            notifyLogResult(LOG_NOT_EXIST, messageId, null);
+            callback.onError(-1, "upload log fail, log zip file not exist");
+            return;
+        }
+        UploadFileType uploadFileType = UploadFileType.LOG;
+        requestUploadFileCred(uploadFileType, filePath, new QryUploadFileCredCallback() {
+            @Override
+            public void onSuccess(UploadOssType ossType, UploadQiNiuCred qiNiuCred, UploadPreSignCred preSignCred) {
+                uploadFile(filePath, ossType, qiNiuCred, preSignCred, new IUploader.UploaderCallback() {
+                    @Override
+                    public void onProgress(int progress) {
+                    }
+
+                    @Override
+                    public void onSuccess(String url) {
+                        notifyLogResult(LOG_UPLOAD_SUCCESS, messageId, url);
+                        if (callback != null) {
+                            callback.onSuccess();
+                        }
+                    }
+
+                    @Override
+                    public void onError() {
+                        notifyLogResult(LOG_UPLOAD_FAIL, messageId, null);
+                        if (callback != null) {
+                            callback.onError(-1, "upload log fail, upload error");
+                        }
+                    }
+
+                    @Override
+                    public void onCancel() {
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                notifyLogResult(LOG_UPLOAD_FAIL, messageId, null);
+                if (callback != null) {
+                    callback.onError(errorCode, "upload log fail, request cred error");
+                }
+            }
+        });
+    }
 
     @Override
     public void uploadMessage(Message message, UploadCallback uploadCallback) {
@@ -86,33 +142,55 @@ public class UploadManager implements IMessageUploadProvider {
         }
         //有缩略图的情况下先上传缩略图
         if (needPreUpload) {
-            doRequestUploadFileCred(message, UploadFileType.IMAGE, preUploadLocalPath, true, new PreUploadCallback(uploadFileType, uploadCallback));
+            doUploadMessage(message, UploadFileType.IMAGE, preUploadLocalPath, true, new PreUploadCallback(uploadFileType, uploadCallback));
             return;
         }
         //没有缩略图的情况下直接上传
-        doRequestUploadFileCred(message, uploadFileType, content.getLocalPath(), false, uploadCallback);
+        doUploadMessage(message, uploadFileType, content.getLocalPath(), false, uploadCallback);
     }
 
-    private void doRequestUploadFileCred(Message message, UploadFileType fileType, String localPath, boolean isPreUpload, UploadCallback uploadCallback) {
+    private void requestUploadFileCred(UploadFileType fileType, String filePath, QryUploadFileCredCallback callback) {
         //获取文件后缀
-        String ext = FileUtil.getFileExtension(localPath);
+        String ext = FileUtil.getFileExtension(filePath);
         //判空文件后缀
         if (TextUtils.isEmpty(ext)) {
-            JLogger.e("J-Uploader", "doRequestUploadFileCred fail, ext is null, localPath= " + localPath);
-            uploadCallback.onError();
+            JLogger.e("J-Uploader", "requestUploadFileCred fail, ext is null, filePath = " + filePath);
+            if (callback != null) {
+                callback.onError(ConstInternal.ErrorCode.INVALID_PARAM);
+            }
             return;
         }
         //判空WebSocket
         if (mCore.getWebSocket() == null) {
-            JLogger.e("J-Uploader", "doRequestUploadFileCred fail, webSocket is null, message= " + message.getClientMsgNo());
-            uploadCallback.onError();
+            JLogger.e("J-Uploader", "requestUploadFileCred fail, webSocket is null, path = " + filePath);
+            if (callback != null) {
+                callback.onError(ConstInternal.ErrorCode.CONNECTION_UNAVAILABLE);
+            }
             return;
         }
         //调用接口获取文件上传凭证
         mCore.getWebSocket().getUploadFileCred(mCore.getUserId(), fileType, ext, new QryUploadFileCredCallback() {
             @Override
             public void onSuccess(UploadOssType ossType, UploadQiNiuCred qiNiuCred, UploadPreSignCred preSignCred) {
-                JLogger.i("J-Uploader", "getUploadFileCred success, localPath= " + localPath + ", ossType= " + ossType + ", qiNiuCred= " + qiNiuCred.toString() + ", preSignCred= " + preSignCred.toString());
+                if (callback != null) {
+                    callback.onSuccess(ossType, qiNiuCred, preSignCred);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("J-Uploader", "getUploadFileCred failed, filePath = " + filePath + ", errorCode= " + errorCode);
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
+    }
+
+    private void doUploadMessage(Message message, UploadFileType fileType, String localPath, boolean isPreUpload, UploadCallback uploadCallback) {
+        requestUploadFileCred(fileType, localPath, new QryUploadFileCredCallback() {
+            @Override
+            public void onSuccess(UploadOssType ossType, UploadQiNiuCred qiNiuCred, UploadPreSignCred preSignCred) {
                 doRealUpload(message, uploadCallback, ossType, qiNiuCred, preSignCred, localPath, isPreUpload);
             }
 
@@ -122,6 +200,18 @@ public class UploadManager implements IMessageUploadProvider {
                 uploadCallback.onError();
             }
         });
+    }
+
+    private void uploadFile(String localPath, UploadOssType ossType, UploadQiNiuCred qiNiuCred, UploadPreSignCred preSignCred, IUploader.UploaderCallback callback) {
+        IUploader uploader = new UploaderFactory().getUploader(localPath, callback, ossType, qiNiuCred, preSignCred);
+        if (uploader == null) {
+            JLogger.e("J-Uploader", "upload file failed, uploader is null, localPath= " + localPath);
+            if (callback != null) {
+                callback.onError();
+            }
+            return;
+        }
+        uploader.start();
     }
 
     private void doRealUpload(Message message, UploadCallback uploadCallback, UploadOssType ossType, UploadQiNiuCred qiNiuCred, UploadPreSignCred preSignCred, String localPath, boolean isPreUpload) {
@@ -168,6 +258,13 @@ public class UploadManager implements IMessageUploadProvider {
         uploader.start();
     }
 
+    private void notifyLogResult(int result, String messageId, String url) {
+        if (mCore.getWebSocket() == null) {
+            return;
+        }
+        mCore.getWebSocket().uploadLogStatus(result, mCore.getUserId(), messageId, url);
+    }
+
     class PreUploadCallback implements UploadCallback {
         private volatile boolean mIsPreUpload;
         private final UploadFileType mUploadFileType;
@@ -197,7 +294,7 @@ public class UploadManager implements IMessageUploadProvider {
                 //缩略图上传成功，继续上传localPath
                 mIsPreUpload = false;
                 MediaMessageContent content = (MediaMessageContent) message.getContent();
-                doRequestUploadFileCred(message, mUploadFileType, content.getLocalPath(), false, this);
+                doUploadMessage(message, mUploadFileType, content.getLocalPath(), false, this);
             } else {
                 mInternalUploadCallback.onSuccess(message);
             }
@@ -213,4 +310,8 @@ public class UploadManager implements IMessageUploadProvider {
             mInternalUploadCallback.onCancel();
         }
     }
+
+    private static final int LOG_UPLOAD_SUCCESS = 3;
+    private static final int LOG_UPLOAD_FAIL = 4;
+    private static final int LOG_NOT_EXIST = 5;
 }

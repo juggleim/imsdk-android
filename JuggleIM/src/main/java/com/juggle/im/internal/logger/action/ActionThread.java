@@ -156,12 +156,12 @@ class ActionThread extends Thread {
             return;
         }
         boolean success = prepareUploadLogFile(action);
-        if (!success) {
-            if (action.mCallback != null) {
-                action.mCallback.onError(-1, "upload file invalid");
-            }
-            return;
-        }
+//        if (!success) {
+//            if (action.mCallback != null) {
+//                action.mCallback.onError(-1, "upload file invalid");
+//            }
+//            return;
+//        }
         action.mUploadRunnable.setUploadAction(action);
         action.mUploadRunnable.setCallBackListener(new UploadRunnable.OnUploadCallBackListener() {
             @Override
