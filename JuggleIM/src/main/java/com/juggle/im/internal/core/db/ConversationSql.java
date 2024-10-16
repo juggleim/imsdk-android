@@ -306,7 +306,9 @@ class ConversationSql {
             + "last_message_has_read=?, last_message_timestamp=?, last_message_sender=?, "
             + "last_message_content=?, last_message_mention_info=?, last_message_seq_no=?, unread_tag=? WHERE conversation_type = ? "
             + "AND conversation_id = ?";
-    static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info ORDER BY is_top DESC, top_time DESC, timestamp DESC";
+    static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info";
+    static final String SQL_ORDER_BY_TOP_TOPTIME_TIME = " ORDER BY is_top DESC, top_time DESC, timestamp DESC";
+    static final String SQL_ORDER_BY_TOP_TIME = " ORDER BY is_top DESC, timestamp DESC";
     static final String SQL_UPDATE_LAST_MESSAGE = "UPDATE conversation_info SET last_message_id=?, last_message_type=?,"
             + "last_message_client_uid=?, last_message_client_msg_no=?, "
             + "last_message_direction=?, last_message_state=?, last_message_has_read=?, last_message_timestamp=?, "
@@ -322,7 +324,7 @@ class ConversationSql {
     static final String SQL_LAST_MESSAGE_EQUALS_QUESTION = ", last_message_index=?";
     static final String SQL_WHERE_CONVERSATION_IS = " WHERE conversation_type = ? AND conversation_id = ?";
 
-    static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JIMConst.PullDirection direction) {
+    static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JIMConst.PullDirection direction, JIMConst.TopConversationsOrderType type) {
         StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
         if (direction == JIMConst.PullDirection.OLDER) {
             sql.append(" timestamp < ").append(timestamp);
@@ -330,11 +332,16 @@ class ConversationSql {
             sql.append(" timestamp > ").append(timestamp);
         }
         sql.append(sqlAndConversationTypeIn(conversationTypes));
-        sql.append(" ORDER BY is_top DESC, top_time DESC, timestamp DESC").append(" LIMIT ").append(count);
+        if (type == JIMConst.TopConversationsOrderType.ORDER_BY_TOP_TIME) {
+            sql.append(" ORDER BY is_top DESC, top_time DESC, timestamp DESC");
+        } else {
+            sql.append(" ORDER BY is_top DESC, timestamp DESC");
+        }
+        sql.append(" LIMIT ").append(count);
         return sql.toString();
     }
 
-    static String sqlGetTopConversationsBy(int[] conversationTypes, int count, long timestamp, JIMConst.PullDirection direction) {
+    static String sqlGetTopConversationsBy(int[] conversationTypes, int count, long timestamp, JIMConst.PullDirection direction, JIMConst.TopConversationsOrderType type) {
         StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
         sql.append(" is_top = 1 AND ");
         if (direction == JIMConst.PullDirection.OLDER) {
@@ -343,7 +350,12 @@ class ConversationSql {
             sql.append(" timestamp > ").append(timestamp);
         }
         sql.append(sqlAndConversationTypeIn(conversationTypes));
-        sql.append(" ORDER BY top_time DESC").append(" LIMIT ").append(count);
+        if (type == JIMConst.TopConversationsOrderType.ORDER_BY_TOP_TIME) {
+            sql.append(" ORDER BY top_time DESC");
+        } else {
+            sql.append(" ORDER BY timestamp DESC");
+        }
+        sql.append(" LIMIT ").append(count);
         return sql.toString();
     }
 

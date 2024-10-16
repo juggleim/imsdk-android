@@ -369,6 +369,11 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void setTopConversationsOrderType(JIMConst.TopConversationsOrderType type) {
+        mCore.getDbManager().setTopConversationsOrderType(type);
+    }
+
+    @Override
     public void addListener(String key, IConversationListener listener) {
         if (listener == null || TextUtils.isEmpty(key)) {
             return;

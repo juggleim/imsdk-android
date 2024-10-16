@@ -145,7 +145,9 @@ public class DBManager {
     }
 
     public List<ConversationInfo> getConversationInfoList() {
-        Cursor cursor = rawQuery(ConversationSql.SQL_GET_CONVERSATIONS, null);
+        String sql = ConversationSql.SQL_GET_CONVERSATIONS;
+        sql = appendConversationOrderSql(sql);
+        Cursor cursor = rawQuery(sql, null);
         if (cursor == null) {
             return new ArrayList<>();
         }
@@ -158,7 +160,7 @@ public class DBManager {
         if (timestamp == 0) {
             timestamp = Long.MAX_VALUE;
         }
-        String sql = ConversationSql.sqlGetConversationsBy(conversationTypes, count, timestamp, direction);
+        String sql = ConversationSql.sqlGetConversationsBy(conversationTypes, count, timestamp, direction, mTopConversationsOrderType);
         Cursor cursor = rawQuery(sql, null);
         if (cursor == null) {
             return new ArrayList<>();
@@ -172,7 +174,7 @@ public class DBManager {
         if (timestamp == 0) {
             timestamp = Long.MAX_VALUE;
         }
-        String sql = ConversationSql.sqlGetTopConversationsBy(conversationTypes, count, timestamp, direction);
+        String sql = ConversationSql.sqlGetTopConversationsBy(conversationTypes, count, timestamp, direction, mTopConversationsOrderType);
         Cursor cursor = rawQuery(sql, null);
         if (cursor == null) {
             return new ArrayList<>();
@@ -288,6 +290,10 @@ public class DBManager {
         String sql = ConversationSql.SQL_CLEAR_LAST_MESSAGE + ConversationSql.SQL_WHERE_CONVERSATION_IS;
         Object[] args = new Object[]{conversation.getConversationType().getValue(), conversation.getConversationId()};
         execSQL(sql, args);
+    }
+
+    public void setTopConversationsOrderType(JIMConst.TopConversationsOrderType type) {
+        mTopConversationsOrderType = type;
     }
 
     public ConcreteMessage getMessageWithMessageId(String messageId) {
@@ -737,8 +743,18 @@ public class DBManager {
         return list;
     }
 
+    private String appendConversationOrderSql(String originSql) {
+        if (mTopConversationsOrderType == JIMConst.TopConversationsOrderType.ORDER_BY_TOP_TIME) {
+            originSql = originSql + ConversationSql.SQL_ORDER_BY_TOP_TOPTIME_TIME;
+        } else {
+            originSql = originSql + ConversationSql.SQL_ORDER_BY_TOP_TIME;
+        }
+        return originSql;
+    }
+
     private DBHelper mDBHelper;
     private SQLiteDatabase mDb;
+    private JIMConst.TopConversationsOrderType mTopConversationsOrderType = JIMConst.TopConversationsOrderType.ORDER_BY_TOP_TIME;
     private JSortTimeCounter mSortTimeCounter;
     private static final String PATH_JET_IM = "jet_im";
     private static final String DB_NAME = "jetimdb";

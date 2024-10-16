@@ -29,4 +29,9 @@ public class JIMConst {
     public enum PullDirection {
         NEWER, OLDER
     }
+
+    public enum TopConversationsOrderType {
+        ORDER_BY_TOP_TIME,
+        ORDER_BY_MESSAGE_TIME
+    }
 }

@@ -61,6 +61,8 @@ public interface IConversationManager {
 
     void setUnread(Conversation conversation, ISimpleCallback callback);
 
+    void setTopConversationsOrderType(JIMConst.TopConversationsOrderType type);
+
     void addListener(String key, IConversationListener listener);
 
     void removeListener(String key);

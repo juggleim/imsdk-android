@@ -1,7 +1,7 @@
 package com.juggle.im.internal;
 
 public class ConstInternal {
-    public static final String SDK_VERSION = "1.7.3";
+    public static final String SDK_VERSION = "1.7.5";
     public static final String WEB_SOCKET_URL = "ws.juggleim.com";
     public static final String NAVI_URL = "https://nav.juggleim.com";
     public static final String LOG_UPLOAD_URL = "https://nav.juggleim.com/navigator/upload-log";
