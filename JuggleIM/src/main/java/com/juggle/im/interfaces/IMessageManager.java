@@ -63,6 +63,11 @@ public interface IMessageManager {
         void onGetRemoteMessages(List<Message> messages, long timestamp, boolean hasMore, int code);
     }
 
+    interface IGetMessagesCallbackV3 {
+        //messages: 消息列表，timestamp: 消息时间戳，拉下一批消息的时候可以使用，hasMore: 是否还有更多消息，code: 结果码，0 为成功
+        void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code);
+    }
+
     interface IGetMessagesCallback {
         void onSuccess(List<Message> messages);
 
@@ -226,6 +231,12 @@ public interface IMessageManager {
                      JIMConst.PullDirection direction,
                      GetMessageOptions options,
                      IGetMessagesCallbackV2 callback);
+
+    /// 获取消息，结果按照消息时间正序排列（旧的在前，新的在后）。当消息有缺失并且网络有问题的时候，返回本地缓存的消息。
+    void getMessages(Conversation conversation,
+                     JIMConst.PullDirection direction,
+                     GetMessageOptions options,
+                     IGetMessagesCallbackV3 callback);
 
     void sendReadReceipt(Conversation conversation,
                          List<String> messageIds,
