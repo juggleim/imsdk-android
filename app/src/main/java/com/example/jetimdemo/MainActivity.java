@@ -84,17 +84,12 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "CYXf6GNeM");
-                            GetMessageOptions options = new GetMessageOptions();
-                            options.setStartTime(1727350734760L);
-                            options.setCount(50);
-                            JIM.getInstance().getMessageManager().getMessages(c, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
-                                @Override
-                                public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
-                                    int i = 1;
-
-                                }
-                            });
+                            JIM.getInstance().getConversationManager().setTopConversationsOrderType(JIMConst.TopConversationsOrderType.ORDER_BY_MESSAGE_TIME);
+                            List a = JIM.getInstance().getConversationManager().getConversationInfoList();
+                            List b = JIM.getInstance().getConversationManager().getConversationInfoList(10, 0, JIMConst.PullDirection.OLDER);
+                            List c = JIM.getInstance().getConversationManager().getConversationInfoList(null, 10, 0, JIMConst.PullDirection.OLDER);
+                            List d = JIM.getInstance().getConversationManager().getTopConversationInfoList(10, 0, JIMConst.PullDirection.OLDER);
+                            int i = 1;
 
 
 
