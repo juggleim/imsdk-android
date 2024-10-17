@@ -19,7 +19,7 @@ import java.util.List;
 public class JIMCore {
 
     public JIMCore() {
-        HandlerThread sendThread = new HandlerThread("JUGGLE_SEND");
+        HandlerThread sendThread = new HandlerThread("J_SEND");
         sendThread.start();
         mSendHandler = new Handler(sendThread.getLooper());
         mCallbackHandler = new Handler(Looper.getMainLooper());
