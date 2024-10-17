@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
         JIM.getInstance().getConnectionManager().addConnectionStatusListener("mainActivity", new IConnectionManager.IConnectionStatusListener() {
             @Override
             public void onStatusChange(JIMConst.ConnectionStatus status, int code, String extra) {
-                Log.i("lifei", "main activity onStatusChange status is " + status + " code is " + code);
+                Log.i("demo", "main activity onStatusChange status is " + status + " code is " + code);
                 if (status == JIMConst.ConnectionStatus.CONNECTED) {
                     Handler mainHandler = new Handler(Looper.getMainLooper());
                     mainHandler.postDelayed(new Runnable() {
@@ -114,43 +114,43 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
         JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {
-                Log.d("lifei", "onMessageRead, count is " + messageIds.size() + ", conversationType is " + conversation.getConversationType() + ", conversationId is " + conversation.getConversationId());
+                Log.d("demo", "onMessageRead, count is " + messageIds.size() + ", conversationType is " + conversation.getConversationType() + ", conversationId is " + conversation.getConversationId());
             }
 
             @Override
             public void onGroupMessagesRead(Conversation conversation, Map<String, GroupMessageReadInfo> messages) {
-                Log.d("lifei", "onGroupMessagesRead, conversationType is " + conversation.getConversationType() + ", id is " + conversation.getConversationId() + ", count is " + messages.size());
+                Log.d("demo", "onGroupMessagesRead, conversationType is " + conversation.getConversationType() + ", id is " + conversation.getConversationId() + ", count is " + messages.size());
             }
         });
         JIM.getInstance().getMessageManager().addSyncListener("main", new IMessageManager.IMessageSyncListener() {
             @Override
             public void onMessageSyncComplete() {
-                Log.d("lifei", "onMessageSyncComplete");
+                Log.d("demo", "onMessageSyncComplete");
             }
         });
         JIM.getInstance().getConversationManager().addSyncListener("main", new IConversationManager.IConversationSyncListener() {
             @Override
             public void onConversationSyncComplete() {
-                Log.d("lifei", "onConversationSyncComplete");
+                Log.d("demo", "onConversationSyncComplete");
             }
         });
         JIM.getInstance().getMessageManager().addListener("main", new IMessageManager.IMessageListener() {
             @Override
             public void onMessageReceive(Message message) {
-                Log.d("lifei", "onMessageReceive type is " + message.getContentType() + " message is " + message);
+                Log.d("demo", "onMessageReceive type is " + message.getContentType() + " message is " + message);
                 MessageContent c = message.getContent();
                 if (c instanceof TextMessage) {
                     TextMessage t = (TextMessage) c;
-                    Log.i("lifei", "text message, extra is " + t.getExtra());
+                    Log.i("demo", "text message, extra is " + t.getExtra());
                 } else if (c instanceof ImageMessage) {
                     ImageMessage i = (ImageMessage) c;
-                    Log.i("lifei", "image message, extra is " + i.getExtra());
+                    Log.i("demo", "image message, extra is " + i.getExtra());
                 } else if (c instanceof FileMessage) {
                     FileMessage f = (FileMessage) c;
-                    Log.i("lifei", "file message, extra is " + f.getExtra());
+                    Log.i("demo", "file message, extra is " + f.getExtra());
                 } else if (c instanceof VoiceMessage) {
                     VoiceMessage v = (VoiceMessage) c;
-                    Log.i("lifei", "voice message, extra is " + v.getExtra());
+                    Log.i("demo", "voice message, extra is " + v.getExtra());
                 }
                 if(message.getContent() instanceof MediaMessageContent){
                     JIM.getInstance().getMessageManager().downloadMediaMessage(message.getMessageId(), new IMessageManager.IDownloadMediaMessageCallback() {
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 
             @Override
             public void onMessageRecall(Message message) {
-                Log.d("lifei", "onMessageRecall, messageId is " + message.getMessageId());
+                Log.d("demo", "onMessageRecall, messageId is " + message.getMessageId());
             }
 
             @Override
@@ -195,22 +195,22 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
         JIM.getInstance().getConversationManager().addListener("main", new IConversationManager.IConversationListener() {
             @Override
             public void onConversationInfoAdd(List<ConversationInfo> conversationInfoList) {
-                Log.i("lifei", "onConversationInfoAdd, count is " + conversationInfoList.size());
+                Log.i("demo", "onConversationInfoAdd, count is " + conversationInfoList.size());
             }
 
             @Override
             public void onConversationInfoUpdate(List<ConversationInfo> conversationInfoList) {
-                Log.i("lifei", "onConversationInfoUpdate, count is " + conversationInfoList.size());
+                Log.i("demo", "onConversationInfoUpdate, count is " + conversationInfoList.size());
             }
 
             @Override
             public void onConversationInfoDelete(List<ConversationInfo> conversationInfoList) {
-                Log.i("lifei", "onConversationInfoDelete, count is " + conversationInfoList.size());
+                Log.i("demo", "onConversationInfoDelete, count is " + conversationInfoList.size());
             }
 
             @Override
             public void onTotalUnreadMessageCountUpdate(int count) {
-                Log.i("lifei", "onTotalUnreadMessageCountUpdate, count is " + count);
+                Log.i("demo", "onTotalUnreadMessageCountUpdate, count is " + count);
             }
         });
         JIM.getInstance().getChatroomManager().addListener("main", this);
@@ -422,17 +422,17 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 
     @Override
     public void onAttributesUpdate(String chatroomId, Map<String, String> attributes) {
-        Log.i("lifei", "onAttributesUpdate, chatroomId is " + chatroomId + ", attributes is " + attributes);
+        Log.i("demo", "onAttributesUpdate, chatroomId is " + chatroomId + ", attributes is " + attributes);
     }
 
     @Override
     public void onAttributesDelete(String chatroomId, Map<String, String> attributes) {
-        Log.i("lifei", "onAttributesDelete, chatroomId is " + chatroomId + ", attributes is " + attributes);
+        Log.i("demo", "onAttributesDelete, chatroomId is " + chatroomId + ", attributes is " + attributes);
     }
 
     @Override
     public void onChatroomJoin(String chatroomId) {
-        Log.i("lifei", "onChatroomJoin, chatroomId is " + chatroomId);
+        Log.i("demo", "onChatroomJoin, chatroomId is " + chatroomId);
 
 
         Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -468,26 +468,26 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 
     @Override
     public void onChatroomQuit(String chatroomId) {
-        Log.i("lifei", "onChatroomQuit, chatroomId is " + chatroomId);
+        Log.i("demo", "onChatroomQuit, chatroomId is " + chatroomId);
     }
 
     @Override
     public void onChatroomJoinFail(String chatroomId, int errorCode) {
-        Log.i("lifei", "onChatroomJoinFail, chatroomId is " + chatroomId + ", errorCode is " + errorCode);
+        Log.i("demo", "onChatroomJoinFail, chatroomId is " + chatroomId + ", errorCode is " + errorCode);
     }
 
     @Override
     public void onChatroomQuitFail(String chatroomId, int errorCode) {
-        Log.i("lifei", "onChatroomQuitFail, chatroomId is " + chatroomId + ", errorCode is " + errorCode);
+        Log.i("demo", "onChatroomQuitFail, chatroomId is " + chatroomId + ", errorCode is " + errorCode);
     }
 
     @Override
     public void onChatroomKick(String chatroomId) {
-        Log.i("lifei", "onChatroomKick, chatroomId is " + chatroomId);
+        Log.i("demo", "onChatroomKick, chatroomId is " + chatroomId);
     }
 
     @Override
     public void onChatroomDestroy(String chatroomId) {
-        Log.i("lifei", "onChatroomDestroy, chatroomId is " + chatroomId);
+        Log.i("demo", "onChatroomDestroy, chatroomId is " + chatroomId);
     }
 }

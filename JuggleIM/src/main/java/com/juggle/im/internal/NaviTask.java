@@ -38,7 +38,7 @@ class NaviTask {
 
     void start() {
         JLogger.i("NAV-Start", "urls is " + mRequestMap.keySet());
-        if (mRequestMap.size() == 0 && mCallback != null) {
+        if (mRequestMap.isEmpty() && mCallback != null) {
             mCallback.onError(ConstInternal.ErrorCode.SERVER_SET_ERROR);
             return;
         }

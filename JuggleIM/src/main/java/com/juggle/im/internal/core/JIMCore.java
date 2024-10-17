@@ -61,7 +61,6 @@ public class JIMCore {
     public List<String> getNaviUrls() {
         if (mNaviUrls == null) {
             mNaviUrls = new ArrayList<>();
-            mNaviUrls.add(ConstInternal.NAVI_URL);
         }
         return mNaviUrls;
     }
@@ -73,7 +72,6 @@ public class JIMCore {
     public List<String> getServers() {
         if (mServers == null) {
             mServers = new ArrayList<>();
-            mServers.add(ConstInternal.WEB_SOCKET_URL);
         }
         return mServers;
     }
