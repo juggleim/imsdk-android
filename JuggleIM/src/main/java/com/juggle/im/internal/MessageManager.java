@@ -1180,37 +1180,47 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
         }
 
+        long startTime = options.getStartTime();
         if (needRemote) {
-            internalGetRemoteMessages(conversation, count + 1, options.getStartTime(), direction, options.getContentTypes(), new IGetMessagesWithFinishCallback() {
+            internalGetRemoteMessages(conversation, count + 1, startTime, direction, options.getContentTypes(), new IGetMessagesWithFinishCallback() {
                 @Override
                 public void onSuccess(List<Message> messages, boolean isFinished) {
                     //合并去重
                     List<Message> mergeList = mergeLocalAndRemoteMessages(localMessages, messages);
                     //消息排序
                     Collections.sort(mergeList, (o1, o2) -> Long.compare(o1.getTimestamp(), o2.getTimestamp()));
-                    completeCallbackForGetMessages(mergeList, count, direction, !isFinished, JErrorCode.NONE, callback);
+                    completeCallbackForGetMessages(mergeList, count, direction, !isFinished, JErrorCode.NONE, startTime, callback);
                 }
 
                 @Override
                 public void onError(int errorCode) {
                     boolean hasMore = localMessages.size() >= count + 1;
-                    completeCallbackForGetMessages(localMessages, count, direction, hasMore, errorCode, callback);
+                    completeCallbackForGetMessages(localMessages, count, direction, hasMore, errorCode, startTime, callback);
                 }
             });
         } else {
             boolean hasMore = localMessages.size() >= count + 1;
-            completeCallbackForGetMessages(localMessages, count, direction, hasMore, JErrorCode.NONE, callback);
+            completeCallbackForGetMessages(localMessages, count, direction, hasMore, JErrorCode.NONE, startTime, callback);
         }
 
     }
 
-    private void completeCallbackForGetMessages(List<Message> messages, int count, JIMConst.PullDirection direction, boolean hasMore, int code, IGetMessagesCallbackV3 callback) {
+    private void completeCallbackForGetMessages(List<Message> messages, int count, JIMConst.PullDirection direction, boolean hasMore, int code, long getMessageTime, IGetMessagesCallbackV3 callback) {
         if (messages.size() > count) {
             if (direction == JIMConst.PullDirection.NEWER) {
                 messages = messages.subList(0, count);
             } else {
                 messages = messages.subList(messages.size() - count, messages.size());
             }
+        }
+        List<Message> finalMessages = messages;
+        if (finalMessages.isEmpty()) {
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> {
+                    callback.onGetMessages(finalMessages, getMessageTime, hasMore, code);
+                });
+            }
+            return;
         }
         Message baseMessage;
         if (direction == JIMConst.PullDirection.NEWER) {
@@ -1220,7 +1230,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         long timestamp = baseMessage.getTimestamp();
         if (callback != null) {
-            List<Message> finalMessages = messages;
             mCore.getCallbackHandler().post(() -> {
                 callback.onGetMessages(finalMessages, timestamp, hasMore, code);
             });
