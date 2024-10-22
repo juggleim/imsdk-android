@@ -36,6 +36,7 @@ import com.juggle.im.internal.model.messages.UnDisturbConvMessage;
 import com.juggle.im.internal.util.FileUtils;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
+import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfo;
@@ -1176,6 +1177,14 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                             break;
                         }
                     }
+                }
+            }
+            if (!needRemote && options.getStartTime() == 0 && direction == JIMConst.PullDirection.OLDER) {
+                ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
+                ConcreteMessage conversationLastMessage = (ConcreteMessage) conversationInfo.getLastMessage();
+                ConcreteMessage localListLastMessage = (ConcreteMessage) localMessages.get(localMessages.size()-1);
+                if (conversationLastMessage.getSeqNo() > localListLastMessage.getSeqNo()) {
+                    needRemote = true;
                 }
             }
         }
