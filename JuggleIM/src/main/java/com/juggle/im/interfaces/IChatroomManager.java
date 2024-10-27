@@ -13,6 +13,14 @@ public interface IChatroomManager {
     void joinChatroom(String chatroomId);
 
     /**
+     * 加入聊天室
+     *
+     * @param chatroomId 聊天室 id
+     * @param prevMessageCount 加入聊天室时获取的历史消息数量
+     */
+    void joinChatroom(String chatroomId, int prevMessageCount);
+
+    /**
      * 退出聊天室
      *
      * @param chatroomId 聊天室 id

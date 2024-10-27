@@ -43,8 +43,17 @@ public class CachedChatroom {
         mAttributes = attributes;
     }
 
+    public int getPrevMessageCount() {
+        return prevMessageCount;
+    }
+
+    public void setPrevMessageCount(int prevMessageCount) {
+        this.prevMessageCount = prevMessageCount;
+    }
+
     private ChatroomStatus mStatus;
     private long mSyncTime;
     private long mAttrSyncTime;
     private Map<String, String> mAttributes;
+    private int prevMessageCount;
 }

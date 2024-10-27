@@ -1724,6 +1724,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void onChatroomJoin(String chatroomId) {
+        // 确保后面会走 sync 逻辑
         long time = mChatroomManager.getSyncTimeForChatroom(chatroomId) + 1;
         onChatroomSyncNotify(chatroomId, time);
     }
@@ -2214,16 +2215,17 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         long cachedSyncTime = mChatroomManager.getSyncTimeForChatroom(chatroomId);
         if (time > cachedSyncTime) {
-            webSocketSyncChatroomMessage(chatroomId, cachedSyncTime);
+            int prevMessageCount = mChatroomManager.getPrevMessageCount(chatroomId);
+            webSocketSyncChatroomMessage(chatroomId, cachedSyncTime, prevMessageCount);
         } else {
             checkChatroomSyncMap();
         }
     }
 
-    private void webSocketSyncChatroomMessage(String chatroomId, long syncTime) {
-        JLogger.i("MSG-ChrmSync", "id is " + chatroomId + ", time is " + syncTime);
+    private void webSocketSyncChatroomMessage(String chatroomId, long syncTime, int prevMessageCount) {
+        JLogger.i("MSG-ChrmSync", "id is " + chatroomId + ", time is " + syncTime + ", count is " + prevMessageCount);
         mChatroomSyncProcessing = true;
-        mCore.getWebSocket().syncChatroomMessages(chatroomId, syncTime);
+        mCore.getWebSocket().syncChatroomMessages(chatroomId, syncTime, prevMessageCount);
     }
 
     private void updateUserInfo(List<ConcreteMessage> messages) {

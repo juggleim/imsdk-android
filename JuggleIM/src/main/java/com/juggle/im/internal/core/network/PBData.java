@@ -724,10 +724,11 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] syncChatroomMessages(String chatroomId, long syncTime, int index) {
+    byte[] syncChatroomMessages(String chatroomId, long syncTime, int prevMessageCount, int index) {
         Appmessages.SyncChatroomReq req = Appmessages.SyncChatroomReq.newBuilder()
                 .setChatroomId(chatroomId)
                 .setSyncTime(syncTime)
+                .setCount(prevMessageCount)
                 .build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
