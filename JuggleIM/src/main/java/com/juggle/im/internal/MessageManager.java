@@ -636,14 +636,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             if (TextUtils.isEmpty(savePath)) {
                 mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY));
                 return;
-
             }
             MediaDownloadEngine.getInstance().download(message.getMessageId(), content.getUrl(), savePath, new MediaDownloadEngine.DownloadEngineCallback() {
-
                 @Override
                 public void onError(int errorCode) {
                     mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
-
                 }
 
                 @Override
@@ -661,11 +658,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 @Override
                 public void onCanceled(String tag) {
                     mCore.getCallbackHandler().post(() -> callback.onCancel(message));
-
                 }
             });
         });
-
     }
 
     public void cancelDownloadMediaMessage(String messageId) {
