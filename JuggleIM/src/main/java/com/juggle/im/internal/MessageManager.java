@@ -1177,8 +1177,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             for (int i = 0; i < localMessages.size(); i++) {
                 ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
                 if (m.getSeqNo() < 0) {
-                    needRemote = true;
-                    break;
+                    continue;
                 }
                 if (m.getState() == Message.MessageState.SENT && m.getSeqNo() > 0) {
                     if (seqNo < 0) {
