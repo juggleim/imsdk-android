@@ -699,7 +699,7 @@ message QryFirstUnreadMsgReq{
 message SyncChatroomReq{
   string chatroomId = 1;
   int64 syncTime = 2;
-  int64 attSyncTime = 3;
+  int32 count = 3;
 }
 message SyncChatroomMsgResp{
   repeated DownMsg msgs = 1;

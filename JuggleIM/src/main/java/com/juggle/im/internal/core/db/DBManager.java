@@ -19,6 +19,8 @@ import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.UserInfo;
 
 import java.io.File;
@@ -329,6 +331,41 @@ public class DBManager {
         return message;
     }
 
+    public List<SearchConversationsResult> searchMessageInConversations(MessageQueryOptions options) {
+        List<SearchConversationsResult> resultList = new ArrayList<>();
+        List<String> args = new ArrayList<>();
+        String sql = MessageSql.sqlSearchMessageInConversations(options, args);
+        //执行查询
+        Cursor cursor = rawQuery(sql, args.toArray(new String[0]));
+        if (cursor == null) {
+            return resultList;
+        }
+        //解析查询结果
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            int type = CursorHelper.readInt(cursor, MessageSql.COL_CONVERSATION_TYPE);
+            String conversationId = CursorHelper.readString(cursor, MessageSql.COL_CONVERSATION_ID);
+            Conversation c = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
+            ConversationInfo info = new ConcreteConversationInfo();
+            info.setConversation(c);
+
+            SearchConversationsResult result = new SearchConversationsResult();
+            result.setConversationInfo(info);
+            result.setMatchedCount(CursorHelper.readInt(cursor, "match_count"));
+            resultList.add(result);
+        }
+        cursor.close();
+
+        if (!resultList.isEmpty()) {
+            for (SearchConversationsResult result : resultList) {
+                ConversationInfo info = getConversationInfo(result.getConversationInfo().getConversation());
+                result.setConversationInfo(info);
+            }
+        }
+
+        //返回查询结果
+        return resultList;
+    }
+
     public List<Message> getMessages(
             int count,
             long timestamp,
@@ -338,7 +375,8 @@ public class DBManager {
             List<String> contentTypes,
             List<String> senderUserIds,
             List<Message.MessageState> messageStates,
-            List<Conversation> conversations
+            List<Conversation> conversations,
+            List<Conversation.ConversationType> conversationTypes
     ) {
         List<Message> result = new ArrayList<>();
         if (count < 1) return result;
@@ -347,7 +385,7 @@ public class DBManager {
         }
         //处理sql及查询条件
         List<String> whereArgs = new ArrayList<>();
-        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, whereArgs);
+        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, conversationTypes, whereArgs);
         //执行查询
         Cursor cursor = rawQuery(sql, whereArgs.toArray(new String[0]));
         if (cursor == null) {

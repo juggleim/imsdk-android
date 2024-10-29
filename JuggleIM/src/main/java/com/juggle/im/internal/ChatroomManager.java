@@ -30,15 +30,26 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
 
     @Override
     public void joinChatroom(String chatroomId) {
+        joinChatroom(chatroomId, -1);
+    }
+
+    @Override
+    public void joinChatroom(String chatroomId, int prevMessageCount) {
         if (chatroomId == null || chatroomId.isEmpty()) {
             JLogger.e("CHRM-Join", "error chatroomId is empty");
             return;
         }
+        changeStatus(chatroomId, CachedChatroom.ChatroomStatus.JOINING);
+        setPrevMessageCount(chatroomId, prevMessageCount);
         mCore.getWebSocket().joinChatroom(chatroomId, new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("CHRM-Join", "success");
                 changeStatus(chatroomId, CachedChatroom.ChatroomStatus.JOINED);
+                //count 为 0， timestamp 也为 0，服务端永远同步不下来消息
+                if (prevMessageCount == 0) {
+                    setSyncTime(chatroomId, timestamp);
+                }
                 syncChatroomAttr(chatroomId, getAttrSyncTimeForChatroom(chatroomId));
                 if (mListenerMap != null) {
                     for (Map.Entry<String, IChatroomListener> entry : mListenerMap.entrySet()) {
@@ -58,7 +69,7 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
                 }
             }
         });
-        changeStatus(chatroomId, CachedChatroom.ChatroomStatus.JOINING);
+
     }
 
     @Override
@@ -245,6 +256,22 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
     synchronized public boolean isChatroomAvailable(String chatroomId) {
         CachedChatroom cachedChatroom = mCachedChatroomMap.get(chatroomId);
         return cachedChatroom != null;
+    }
+
+    synchronized public int getPrevMessageCount(String chatroomId) {
+        CachedChatroom cachedChatroom = mCachedChatroomMap.get(chatroomId);
+        if (cachedChatroom != null) {
+            return cachedChatroom.getPrevMessageCount();
+        }
+        return -1;
+    }
+
+    synchronized private void setPrevMessageCount(String chatroomId, int count) {
+        CachedChatroom cachedChatroom = mCachedChatroomMap.get(chatroomId);
+        if (cachedChatroom == null) {
+            return;
+        }
+        cachedChatroom.setPrevMessageCount(count);
     }
 
     synchronized private void updateAttributes(String chatroomId, Map<String, String> attributes, boolean isRemove) {

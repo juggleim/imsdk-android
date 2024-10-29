@@ -26,6 +26,7 @@ import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.UserInfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -580,6 +581,21 @@ public class ConversationManager implements IConversationManager, MessageManager
     @Override
     public void onConversationSetUnread(Conversation conversation) {
         setDBUnreadAndNotice(conversation);
+    }
+
+    @Override
+    public void onMessageUpdate(ConcreteMessage message) {
+        ConcreteMessage lastMessage = (ConcreteMessage)mCore.getDbManager().getLastMessage(message.getConversation());
+        if (lastMessage.getClientMsgNo() == message.getClientMsgNo()) {
+            mCore.getDbManager().updateLastMessageWithoutIndex(lastMessage);
+            ConversationInfo info = mCore.getDbManager().getConversationInfo(message.getConversation());
+            if (mListenerMap != null) {
+                List<ConversationInfo> l = new ArrayList<>(Collections.singleton(info));
+                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(l));
+                }
+            }
+        }
     }
 
     interface ICompleteCallback {

@@ -168,7 +168,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         final MessageListComponent messageListComponent = module.getMessageListComponent();
         final long startingPoint = messageListComponent.getParams().getInitialStartingPoint();
         if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.CHATROOM)) {
-            JIM.getInstance().getChatroomManager().joinChatroom(channel.getConversation().getConversationId());
+            JIM.getInstance().getChatroomManager().joinChatroom(channel.getConversation().getConversationId(), -1);
             loadInitial(startingPoint);
         } else {
             loadInitial(startingPoint);

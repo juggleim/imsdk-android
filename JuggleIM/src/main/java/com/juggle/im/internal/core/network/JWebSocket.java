@@ -384,9 +384,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void syncChatroomMessages(String chatroomId, long syncTime) {
-        byte[] bytes = mPbData.syncChatroomMessages(chatroomId, syncTime, mCmdIndex++);
-        JLogger.i("WS-Send", "syncChatroomMessages");
+    public void syncChatroomMessages(String chatroomId, long syncTime, int prevMessageCount) {
+        byte[] bytes = mPbData.syncChatroomMessages(chatroomId, syncTime, prevMessageCount, mCmdIndex++);
+        JLogger.i("WS-Send", "syncChatroomMessages, id is " + chatroomId + ", time is " + syncTime + ", count is " + prevMessageCount);
         sendWhenOpen(bytes);
     }
 
