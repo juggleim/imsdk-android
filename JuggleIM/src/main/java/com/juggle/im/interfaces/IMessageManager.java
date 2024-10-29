@@ -191,6 +191,12 @@ public interface IMessageManager {
             long timestamp,
             JIMConst.PullDirection direction);
 
+    /**
+     * 根据消息中的关键字搜索会话。
+     *
+     * @param options 搜索条件。
+     * @param callback 结果回调。参考 {@link ISearchConversationWithMessageContentCallback}。
+     */
     void searchConversationsWithMessageContent(MessageQueryOptions options, ISearchConversationWithMessageContentCallback callback);
 
     /**
