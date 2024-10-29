@@ -81,6 +81,13 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "nkXFkybGA");
+                            JIM.getInstance().getMessageManager().getMessages(c, JIMConst.PullDirection.OLDER, null, new IMessageManager.IGetMessagesCallbackV3() {
+                                @Override
+                                public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
+                                    int i = 1;
+                                }
+                            });
 
 
 

@@ -1281,16 +1281,23 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     //合并localList和remoteList并去重
     private List<Message> mergeLocalAndRemoteMessages(List<Message> localList, List<Message> remoteList) {
-        Set<Long> seqNoSet = new HashSet<>();
-        List<Message> mergedList = new ArrayList<>();
-        for (Message message : remoteList) {
-            if (seqNoSet.add((message).getClientMsgNo())) {
-                mergedList.add(message);
+        List<Message> mergedList = new ArrayList<>(remoteList);
+        for (Message localMessage : localList) {
+            boolean isContain = false;
+            for (Message remoteMessage : mergedList) {
+                if (localMessage.getClientMsgNo() == remoteMessage.getClientMsgNo()) {
+                    if (localMessage.getContent() instanceof MediaMessageContent
+                    && remoteMessage.getContent() instanceof MediaMessageContent) {
+                        MediaMessageContent localContent = (MediaMessageContent) localMessage.getContent();
+                        MediaMessageContent remoteContent = (MediaMessageContent) remoteMessage.getContent();
+                        remoteContent.setLocalPath(localContent.getLocalPath());
+                    }
+                    isContain = true;
+                    break;
+                }
             }
-        }
-        for (Message message : localList) {
-            if (seqNoSet.add((message).getClientMsgNo())) {
-                mergedList.add(message);
+            if (!isContain) {
+                mergedList.add(localMessage);
             }
         }
         return mergedList;
