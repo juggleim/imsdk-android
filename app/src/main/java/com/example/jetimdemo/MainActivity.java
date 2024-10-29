@@ -30,15 +30,12 @@ import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.internal.uploader.FileUtil;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
-import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
-import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageQueryOptions;
-import com.juggle.im.model.PushData;
-import com.juggle.im.model.TimePeriod;
+import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.SnapshotPackedVideoMessage;
@@ -50,7 +47,6 @@ import com.juggle.im.model.messages.VoiceMessage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -85,18 +81,32 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
-
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "nkXFkybGA");
-                            List<Conversation> conversations = new ArrayList<>();
-                            conversations.add(c);
+                            List<String> contentTypes = new ArrayList<>();
+                            contentTypes.add("jg:video");
                             List<Conversation.ConversationType> conversationTypes = new ArrayList<>();
-                            conversationTypes.add(Conversation.ConversationType.PRIVATE);
-                            MessageQueryOptions option = new MessageQueryOptions.Builder()
-                                    .setConversations(conversations)
-                                    .setConversationTypes(conversationTypes)
+                            conversationTypes.add(Conversation.ConversationType.GROUP);
+                            List<Conversation> conversations = new ArrayList<>();
+                            conversations.add(new Conversation(Conversation.ConversationType.PRIVATE, "sdf"));
+                            List<Message.MessageState> states = new ArrayList<>();
+                            states.add(Message.MessageState.SENT);
+                            List<String> senderList = new ArrayList<>();
+                            senderList.add("nkXFkybGA");
+                            MessageQueryOptions options = new MessageQueryOptions.Builder()
+//                                    .setContentTypes(contentTypes)
+//                                    .setConversationTypes(conversationTypes)
+                                    .setSearchContent("1")
+                                    .setStates(states)
+                                    .setSenderUserIds(senderList)
                                     .build();
-                            List<Message> result = JIM.getInstance().getMessageManager().getMessages(100, 0, JIMConst.PullDirection.OLDER, option);
-                            int i = 1;
+
+                            JIM.getInstance().getMessageManager().searchConversationsWithMessageContent(options, new IMessageManager.ISearchConversationWithMessageContentCallback() {
+                                @Override
+                                public void onComplete(List<SearchConversationsResult> resultList) {
+                                    int i = 1;
+                                }
+                            });
+
+
 
 
 

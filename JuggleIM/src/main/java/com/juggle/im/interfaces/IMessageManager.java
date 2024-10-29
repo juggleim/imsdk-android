@@ -9,6 +9,7 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 
@@ -109,6 +110,10 @@ public interface IMessageManager {
         void onError(int errorCode);
     }
 
+    interface ISearchConversationWithMessageContentCallback {
+        void onComplete(List<SearchConversationsResult> resultList);
+    }
+
     Message sendMessage(MessageContent content,
                         Conversation conversation,
                         ISendMessageCallback callback);
@@ -186,6 +191,7 @@ public interface IMessageManager {
             long timestamp,
             JIMConst.PullDirection direction);
 
+    void searchConversationsWithMessageContent(MessageQueryOptions options, ISearchConversationWithMessageContentCallback callback);
 
     /**
      * 下载多媒体文件。

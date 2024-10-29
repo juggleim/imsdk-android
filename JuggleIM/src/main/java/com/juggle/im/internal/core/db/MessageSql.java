@@ -12,6 +12,7 @@ import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
+import com.juggle.im.model.MessageQueryOptions;
 import com.juggle.im.model.messages.MergeMessage;
 
 import java.nio.charset.StandardCharsets;
@@ -168,6 +169,63 @@ class MessageSql {
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
+    static final String SQL_SEARCH_MESSAGE_IN_CONVERSATIONS = "SELECT conversation_type, conversation_id, count(*) AS match_count FROM message ";
+
+    static String sqlSearchMessageInConversations(MessageQueryOptions options, List<String> whereArgs) {
+        List<String> whereClauses = new ArrayList<>();
+        //添加 is_deleted = 0 条件
+        whereClauses.add("is_deleted = 0");
+        if (options != null) {
+            //添加 direction 条件
+            if (options.getDirection() != null) {
+                whereClauses.add("direction = ?");
+                whereArgs.add(String.valueOf(options.getDirection().getValue()));
+            }
+            //添加 contentTypes 条件
+            if (options.getContentTypes() != null && !options.getContentTypes().isEmpty()) {
+                whereClauses.add("type IN " + CursorHelper.getQuestionMarkPlaceholder(options.getContentTypes().size()));
+                whereArgs.addAll(options.getContentTypes());
+            }
+            //添加 senderUserIds 条件
+            if (options.getSenderUserIds() != null && !options.getSenderUserIds().isEmpty()) {
+                whereClauses.add("sender IN " + CursorHelper.getQuestionMarkPlaceholder(options.getSenderUserIds().size()));
+                whereArgs.addAll(options.getSenderUserIds());
+            }
+            //添加 messageStates 条件
+            if (options.getStates() != null && !options.getStates().isEmpty()) {
+                whereClauses.add("state IN " + CursorHelper.getQuestionMarkPlaceholder(options.getStates().size()));
+                for (Message.MessageState state : options.getStates()) {
+                    whereArgs.add(String.valueOf(state.getValue()));
+                }
+            }
+            //添加 conversations 条件
+            if (options.getConversations() != null && !options.getConversations().isEmpty()) {
+                List<String> conversationClauses = new ArrayList<>();
+                for (Conversation conversation : options.getConversations()) {
+                    conversationClauses.add("(conversation_type = ? AND conversation_id = ?)");
+                    whereArgs.add(String.valueOf(conversation.getConversationType().getValue()));
+                    whereArgs.add(conversation.getConversationId());
+                }
+                whereClauses.add("(" + String.join(" OR ", conversationClauses) + ")");
+            }
+            //添加 conversationTypes 条件
+            if (options.getConversationTypes() != null && !options.getConversationTypes().isEmpty()) {
+                whereClauses.add("conversation_type IN " + CursorHelper.getQuestionMarkPlaceholder(options.getConversationTypes().size()));
+                for (Conversation.ConversationType type : options.getConversationTypes()) {
+                    whereArgs.add(String.valueOf(type.getValue()));
+                }
+            }
+            //添加 search_content 条件
+            if (options.getSearchContent() != null) {
+                whereClauses.add("search_content LIKE ?");
+                whereArgs.add("%" + options.getSearchContent() + "%");
+            }
+        }
+        //合并查询条件
+        String whereClause = whereClauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", whereClauses);
+        //返回sql
+        return SQL_SEARCH_MESSAGE_IN_CONVERSATIONS + whereClause + " GROUP BY conversation_type, conversation_id" + " ORDER BY timestamp DESC";
+    }
 
     static String sqlGetMessages(
             int count,

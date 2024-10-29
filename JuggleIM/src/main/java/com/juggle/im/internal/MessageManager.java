@@ -35,6 +35,7 @@ import com.juggle.im.internal.model.messages.TopConvMessage;
 import com.juggle.im.internal.model.messages.UnDisturbConvMessage;
 import com.juggle.im.internal.util.FileUtils;
 import com.juggle.im.internal.util.JLogger;
+import com.juggle.im.internal.util.JThreadPoolExecutor;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.GetMessageOptions;
@@ -45,6 +46,7 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.FileMessage;
@@ -596,6 +598,19 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                         .setSearchContent(searchContent)
                         .setConversations(Collections.singletonList(conversation))
                         .build());
+    }
+
+    @Override
+    public void searchConversationsWithMessageContent(MessageQueryOptions options, ISearchConversationWithMessageContentCallback callback) {
+        JThreadPoolExecutor.runInBackground(new Runnable() {
+            @Override
+            public void run() {
+                List<SearchConversationsResult> resultList = mCore.getDbManager().searchMessageInConversations(options);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onComplete(resultList));
+                }
+            }
+        });
     }
 
     @Override
