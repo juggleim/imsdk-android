@@ -439,7 +439,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 messageQueryOptions != null ? messageQueryOptions.getContentTypes() : null,
                 messageQueryOptions != null ? messageQueryOptions.getSenderUserIds() : null,
                 messageQueryOptions != null ? messageQueryOptions.getStates() : null,
-                messageQueryOptions != null ? messageQueryOptions.getConversations() : null);
+                messageQueryOptions != null ? messageQueryOptions.getConversations() : null,
+                messageQueryOptions != null ? messageQueryOptions.getConversationTypes() : null);
     }
 
     @Override
@@ -1150,7 +1151,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 options.getContentTypes(),
                 null,
                 null,
-                Collections.singletonList(conversation));
+                Collections.singletonList(conversation),
+                null);
 
         boolean needRemote = false;
         if (localMessages.size() < count) {

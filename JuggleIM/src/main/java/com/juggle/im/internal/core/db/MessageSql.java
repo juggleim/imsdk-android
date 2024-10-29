@@ -179,6 +179,7 @@ class MessageSql {
             List<String> senderUserIds,
             List<Message.MessageState> messageStates,
             List<Conversation> conversations,
+            List<Conversation.ConversationType> conversationTypes,
             List<String> whereArgs
     ) {
         List<String> whereClauses = new ArrayList<>();
@@ -215,6 +216,13 @@ class MessageSql {
                 whereArgs.add(conversation.getConversationId());
             }
             whereClauses.add("(" + String.join(" OR ", conversationClauses) + ")");
+        }
+        //添加 conversationTypes 条件
+        if (conversationTypes != null && !conversationTypes.isEmpty()) {
+            whereClauses.add("conversation_type IN " + CursorHelper.getQuestionMarkPlaceholder(conversationTypes.size()));
+            for (Conversation.ConversationType type : conversationTypes) {
+                whereArgs.add(String.valueOf(type.getValue()));
+            }
         }
         //添加 timestamp 和 pullDirection 条件
         if (pullDirection != null) {

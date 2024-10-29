@@ -36,6 +36,7 @@ import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageOptions;
+import com.juggle.im.model.MessageQueryOptions;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.messages.FileMessage;
@@ -85,15 +86,16 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         public void run() {
 
 
-                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, "kakhH2dft");
-                            GetMessageOptions options = new GetMessageOptions();
-                            options.setCount(30);
-                            JIM.getInstance().getMessageManager().getMessages(c, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
-                                @Override
-                                public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
-                                    int i = 1;
-                                }
-                            });
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "nkXFkybGA");
+                            List<Conversation> conversations = new ArrayList<>();
+                            conversations.add(c);
+                            List<Conversation.ConversationType> conversationTypes = new ArrayList<>();
+                            conversationTypes.add(Conversation.ConversationType.PRIVATE);
+                            MessageQueryOptions option = new MessageQueryOptions.Builder()
+                                    .setConversations(conversations)
+                                    .setConversationTypes(conversationTypes)
+                                    .build();
+                            List<Message> result = JIM.getInstance().getMessageManager().getMessages(100, 0, JIMConst.PullDirection.OLDER, option);
                             int i = 1;
 
 

@@ -338,7 +338,8 @@ public class DBManager {
             List<String> contentTypes,
             List<String> senderUserIds,
             List<Message.MessageState> messageStates,
-            List<Conversation> conversations
+            List<Conversation> conversations,
+            List<Conversation.ConversationType> conversationTypes
     ) {
         List<Message> result = new ArrayList<>();
         if (count < 1) return result;
@@ -347,7 +348,7 @@ public class DBManager {
         }
         //处理sql及查询条件
         List<String> whereArgs = new ArrayList<>();
-        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, whereArgs);
+        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, conversationTypes, whereArgs);
         //执行查询
         Cursor cursor = rawQuery(sql, whereArgs.toArray(new String[0]));
         if (cursor == null) {

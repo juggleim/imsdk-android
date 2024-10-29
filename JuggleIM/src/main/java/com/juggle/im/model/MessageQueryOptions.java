@@ -7,15 +7,13 @@ import java.util.List;
  * @create 2024-07-04 17:33
  */
 public class MessageQueryOptions {
-    private String mSearchContent;//指定搜索内容
-    private List<String> mSenderUserIds;//指定消息发送者ID
-    private List<String> mContentTypes;//指定消息类型
-    private List<Conversation> mConversations;//指定会话
-    private List<Message.MessageState> mStates;//指定消息状态
-    private Message.MessageDirection mDirection;//指定消息方向
-
-    public MessageQueryOptions() {
-    }
+    private final String mSearchContent;//指定搜索内容
+    private final List<String> mSenderUserIds;//指定消息发送者ID
+    private final List<String> mContentTypes;//指定消息类型
+    private final List<Conversation> mConversations;//指定会话
+    private final List<Message.MessageState> mStates;//指定消息状态
+    private final Message.MessageDirection mDirection;//指定消息方向
+    private final List<Conversation.ConversationType> mConversationTypes;//指定会话类型
 
     public MessageQueryOptions(Builder builder) {
         this.mSearchContent = builder.mSearchContent;
@@ -24,54 +22,35 @@ public class MessageQueryOptions {
         this.mConversations = builder.mConversations;
         this.mStates = builder.mStates;
         this.mDirection = builder.mDirection;
+        this.mConversationTypes = builder.mConversationTypes;
     }
 
     public String getSearchContent() {
         return mSearchContent;
     }
 
-    public void setSearchContent(String searchContent) {
-        this.mSearchContent = searchContent;
-    }
-
     public List<String> getSenderUserIds() {
         return mSenderUserIds;
-    }
-
-    public void setSenderUserIds(List<String> senderUserIds) {
-        this.mSenderUserIds = senderUserIds;
     }
 
     public List<String> getContentTypes() {
         return mContentTypes;
     }
 
-    public void setContentTypes(List<String> contentTypes) {
-        this.mContentTypes = contentTypes;
-    }
-
     public List<Conversation> getConversations() {
         return mConversations;
-    }
-
-    public void setConversations(List<Conversation> conversations) {
-        this.mConversations = conversations;
     }
 
     public List<Message.MessageState> getStates() {
         return mStates;
     }
 
-    public void setStates(List<Message.MessageState> states) {
-        this.mStates = states;
-    }
-
     public Message.MessageDirection getDirection() {
         return mDirection;
     }
 
-    public void setDirection(Message.MessageDirection direction) {
-        this.mDirection = direction;
+    public List<Conversation.ConversationType> getConversationTypes() {
+        return mConversationTypes;
     }
 
     public static class Builder {
@@ -81,6 +60,7 @@ public class MessageQueryOptions {
         private List<Conversation> mConversations;
         private List<Message.MessageState> mStates;
         private Message.MessageDirection mDirection;
+        private List<Conversation.ConversationType> mConversationTypes;
 
         public Builder() {
         }
@@ -112,6 +92,11 @@ public class MessageQueryOptions {
 
         public Builder setDirection(Message.MessageDirection direction) {
             this.mDirection = direction;
+            return this;
+        }
+
+        public Builder setConversationTypes(List<Conversation.ConversationType> conversationTypes) {
+            this.mConversationTypes = conversationTypes;
             return this;
         }
 
