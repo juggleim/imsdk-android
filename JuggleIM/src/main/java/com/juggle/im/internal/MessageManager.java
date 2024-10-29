@@ -663,6 +663,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 public void onComplete(String savePath) {
                     content.setLocalPath(savePath);
                     mCore.getDbManager().updateMessageContentWithMessageId(message.getContent(), message.getContentType(), message.getMessageId());
+                    if (mSendReceiveListener != null) {
+                        mSendReceiveListener.onMessageUpdate(message);
+                    }
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
                 }
 
@@ -1778,6 +1781,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         void onConversationsUpdate(String updateType, List<ConcreteConversationInfo> conversations);
         void onConversationsClearTotalUnread(long clearTime);
         void onConversationSetUnread(Conversation conversation);
+        void onMessageUpdate(ConcreteMessage message);
     }
 
     public void setSendReceiveListener(ISendReceiveListener sendReceiveListener) {

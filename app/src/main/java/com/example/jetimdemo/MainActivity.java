@@ -81,30 +81,6 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
-                            List<String> contentTypes = new ArrayList<>();
-                            contentTypes.add("jg:video");
-                            List<Conversation.ConversationType> conversationTypes = new ArrayList<>();
-                            conversationTypes.add(Conversation.ConversationType.GROUP);
-                            List<Conversation> conversations = new ArrayList<>();
-                            conversations.add(new Conversation(Conversation.ConversationType.PRIVATE, "sdf"));
-                            List<Message.MessageState> states = new ArrayList<>();
-                            states.add(Message.MessageState.SENT);
-                            List<String> senderList = new ArrayList<>();
-                            senderList.add("nkXFkybGA");
-                            MessageQueryOptions options = new MessageQueryOptions.Builder()
-//                                    .setContentTypes(contentTypes)
-//                                    .setConversationTypes(conversationTypes)
-                                    .setSearchContent("1")
-                                    .setStates(states)
-                                    .setSenderUserIds(senderList)
-                                    .build();
-
-                            JIM.getInstance().getMessageManager().searchConversationsWithMessageContent(options, new IMessageManager.ISearchConversationWithMessageContentCallback() {
-                                @Override
-                                public void onComplete(List<SearchConversationsResult> resultList) {
-                                    int i = 1;
-                                }
-                            });
 
 
 
