@@ -168,7 +168,9 @@ class MessageSql {
 
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
+    static final String SQL_CREATE_CLIENT_UID_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message_client_uid ON message(client_uid)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
+    static final String SQL_GET_MESSAGE_WITH_CLIENT_UID = "SELECT * FROM message WHERE client_uid = ?";
     static final String SQL_SEARCH_MESSAGE_IN_CONVERSATIONS = "SELECT conversation_type, conversation_id, count(*) AS match_count FROM message ";
 
     static String sqlSearchMessageInConversations(MessageQueryOptions options, List<String> whereArgs) {
