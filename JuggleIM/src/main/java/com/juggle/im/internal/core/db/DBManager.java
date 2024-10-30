@@ -585,6 +585,12 @@ public class DBManager {
         execSQL(sql, args);
     }
 
+    public void updateMessageAfterSendWithClientUid(String clientUid, String messageId, long timestamp, long seqNo) {
+        Object[] args = new Object[]{messageId, clientUid};
+        String sql = MessageSql.sqlUpdateMessageAfterSendWithClientUid(Message.MessageState.SENT.getValue(), timestamp, seqNo);
+        execSQL(sql, args);
+    }
+
     public void updateMessageContentWithMessageId(MessageContent content, String type, String messageId) {
         Object[] args = new Object[4];
         if (content != null) {

@@ -911,6 +911,7 @@ class PBData {
                     a.msgId = publishAckMsgBody.getMsgId();
                     a.timestamp = publishAckMsgBody.getTimestamp();
                     a.seqNo = publishAckMsgBody.getMsgSeqNo();
+                    a.clientUid = publishAckMsgBody.getClientMsgId();
                     obj.mPublishMsgAck = a;
                 }
                 break;

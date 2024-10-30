@@ -1744,6 +1744,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid) {
+        if (clientUid == null || TextUtils.isEmpty(clientUid)
+        || messageId == null || TextUtils.isEmpty(messageId)) {
+            return;
+        }
+        mCore.getDbManager().updateMessageAfterSendWithClientUid(clientUid, messageId, timestamp, seqNo);
+    }
+
+    @Override
     public void onChatroomJoin(String chatroomId) {
         // 确保后面会走 sync 逻辑
         long time = mChatroomManager.getSyncTimeForChatroom(chatroomId) + 1;
