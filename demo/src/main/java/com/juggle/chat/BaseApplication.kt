@@ -118,9 +118,9 @@ class BaseApplication : MultiDexApplication() {
         ToastUtils.init(applicationContext)
         PreferenceUtils.init(applicationContext)
         // initialize SendbirdUIKit
-        val navi = ArrayList<String>()
-        navi.add("https://nav.juggleim.com")
-        JIM.getInstance().setServer(navi)
+        val serverList = ArrayList<String>()
+        serverList.add("wss://ws.juggleim.com")
+        JIM.getInstance().setServerUrls(serverList)
         initUIKit(this)
         val logConfig = JLogConfig.Builder(this).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).setLogWriteLevel(JLogLevel.JLogLevelVerbose).build()
         val initConfig = InitConfig.Builder().setJLogConfig(logConfig).build()

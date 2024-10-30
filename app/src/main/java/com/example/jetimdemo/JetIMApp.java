@@ -23,8 +23,8 @@ public class JetIMApp extends Application {
     public void onCreate() {
         super.onCreate();
         List<String> serverList = new ArrayList<>();
-        serverList.add("https://nav.juggleim.com");
-        JIM.getInstance().setServer(serverList);
+        serverList.add("wss://ws.juggleim.com");
+        JIM.getInstance().setServerUrls(serverList);
         JIM.InitConfig initConfig = new JIM.InitConfig.Builder()
                 .setPushConfig(new PushConfig.Builder().build())
                 .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build())

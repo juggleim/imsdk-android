@@ -72,8 +72,8 @@ public class JIM {
         return ConstInternal.SDK_VERSION;
     }
 
-    public void setServer(List<String> serverUrls) {
-        mCore.setNaviUrl(serverUrls);
+    public void setServerUrls(List<String> serverUrls) {
+        mCore.setServers(serverUrls);
     }
 
     public void setCallbackHandler(Handler callbackHandler) {
