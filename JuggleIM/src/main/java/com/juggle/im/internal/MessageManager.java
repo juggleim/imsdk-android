@@ -2278,16 +2278,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     private String createClientUid() {
-        long result = System.currentTimeMillis();
-        result = result % 1000000;
-        result = result * 1000 + mIncreaseId++;
-        return Long.toString(result);
+        return java.util.UUID.randomUUID().toString().replace("-", "");
     }
 
     private final JIMCore mCore;
     private final UserInfoManager mUserInfoManager;
     private final ChatroomManager mChatroomManager;
-    private int mIncreaseId = 0;
     private boolean mSyncProcessing = true;
     private long mCachedReceiveTime = -1;
     private long mCachedSendTime = -1;
