@@ -358,6 +358,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return message;
         }
         if (message.getClientMsgNo() > 0) {
+            if (message.getState() == Message.MessageState.SENT) {
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
+                }
+                return message;
+            }
             if (message.getState() != Message.MessageState.SENDING) {
                 message.setState(Message.MessageState.SENDING);
                 setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
@@ -385,6 +391,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 || !(message instanceof ConcreteMessage)) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM));
+            }
+            return message;
+        }
+        if (message.getState() == Message.MessageState.SENT) {
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
             }
             return message;
         }
