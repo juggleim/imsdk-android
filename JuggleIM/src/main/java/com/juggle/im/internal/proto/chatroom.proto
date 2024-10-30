@@ -1,0 +1,159 @@
+syntax = "proto3";
+
+import "appmessages.proto";
+package app_messages;
+
+// chatroom
+message SyncChatroomReq{
+  string chatroomId = 1;
+  int64 syncTime = 2;
+  int32 count = 3;
+}
+message SyncChatroomMsgResp{
+  repeated DownMsg msgs = 1;
+}
+message SyncChatroomAttResp{
+  repeated ChatAttItem atts = 1;
+}
+message SyncChatroomEventResp{
+  repeated ChrmEvent chrmEvents = 1;
+}
+message ChatroomEvents{
+  string chatId = 1;
+  repeated ChrmEvent events = 2;
+}
+message ChrmEvent{
+  ChrmEventType eventType = 1;
+  string chatId = 2;
+  string userId = 3;
+  int64 eventTime = 4;
+}
+enum ChrmEventType{
+  Join = 0;
+  Quit = 1;
+  Kick = 2;
+  Fallout = 3;
+}
+message QryChatroomReq{
+    string chatId = 1;
+
+    bool withMembers = 2;
+    int32 count = 3;
+    int32 order = 4;
+
+    bool withAtts = 5;
+    repeated string attKeys = 6;
+}
+
+message ChatroomReq{
+  string chatId = 1;
+  string chatName = 2;
+  bool isAutoCreate = 3;
+}
+
+message ChatroomInfo{
+  string chatId = 1;
+  string chatName = 2;
+  repeated ChatroomMember members = 3;
+  repeated ChatAttItem atts = 4;
+  int32 memberCount = 5;
+  bool isMute = 6;
+}
+message ChatMsgNode{
+  string nodeName = 1;
+  string method = 2;
+}
+message ChatroomMember {
+  string memberId = 1;
+  string memberName = 2;
+  int64 addedTime = 3;
+}
+message ChrmDispatchReq{
+  string chatId = 1;
+  ChrmDispatchType dispatchType = 2;
+}
+enum ChrmDispatchType{
+  CreateChatroom = 0;
+  DestroyChatroom = 1;
+}
+message ChatMembersDispatchReq{
+  string chatId = 1;
+  repeated string memberIds = 2;
+  ChatMembersDispatchType dispatchType = 3;
+}
+enum ChatMembersDispatchType {
+  DispatchDefault = 0;
+  JoinChatroom = 1;
+  QuitChatroom = 2;
+}
+message ChatAttReq{
+  string key = 1;
+  string value = 2;
+  bool isForce = 3;
+  bool isAutoDel = 4;
+  UpMsg msg = 5;
+}
+message ChatAttResp{
+  string key = 1;
+  int32 code = 2;
+  int64 attTime = 3;
+
+  int32 msgCode = 11;
+  string msgId = 12;
+  int64 msgTime = 13;
+  int64 msgSeq = 14;
+}
+message ChatAttBatchReq{
+  repeated ChatAttReq atts = 1;
+}
+message ChatAttBatchResp{
+  repeated ChatAttResp attResps = 1;
+}
+message ChatAttItem{
+  string key = 1;
+  string value = 2;
+  int64 attTime = 3;
+  string userId = 4;
+  ChatAttOptType optType = 5;
+}
+enum ChatAttOptType{
+  ChatAttOpt_Default = 0;
+  ChatAttOpt_Add = 1;
+  ChatAttOpt_Del = 2;
+}
+message ChatAtts{
+  string chatId = 1;
+  repeated ChatAttItem atts = 2;
+  bool isComplete = 3;
+  bool isFinished = 4;
+}
+enum ChrmBanType{
+  ChrmBanType_Default = 0;
+  Ban = 1;
+  Mute = 2;
+  Allow = 3;
+}
+message BatchBanUserReq{
+  string chatId = 1;
+  ChrmBanType banType = 2;
+  repeated string memberIds = 3;
+  int64 endTime = 4;
+  bool isDelete = 5;
+}
+message QryChrmBanUsersReq{
+  string chatId = 1;
+  ChrmBanType banType = 2;
+  string offset = 3;
+  int64 limit = 4;
+}
+message QryChrmBanUsersResp{
+  string chatId = 1;
+  ChrmBanType BanType = 2;
+  repeated ChrmBanMember members = 3;
+  string offset = 4;
+}
+message ChrmBanMember {
+  string memberId = 1;
+  int64 createdTime  = 2;
+  int64 endTime = 3;
+}

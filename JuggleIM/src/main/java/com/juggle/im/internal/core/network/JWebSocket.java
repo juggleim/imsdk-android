@@ -352,9 +352,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void joinChatroom(String chatroomId, WebSocketTimestampCallback callback) {
+    public void joinChatroom(String chatroomId, boolean isAutoCreate, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.joinChatroom(chatroomId, mCmdIndex++);
+        byte[] bytes = mPbData.joinChatroom(chatroomId, isAutoCreate, mCmdIndex++);
         JLogger.i("WS-Send", "joinChatroom");
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
