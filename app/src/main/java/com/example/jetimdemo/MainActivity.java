@@ -81,8 +81,22 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
-                            JIM.getInstance().getChatroomManager().joinChatroom("chatroom1001sdf", 10, true);
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "CYXf6GNeM");
+                            List list = JIM.getInstance().getMessageManager().getMessages(c, 10, 0, JIMConst.PullDirection.OLDER);
+                            int i =1;
+                            List<Long> msgNos = new ArrayList<>();
+                            msgNos.add(350L);
+                            JIM.getInstance().getMessageManager().deleteMessagesByClientMsgNoList(c, msgNos, new IMessageManager.ISimpleCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    int i = 1;
+                                }
 
+                                @Override
+                                public void onError(int errorCode) {
+                                    int i = 1;
+                                }
+                            });
 
 
 
@@ -104,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 
             }
         });
-        JIM.getInstance().getConnectionManager().connect(TOKEN1182);
+        JIM.getInstance().getConnectionManager().connect(TOKEN1181);
         JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {
