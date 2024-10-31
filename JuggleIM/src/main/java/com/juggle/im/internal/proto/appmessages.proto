@@ -29,11 +29,15 @@ message RpcMessageWraper{
   int32 terminalNum = 13;
   bool noSendbox = 14;
   bool onlySendbox = 15;
+  string deviceId = 16;
+  string instanceId = 17;
+  string platform = 18;
 
   int32 resultCode = 21;
   int64 msgSendTime = 22;
   string msgId = 23;
   int64 msgSeqNo = 24;
+  int32 memberCount = 25;
 
   string groupId = 31;
   repeated string targetIds = 32;
@@ -53,6 +57,8 @@ message UpMsg {
   DownMsg referMsg = 7;//被引用的消息
   repeated string toUserIds = 8;//群定向消息，指定接收消息的部分群成员
   MergedMsgs mergedMsgs = 9;
+  
+  int64 msgTime = 51; 
 }
 
 message MergedMsgs{
@@ -80,6 +86,14 @@ message PushData{
   string pushId = 2;
   string pushText = 3;
   string pushExtraData = 4;
+
+  //internal fields
+  int32 badge = 50;
+  string msgId = 51;
+  string senderId = 52;
+  string ConverId = 53;
+  ChannelType channelType = 54;
+    
 }
 message DownMsg{
   string targetId = 1;
@@ -105,7 +119,36 @@ message DownMsg{
   int32 memberCount = 21;
   int32 readCount = 22;
   int64 unreadIndex = 23;
+  repeated StreamMsgItem msgItems = 24;
+  repeated MsgExtItem msgExSet = 25;
+  repeated MsgExtItem msgExts = 26;
+  repeated ConverTag converTags = 27;
 }
+
+message MsgAck{
+  string msgId = 1;
+  int64 msgTime = 2;
+}
+
+message StreamMsgItem{
+  StreamEvent event = 1;
+  int64 subSeq = 2;
+  bytes partialContent= 3;
+}
+
+message StreamDownMsg{
+  string targetId = 1;
+  ChannelType ChannelType = 2;
+  string msgId = 3;
+  repeated StreamMsgItem msgItems = 4;
+}
+
+enum StreamEvent{
+  DefaultStreamEvent = 0;
+  StreamMessage = 1;
+  StreamComplete = 2;
+}
+
 enum ChannelType {
   Unknown = 0;
   Private = 1;
@@ -124,9 +167,9 @@ enum NotifyType {
   Default = 0;
   Msg = 1;
   ChatroomMsg = 2;
-  ChatroomAtt =3;
-  ChatroomEvent = 4;  // 聊天室事件通知，如有人加入/退出
-  ChatroomDestroy = 5; // 聊天室销毁
+  ChatroomAtt = 3;
+  ChatroomEvent = 4;
+  ChatroomDestroy = 5;
 }
 message SyncMsgReq{
   int64 syncTime = 1;//收件箱同步时间
@@ -144,6 +187,10 @@ message KvItem{
   string key = 1;
   string value = 2;
   int64 updTime = 3;
+}
+
+message PushSwitch{
+  int32 switch = 1;
 }
 
 //group assistant
@@ -201,6 +248,12 @@ message QryHisMsgsReq{
   int32 count = 4;
   int32 order = 5;
   repeated string msgTypes = 6;
+}
+message QryFirstUnreadMsgReq{
+  string targetId = 1;
+  ChannelType channelType = 2;
+  // int64 startTime = 3;
+  // int32 count = 4;
 }
 
 message QryHisMsgByIdsReq{
@@ -271,12 +324,18 @@ message QryMergedMsgsReq{
   int32 order = 3;
 }
 
-message MsgExtItem {
+message MsgExt {
   string targetId = 1;
   ChannelType channelType = 2;
   string msgId = 3;
-  string key = 4;
-  string value = 5;
+  MsgExtItem ext = 4;
+}
+
+message MsgExtItem {
+  string key = 1;
+  string value = 2;
+  int64 timestamp = 3;
+  UserInfo userInfo = 4;
 }
 
 //conversation
@@ -307,6 +366,7 @@ message QryConversationsReq{
   // string userId = 4;
   string targetId = 5;
   ChannelType channelType = 6;
+  string tag = 7;
 }
 message QryConversationsResp{
   repeated Conversation conversations = 1;
@@ -332,6 +392,7 @@ message Conversation{
   int32 unreadTag = 17;
   string latestReadMsgId = 18;
   int64 latestReadMsgTime = 19;
+  repeated ConverTag converTags = 20;
 }
 
 enum UpdLatestMsgAction{
@@ -389,6 +450,7 @@ message ConverFilter{
   repeated ChannelType channelTypes = 1;
   repeated SimpleConversation excludeConvers = 2;
   repeated SimpleConversation includeConvers = 3;
+  string tag = 4;
 }
 
 message QryTotalUnreadCountResp{
@@ -417,6 +479,13 @@ message UndisturbConverItem {
 
 message QryTopConversReq{
   int64 startTime = 1;
+  TopConverSortType sortType = 2;
+  int32 order = 3;
+}
+
+enum TopConverSortType{
+  ByTopTime = 0;
+  BySortTime = 1;
 }
 
 message TopConversResp{
@@ -461,13 +530,29 @@ message QryConverReq{
   string targetId = 1;
   ChannelType channelType = 2;
   bool isInner = 3;
+  repeated string userIds = 4;
 }
 
-message QryConverResp{
-  string targetId = 1;
-  ChannelType channelType = 2;
-  int64 unreadIndex = 3;
-  int32 undisturbType = 4;
+message TagConvers{
+  string tag = 1;
+  string tagName = 2;
+  repeated SimpleConversation convers = 11;
+}
+
+message UserConverTags{
+  repeated ConverTag tags = 1;
+}
+
+message ConverTag{
+  string tag = 1;
+  string tagName = 2;
+  ConverTagType tagType = 3;
+}
+
+enum ConverTagType{
+  UserConverTag = 0;
+  SystemConverTag = 1;
+  GlobalConverTag = 2;
 }
 
 //user
@@ -527,19 +612,13 @@ message BanUsersReq{
   bool isAdd = 2;
 }
 
-enum BanType {
-  Permanent = 0;
-  Temporary = 1;
-}
-
 message BanUser {
   string userId = 1;
-  BanType banType = 2;
-  int64 endTime = 3;
-  int64 createdTime = 4;
-  string scopeKey = 5;
-  string scopeValue = 6;
-  string ext = 7;
+  int64 endTime = 2;
+  int64 createdTime = 3;
+  string scopeKey = 4;
+  string scopeValue = 5;
+  string ext = 6;
 }
 
 message QryBanUsersReq{
@@ -576,8 +655,9 @@ enum OnlineType{
 }
 message OnlineStatus{
   OnlineType type = 1;
-
-  bytes extraData = 11;
+  string targetSession = 2;
+  int32 targetIndex = 3;
+  repeated string platforms = 4;
 }
 message KickUserReq {
   string userId = 1;
@@ -594,6 +674,10 @@ message UserUndisturb{
 message UserUndisturbItem {
   string start = 1;
   string end = 2;
+}
+
+message UserPushStatus{
+  bool canPush = 1;
 }
 
 //group
@@ -690,107 +774,6 @@ message QryGrpMemberSettingsResp{
   map<string,string> memberSettings = 6;
 }
 
-message QryFirstUnreadMsgReq{
-  string targetId = 1;
-  ChannelType channelType = 2;
-}
-
-// chatroom
-message SyncChatroomReq{
-  string chatroomId = 1;
-  int64 syncTime = 2;
-  int32 count = 3;
-}
-message SyncChatroomMsgResp{
-  repeated DownMsg msgs = 1;
-}
-message SyncChatroomResp{
-  DownMsgSet msgs = 1;
-  ChatAtts atts = 2;
-  bool isFinished = 3;
-}
-message ChatroomInfo{
-  string chatId = 1;
-  string chatName = 2;
-  repeated ChatroomMember members = 3;
-}
-message ChatMsgNode{
-  string nodeName = 1;
-  string method = 2;
-}
-message ChatroomMember {
-  string memberId = 1;
-  string memberName = 2;
-  int64 addedTime = 3;
-}
-message ChrmDispatchReq{
-  string chatId = 1;
-  ChrmDispatchType dispatchType = 2;
-}
-enum ChrmDispatchType{
-  CreateChatroom = 0;
-  DestroyChatroom = 1;
-}
-message ChatMembersDispatchReq{
-  string chatId = 1;
-  repeated string memberIds = 2;
-  ChatMembersDispatchType dispatchType = 3;
-}
-enum ChatMembersDispatchType {
-  DispatchDefault = 0;
-  JoinChatroom = 1;
-  QuitChatroom = 2;
-}
-message ChatAttBatchReq{
-  repeated ChatAttReq atts = 1;
-}
-message ChatAttReq{
-  string key = 1;
-  string value = 2;
-  bool isForce = 3;  //是否强制覆盖，否：则该key已有值时，不覆盖
-  bool isAutoDel = 4; //是否在该属性所有者离开房间时自动删除；否：则不自动删除；
-  UpMsg msg = 5; //设置属性时，同时发送一条聊天室消息；
-}
-message ChatAttBatchResp{
-  repeated ChatAttResp attResps = 1;
-}
-message ChatAttResp{
-  string key = 1;
-  int32 code = 2; // 设置属性时的返回码
-  int64 attTime = 3;  //属性的设置时间
-
-  //当设置属性时，附带发送消息时，下列属性有效
-  int32 msgCode = 11; // 消息发送的响应码
-  string msgId = 12;  //消息的id
-  int64 msgTime = 13; //消息的时间戳
-  int64 msgSeq = 14; //消息的序号
-}
-message SyncChatroomAttResp{
-  repeated ChatAttItem atts = 1;
-}
-message ChatAttItem{
-  string key = 1;
-  string value = 2;
-  int64 attTime = 3;
-  string userId = 4;
-  ChatAttOptType optType = 5;
-}
-enum ChatAttOptType{
-  ChatAttOpt_Default = 0;
-  ChatAttOpt_Add = 1;
-  ChatAttOpt_Del = 2;
-}
-message ChatAtts{
-  string chatId = 1;
-  repeated ChatAttItem atts = 2;
-  bool isComplete = 3;
-  bool isFinished = 4;
-}
-message QryChatroomMembersReq{
-  int32 count = 1;
-  int32 order = 2;
-}
-
 // file
 message QryFileCredReq{
   FileType fileType = 1;
@@ -811,11 +794,6 @@ message QryFileCredResp{
     PreSignResp preSignResp = 12;
   }
 }
-message UploadLogStatusReq{
-  string msgId = 1;
-  string logUrl = 2;
-  int32 state = 3;
-}
 enum OssType{
   DefaultOss = 0;
   QiNiu = 1;
@@ -832,6 +810,21 @@ message PreSignResp {
   string url = 1;
 }
 
+message UploadLogStatusReq{
+  string msgId = 1;
+  string logUrl = 2;
+  int32 state = 3;
+}
+
+//others
+message SubMsgs{
+  repeated SubMsg subMsgs = 1;
+}
+message SubMsg {
+  DownMsg msg = 1;
+  string platform = 2;
+}
+
 message OnlineOfflineMsg {
   OnlineType type = 1;
   string userId = 2;
@@ -841,88 +834,5 @@ message OnlineOfflineMsg {
   string sessionId = 6;
   int64 timestamp = 7;
   string connectionExt = 8;
-}
-
-message LogEntity {
-  oneof logOf{
-    ConnectionLog connectionLog = 11;
-    DisconnectionLog disconnectionLog = 12;
-    SdkRequestLog sdkRequestLog = 13;
-    SdkResponseLog sdkResponseLog = 14;
-    BusinessLog businessLog = 15;
-  }
-}
-
-message ConnectionLog {
-  string timestamp = 1;
-  string service_name = 2;
-  string session = 3;
-  string action = 4;
-  string appKey = 5;
-  string user_id = 6;
-  string platform = 7;
-  string push_token = 8;
-  string push_channel = 9;
-  string client_ip = 10;
-}
-
-message DisconnectionLog {
-  string timestamp = 1;
-  string service_name = 2;
-  string session = 3;
-  string action = 4;
-  string appKey = 5;
-  string user_id = 6;
-  uint32 code = 7;
-  string err = 8;
-}
-
-message SdkRequestLog {
-  string timestamp = 1;
-  string service_name = 2;
-  string session = 3;
-  uint32 index = 4;
-  string action = 5;
-  string method = 6;
-  string target_id = 7;
-  uint32 len = 8;
-  string appKey = 9;
-}
-
-message SdkResponseLog {
-  string timestamp = 1;
-  string service_name = 2;
-  string session = 3;
-  uint32 index = 4;
-  string action = 5;
-  uint32 code = 6;
-  uint32 len = 7;
-  string appKey = 9;
-}
-
-message BusinessLog {
-  string timestamp = 1;
-  string session = 2;
-  uint32 index = 3;
-  string service_name = 4;
-  string method = 5;
-  string message = 6;
-  string appKey = 9;
-}
-
-message PushSwitch{
-  int32 switch = 1;  //0：关闭；1：开启；
-}
-
-message ChrmEvent{
-  ChrmEventType eventType = 1;
-  string chatId = 2;
-  string userId = 3;
-  int64 eventTime = 4;
-}
-enum ChrmEventType{
-  Join = 0;  //加入聊天室通知
-  Quit = 1;  // 主动退出聊天室通知
-  Kick = 2;   // 踢出聊天室通知
-  Fallout = 3;  // 自动掉出聊天室通知
+  string instanceId = 9;
 }

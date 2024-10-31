@@ -28,6 +28,7 @@ class PBRcvObj {
         String msgId;
         long timestamp;
         long seqNo;
+        String clientUid;
     }
 
     static class PublishMsgBody {

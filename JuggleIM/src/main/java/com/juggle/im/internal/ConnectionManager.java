@@ -343,28 +343,30 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         openDB();
         changeStatus(JIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
 
-        NaviTask task = new NaviTask(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
-            @Override
-            public void onSuccess(String userId, List<String> servers) {
-                mCore.getSendHandler().post(() -> {
-                    JLogger.i("CON-Navi", "success, servers is " + servers);
-                    mCore.setServers(servers);
-                    connectWebSocket(token);
-                });
-            }
+        connectWebSocket(token);
 
-            @Override
-            public void onError(int errorCode) {
-                JLogger.i("CON-Navi", "fail, errorCode is " + errorCode);
-                if (checkConnectionFailure(errorCode)) {
-                    changeStatus(JIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
-                } else {
-                    changeStatus(JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
-                }
-            }
-        });
-
-        task.start();
+//        NaviTask task = new NaviTask(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
+//            @Override
+//            public void onSuccess(String userId, List<String> servers) {
+//                mCore.getSendHandler().post(() -> {
+//                    JLogger.i("CON-Navi", "success, servers is " + servers);
+//                    mCore.setServers(servers);
+//                    connectWebSocket(token);
+//                });
+//            }
+//
+//            @Override
+//            public void onError(int errorCode) {
+//                JLogger.i("CON-Navi", "fail, errorCode is " + errorCode);
+//                if (checkConnectionFailure(errorCode)) {
+//                    changeStatus(JIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
+//                } else {
+//                    changeStatus(JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
+//                }
+//            }
+//        });
+//
+//        task.start();
     }
 
     private void internalDisconnect(boolean receivePush) {

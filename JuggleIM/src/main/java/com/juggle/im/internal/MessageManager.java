@@ -358,6 +358,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return message;
         }
         if (message.getClientMsgNo() > 0) {
+            if (message.getState() == Message.MessageState.SENT) {
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
+                }
+                return message;
+            }
             if (message.getState() != Message.MessageState.SENDING) {
                 message.setState(Message.MessageState.SENDING);
                 setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
@@ -385,6 +391,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 || !(message instanceof ConcreteMessage)) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM));
+            }
+            return message;
+        }
+        if (message.getState() == Message.MessageState.SENT) {
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
             }
             return message;
         }
@@ -1744,6 +1756,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid) {
+        if (clientUid == null || TextUtils.isEmpty(clientUid)
+        || messageId == null || TextUtils.isEmpty(messageId)) {
+            return;
+        }
+        mCore.getDbManager().updateMessageAfterSendWithClientUid(clientUid, messageId, timestamp, seqNo);
+    }
+
+    @Override
     public void onChatroomJoin(String chatroomId) {
         // 确保后面会走 sync 逻辑
         long time = mChatroomManager.getSyncTimeForChatroom(chatroomId) + 1;
@@ -2278,16 +2299,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     private String createClientUid() {
-        long result = System.currentTimeMillis();
-        result = result % 1000000;
-        result = result * 1000 + mIncreaseId++;
-        return Long.toString(result);
+        return java.util.UUID.randomUUID().toString().replace("-", "");
     }
 
     private final JIMCore mCore;
     private final UserInfoManager mUserInfoManager;
     private final ChatroomManager mChatroomManager;
-    private int mIncreaseId = 0;
     private boolean mSyncProcessing = true;
     private long mCachedReceiveTime = -1;
     private long mCachedSendTime = -1;

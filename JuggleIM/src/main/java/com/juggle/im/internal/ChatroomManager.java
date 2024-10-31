@@ -35,13 +35,18 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
 
     @Override
     public void joinChatroom(String chatroomId, int prevMessageCount) {
+        joinChatroom(chatroomId, prevMessageCount, false);
+    }
+
+    @Override
+    public void joinChatroom(String chatroomId, int prevMessageCount, boolean isAutoCreate) {
         if (chatroomId == null || chatroomId.isEmpty()) {
             JLogger.e("CHRM-Join", "error chatroomId is empty");
             return;
         }
         changeStatus(chatroomId, CachedChatroom.ChatroomStatus.JOINING);
         setPrevMessageCount(chatroomId, prevMessageCount);
-        mCore.getWebSocket().joinChatroom(chatroomId, new WebSocketTimestampCallback() {
+        mCore.getWebSocket().joinChatroom(chatroomId, isAutoCreate, new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("CHRM-Join", "success");
@@ -69,7 +74,6 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
                 }
             }
         });
-
     }
 
     @Override

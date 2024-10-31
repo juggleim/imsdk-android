@@ -132,9 +132,21 @@ public interface IMessageManager {
                              MessageOptions options,
                              ISendMediaMessageCallback callback);
 
+    /**
+     * 重发消息，用于发送失败后进行重发（如果消息已经发送成功则直接返回成功回调）
+     *
+     * @param message 消息对象。
+     * @param callback 结果回调。参考 {@link ISendMessageCallback}。
+     */
     Message resendMessage(Message message,
                           ISendMessageCallback callback);
 
+    /**
+     * 重发消息，用于媒体类型消息发送失败后重发（如果消息已经发送成功则直接返回成功回调）
+     *
+     * @param message 消息对象。
+     * @param callback 结果回调。参考 {@link ISendMediaMessageCallback}。
+     */
     Message resendMediaMessage(Message message,
                                ISendMediaMessageCallback callback);
 

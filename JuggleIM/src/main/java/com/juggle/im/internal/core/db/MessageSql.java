@@ -168,7 +168,9 @@ class MessageSql {
 
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
+    static final String SQL_CREATE_CLIENT_UID_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message_client_uid ON message(client_uid)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
+    static final String SQL_GET_MESSAGE_WITH_CLIENT_UID = "SELECT * FROM message WHERE client_uid = ?";
     static final String SQL_SEARCH_MESSAGE_IN_CONVERSATIONS = "SELECT conversation_type, conversation_id, count(*) AS match_count FROM message ";
 
     static String sqlSearchMessageInConversations(MessageQueryOptions options, List<String> whereArgs) {
@@ -338,6 +340,10 @@ class MessageSql {
 
     static String sqlUpdateMessageAfterSend(int state, long clientMsgNo, long timestamp, long seqNo) {
         return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s WHERE id = %s", state, timestamp, seqNo, clientMsgNo);
+    }
+
+    static String sqlUpdateMessageAfterSendWithClientUid(int state, long timestamp, long seqNo) {
+        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s WHERE client_uid = ?", state, timestamp, seqNo);
     }
 
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_ID = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE message_uid = ?";

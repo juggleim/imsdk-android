@@ -21,6 +21,15 @@ public interface IChatroomManager {
     void joinChatroom(String chatroomId, int prevMessageCount);
 
     /**
+     * 加入聊天室
+     *
+     * @param chatroomId 聊天室 id
+     * @param prevMessageCount 加入聊天室时获取的历史消息数量
+     * @param isAutoCreate 当聊天室不存在时是否自动创建（默认不创建）
+     */
+    void joinChatroom(String chatroomId, int prevMessageCount, boolean isAutoCreate);
+
+    /**
      * 退出聊天室
      *
      * @param chatroomId 聊天室 id

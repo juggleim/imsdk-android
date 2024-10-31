@@ -352,9 +352,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void joinChatroom(String chatroomId, WebSocketTimestampCallback callback) {
+    public void joinChatroom(String chatroomId, boolean isAutoCreate, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.joinChatroom(chatroomId, mCmdIndex++);
+        byte[] bytes = mPbData.joinChatroom(chatroomId, isAutoCreate, mCmdIndex++);
         JLogger.i("WS-Send", "joinChatroom");
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
@@ -487,6 +487,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         void onChatroomMessageReceive(List<ConcreteMessage> messages);
         void onSyncNotify(long syncTime);
         void onChatroomSyncNotify(String chatroomId, long syncTime);
+        void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid);
     }
 
     public interface IWebSocketChatroomListener {
@@ -708,7 +709,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private void handlePublishAckMsg(PBRcvObj.PublishMsgAck ack) {
         JLogger.i("WS-Receive", "handlePublishAckMsg, msgId is " + ack.msgId + ", code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
-        if (c == null) return;
+        if (c == null) {
+            if (ack.code == 0) {
+                mMessageListener.onMessageSend(ack.msgId, ack.timestamp, ack.seqNo, ack.clientUid);
+            }
+            return;
+        }
         if (c instanceof SendMessageCallback) {
             SendMessageCallback callback = (SendMessageCallback) c;
             if (ack.code != 0) {

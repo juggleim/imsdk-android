@@ -314,6 +314,22 @@ public class DBManager {
         return message;
     }
 
+    private ConcreteMessage getMessageWithClientUid(String clientUid) {
+        ConcreteMessage message = null;
+        if (TextUtils.isEmpty(clientUid)) {
+            return null;
+        }
+        String[] args = new String[]{clientUid};
+        Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_CLIENT_UID, args);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                message = getMessageWithCursor(cursor);
+            }
+            cursor.close();
+        }
+        return message;
+    }
+
     private ConcreteMessage getMessageWithCursor(Cursor cursor) {
         ConcreteMessage message;
         if (cursor == null) {
@@ -532,8 +548,13 @@ public class DBManager {
             if (mDb == null) return;
             for (ConcreteMessage message : list) {
                 ConcreteMessage m = null;
+                //messageId 排重
                 if (!TextUtils.isEmpty(message.getMessageId())) {
                     m = getMessageWithMessageId(message.getMessageId());
+                }
+                //clientUid 排重
+                if (m == null && !TextUtils.isEmpty(message.getClientUid())) {
+                    m = getMessageWithClientUid(message.getClientUid());
                 }
                 if (m != null) {
                     message.setClientMsgNo(m.getClientMsgNo());
@@ -561,6 +582,12 @@ public class DBManager {
                                        long seqNo) {
         Object[] args = new Object[]{msgId};
         String sql = MessageSql.sqlUpdateMessageAfterSend(Message.MessageState.SENT.getValue(), clientMsgNo, timestamp, seqNo);
+        execSQL(sql, args);
+    }
+
+    public void updateMessageAfterSendWithClientUid(String clientUid, String messageId, long timestamp, long seqNo) {
+        Object[] args = new Object[]{messageId, clientUid};
+        String sql = MessageSql.sqlUpdateMessageAfterSendWithClientUid(Message.MessageState.SENT.getValue(), timestamp, seqNo);
         execSQL(sql, args);
     }
 
