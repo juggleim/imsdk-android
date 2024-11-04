@@ -1209,7 +1209,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
                 ConcreteMessage conversationLastMessage = (ConcreteMessage) conversationInfo.getLastMessage();
                 ConcreteMessage localListLastMessage = (ConcreteMessage) localMessages.get(localMessages.size()-1);
-                if (conversationLastMessage.getSeqNo() > localListLastMessage.getSeqNo()) {
+                if (conversationLastMessage != null && conversationLastMessage.getSeqNo() > localListLastMessage.getSeqNo()) {
                     needRemote = true;
                 }
             }
