@@ -21,6 +21,7 @@ import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.push.PushChannel;
 
+import org.java_websocket.exceptions.WebsocketNotConnectedException;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
@@ -969,14 +970,23 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private void sendWhenOpen(byte[] bytes) {
         mSendHandler.post(() -> {
             if (mWebSocketClient != null && mWebSocketClient.isOpen()) {
-                mWebSocketClient.send(bytes);
+                try {
+                    mWebSocketClient.send(bytes);
+                } catch (WebsocketNotConnectedException e) {
+                    e.printStackTrace();
+                    webSocketSendFail();
+                }
                 return;
             }
             JLogger.e("WS-Send", mWebSocketClient == null ? "mWebSocketClient is null" : "mWebSocketClient is not open");
-            pushRemainCmdAndCallbackError();
-            mConnectListener.onWebSocketClose();
+            webSocketSendFail();
         });
-    } 
+    }
+
+    private void webSocketSendFail() {
+        pushRemainCmdAndCallbackError();
+        mConnectListener.onWebSocketClose();
+    }
 
     private void resetWebSocketClient() {
         mWebSocketClient = null;
