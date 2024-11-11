@@ -1207,10 +1207,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
             if (!needRemote && options.getStartTime() == 0 && direction == JIMConst.PullDirection.OLDER) {
                 ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
-                ConcreteMessage conversationLastMessage = (ConcreteMessage) conversationInfo.getLastMessage();
-                ConcreteMessage localListLastMessage = (ConcreteMessage) localMessages.get(localMessages.size()-1);
-                if (conversationLastMessage != null && conversationLastMessage.getSeqNo() > localListLastMessage.getSeqNo()) {
-                    needRemote = true;
+                if (conversationInfo != null) {
+                    ConcreteMessage conversationLastMessage = (ConcreteMessage) conversationInfo.getLastMessage();
+                    ConcreteMessage localListLastMessage = (ConcreteMessage) localMessages.get(localMessages.size()-1);
+                    if (conversationLastMessage != null && conversationLastMessage.getSeqNo() > localListLastMessage.getSeqNo()) {
+                        needRemote = true;
+                    }
                 }
             }
         }
