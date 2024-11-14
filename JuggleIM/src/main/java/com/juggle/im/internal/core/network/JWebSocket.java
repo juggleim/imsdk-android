@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
+import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteMessage;
@@ -19,6 +20,7 @@ import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
+import com.juggle.im.model.UserInfo;
 import com.juggle.im.push.PushChannel;
 
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
@@ -83,6 +85,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public void setChatroomListener(IWebSocketChatroomListener listener) {
         mChatroomListener = listener;
+    }
+
+    public void setCallListener(IWebSocketCallListener listener) {
+        mCallListener = listener;
     }
 
     public void sendIMMessage(MessageContent content,
@@ -497,6 +503,13 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         void onChatroomDestroy(String chatroomId);
         void onChatroomQuit(String chatroomId);
         void onChatroomKick(String chatroomId);
+    }
+
+    public interface IWebSocketCallListener {
+        void onCallInvite(RtcRoom room, UserInfo inviter, List<UserInfo> targetUsers);
+        void onCallHangup(RtcRoom room, UserInfo user);
+        void onCallAccept(RtcRoom room, UserInfo user);
+        void onRoomDestroy(RtcRoom room);
     }
 
     @Override
@@ -1021,6 +1034,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private IWebSocketConnectListener mConnectListener;
     private IWebSocketMessageListener mMessageListener;
     private IWebSocketChatroomListener mChatroomListener;
+    private IWebSocketCallListener mCallListener;
     private Integer mCmdIndex = 0;
     private JWebSocketClient mWebSocketClient;
     private boolean mIsCompeteFinish;

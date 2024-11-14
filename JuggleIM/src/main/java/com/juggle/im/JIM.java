@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
 
+import com.juggle.im.call.internal.CallManager;
 import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.interfaces.IConversationManager;
@@ -120,7 +121,8 @@ public class JIM {
         mMessageManager = new MessageManager(core, mUserInfoManager, mChatroomManager);
         mConversationManager = new ConversationManager(core, mUserInfoManager, mMessageManager);
         mMessageManager.setSendReceiveListener(mConversationManager);
-        mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager, mUserInfoManager, mChatroomManager);
+        mCallManager = new CallManager(core);
+        mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager, mUserInfoManager, mChatroomManager, mCallManager);
         UploadManager uploadManager = new UploadManager(core);
         mMessageManager.setDefaultMessageUploadProvider(uploadManager);
     }
@@ -130,6 +132,7 @@ public class JIM {
     private final ChatroomManager mChatroomManager;
     private final ConversationManager mConversationManager;
     private final UserInfoManager mUserInfoManager;
+    private final CallManager mCallManager;
     private final JIMCore mCore;
 
     public static class InitConfig {

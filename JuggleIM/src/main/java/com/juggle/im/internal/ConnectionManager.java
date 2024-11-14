@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
+import com.juggle.im.call.internal.CallManager;
 import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.JWebSocket;
@@ -121,7 +122,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         }
     }
 
-    public ConnectionManager(JIMCore core, ConversationManager conversationManager, MessageManager messageManager, UserInfoManager userInfoManager, ChatroomManager chatroomManager) {
+    public ConnectionManager(JIMCore core, ConversationManager conversationManager, MessageManager messageManager, UserInfoManager userInfoManager, ChatroomManager chatroomManager, CallManager callManager) {
         this.mCore = core;
         this.mCore.setConnectionStatus(JIMCore.ConnectionStatusInternal.IDLE);
         this.mCore.getWebSocket().setConnectionListener(this);
@@ -129,6 +130,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         this.mMessageManager = messageManager;
         this.mUserInfoManager = userInfoManager;
         this.mChatroomManager = chatroomManager;
+        this.mCallManager = callManager;
     }
 
     public void init() {
@@ -424,6 +426,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     private final MessageManager mMessageManager;
     private final UserInfoManager mUserInfoManager;
     private final ChatroomManager mChatroomManager;
+    private final CallManager mCallManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
     private Timer mReconnectTimer;
     private PushChannel mPushChannel;
