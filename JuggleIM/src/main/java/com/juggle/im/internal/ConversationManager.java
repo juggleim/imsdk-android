@@ -502,6 +502,9 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void onMessageClear(Conversation conversation, long startTime, String sendUserId, ConcreteMessage lastMessage) {
+        if (startTime <= mCore.getConversationSyncTime()) {
+            return;
+        }
         updateConversationAfterClear(conversation, startTime, sendUserId, lastMessage);
     }
 
