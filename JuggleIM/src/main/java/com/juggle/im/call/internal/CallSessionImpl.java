@@ -370,6 +370,14 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
         mSessionLifeCycleListener = sessionLifeCycleListener;
     }
 
+    public String getZegoToken() {
+        return mZegoToken;
+    }
+
+    public void setZegoToken(String zegoToken) {
+        mZegoToken = zegoToken;
+    }
+
     private JIMCore mCore;
     private CallInternalConst.CallEngineType mEngineType;
     private ICallSessionLifeCycleListener mSessionLifeCycleListener;

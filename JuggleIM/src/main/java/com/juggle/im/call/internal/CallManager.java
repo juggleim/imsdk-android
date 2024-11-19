@@ -1,5 +1,6 @@
 package com.juggle.im.call.internal;
 
+import android.content.Context;
 import android.os.Message;
 import android.text.TextUtils;
 
@@ -7,6 +8,7 @@ import com.juggle.im.JIM;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.ICallManager;
 import com.juggle.im.call.ICallSession;
+import com.juggle.im.call.internal.media.CallMediaManager;
 import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.internal.core.JIMCore;
@@ -24,9 +26,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListener, ICallSessionLifeCycleListener {
     @Override
-    public void initZegoEngine(int appId) {
-
-        //todo
+    public void initZegoEngine(int appId, Context context) {
+        if (context == null) {
+            JLogger.e("Call-Init", "context is null");
+        }
+        CallMediaManager.getInstance().initZegoEngine(appId, context);
+        mEngineType = CallInternalConst.CallEngineType.ZEGO;
     }
 
     @Override

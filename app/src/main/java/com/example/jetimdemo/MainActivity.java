@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
             }
         });
         JIM.getInstance().getConnectionManager().connect(TOKEN1181);
+        JIM.getInstance().getCallManager().initZegoEngine(1881186044, this);
         JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {

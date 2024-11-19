@@ -13,6 +13,7 @@ dependencyResolutionManagement {
         maven {url 'https://developer.hihonor.com/repo'}
         maven { url 'https://developer.huawei.com/repo/' }
         maven { url "https://repo.sendbird.com/public/maven" }
+        maven { url 'https://storage.zego.im/maven' }
         google()
         mavenCentral()
     }
@@ -38,3 +39,4 @@ project(':VIVOPlugin_sdk').projectDir = new File('VIVOPlugin/sdk')
 include ':OPPOPlugin'
 include ':OPPOPlugin_sdk'
 project(':OPPOPlugin_sdk').projectDir = new File('OPPOPlugin/sdk')
+include ':JZegoCall'
