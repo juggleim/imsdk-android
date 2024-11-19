@@ -407,6 +407,60 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void callInvite(String callId, boolean isMultiCall, List<String> userIdList, int engineType, CallAuthCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.callInvite(callId, isMultiCall, userIdList, engineType, mCmdIndex++);
+        JLogger.i("WS-Send", "call invite, callId is " + callId + ", isMultiCall is " + isMultiCall);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void callHangup(String callId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.callHangup(callId, mCmdIndex++);
+        JLogger.i("WS-Send", "call hangup, callId is " + callId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void callAccept(String callId, CallAuthCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.callAccept(callId, mCmdIndex++);
+        JLogger.i("WS-Send", "call accept, callId is " + callId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void callConnected(String callId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.callConnected(callId, mCmdIndex++);
+        JLogger.i("WS-Send", "call connected, callId is " + callId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void queryCallRooms(String userId, RtcRoomListCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.queryCallRooms(userId, mCmdIndex++);
+        JLogger.i("WS-Send", "query call rooms");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void queryCallRoom(String roomId, RtcRoomListCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.queryCallRoom(roomId, mCmdIndex++);
+        JLogger.i("WS-Send", "query call room");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void rtcPing(String callId) {
+        JLogger.v("WS-Send", "rtc ping");
+        byte[] bytes = mPbData.rtcPingData(callId, mCmdIndex++);
+        sendWhenOpen(bytes);
+    }
+
     public void startHeartbeat() {
         mHeartbeatManager.start(false);
     }
@@ -471,6 +525,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof UpdateChatroomAttrCallback) {
             UpdateChatroomAttrCallback sCallback = (UpdateChatroomAttrCallback) callback;
             sCallback.onComplete(errorCode, null);
+        } else if (callback instanceof CallAuthCallback) {
+            CallAuthCallback sCallback = (CallAuthCallback) callback;
+            sCallback.onError(errorCode);
+        } else if (callback instanceof RtcRoomListCallback) {
+            RtcRoomListCallback sCallback = (RtcRoomListCallback) callback;
+            sCallback.onError(errorCode);
         }
     }
 
@@ -618,6 +678,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 break;
             case PBRcvObj.PBRcvType.chatroomEventNtf:
                 handleChatroomEventNtf(obj.mPublishMsgNtf);
+                break;
+            case PBRcvObj.PBRcvType.rtcRoomEventNtf:
+                handleRtcRoomEventNtf(obj.mRtcRoomEventNtf);
+                break;
+            case PBRcvObj.PBRcvType.rtcInviteEventNtf:
+                handleRtcInviteEventNtf(obj.mRtcInviteEventNtf);
+                break;
+            case PBRcvObj.PBRcvType.callAuthAck:
+                handleRtcInviteAck(obj.mCallInviteAck);
+                break;
+            case PBRcvObj.PBRcvType.qryCallRoomsAck:
+                handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
+                break;
+            case PBRcvObj.PBRcvType.qryCallRoomAck:
+                //复用 mRtcQryCallRoomsAck
+                handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -838,6 +914,80 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
+    private void handleRtcRoomEventNtf(PBRcvObj.RtcRoomEventNtf ntf) {
+        JLogger.i("Call-RmEvent", "type is " + ntf.eventType);
+        switch (ntf.eventType) {
+            case DESTROY:
+                if (mCallListener != null) {
+                    mCallListener.onRoomDestroy(ntf.room);
+                }
+                break;
+
+            //todo
+
+            default:
+                break;
+        }
+    }
+
+    private void handleRtcInviteEventNtf(PBRcvObj.RtcInviteEventNtf ntf) {
+        JLogger.i("WS-Receive", "handleRtcInviteEventNtf");
+        switch (ntf.type) {
+            case INVITE:
+                if (mCallListener != null) {
+                    mCallListener.onCallInvite(ntf.room, ntf.user, ntf.targetUsers);
+                }
+                break;
+
+            case HANGUP:
+                if (mCallListener != null) {
+                    mCallListener.onCallHangup(ntf.room, ntf.user);
+                }
+                break;
+
+            case ACCEPT:
+                if (mCallListener != null) {
+                    mCallListener.onCallAccept(ntf.room, ntf.user);
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void handleRtcInviteAck(PBRcvObj.CallAuthAck ack) {
+        JLogger.i("WS-Receive", "handleRtcInviteAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof CallAuthCallback) {
+            CallAuthCallback callback = (CallAuthCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.zegoToken);
+            }
+        }
+    }
+
+    private void handleRtcQryCallRoomsAck(PBRcvObj.RtcQryCallRoomsAck ack) {
+        JLogger.i("WS-Receive", "handleRtcQryCallRoomsAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof RtcRoomListCallback) {
+            RtcRoomListCallback callback = (RtcRoomListCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.rooms);
+            }
+        }
+    }
+
     private void handleReceiveMessage(PBRcvObj.PublishMsgBody body) {
         JLogger.i("WS-Receive", "handleReceiveMessage");
         boolean needAck = false;
@@ -1046,5 +1196,4 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private static final String WSS_HEAD_PREFIX = "wss://";
     private static final String WEB_SOCKET_SUFFIX = "/im";
     private static final int MAX_CONCURRENT_COUNT = 5;
-
 }

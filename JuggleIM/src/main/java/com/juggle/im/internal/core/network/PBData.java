@@ -2,6 +2,8 @@ package com.juggle.im.internal.core.network;
 
 import static com.juggle.im.internal.ConstInternal.SDK_VERSION;
 
+import static app_messages.Rtcroom.RtcState.RtcConnected;
+
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -9,6 +11,9 @@ import androidx.annotation.NonNull;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.juggle.im.JIMConst;
+import com.juggle.im.call.CallConst;
+import com.juggle.im.call.internal.model.RtcRoom;
+import com.juggle.im.call.model.CallMember;
 import com.juggle.im.internal.ContentTypeCenter;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
@@ -43,6 +48,7 @@ import app_messages.Appmessages;
 import app_messages.Chatroom;
 import app_messages.Connect;
 import app_messages.Pushtoken;
+import app_messages.Rtcroom;
 
 class PBData {
     void resetDataConverter() {
@@ -726,6 +732,100 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] callInvite(String callId, boolean isMultiCall, List<String> userIdList, int engineType, int index) {
+        Rtcroom.RtcInviteReq.Builder builder = Rtcroom.RtcInviteReq.newBuilder();
+        if (isMultiCall) {
+            builder.setRoomType(Rtcroom.RtcRoomType.OneMore);
+        } else {
+            builder.setRoomType(Rtcroom.RtcRoomType.OneOne);
+        }
+        builder.addAllTargetIds(userIdList);
+        builder.setRoomId(callId);
+        builder.setRtcChannelValue(engineType);
+        Rtcroom.RtcInviteReq req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RTC_INVITE)
+                .setTargetId(callId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] callHangup(String callId, int index) {
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RTC_HANGUP)
+                .setTargetId(callId)
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] callAccept(String callId, int index) {
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RTC_ACCEPT)
+                .setTargetId(callId)
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] callConnected(String callId, int index) {
+        Rtcroom.RtcMember member = Rtcroom.RtcMember.newBuilder()
+                .setRtcState(RtcConnected)
+                .build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RTC_UPD_STATE)
+                .setTargetId(callId)
+                .setData(member.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] queryCallRooms(String userId, int index) {
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RTC_MEMBER_ROOMS)
+                .setTargetId(userId)
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] queryCallRoom(String roomId, int index) {
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RTC_QRY)
+                .setTargetId(roomId)
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] rtcPingData(String callId, int index) {
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RTC_PING)
+                .setTargetId(callId)
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] syncChatroomMessages(String chatroomId, long syncTime, int prevMessageCount, int index) {
         Chatroom.SyncChatroomReq req = Chatroom.SyncChatroomReq.newBuilder()
                 .setChatroomId(chatroomId)
@@ -967,6 +1067,18 @@ class PBData {
                         case PBRcvObj.PBRcvType.syncChatroomAttrsAck:
                             obj = syncChatroomAttrsAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
+                        case PBRcvObj.PBRcvType.callAuthAck:
+                            obj = callInviteAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.rtcPingAck:
+                            obj.setRcvType(PBRcvObj.PBRcvType.rtcPingAck);
+                            break;
+                        case PBRcvObj.PBRcvType.qryCallRoomsAck:
+                            obj = qryCallRoomsAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.qryCallRoomAck:
+                            obj = qryCallRoomAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
                         default:
                             break;
                     }
@@ -1006,7 +1118,6 @@ class PBData {
                         body.rcvMessage = messageWithDownMsg(downMsg);
                         body.index = publishMsgBody.getIndex();
                         body.qos = msg.getQos();
-
                         obj.setRcvType(PBRcvObj.PBRcvType.publishMsg);
                         obj.mPublishMsgBody = body;
                     } else if (publishMsgBody.getTopic().equals(C_USER_NTF)) {
@@ -1016,6 +1127,28 @@ class PBData {
                         n.chatroomId = event.getChatId();
                         n.type = PBRcvObj.PBChatroomEventType.setValue(event.getEventType().getNumber());
                         obj.mPublishMsgNtf = n;
+                    } else if (publishMsgBody.getTopic().equals(RTC_ROOM_EVENT)) {
+                        Rtcroom.RtcRoomEvent event = Rtcroom.RtcRoomEvent.parseFrom(publishMsgBody.getData());
+                        obj.setRcvType(PBRcvObj.PBRcvType.rtcRoomEventNtf);
+                        PBRcvObj.RtcRoomEventNtf n = new PBRcvObj.RtcRoomEventNtf();
+                        n.eventType = PBRcvObj.PBRtcRoomEventType.setValue(event.getRoomEventTypeValue());
+                        n.member = callMemberWithPBRtcMember(event.getMember());
+                        n.room = rtcRoomWithPBRtcRoom(event.getRoom());
+                        obj.mRtcRoomEventNtf = n;
+                    } else if (publishMsgBody.getTopic().equals(RTC_INVITE_EVENT)) {
+                        Rtcroom.RtcInviteEvent event = Rtcroom.RtcInviteEvent.parseFrom(publishMsgBody.getData());
+                        obj.setRcvType(PBRcvObj.PBRcvType.rtcInviteEventNtf);
+                        PBRcvObj.RtcInviteEventNtf n = new PBRcvObj.RtcInviteEventNtf();
+                        n.type = PBRcvObj.PBRtcInviteType.setValue(event.getInviteTypeValue());
+                        n.user = userInfoWithPBUserInfo(event.getUser());
+                        n.room = rtcRoomWithPBRtcRoom(event.getRoom());
+                        List<UserInfo> targetUserList = new ArrayList<>();
+                        for (Appmessages.UserInfo pbUserInfo : event.getTargetUsersList()) {
+                            UserInfo u = userInfoWithPBUserInfo(pbUserInfo);
+                            targetUserList.add(u);
+                        }
+                        n.targetUsers = targetUserList;
+                        obj.mRtcInviteEventNtf = n;
                     }
                     break;
 
@@ -1125,6 +1258,60 @@ class PBData {
         }
         a.items = list;
         obj.mChatroomAttrsAck = a;
+        return obj;
+    }
+
+    private PBRcvObj callInviteAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Rtcroom.RtcAuth rtcAuth = Rtcroom.RtcAuth.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.callAuthAck);
+        PBRcvObj.CallAuthAck a = new PBRcvObj.CallAuthAck(body);
+        Rtcroom.ZegoAuth zegoAuth = rtcAuth.getZegoAuth();
+        a.zegoToken = zegoAuth.getToken();
+        obj.mCallInviteAck = a;
+        return obj;
+    }
+
+    private PBRcvObj qryCallRoomsAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Rtcroom.RtcMemberRooms rooms = Rtcroom.RtcMemberRooms.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.qryCallRoomsAck);
+        List<RtcRoom> outRooms = new ArrayList<>();
+        if (rooms.getRoomsCount() > 0) {
+            for (Rtcroom.RtcMemberRoom room : rooms.getRoomsList()) {
+                RtcRoom outRoom = new RtcRoom();
+                outRoom.setRoomId(room.getRoomId());
+                outRoom.setDeviceId(room.getDeviceId());
+                outRoom.setCallStatus(CallConst.CallStatus.setValue(room.getRtcStateValue()));
+                outRooms.add(outRoom);
+            }
+        }
+        PBRcvObj.RtcQryCallRoomsAck a = new PBRcvObj.RtcQryCallRoomsAck(body);
+        a.rooms = outRooms;
+        obj.mRtcQryCallRoomsAck = a;
+        return obj;
+    }
+
+    private PBRcvObj qryCallRoomAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Rtcroom.RtcRoom room = Rtcroom.RtcRoom.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.qryCallRoomAck);
+        List<RtcRoom> outRooms = new ArrayList<>();
+        RtcRoom outRoom = new RtcRoom();
+        outRoom.setMultiCall(room.getRoomType() == Rtcroom.RtcRoomType.OneMore);
+        outRoom.setRoomId(room.getRoomId());
+        outRoom.setOwner(userInfoWithPBUserInfo(room.getOwner()));
+        List<CallMember> members = new ArrayList<>();
+        for (Rtcroom.RtcMember member : room.getMembersList()) {
+            CallMember outMember = callMemberWithPBRtcMember(member);
+            members.add(outMember);
+        }
+        outRoom.setMembers(members);
+        outRooms.add(outRoom);
+        //共用 RtcQryCallRoomsAck
+        PBRcvObj.RtcQryCallRoomsAck a = new PBRcvObj.RtcQryCallRoomsAck(body);
+        a.rooms = outRooms;
+        obj.mRtcQryCallRoomsAck = a;
         return obj;
     }
 
@@ -1445,6 +1632,31 @@ class PBData {
         return info;
     }
 
+    private CallMember callMemberWithPBRtcMember(Rtcroom.RtcMember pbMember) {
+        if (pbMember == null) {
+            return null;
+        }
+        CallMember result = new CallMember();
+        result.setUserInfo(userInfoWithPBUserInfo(pbMember.getMember()));
+        result.setCallStatus(CallConst.CallStatus.setValue(pbMember.getRtcStateValue()));
+        result.setStartTime(pbMember.getCallTime());
+        result.setConnectTime(pbMember.getConnectTime());
+        result.setFinishTime(pbMember.getHangupTime());
+        result.setInviter(userInfoWithPBUserInfo(pbMember.getInviter()));
+        return result;
+    }
+
+    private RtcRoom rtcRoomWithPBRtcRoom(Rtcroom.RtcRoom pbRoom) {
+        if (pbRoom == null) {
+            return null;
+        }
+        RtcRoom result = new RtcRoom();
+        result.setRoomId(pbRoom.getRoomId());
+        result.setOwner(userInfoWithPBUserInfo(pbRoom.getOwner()));
+        result.setMultiCall(pbRoom.getRoomType() == Rtcroom.RtcRoomType.OneMore);
+        return result;
+    }
+
     private UserInfo userInfoWithMemberReadDetailItem(Appmessages.MemberReadDetailItem item) {
         UserInfo userInfo = new UserInfo();
         userInfo.setUserId(item.getMember().getUserId());
@@ -1700,6 +1912,14 @@ class PBData {
     private static final String C_QUIT = "c_quit";
     private static final String PUSH_SWITCH = "push_switch";
     private static final String UPLOAD_LOG_STATUS = "upd_log_state";
+    private static final String RTC_INVITE = "rtc_invite";
+    private static final String RTC_HANGUP = "rtc_hangup";
+    private static final String RTC_ACCEPT = "rtc_accept";
+    private static final String RTC_QUIT = "rtc_quit";
+    private static final String RTC_UPD_STATE = "rtc_upd_state";
+    private static final String RTC_MEMBER_ROOMS = "rtc_member_rooms";
+    private static final String RTC_QRY = "rtc_qry";
+    private static final String RTC_PING = "rtc_ping";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
@@ -1707,6 +1927,9 @@ class PBData {
     private static final String NTF = "ntf";
     private static final String MSG = "msg";
     private static final String C_USER_NTF = "c_user_ntf";
+    private static final String RTC_ROOM_EVENT = "rtc_room_event";
+    private static final String RTC_INVITE_EVENT = "rtc_invite_event";
+
     private static final HashMap<String, Integer> sCmdAckMap = new HashMap<String, Integer>() {
         {
             put(QRY_HIS_MSG, PBRcvObj.PBRcvType.qryHisMessagesAck);
@@ -1741,6 +1964,13 @@ class PBData {
             put(BATCH_ADD_ATT, PBRcvObj.PBRcvType.setChatroomAttrAck);
             put(SYNC_CHATROOM_ATTS, PBRcvObj.PBRcvType.syncChatroomAttrsAck);
             put(BATCH_DEL_ATT, PBRcvObj.PBRcvType.removeChatroomAttrAck);
+            put(RTC_INVITE, PBRcvObj.PBRcvType.callAuthAck);
+            put(RTC_HANGUP, PBRcvObj.PBRcvType.simpleQryAck);
+            put(RTC_ACCEPT, PBRcvObj.PBRcvType.callAuthAck);
+            put(RTC_UPD_STATE, PBRcvObj.PBRcvType.simpleQryAck);
+            put(RTC_PING, PBRcvObj.PBRcvType.rtcPingAck);
+            put(RTC_MEMBER_ROOMS, PBRcvObj.PBRcvType.qryCallRoomsAck);
+            put(RTC_QRY, PBRcvObj.PBRcvType.qryCallRoomAck);
         }
     };
 

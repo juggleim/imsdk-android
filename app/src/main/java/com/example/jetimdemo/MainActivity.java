@@ -81,22 +81,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "CYXf6GNeM");
-                            List list = JIM.getInstance().getMessageManager().getMessages(c, 10, 0, JIMConst.PullDirection.OLDER);
-                            int i =1;
-                            List<Long> msgNos = new ArrayList<>();
-                            msgNos.add(350L);
-                            JIM.getInstance().getMessageManager().deleteMessagesByClientMsgNoList(c, msgNos, new IMessageManager.ISimpleCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    int i = 1;
-                                }
-
-                                @Override
-                                public void onError(int errorCode) {
-                                    int i = 1;
-                                }
-                            });
+                            JIM.getInstance().getCallManager().startSingleCall("asdfsadf", null);
 
 
 

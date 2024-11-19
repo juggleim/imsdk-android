@@ -17,6 +17,7 @@ public interface ICallSession {
     }
 
     void addListener(String key, ICallSessionListener listener);
+    void removeListener(String key);
 
     // 接听来电
     void accept();

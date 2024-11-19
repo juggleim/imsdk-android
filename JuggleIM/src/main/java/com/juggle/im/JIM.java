@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
 
+import com.juggle.im.call.ICallManager;
 import com.juggle.im.call.internal.CallManager;
 import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IConnectionManager;
@@ -99,6 +100,10 @@ public class JIM {
 
     public IUserInfoManager getUserInfoManager() {
         return mUserInfoManager;
+    }
+
+    public ICallManager getCallManager() {
+        return mCallManager;
     }
 
     public String getCurrentUserId() {

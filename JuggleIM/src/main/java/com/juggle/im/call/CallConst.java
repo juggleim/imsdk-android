@@ -13,14 +13,23 @@ public class CallConst {
         CONNECTING(3),
         // 连接成功
         CONNECTED(4);
-        private final int status;
+        private final int mValue;
 
-        CallStatus(int status) {
-            this.status = status;
+        CallStatus(int value) {
+            this.mValue = value;
         }
 
         int getStatus() {
-            return this.status;
+            return this.mValue;
+        }
+
+        public static CallStatus setValue(int value) {
+            for (CallStatus t : CallStatus.values()) {
+                if (value == t.mValue) {
+                    return t;
+                }
+            }
+            return IDLE;
         }
     }
 
@@ -67,7 +76,7 @@ public class CallConst {
         SUCCESS(0),
         CALL_EXIST(1),
         CANT_ACCEPT_WHILE_NOT_INVITED(2),
-        ACCEPT_ERROR(3),
+        ACCEPT_FAIL(3),
         JOIN_MEDIA_ROOM_FAIL(4);
         private final int value;
 
