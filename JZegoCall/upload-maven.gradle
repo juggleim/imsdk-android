@@ -11,11 +11,11 @@ afterEvaluate {
                 // Applies the component for the release build variant.
                 from components.release
                 // You can then customize attributes of the publication as shown below.
-                groupId = 'com.juggle.call.test'
+                groupId = 'com.juggle.call.zego'
                 artifactId = 'juggle'
                 version = '1.8.0'
                 pom {
-                    name = 'JuggleCall'
+                    name = 'JuggleCallZego'
                     description = 'JuggleCall Android SDK'
                     licenses {
                         license {
