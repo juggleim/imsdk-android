@@ -12,6 +12,7 @@ import com.juggle.chat.utils.ToastUtils
 import com.juggle.im.JIM
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.adapter.SendbirdUIKitAdapter
+import com.jet.im.kit.call.CallCenter
 import com.jet.im.kit.consts.ReplyType
 import com.jet.im.kit.consts.ThreadReplySelectType
 import com.jet.im.kit.consts.TypingIndicatorType
@@ -125,6 +126,7 @@ class BaseApplication : MultiDexApplication() {
         val logConfig = JLogConfig.Builder(this).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).setLogWriteLevel(JLogLevel.JLogLevelVerbose).build()
         val initConfig = InitConfig.Builder().setJLogConfig(logConfig).build()
         JIM.getInstance().init(this, "nsw3sue72begyv7y", initConfig)
+        CallCenter.getInstance().initZegoEngine(1881186044, this)
         // setup uikit configurations
         HttpsURLConnection.setDefaultSSLSocketFactory(SSLHelper.getTrustAllSSLSocketFactory())
         HttpsURLConnection.setDefaultHostnameVerifier(object :HostnameVerifier{

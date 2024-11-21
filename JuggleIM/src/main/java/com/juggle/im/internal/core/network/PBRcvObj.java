@@ -1,5 +1,7 @@
 package com.juggle.im.internal.core.network;
 
+import com.juggle.im.call.internal.model.RtcRoom;
+import com.juggle.im.call.model.CallMember;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
@@ -127,10 +129,37 @@ class PBRcvObj {
         }
     }
 
+    static class CallAuthAck extends QryAck {
+        String zegoToken;
+        CallAuthAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
+    static class RtcQryCallRoomsAck extends QryAck {
+        List<RtcRoom> rooms;
+        RtcQryCallRoomsAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
     static class PublishMsgNtf {
         long syncTime;
         String chatroomId;
         PBChatroomEventType type;
+    }
+
+    static class RtcInviteEventNtf {
+        PBRtcInviteType type;
+        UserInfo user;
+        RtcRoom room;
+        List<UserInfo> targetUsers;
+    }
+
+    static class RtcRoomEventNtf {
+        PBRtcRoomEventType eventType;
+        CallMember member;
+        RtcRoom room;
     }
 
     static class DisconnectMsg {
@@ -167,6 +196,12 @@ class PBRcvObj {
         static final int removeChatroomAttrAck = 24;
         static final int chatroomDestroyNtf = 25;
         static final int chatroomEventNtf = 26;
+        static final int rtcRoomEventNtf = 27;
+        static final int rtcInviteEventNtf = 28;
+        static final int callAuthAck = 29;
+        static final int rtcPingAck = 30;
+        static final int qryCallRoomsAck = 31;
+        static final int qryCallRoomAck = 32;
     }
 
     public enum PBChatroomEventType {
@@ -188,6 +223,50 @@ class PBRcvObj {
                 }
             }
             return JOIN;
+        }
+        private final int mValue;
+    }
+
+    public enum PBRtcInviteType {
+        INVITE(0),
+        ACCEPT(1),
+        HANGUP(2);
+        PBRtcInviteType(int value) {
+            this.mValue = value;
+        }
+        public int getValue() {
+            return mValue;
+        }
+        public static PBRtcInviteType setValue(int value) {
+            for (PBRtcInviteType t : PBRtcInviteType.values()) {
+                if (value == t.mValue) {
+                    return t;
+                }
+            }
+            return INVITE;
+        }
+        private final int mValue;
+    }
+
+    public enum PBRtcRoomEventType {
+        DEFAULT(0),
+        JOIN(1),
+        QUIT(2),
+        DESTROY(3),
+        STATE_CHANGE(4);
+        PBRtcRoomEventType(int value) {
+            this.mValue = value;
+        }
+        public int getValue() {
+            return mValue;
+        }
+        public static PBRtcRoomEventType setValue(int value) {
+            for (PBRtcRoomEventType t : PBRtcRoomEventType.values()) {
+                if (value == t.mValue) {
+                    return t;
+                }
+            }
+            return DEFAULT;
         }
         private final int mValue;
     }
@@ -214,6 +293,11 @@ class PBRcvObj {
     ConversationInfoAck mConversationInfoAck;
     GlobalMuteAck mGlobalMuteAck;
     ChatroomAttrsAck mChatroomAttrsAck;
+    RtcRoomEventNtf mRtcRoomEventNtf;
+    RtcInviteEventNtf mRtcInviteEventNtf;
+    CallAuthAck mCallInviteAck;
+    RtcQryCallRoomsAck mRtcQryCallRoomsAck;
+
     private int mRcvType;
 }
 

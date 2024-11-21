@@ -40,6 +40,7 @@
     <string name="sb_text_channel_input_take_video">Take video</string>
     <string name="sb_text_channel_input_gallery">Gallery</string>
     <string name="sb_text_channel_input_document">Document</string>
+    <string name="sb_text_channel_input_voice_call">Voice call</string>
     <string name="sb_text_channel_typing_indicator_single">%s is typing&#8230;</string>
     <string name="sb_text_channel_typing_indicator_double">%s and %s are typing&#8230;</string>
     <string name="sb_text_channel_typing_indicator_multiple">Several people are typing&#8230;</string>
@@ -230,4 +231,77 @@
     <string name="sb_forms_invalid_form_field">Please check the value</string>
     <string name="sb_forms_submit_failed">Submit failed</string>
     <string name="sb_forms_optional">(optional)</string>
+
+    <string name="callkit_selected_contacts_count">%d contact(s) selected</string>
+    <string name="callkit_voip_ok">OK</string>
+    <string name="rc_voip_video">Video Call</string>
+    <string name="rc_voip_audio">Voice Call</string>
+    <string name="rc_voip_call_waiting">Waiting for response...</string>
+    <string name="rc_voip_call_connecting">Connecting</string>
+    <string name="rc_voip_call_busy">Busy line</string>
+    <string name="rc_voip_call_no_response">No answer</string>
+    <string name="rc_voip_call_hangup">Cancelled</string>
+    <string name="rc_voip_call_network_error">Network connection is not reachable, please check it</string>
+    <string name="rc_voip_call_interrupt">Cancelled</string>
+    <string name="rc_voip_call_terminalted">Call ended</string>
+    <string name="rc_voip_call_started">Call started</string>
+    <string name="rc_voip_select_member">Select members</string>
+    <string name="rc_voip_call_audio_start_fail">Voice call is on. Try again later.</string>
+    <string name="rc_voip_call_video_start_fail">Video call is on. Try again later.</string>
+    <string name="rc_voip_call_other">Other devices have been answered</string>
+
+    <string name="rc_voip_audio_call_inviting">Invites you to voice call</string>
+    <string name="rc_voip_video_call_inviting">Invites you to video call</string>
+
+    <string name="rc_voip_notificatio_video_call_inviting">Invites you to video call</string>
+    <string name="rc_voip_notificatio_audio_call_inviting">Invites you to voice call</string>
+    <string name="rc_voip_notificatio_audio_call_inviting_general">You\'ve got a voice chat invitation</string>
+    <string name="rc_voip_notificatio_video_call_inviting_general">You\'ve got a video chat invitation</string>
+
+
+    <string name="rc_voip_video_ended">Video call ended</string>
+    <string name="rc_voip_video_no_response">Video call no answer</string>
+    <string name="rc_voip_audio_ended">Voice call ended</string>
+    <string name="rc_voip_audio_no_response">Voice call no answer</string>
+    <string name="rc_voip_mute">Mute</string>
+    <string name="rc_voip_hangup">Hang up</string>
+    <string name="rc_voip_answer">Accept</string>
+    <string name="rc_voip_camera">Camera</string>
+    <string name="rc_voip_handfree">Speaker</string>
+    <string name="rc_voip_disable_camera">Turn off camera</string>
+    <string name="rc_voip_enable_camera">Turn on camera</string>
+    <string name="rc_voip_participant_users">Members</string>
+    <string name="rc_voip_mo_cancel">Cancelled</string>
+    <string name="rc_voip_mo_reject">Declined</string>
+    <string name="rc_voip_mo_no_response">No answer</string>
+    <string name="rc_voip_mt_cancel">Cancelled</string>
+    <string name="rc_voip_mt_reject">Declined</string>
+    <string name="rc_voip_mt_no_response">No answer</string>
+    <string name="rc_voip_call_time_length">Duration&#160;</string>
+    <string name="rc_voip_mt_busy">The other user may be busy now.</string>
+    <string name="rc_voip_message_audio">[Voice Call]</string>
+    <string name="rc_voip_message_video">[Video Call]</string>
+    <string name="rc_voip_switch_to_audio">Switch to voice call</string>
+    <string name="rc_voip_remote_switched_to_audio">Other user switched to voice call.</string>
+    <string name="rc_voip_switched_to_audio">Switch to voice call</string>
+    <string name="rc_voip_float_window_not_allowed">Please enable floating windows</string>
+    <string name="rc_call_on_going">Call in progress</string>
+    <string name="rc_audio_call_on_going">Tap to continue as voice call in progress</string>
+    <string name="rc_video_call_on_going">Tap to continue as video call is on</string>
+    <string name="rc_voip_over_limit">Up to %d members</string>
+    <string name="rc_voip_connecting">Connecting...</string>
+    <string name="rc_voip_unstable_call_connection">Unstable call connection</string>
+    <string name="rc_voip_add_member">Select Members</string>
+
+    <string name="rc_select_contact">Select contacts</string>
+    <string name="rc_search">Search</string>
+    <string name="rc_background_start_actvity_deny">Your system turned off \"Display pop-up windows while running in the background\" permission,
+Please turn it on in the application permission management page of \"Settings\"</string>
+
+    <string name="rc_voip_audio_refuse">Voice call rejected</string>
+    <string name="rc_voip_video_refuse">Video call rejected</string>
+    <string name="rc_dialog_cancel">Cancel</string>
+    <string name="rc_dialog_ok">OK</string>
+    <string name="rc_voip_cancel">Cancel</string>
+    <string name="rc_voip_ok">Confirm</string>
 </resources>

@@ -72,7 +72,7 @@ public class JUtility {
         if (sp != null) {
             deviceId = sp.getString(UUID, "");
         }
-        if (deviceId.length() == 0) {
+        if (deviceId.isEmpty()) {
             deviceId = java.util.UUID.randomUUID().toString().replace("-", "");
             if (sp != null) {
                 sp.edit().putString(UUID, deviceId).apply();
@@ -127,6 +127,9 @@ public class JUtility {
         }
     }
 
+    public static String getUUID() {
+        return java.util.UUID.randomUUID().toString().replace("-", "");
+    }
 
     /**
      * 获取系统属性

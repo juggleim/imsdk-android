@@ -30,6 +30,7 @@ public class JetIMApp extends Application {
                 .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build())
                 .build();
         JIM.getInstance().init(this, "nsw3sue72begyv7y", initConfig);
+        JIM.getInstance().getCallManager().initZegoEngine(1881186044, this);
 //        try {
 //            TrustManager[] trustAllCerts = new TrustManager[]{
 //                    new X509TrustManager() {
