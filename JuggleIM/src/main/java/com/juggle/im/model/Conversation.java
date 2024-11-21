@@ -8,7 +8,9 @@ public class Conversation {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Conversation)) {
+            return false;
+        }
         Conversation that = (Conversation) o;
         return Objects.equals(mConversationId, that.mConversationId) && mConversationType == that.mConversationType;
     }

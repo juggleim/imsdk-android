@@ -933,6 +933,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void recallMessage(String messageId, Map<String, String> extras, IRecallMessageCallback callback) {
+        if (messageId == null || messageId.isEmpty()) {
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+
         List<String> idList = new ArrayList<>(1);
         idList.add(messageId);
         List<Message> messages = getMessagesByMessageIds(idList);
@@ -1207,10 +1214,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
             if (!needRemote && options.getStartTime() == 0 && direction == JIMConst.PullDirection.OLDER) {
                 ConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
-                ConcreteMessage conversationLastMessage = (ConcreteMessage) conversationInfo.getLastMessage();
-                ConcreteMessage localListLastMessage = (ConcreteMessage) localMessages.get(localMessages.size()-1);
-                if (conversationLastMessage.getSeqNo() > localListLastMessage.getSeqNo()) {
-                    needRemote = true;
+                if (conversationInfo != null) {
+                    ConcreteMessage conversationLastMessage = (ConcreteMessage) conversationInfo.getLastMessage();
+                    ConcreteMessage localListLastMessage = (ConcreteMessage) localMessages.get(localMessages.size()-1);
+                    if (conversationLastMessage != null && conversationLastMessage.getSeqNo() > localListLastMessage.getSeqNo()) {
+                        needRemote = true;
+                    }
                 }
             }
         }

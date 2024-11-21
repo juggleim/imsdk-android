@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace 'com.juggle.chat'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.juggle.chat"
         minSdk 21
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -48,6 +48,7 @@ dependencies {
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
 
     api project (':GooglePlugin')
+    api project (":JZegoCall")
 
     implementation 'com.github.bumptech.glide:glide:4.13.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.13.0'
@@ -58,4 +59,6 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    implementation('im.zego:express-video:3.17.3')
 }
