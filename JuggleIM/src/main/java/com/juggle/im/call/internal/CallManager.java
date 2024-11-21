@@ -284,6 +284,10 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         return null;
     }
 
+    public ICallSession getCallSession(String callId) {
+        return getCallSessionImpl(callId);
+    }
+
     private void addCallSession(CallSessionImpl callSession) {
         synchronized (this) {
             mCallSessionList.add(callSession);

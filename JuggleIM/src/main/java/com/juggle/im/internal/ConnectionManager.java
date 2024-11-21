@@ -146,6 +146,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
             mMessageManager.connectSuccess();
             mConversationManager.connectSuccess();
             mChatroomManager.connectSuccess();
+            mCallManager.connectSuccess();
             changeStatus(JIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
             mConversationManager.syncConversations(mMessageManager::syncMessage);
             PushManager.getInstance().getToken(mCore.getContext());

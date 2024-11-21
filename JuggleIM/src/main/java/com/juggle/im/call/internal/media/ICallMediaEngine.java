@@ -9,4 +9,6 @@ public interface ICallMediaEngine {
     void muteMicrophone(boolean isMute);
 
     void muteSpeaker(boolean isMute);
+
+    void setSpeakerEnable(boolean isEnable);
 }

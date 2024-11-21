@@ -35,4 +35,8 @@
     <color name="ondark_04">#1effffff</color>
     <color name="information">#adc9ff</color>
     <color name="highlight">#fff2b6</color>
+
+
+    <color name="rc_voice_color">#0195ff</color>
+    <color name="callkit_groupchatmembers">#72767B</color>
 </resources>

@@ -56,5 +56,5 @@ public class CallConnectedState extends CallState {
     }
 
     private Timer mPingTimer;
-    private static final int PING_INTERVAL = 5;
+    private static final int PING_INTERVAL = 5*1000;
 }

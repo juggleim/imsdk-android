@@ -119,6 +119,6 @@ public class CallIncomingState extends CallState {
     }
 
     private Timer mIncomingTimer;
-    private static final int HANGUP_INTERVAL = 1;
-    private static final int INCOMING_INTERVAL = 60;
+    private static final int HANGUP_INTERVAL = 500;
+    private static final int INCOMING_INTERVAL = 60*1000;
 }

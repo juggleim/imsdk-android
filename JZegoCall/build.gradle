@@ -1,10 +1,10 @@
 plugins {
     id 'com.android.library'
 }
-
+apply from: './upload-maven.gradle'
 android {
     namespace 'com.j.im.jzegocall'
-    compileSdk 34
+    compileSdk 33
 
     defaultConfig {
         minSdk 21
@@ -23,6 +23,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    publishing {
+        // Publishes "fullRelease" build variant with "fullRelease" component created by
+        // Android Gradle plugin
+        singleVariant("release")
+    }
 }
 
 dependencies {
@@ -33,5 +38,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     api project(':JuggleIM')
-    implementation('im.zego:express-video:3.17.3')
+    compileOnly('im.zego:express-video:3.17.3')
 }

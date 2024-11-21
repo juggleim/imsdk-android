@@ -26,6 +26,7 @@ import com.jet.im.kit.activities.PhotoViewActivity;
 import com.jet.im.kit.activities.adapter.BaseMessageListAdapter;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
+import com.jet.im.kit.call.CallCenter;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.interfaces.CustomParamsHandler;
 import com.jet.im.kit.interfaces.LoadingDialogHandler;
@@ -54,6 +55,8 @@ import com.jet.im.kit.utils.PermissionUtils;
 import com.jet.im.kit.utils.SoftInputUtils;
 import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
+import com.juggle.im.call.ICallSession;
+import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.messages.FileMessage;
@@ -473,6 +476,11 @@ abstract public class BaseMessageListFragment<
         if (channelConfig.getInput().getEnableDocument()) {
             items.add(new DialogListItem(R.string.sb_text_channel_input_document, R.drawable.icon_document));
         }
+        ConversationInfo channel = getViewModel().getChannel();
+        assert channel != null;
+        if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
+            items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_camera));
+        }
         if (items.isEmpty()) return;
         hideKeyboard();
         DialogUtils.showListBottomDialog(requireContext(), items.toArray(new DialogListItem[0]), (view, position, item) -> {
@@ -484,8 +492,10 @@ abstract public class BaseMessageListFragment<
                     takeVideo();
                 } else if (key == R.string.sb_text_channel_input_gallery) {
                     takePhoto();
-                } else {
+                } else if (key == R.string.sb_text_channel_input_document) {
                     takeFile();
+                } else if (key == R.string.sb_text_channel_input_voice_call) {
+                    voiceCall();
                 }
             } catch (Exception e) {
                 Logger.e(e);
@@ -517,6 +527,16 @@ abstract public class BaseMessageListFragment<
             if (IntentUtils.hasIntent(requireContext(), intent)) {
                 takeCameraLauncher.launch(intent);
             }
+        });
+    }
+
+    public void voiceCall() {
+//        SendbirdChat.setAutoBackgroundDetection(false);
+        requestPermission(PermissionUtils.RECORD_AUDIO_PERMISSION, () -> {
+            if (getContext() == null) return;
+
+            assert getViewModel().getChannel() != null;
+            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getChannel().getConversation().getConversationId());
         });
     }
 

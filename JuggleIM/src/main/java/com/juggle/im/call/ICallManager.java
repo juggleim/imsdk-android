@@ -11,4 +11,5 @@ public interface ICallManager {
     ICallSession startSingleCall(String userId, ICallSession.ICallSessionListener listener);
     void addReceiveListener(String key, ICallReceiveListener listener);
     void removeReceiveListener(String key);
+    ICallSession getCallSession(String callId);
 }

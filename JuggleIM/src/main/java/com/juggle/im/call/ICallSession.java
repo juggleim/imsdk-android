@@ -27,6 +27,9 @@ public interface ICallSession {
     void muteMicrophone(boolean isMute);
     // 设置扬声器静音
     void muteSpeaker(boolean isMute);
+    // 设置外放声音
+    // true 使用外放扬声器；false 使用听筒
+    void setSpeakerEnable(boolean isEnable);
 
     // 通话 id
     String getCallId();

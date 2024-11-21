@@ -11,12 +11,16 @@ import com.juggle.im.call.internal.fsm.CallIdleState;
 import com.juggle.im.call.internal.fsm.CallIncomingState;
 import com.juggle.im.call.internal.fsm.CallOutgoingState;
 import com.juggle.im.call.internal.fsm.CallSuperState;
+import com.juggle.im.call.internal.media.CallMediaManager;
+import com.juggle.im.call.internal.media.ICallCompleteCallback;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.CallAuthCallback;
 import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.statemachine.StateMachine;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,14 +87,17 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
 
     @Override
     public void muteMicrophone(boolean isMute) {
-
-        //todo
+        CallMediaManager.getInstance().muteMicrophone(isMute);
     }
 
     @Override
     public void muteSpeaker(boolean isMute) {
+        CallMediaManager.getInstance().muteSpeaker(isMute);
+    }
 
-        //todo
+    @Override
+    public void setSpeakerEnable(boolean isEnable) {
+        CallMediaManager.getInstance().setSpeakerEnable(isEnable);
     }
 
     @Override
@@ -271,12 +278,23 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
 
     public void mediaQuit() {
         JLogger.i("Call-Media", "media quit");
-        //todo
+        CallMediaManager.getInstance().leaveRoom(mCallId);
     }
 
     public void mediaJoin() {
         JLogger.i("Call-Media", "media join");
-        //todo
+        CallMediaManager.getInstance().joinRoom(this, new ICallCompleteCallback() {
+            @Override
+            public void onComplete(int errorCode, JSONObject data) {
+                if (errorCode == 0) {
+                    JLogger.i("Call-Media", "join room success");
+                    sendMessage(CallEvent.JOIN_CHANNEL_DONE);
+                } else {
+                    JLogger.e("Call-Media", "join room error, code is " + errorCode);
+                    sendMessage(CallEvent.JOIN_CHANNEL_FAIL, errorCode);
+                }
+            }
+        });
     }
 
     public void transitionToConnectedState() {

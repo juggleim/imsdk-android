@@ -47,6 +47,10 @@ public class CallMediaManager {
         mEngine.muteSpeaker(isMute);
     }
 
+    public void setSpeakerEnable(boolean isEnable) {
+        mEngine.setSpeakerEnable(isEnable);
+    }
+
     private static class SingletonHolder {
         static final CallMediaManager sInstance = new CallMediaManager();
     }

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import im.zego.zegoexpress.ZegoExpressEngine;
 import im.zego.zegoexpress.callback.IZegoEventHandler;
 import im.zego.zegoexpress.callback.IZegoRoomLoginCallback;
+import im.zego.zegoexpress.constants.ZegoPlayerState;
 import im.zego.zegoexpress.constants.ZegoScenario;
 import im.zego.zegoexpress.constants.ZegoUpdateType;
 import im.zego.zegoexpress.entity.ZegoEngineProfile;
@@ -30,6 +31,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
         profile.scenario = ZegoScenario.STANDARD_VOICE_CALL;
         profile.application = (Application) context.getApplicationContext();
         mEngine = ZegoExpressEngine.createEngine(profile, this);
+        mEngine.enableCamera(false);
     }
 
     @Override
@@ -74,6 +76,11 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
     }
 
     @Override
+    public void setSpeakerEnable(boolean isEnable) {
+        mEngine.setAudioRouteToSpeaker(isEnable);
+    }
+
+    @Override
     public void onRoomStreamUpdate(String roomID, ZegoUpdateType updateType, ArrayList<ZegoStream> streamList, JSONObject extendedData) {
         super.onRoomStreamUpdate(roomID, updateType, streamList, extendedData);
         if (updateType == ZegoUpdateType.ADD) {
@@ -82,6 +89,16 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
                 mEngine.startPlayingStream(streamId);
             }
         }
+    }
+
+    @Override
+    public void onPlayerStateUpdate(String streamID, ZegoPlayerState state, int errorCode, JSONObject extendedData) {
+        super.onPlayerStateUpdate(streamID, state, errorCode, extendedData);
+    }
+
+    @Override
+    public void onDebugError(int errorCode, String funcName, String info) {
+        super.onDebugError(errorCode, funcName, info);
     }
 
     private static ZegoExpressEngine mEngine;
