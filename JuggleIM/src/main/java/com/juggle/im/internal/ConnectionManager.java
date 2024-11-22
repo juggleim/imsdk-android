@@ -2,6 +2,8 @@ package com.juggle.im.internal;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +21,7 @@ import com.juggle.im.internal.core.network.JWebSocket;
 import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.IntervalGenerator;
 import com.juggle.im.internal.util.JLogger;
+import com.juggle.im.internal.util.NetworkChangeReceiver;
 import com.juggle.im.push.PushChannel;
 import com.juggle.im.push.PushManager;
 
@@ -28,7 +31,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSocketConnectListener, Application.ActivityLifecycleCallbacks {
+public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSocketConnectListener, Application.ActivityLifecycleCallbacks, NetworkChangeReceiver.INetworkChangeReceiverListener {
     @Override
     public void connect(String token) {
         JLogger.i("CON-Connect", "token is " + token);
@@ -131,10 +134,14 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         this.mUserInfoManager = userInfoManager;
         this.mChatroomManager = chatroomManager;
         this.mCallManager = callManager;
+        this.mNetworkChangeReceiver = new NetworkChangeReceiver(this);
     }
 
     public void init() {
         ((Application)mCore.getContext()).registerActivityLifecycleCallbacks(this);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        mCore.getContext().registerReceiver(this.mNetworkChangeReceiver, filter);
     }
 
     @Override
@@ -228,6 +235,11 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     @Override
     public void onActivityDestroyed(@NonNull Activity activity) {
         //Do nothing
+    }
+
+    @Override
+    public void onNetworkAvailable() {
+        //todo
     }
 
     private void connectWebSocket(String token) {
@@ -435,4 +447,5 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     private final IntervalGenerator mIntervalGenerator = new IntervalGenerator();
     private boolean mIsForeground;
     private Activity mTopForegroundActivity;
+    private final NetworkChangeReceiver mNetworkChangeReceiver;
 }
