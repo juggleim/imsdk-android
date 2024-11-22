@@ -414,11 +414,11 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
-    void connectSuccess() {
+    public void connectSuccess() {
         mSyncProcessing = true;
     }
 
-    void syncConversations(ICompleteCallback callback) {
+    public void syncConversations(ICompleteCallback callback) {
         mSyncProcessing = true;
         internalSyncConversations(callback);
     }
@@ -605,7 +605,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
-    interface ICompleteCallback {
+    public interface ICompleteCallback {
         void onComplete();
     }
 

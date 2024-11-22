@@ -1,4 +1,4 @@
-package com.juggle.im.internal;
+package com.juggle.im.internal.connect;
 
 import android.app.Activity;
 import android.app.Application;
@@ -16,22 +16,27 @@ import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.internal.CallManager;
 import com.juggle.im.interfaces.IConnectionManager;
+import com.juggle.im.internal.ChatroomManager;
+import com.juggle.im.internal.ConstInternal;
+import com.juggle.im.internal.ConversationManager;
+import com.juggle.im.internal.MessageManager;
+import com.juggle.im.internal.UserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.JWebSocket;
 import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.IntervalGenerator;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.NetworkChangeReceiver;
+import com.juggle.im.internal.util.statemachine.StateMachine;
 import com.juggle.im.push.PushChannel;
 import com.juggle.im.push.PushManager;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSocketConnectListener, Application.ActivityLifecycleCallbacks, NetworkChangeReceiver.INetworkChangeReceiverListener {
+public class ConnectionManager extends StateMachine implements IConnectionManager, JWebSocket.IWebSocketConnectListener, Application.ActivityLifecycleCallbacks, NetworkChangeReceiver.INetworkChangeReceiverListener {
     @Override
     public void connect(String token) {
         JLogger.i("CON-Connect", "token is " + token);
@@ -126,6 +131,8 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     }
 
     public ConnectionManager(JIMCore core, ConversationManager conversationManager, MessageManager messageManager, UserInfoManager userInfoManager, ChatroomManager chatroomManager, CallManager callManager) {
+        super(CONNECTION_STATE_MACHINE);
+
         this.mCore = core;
         this.mCore.setConnectionStatus(JIMCore.ConnectionStatusInternal.IDLE);
         this.mCore.getWebSocket().setConnectionListener(this);
@@ -135,6 +142,7 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         this.mChatroomManager = chatroomManager;
         this.mCallManager = callManager;
         this.mNetworkChangeReceiver = new NetworkChangeReceiver(this);
+        prepareStateMachine();
     }
 
     public void init() {
@@ -434,6 +442,42 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
         dbStatusNotice(false);
     }
 
+    private void prepareStateMachine() {
+        //todo
+    }
+
+    public void setConnectionStatus(int status) {
+        mCore.setConnectionStatus(status);
+    }
+
+    public boolean isSameToken(String token) {
+        boolean result = false;
+        if (mCore.getToken() == null) {
+            return result;
+        }
+        result = mCore.getToken().equals(token);
+        return result;
+    }
+
+    public boolean updateToken(String token) {
+        boolean isUpdate = false;
+        if (mCore.getToken() == null || !mCore.getToken().equals(token)) {
+            mCore.setToken(token);
+            mCore.setUserId("");
+            isUpdate = true;
+        }
+        return isUpdate;
+    }
+
+    public void connect() {
+        openDB();
+        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getServers());
+    }
+
+    public void enterConnected() {
+//        JLogger.getInstance().removeExpiredLogs();
+    }
+
     private final JIMCore mCore;
     private final ConversationManager mConversationManager;
     private final MessageManager mMessageManager;
@@ -448,4 +492,5 @@ public class ConnectionManager implements IConnectionManager, JWebSocket.IWebSoc
     private boolean mIsForeground;
     private Activity mTopForegroundActivity;
     private final NetworkChangeReceiver mNetworkChangeReceiver;
+    private static final String CONNECTION_STATE_MACHINE = "ConnectionStateMachine";
 }

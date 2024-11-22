@@ -12,7 +12,7 @@ import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.interfaces.IUserInfoManager;
 import com.juggle.im.internal.ChatroomManager;
-import com.juggle.im.internal.ConnectionManager;
+import com.juggle.im.internal.connect.ConnectionManager;
 import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.ConversationManager;
 import com.juggle.im.internal.MessageManager;

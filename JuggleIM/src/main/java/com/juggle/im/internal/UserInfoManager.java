@@ -54,7 +54,7 @@ public class UserInfoManager implements IUserInfoManager {
         return groupInfoDB;
     }
 
-    void clearCache() {
+    public void clearCache() {
         mUserInfoCache.clearCache();
     }
 
