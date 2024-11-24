@@ -4,9 +4,9 @@ public class IntervalGenerator {
 
     public int getNextInterval() {
         int result = mInterval;
-        if (result == 0) {
-            mInterval = 1;
-        } else if (result >= 32) {
+        if (result < 1000) {
+            mInterval = 1000;
+        } else if (result >= 32000) {
 
         } else {
             mInterval *= 2;
@@ -16,8 +16,8 @@ public class IntervalGenerator {
     }
 
     public void reset() {
-        mInterval = 0;
+        mInterval = 300;
     }
 
-    private int mInterval;
+    private int mInterval = 300;
 }

@@ -706,7 +706,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                         stopSyncTimer();
                         internalSyncConversations(callback);
                     }
-                }, mIntervalGenerator.getNextInterval() * 1000L);
+                }, mIntervalGenerator.getNextInterval());
             }
         });
     }

@@ -21,6 +21,11 @@ import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.ConversationManager;
 import com.juggle.im.internal.MessageManager;
 import com.juggle.im.internal.UserInfoManager;
+import com.juggle.im.internal.connect.fsm.ConnConnectedState;
+import com.juggle.im.internal.connect.fsm.ConnConnectingState;
+import com.juggle.im.internal.connect.fsm.ConnIdleState;
+import com.juggle.im.internal.connect.fsm.ConnSuperState;
+import com.juggle.im.internal.connect.fsm.ConnWaitingForConnectState;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.JWebSocket;
 import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
@@ -359,7 +364,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
                     internalConnect(mCore.getToken());
                 }
             }
-        }, mIntervalGenerator.getNextInterval() * 1000L);
+        }, mIntervalGenerator.getNextInterval());
     }
 
     private void internalConnect(String token) {
@@ -444,6 +449,25 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     private void prepareStateMachine() {
         //todo
+        mSuperState = new ConnSuperState();
+        mSuperState.setConnectionManager(this);
+        mIdleState = new ConnIdleState();
+        mIdleState.setConnectionManager(this);
+        mConnectingState = new ConnConnectingState();
+        mConnectingState.setConnectionManager(this);
+        mConnectedState = new ConnConnectedState();
+        mConnectedState.setConnectionManager(this);
+        mWaitingState = new ConnWaitingForConnectState();
+        mWaitingState.setConnectionManager(this);
+
+        addState(mSuperState, null);
+        addState(mIdleState, mSuperState);
+        addState(mConnectingState, mSuperState);
+        addState(mConnectedState, mSuperState);
+        addState(mWaitingState, mSuperState);
+
+        setInitialState(mIdleState);
+        start();
     }
 
     public void setConnectionStatus(int status) {
@@ -475,7 +499,74 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     public void enterConnected() {
-//        JLogger.getInstance().removeExpiredLogs();
+        JLogger.getInstance().removeExpiredLogs();
+        mCore.getWebSocket().startHeartbeat();
+    }
+
+    public void leaveConnected() {
+        mCore.getWebSocket().stopHeartbeat();
+        mCore.getWebSocket().pushRemainCmdAndCallbackError();
+    }
+
+    public void disconnectExist(boolean receivePush) {
+        mChatroomManager.userDisconnect();
+        mCore.getWebSocket().disconnect(receivePush);
+        closeDB();
+    }
+
+    public void disconnectWithoutWS() {
+        mChatroomManager.userDisconnect();
+        closeDB();
+    }
+
+    public void handleRemoteDisconnect() {
+        closeDB();
+    }
+
+    public int getReconnectInterval() {
+        return mIntervalGenerator.getNextInterval();
+    }
+
+    public void notifyConnecting() {
+        notify(JIMConst.ConnectionStatus.CONNECTING, JErrorCode.NONE, "");
+    }
+
+    public void notifyConnected(String extra) {
+        notify(JIMConst.ConnectionStatus.CONNECTED, JErrorCode.NONE, extra);
+    }
+
+    public void notifyDisconnected(int code, String extra) {
+        notify(JIMConst.ConnectionStatus.DISCONNECTED, code, extra);
+    }
+
+    public void notifyFailure(int code, String extra) {
+        notify(JIMConst.ConnectionStatus.FAILURE, code, extra);
+    }
+
+    private void notify(JIMConst.ConnectionStatus status, int code, String extra) {
+        mCore.getCallbackHandler().post(() -> {
+            if (mConnectionStatusListenerMap != null) {
+                for (Map.Entry<String, IConnectionStatusListener> entry : mConnectionStatusListenerMap.entrySet()) {
+                    entry.getValue().onStatusChange(status, code, extra);
+                }
+            }
+        });
+    }
+
+    public void transitionToIdleState() {
+        transitionTo(mIdleState);
+    }
+
+    public void transitionToConnectingState() {
+        transitionTo(mConnectingState);
+    }
+
+    public void transitionToConnectedState() {
+        transitionTo(mConnectedState);
+    }
+
+    public void transitionToWaitingForConnectState() {
+        transitionTo(mWaitingState);
     }
 
     private final JIMCore mCore;
@@ -492,5 +583,11 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     private boolean mIsForeground;
     private Activity mTopForegroundActivity;
     private final NetworkChangeReceiver mNetworkChangeReceiver;
+
+    private ConnSuperState mSuperState;
+    private ConnIdleState mIdleState;
+    private ConnConnectingState mConnectingState;
+    private ConnConnectedState mConnectedState;
+    private ConnWaitingForConnectState mWaitingState;
     private static final String CONNECTION_STATE_MACHINE = "ConnectionStateMachine";
 }
