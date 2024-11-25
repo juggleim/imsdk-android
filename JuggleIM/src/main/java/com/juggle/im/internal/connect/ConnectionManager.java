@@ -5,8 +5,6 @@ import android.app.Application;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 
@@ -39,8 +37,6 @@ import com.juggle.im.push.PushChannel;
 import com.juggle.im.push.PushManager;
 
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager extends StateMachine implements IConnectionManager, JWebSocket.IWebSocketConnectListener, Application.ActivityLifecycleCallbacks, NetworkChangeReceiver.INetworkChangeReceiverListener {
@@ -227,10 +223,6 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
         sendMessage(ConnEvent.NETWORK_AVAILABLE);
     }
 
-    private void connectWebSocket(String token) {
-        mCore.getWebSocket().connect(mCore.getAppKey(), token, mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getServers());
-    }
-
     private void handleWebsocketFail() {
         sendMessage(ConnEvent.WEBSOCKET_FAIL);
     }
@@ -248,123 +240,6 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
                 || errorCode == ConstInternal.ErrorCode.USER_LOG_OUT;
     }
 
-    private void changeStatus(int status, int errorCode, String extra) {
-        mCore.getSendHandler().post(() -> {
-            JLogger.i("CON-Status", "status is " + status + ", code is " + errorCode + ", extra is " + extra);
-            if (status == mCore.getConnectionStatus()) {
-                return;
-            }
-            if (status == JIMCore.ConnectionStatusInternal.IDLE) {
-                mCore.setConnectionStatus(status);
-                return;
-            }
-            if (status == JIMCore.ConnectionStatusInternal.CONNECTED
-                    && mCore.getConnectionStatus() != JIMCore.ConnectionStatusInternal.CONNECTED) {
-                mCore.getWebSocket().startHeartbeat();
-            }
-            if (status != JIMCore.ConnectionStatusInternal.CONNECTED
-                    && mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTED) {
-                mCore.getWebSocket().stopHeartbeat();
-                mCore.getWebSocket().pushRemainCmdAndCallbackError();
-            }
-            JIMConst.ConnectionStatus outStatus = JIMConst.ConnectionStatus.IDLE;
-            switch (status) {
-                case JIMCore.ConnectionStatusInternal.CONNECTED:
-                    outStatus = JIMConst.ConnectionStatus.CONNECTED;
-                    break;
-                case JIMCore.ConnectionStatusInternal.DISCONNECTED:
-                    closeDB();
-                    stopReconnectTimer();
-                    outStatus = JIMConst.ConnectionStatus.DISCONNECTED;
-                    break;
-
-                case JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING:
-                    reconnect();
-                    //无需 break，跟 CONNECTING 一起处理
-                case JIMCore.ConnectionStatusInternal.CONNECTING:
-                    //已经在连接中，不需要再对外抛回调
-                    if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTING
-                            || mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
-                        mCore.setConnectionStatus(status);
-                        return;
-                    }
-                    outStatus = JIMConst.ConnectionStatus.CONNECTING;
-                    break;
-                case JIMCore.ConnectionStatusInternal.FAILURE:
-                    outStatus = JIMConst.ConnectionStatus.FAILURE;
-                default:
-                    break;
-            }
-            mCore.setConnectionStatus(status);
-
-            if (mConnectionStatusListenerMap != null) {
-                JIMConst.ConnectionStatus finalOutStatus = outStatus;
-                for (Map.Entry<String, IConnectionStatusListener> entry :
-                        mConnectionStatusListenerMap.entrySet()) {
-                    mCore.getCallbackHandler().post(() -> {
-                        entry.getValue().onStatusChange(finalOutStatus, errorCode, extra);
-                    });
-                }
-            }
-        });
-    }
-
-    private void stopReconnectTimer() {
-        if (mReconnectTimer != null) {
-            mReconnectTimer.cancel();
-            mReconnectTimer = null;
-        }
-    }
-
-    private void reconnect() {
-        JLogger.i("CON-Reconnect", "reconnect");
-        //todo 线程控制
-        if (mReconnectTimer != null) {
-            return;
-        }
-        mReconnectTimer = new Timer();
-        mReconnectTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                stopReconnectTimer();
-                //todo 重连整理
-                if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
-                    internalConnect(mCore.getToken());
-                }
-            }
-        }, mIntervalGenerator.getNextInterval());
-    }
-
-    private void internalConnect(String token) {
-        openDB();
-        changeStatus(JIMCore.ConnectionStatusInternal.CONNECTING, ConstInternal.ErrorCode.NONE, "");
-
-        connectWebSocket(token);
-
-//        NaviTask task = new NaviTask(mCore.getNaviUrls(), mCore.getAppKey(), mCore.getToken(), new NaviTask.IRequestCallback() {
-//            @Override
-//            public void onSuccess(String userId, List<String> servers) {
-//                mCore.getSendHandler().post(() -> {
-//                    JLogger.i("CON-Navi", "success, servers is " + servers);
-//                    mCore.setServers(servers);
-//                    connectWebSocket(token);
-//                });
-//            }
-//
-//            @Override
-//            public void onError(int errorCode) {
-//                JLogger.i("CON-Navi", "fail, errorCode is " + errorCode);
-//                if (checkConnectionFailure(errorCode)) {
-//                    changeStatus(JIMCore.ConnectionStatusInternal.FAILURE, errorCode, "");
-//                } else {
-//                    changeStatus(JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, errorCode, "");
-//                }
-//            }
-//        });
-//
-//        task.start();
-    }
-
     private void dbStatusNotice(boolean isOpen) {
         JLogger.i("CON-Db", "db notice, isOpen is " + isOpen);
         if (isOpen) {
@@ -372,18 +247,14 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
             if (mConnectionStatusListenerMap != null) {
                 for (Map.Entry<String, IConnectionStatusListener> entry :
                         mConnectionStatusListenerMap.entrySet()) {
-                    mCore.getCallbackHandler().post(() -> {
-                        entry.getValue().onDbOpen();
-                    });
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onDbOpen());
                 }
             }
         } else {
             if (mConnectionStatusListenerMap != null) {
                 for (Map.Entry<String, IConnectionStatusListener> entry :
                         mConnectionStatusListenerMap.entrySet()) {
-                    mCore.getCallbackHandler().post(() -> {
-                        entry.getValue().onDbClose();
-                    });
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onDbClose());
                 }
             }
         }
@@ -537,7 +408,6 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     private final ChatroomManager mChatroomManager;
     private final CallManager mCallManager;
     private ConcurrentHashMap<String, IConnectionStatusListener> mConnectionStatusListenerMap;
-    private Timer mReconnectTimer;
     private PushChannel mPushChannel;
     private String mPushToken;
     private final IntervalGenerator mIntervalGenerator = new IntervalGenerator();
