@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -23,6 +24,7 @@ import com.juggle.im.internal.MessageManager;
 import com.juggle.im.internal.UserInfoManager;
 import com.juggle.im.internal.connect.fsm.ConnConnectedState;
 import com.juggle.im.internal.connect.fsm.ConnConnectingState;
+import com.juggle.im.internal.connect.fsm.ConnEvent;
 import com.juggle.im.internal.connect.fsm.ConnIdleState;
 import com.juggle.im.internal.connect.fsm.ConnSuperState;
 import com.juggle.im.internal.connect.fsm.ConnWaitingForConnectState;
@@ -45,48 +47,13 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     @Override
     public void connect(String token) {
         JLogger.i("CON-Connect", "token is " + token);
-        if (mCore.getToken() != null && mCore.getToken().equals(token)) {
-            //如果是已连接成功或者连接中而且 token 跟之前的一样的话，直接 return
-            if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTED) {
-                JLogger.i("CON-Connect", "connection already exist");
-                if (mConnectionStatusListenerMap != null) {
-                    for (Map.Entry<String, IConnectionStatusListener> entry :
-                            mConnectionStatusListenerMap.entrySet()) {
-                        mCore.getCallbackHandler().post(() -> {
-                            entry.getValue().onStatusChange(JIMConst.ConnectionStatus.CONNECTED, JErrorCode.CONNECTION_ALREADY_EXIST, "");
-                        });
-                    }
-                }
-                return;
-            } else if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTING
-                || mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
-                JLogger.i("CON-Connect", "same token is connecting");
-                return;
-            }
-            internalConnect(token);
-        } else {
-            mCore.setToken(token);
-            mCore.setUserId("");
-
-            if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTED
-            || mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTING
-            || mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
-                internalDisconnect(false);
-                Handler mainHandler = new Handler(Looper.getMainLooper());
-                mainHandler.postDelayed(() -> {
-                    internalConnect(token);
-                }, 200);
-            } else {
-                internalConnect(token);
-            }
-        }
+        sendMessage(ConnEvent.USER_CONNECT, token);
     }
 
     @Override
     public void disconnect(boolean receivePush) {
         JLogger.i("CON-Disconnect", "user disconnect receivePush is " + receivePush);
-        mChatroomManager.userDisconnect();
-        internalDisconnect(receivePush);
+        sendMessage(ConnEvent.USER_DISCONNECT, receivePush);
     }
 
     @Override
@@ -167,21 +134,29 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
             mConversationManager.connectSuccess();
             mChatroomManager.connectSuccess();
             mCallManager.connectSuccess();
-            changeStatus(JIMCore.ConnectionStatusInternal.CONNECTED, ConstInternal.ErrorCode.NONE, extra);
+            sendMessage(ConnEvent.CONNECT_DONE, extra);
             mConversationManager.syncConversations(mMessageManager::syncMessage);
             PushManager.getInstance().getToken(mCore.getContext());
         } else {
             if (checkConnectionFailure(errorCode)) {
-                changeStatus(JIMCore.ConnectionStatusInternal.FAILURE, errorCode, extra);
+                Message msg = Message.obtain();
+                msg.what = ConnEvent.CONNECT_FAILURE;
+                msg.arg1 = errorCode;
+                msg.obj = extra;
+                sendMessage(msg);
             } else {
-                changeStatus(JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, extra);
+                sendMessage(ConnEvent.WEBSOCKET_FAIL);
             }
         }
     }
 
     @Override
     public void onDisconnect(int errorCode, String extra) {
-        changeStatus(JIMCore.ConnectionStatusInternal.DISCONNECTED, errorCode, extra);
+        Message msg = Message.obtain();
+        msg.what = ConnEvent.REMOTE_DISCONNECT;
+        msg.arg1 = errorCode;
+        msg.obj = extra;
+        sendMessage(msg);
     }
 
     @Override
@@ -215,12 +190,8 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
             JLogger.i("CON-BG", "Foreground");
             mIntervalGenerator.reset();
             mIsForeground = true;
-            if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING) {
-                stopReconnectTimer();
-                reconnect();
-            } else if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.CONNECTED) {
-                mCore.getWebSocket().pushSwitch(false, mCore.getUserId());
-            }
+            mCore.getWebSocket().pushSwitch(false, mCore.getUserId());
+            sendMessage(ConnEvent.ENTER_FOREGROUND);
         }
         mTopForegroundActivity = activity;
     }
@@ -252,7 +223,8 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     @Override
     public void onNetworkAvailable() {
-        //todo
+        mIntervalGenerator.reset();
+        sendMessage(ConnEvent.NETWORK_AVAILABLE);
     }
 
     private void connectWebSocket(String token) {
@@ -260,11 +232,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     private void handleWebsocketFail() {
-        if (mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.DISCONNECTED
-                || mCore.getConnectionStatus() == JIMCore.ConnectionStatusInternal.FAILURE) {
-            return;
-        }
-        changeStatus(JIMCore.ConnectionStatusInternal.WAITING_FOR_CONNECTING, ConstInternal.ErrorCode.NONE, "");
+        sendMessage(ConnEvent.WEBSOCKET_FAIL);
     }
 
     private boolean checkConnectionFailure(int errorCode) {
@@ -397,13 +365,6 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 //        task.start();
     }
 
-    private void internalDisconnect(boolean receivePush) {
-        if (mCore.getWebSocket() != null) {
-            mCore.getWebSocket().disconnect(receivePush);
-        }
-        changeStatus(JIMCore.ConnectionStatusInternal.DISCONNECTED, ConstInternal.ErrorCode.NONE, "");
-    }
-
     private void dbStatusNotice(boolean isOpen) {
         JLogger.i("CON-Db", "db notice, isOpen is " + isOpen);
         if (isOpen) {
@@ -475,9 +436,9 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     public boolean isSameToken(String token) {
-        boolean result = false;
+        boolean result;
         if (mCore.getToken() == null) {
-            return result;
+            return false;
         }
         result = mCore.getToken().equals(token);
         return result;

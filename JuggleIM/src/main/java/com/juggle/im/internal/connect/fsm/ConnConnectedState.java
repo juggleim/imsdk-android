@@ -52,7 +52,7 @@ public class ConnConnectedState extends ConnBaseState {
                 break;
 
             case ConnEvent.USER_DISCONNECT:
-                boolean receivePush = msg.arg1 != 0;
+                Boolean receivePush = (Boolean) msg.obj;
                 manager.disconnectExist(receivePush);
                 manager.notifyDisconnected(JErrorCode.NONE, "");
                 manager.transitionToIdleState();
