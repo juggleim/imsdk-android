@@ -48,12 +48,13 @@ public class ConnWaitingForConnectState extends ConnBaseState {
                 } else {
                     manager.notifyDisconnected(JErrorCode.NONE, "");
                     manager.transitionToIdleState();
-                    manager.sendMessage(msg);
+                    manager.sendMessage(ConnEvent.USER_CONNECT, token);
                 }
                 break;
 
             case ConnEvent.USER_DISCONNECT:
                 manager.disconnectWithoutWS();
+                manager.notifyDisconnected(JErrorCode.NONE, "");
                 manager.transitionToIdleState();
                 break;
 

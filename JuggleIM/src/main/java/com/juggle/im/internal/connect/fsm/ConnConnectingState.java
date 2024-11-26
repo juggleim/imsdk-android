@@ -18,6 +18,9 @@ public class ConnConnectingState extends ConnBaseState {
     @Override
     public void enter() {
         super.enter();
+        mUserToken = null;
+        mStoreStatus = ConnectingStoreStatus.NONE;
+        mReceivePush = false;
         ConnectionManager manager = getConnectionManager();
         if (manager != null) {
             manager.setConnectionStatus(JIMCore.ConnectionStatusInternal.CONNECTING);

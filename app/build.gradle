@@ -47,4 +47,5 @@ dependencies {
     implementation project(path: ':HWPlugin')
     implementation project(path: ':XMPlugin')
     implementation project(path: ':GooglePlugin')
+    implementation('im.zego:express-video:3.17.3')
 }
