@@ -165,6 +165,11 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
             muteV.setSelected(muted);
         }
 
+        View handFreeV = mButtonContainer.findViewById(R.id.rc_voip_handfree);
+        if (handFreeV != null) {
+            handFreeV.setSelected(true);
+        }
+
 //        AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 //        if (audioManager.isWiredHeadsetOn() || BluetoothUtil.hasBluetoothA2dpConnected()) {
 //            handFree = false;
@@ -197,7 +202,7 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
     }
 
     public void onHandFreeButtonClick(View view) {
-        mCallSession.setSpeakerEnable(view.isSelected());
+        mCallSession.setSpeakerEnable(!view.isSelected());
 //        RongCallClient.getInstance().setEnableSpeakerphone(!view.isSelected());//true:打开免提 false:关闭免提
         view.setSelected(!view.isSelected());
 //        handFree = view.isSelected();

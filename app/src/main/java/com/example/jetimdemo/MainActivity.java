@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
-                            JIM.getInstance().getCallManager().startSingleCall("asdfsadf", null);
+//                            JIM.getInstance().getCallManager().startSingleCall("asdfsadf", null);
 
 
 
@@ -104,6 +104,14 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
             }
         });
         JIM.getInstance().getConnectionManager().connect(TOKEN1181);
+        Handler mH = new Handler(Looper.getMainLooper());
+        mH.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+//                JIM.getInstance().getConnectionManager().disconnect(false);
+            }
+        }, 11000);
+
         JIM.getInstance().getCallManager().initZegoEngine(1881186044, this);
         JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override

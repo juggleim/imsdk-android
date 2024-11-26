@@ -1831,7 +1831,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         mSendReceiveListener = null;
     }
 
-    void syncMessage() {
+    public void syncMessage() {
         mSyncProcessing = true;
         sync();
     }
@@ -1856,7 +1856,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
-    void connectSuccess() {
+    public void connectSuccess() {
         mSyncProcessing = true;
         mSyncNotifyTime = 0;
     }
