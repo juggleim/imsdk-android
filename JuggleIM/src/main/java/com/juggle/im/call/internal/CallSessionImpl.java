@@ -413,10 +413,10 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
     private CallConst.CallFinishReason mFinishReason;
     private List<CallMember> mMembers = new ArrayList<>();
 
-    private CallSuperState mSuperState;
-    private CallIdleState mIdleState;
-    private CallConnectingState mConnectingState;
-    private CallIncomingState mIncomingState;
-    private CallOutgoingState mOutgoingState;
-    private CallConnectedState mConnectedState;
+    private final CallSuperState mSuperState;
+    private final CallIdleState mIdleState;
+    private final CallConnectingState mConnectingState;
+    private final CallIncomingState mIncomingState;
+    private final CallOutgoingState mOutgoingState;
+    private final CallConnectedState mConnectedState;
 }

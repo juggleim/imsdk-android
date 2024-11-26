@@ -380,7 +380,7 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
                     stopAttrRetryTimer();
                     syncChatroomAttr(chatroomId, getAttrSyncTimeForChatroom(chatroomId));
                 }
-            }, mIntervalGenerator.getNextInterval() * 1000L);
+            }, mIntervalGenerator.getNextInterval());
             return;
         }
 
