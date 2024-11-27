@@ -1,7 +1,6 @@
 package com.juggle.im.call.model;
 
 import com.juggle.im.internal.util.JLogger;
-import com.juggle.im.model.Conversation;
 import com.juggle.im.model.MessageContent;
 
 import org.json.JSONException;
