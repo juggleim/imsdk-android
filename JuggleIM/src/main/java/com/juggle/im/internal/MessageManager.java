@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
+import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.interfaces.IMessageUploadProvider;
@@ -100,6 +101,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(AddConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(ClearTotalUnreadMessage.class);
         ContentTypeCenter.getInstance().registerContentType(MarkUnreadMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(CallFinishNotifyMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
