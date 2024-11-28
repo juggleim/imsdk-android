@@ -29,6 +29,13 @@ public interface IConversationManager {
                                                    long timestamp,
                                                    JIMConst.PullDirection direction);
 
+    /**
+     * 分页获取会话信息列表，结果按照会话时间倒序排列（新的在前，旧的在后）
+     * @param count 拉取数量
+     * @param timestamp 拉取时间戳（传 0 表示当前时间）
+     * @param direction 拉取方向
+     * @return 会话信息列表
+     */
     List<ConversationInfo> getConversationInfoList(int count,
                                                    long timestamp,
                                                    JIMConst.PullDirection direction);
