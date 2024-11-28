@@ -123,6 +123,13 @@ public interface IMessageManager {
                         MessageOptions options,
                         ISendMessageCallback callback);
 
+    /**
+     * 发送媒体消息（先上传媒体，再发送消息）
+     * @param content 媒体消息实体
+     * @param conversation 会话
+     * @param callback 发送回调
+     * @return 消息对象
+     */
     Message sendMediaMessage(MediaMessageContent content,
                              Conversation conversation,
                              ISendMediaMessageCallback callback);

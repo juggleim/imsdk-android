@@ -33,6 +33,7 @@
 -keep class * implements com.juggle.im.model.MessageContent {*;}
 -keep class com.google.protobuf.** {*;}
 -keep class app_messages.** {*;}
+-keep class com.juggle.im.push.** {*;}
 
 -keep class **.zego.**{*;}
 #-keep class com.j.im.jzegocall.CallMediaZegoEngine {*;}
