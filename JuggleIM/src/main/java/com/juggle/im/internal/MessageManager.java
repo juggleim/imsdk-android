@@ -170,6 +170,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                                 MessageOptions options,
                                 boolean isBroadcast,
                                 ISendMessageCallback callback) {
+        if (content == null || conversation == null) {
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(null, JErrorCode.INVALID_PARAM));
+            }
+            return null;
+        }
         ConcreteMessage message = saveMessageWithContent(content, conversation, options, Message.MessageState.SENDING, Message.MessageDirection.SEND, isBroadcast);
         sendWebSocketMessage(message, isBroadcast, callback);
         return message;

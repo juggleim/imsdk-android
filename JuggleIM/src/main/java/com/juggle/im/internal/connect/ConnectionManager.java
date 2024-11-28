@@ -280,7 +280,6 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     private void prepareStateMachine() {
-        //todo
         mSuperState = new ConnSuperState();
         mSuperState.setConnectionManager(this);
         mIdleState = new ConnIdleState();
