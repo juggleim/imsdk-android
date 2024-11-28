@@ -6,6 +6,9 @@ import com.juggle.im.internal.connect.ConnectionManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.util.JLogger;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class ConnConnectingState extends ConnBaseState {
     private enum ConnectingStoreStatus {
         NONE, CONNECT, DISCONNECT
@@ -26,6 +29,13 @@ public class ConnConnectingState extends ConnBaseState {
             manager.setConnectionStatus(JIMCore.ConnectionStatusInternal.CONNECTING);
             manager.connect();
         }
+        startTimer();
+    }
+
+    @Override
+    public void exit() {
+        super.exit();
+        stopTimer();
     }
 
     @Override
@@ -82,6 +92,7 @@ public class ConnConnectingState extends ConnBaseState {
                 break;
 
             case ConnEvent.WEBSOCKET_FAIL:
+            case ConnEvent.CONNECTING_TIMEOUT:
                 manager.transitionToWaitingForConnectState();
                 if (mStoreStatus == ConnectingStoreStatus.CONNECT) {
                     if (mUserToken != null && !mUserToken.isEmpty()) {
@@ -103,4 +114,31 @@ public class ConnConnectingState extends ConnBaseState {
         }
         return true;
     }
+
+    private void startTimer() {
+        JLogger.i("CON-Connect", "connecting timer start");
+        mTimer = new Timer();
+        mTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                ConnectionManager manager = getConnectionManager();
+                if (manager == null) {
+                    JLogger.e("FSM-Sm", "connectionManager is null");
+                    return;
+                }
+                manager.sendMessage(ConnEvent.CONNECTING_TIMEOUT);
+            }
+        }, CONNECT_TIME_OUT_INTERVAL);
+    }
+
+    private void stopTimer() {
+        JLogger.i("CON-Connect", "connecting timer stop");
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+        }
+    }
+
+    private Timer mTimer;
+    private static final int CONNECT_TIME_OUT_INTERVAL = 10*1000;
 }

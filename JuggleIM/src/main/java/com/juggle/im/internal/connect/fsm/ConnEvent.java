@@ -16,6 +16,7 @@ public class ConnEvent {
     public final static int ENTER_BACKGROUND = 304;
     public final static int WEBSOCKET_FAIL = 305;
     public final static int REMOTE_DISCONNECT = 306;
+    public final static int CONNECTING_TIMEOUT = 307;
 
     public static String nameOfEvent(int event) {
         return sEventNameMap.get(event);
@@ -32,6 +33,7 @@ public class ConnEvent {
         put(ENTER_BACKGROUND, "enter background");
         put(WEBSOCKET_FAIL, "websocket fail");
         put(REMOTE_DISCONNECT, "remote disconnect");
+        put(CONNECTING_TIMEOUT, "connecting timeout");
     }};
 
 }
