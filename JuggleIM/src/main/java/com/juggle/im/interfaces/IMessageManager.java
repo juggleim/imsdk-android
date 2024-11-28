@@ -65,7 +65,13 @@ public interface IMessageManager {
     }
 
     interface IGetMessagesCallbackV3 {
-        //messages: 消息列表，timestamp: 消息时间戳，拉下一批消息的时候可以使用，hasMore: 是否还有更多消息，code: 结果码，0 为成功
+        /**
+         * 结果回调
+         * @param messages 消息列表
+         * @param timestamp 消息时间戳，拉下一批消息的时候可以使用
+         * @param hasMore 是否还有更多消息
+         * @param code 结果码，0 为成功。code 不为 0 的时候，如果本地存在缓存消息，则会在 messages 里返回本地消息
+         */
         void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code);
     }
 
@@ -263,7 +269,13 @@ public interface IMessageManager {
                      GetMessageOptions options,
                      IGetMessagesCallbackV2 callback);
 
-    /// 获取消息，结果按照消息时间正序排列（旧的在前，新的在后）。当消息有缺失并且网络有问题的时候，返回本地缓存的消息。
+    /**
+     * 获取消息，结果按照消息时间正序排列（旧的在前，新的在后）。当消息有缺失并且网络有问题的时候，返回本地缓存的消息。
+     * @param conversation 会话对象
+     * @param direction 拉取方向
+     * @param options 获取消息选项
+     * @param callback 回调
+     */
     void getMessages(Conversation conversation,
                      JIMConst.PullDirection direction,
                      GetMessageOptions options,

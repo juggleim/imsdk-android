@@ -30,6 +30,7 @@ import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.internal.uploader.FileUtil;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
@@ -80,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            
+
 
 //                            JIM.getInstance().getCallManager().startSingleCall("asdfsadf", null);
 
