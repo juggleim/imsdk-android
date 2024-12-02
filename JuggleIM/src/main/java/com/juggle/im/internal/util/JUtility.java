@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import com.juggle.im.internal.ConstInternal;
 
 import java.lang.reflect.Method;
+import java.util.Locale;
 
 public class JUtility {
     public static Bitmap generateThumbnail(Bitmap image, int targetWidth, int targetHeight) {
@@ -129,6 +130,11 @@ public class JUtility {
 
     public static String getUUID() {
         return java.util.UUID.randomUUID().toString().replace("-", "");
+    }
+
+    public static String getSystemLanguage(Context context) {
+        Locale current = context.getResources().getConfiguration().locale;
+        return current.getLanguage();
     }
 
     /**

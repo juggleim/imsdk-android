@@ -67,7 +67,8 @@ class PBData {
                        String pushToken,
                        String networkId,
                        String ispNum,
-                       String clientIp) {
+                       String clientIp,
+                       String language) {
         Connect.ConnectMsgBody.Builder builder = Connect.ConnectMsgBody.newBuilder();
         builder.setProtoId(PROTO_ID)
                 .setSdkVersion(SDK_VERSION)
@@ -113,6 +114,7 @@ class PBData {
                     break;
             }
         }
+        builder.setLanguage(language);
         Connect.ConnectMsgBody body = builder.build();
         byte[] payload = mConverter.encode(body.toByteArray());
 

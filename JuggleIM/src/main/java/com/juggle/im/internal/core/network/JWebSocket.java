@@ -45,7 +45,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mCompeteStatusList = new ArrayList<>();
     }
 
-    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, List<String> servers) {
+    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, String language, List<String> servers) {
         JLogger.i("WS-Connect", "appKey is " + appKey + ", token is " + token + ", servers is " + servers);
         mSendHandler.post(() -> {
             mAppKey = appKey;
@@ -56,6 +56,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             mPushToken = pushToken;
             mNetworkType = networkType;
             mCarrier = carrier;
+            mLanguage = language;
 
             resetWebSocketClient();
             ExecutorService executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_COUNT);
@@ -773,7 +774,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 mPushToken,
                 mNetworkType,
                 mCarrier,
-                "");
+                "",
+                mLanguage);
         sendWhenOpen(bytes);
     }
 
@@ -1180,6 +1182,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private String mCarrier;
     private PushChannel mPushChannel;
     private String mPushToken;
+    private String mLanguage;
     private final PBData mPbData;
     private final WebSocketCommandManager mWebSocketCommandManager;
     private final HeartbeatManager mHeartbeatManager;

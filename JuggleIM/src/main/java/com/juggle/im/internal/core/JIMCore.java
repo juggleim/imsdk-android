@@ -58,6 +58,13 @@ public class JIMCore {
         return JUtility.getCarrier(mContext);
     }
 
+    public String getSystemLanguage() {
+        if (mContext == null) {
+            return "";
+        }
+        return JUtility.getSystemLanguage(mContext);
+    }
+
     public List<String> getNaviUrls() {
         if (mNaviUrls == null) {
             mNaviUrls = new ArrayList<>();

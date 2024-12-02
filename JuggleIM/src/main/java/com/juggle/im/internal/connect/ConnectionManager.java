@@ -326,7 +326,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     public void connect() {
         openDB();
-        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getServers());
+        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getSystemLanguage(), mCore.getServers());
     }
 
     public void enterConnected() {
