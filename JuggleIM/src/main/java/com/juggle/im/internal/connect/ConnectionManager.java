@@ -76,6 +76,41 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     @Override
+    public void setLanguage(String language, ISimpleCallback callback) {
+        JLogger.i("CON-Lang", "language is " + language);
+        if (language == null || language.isEmpty()) {
+            JLogger.w("CON-Lang", "language is empty");
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(JErrorCode.INVALID_PARAM);
+                }
+            });
+            return;
+        }
+        mCore.getWebSocket().setLanguage(language, mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                JLogger.i("CON-Lang", "success");
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CON-Lang", "error code is " + errorCode);
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public JIMConst.ConnectionStatus getConnectionStatus() {
         return JIMConst.ConnectionStatus.setStatus(mCore.getConnectionStatus());
     }

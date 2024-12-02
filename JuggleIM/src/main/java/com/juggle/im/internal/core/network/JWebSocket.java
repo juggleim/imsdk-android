@@ -408,6 +408,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void setLanguage(String language, String userId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.setLanguage(language, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "set language: " + language);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void callInvite(String callId, boolean isMultiCall, List<String> userIdList, int engineType, CallAuthCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.callInvite(callId, isMultiCall, userIdList, engineType, mCmdIndex++);

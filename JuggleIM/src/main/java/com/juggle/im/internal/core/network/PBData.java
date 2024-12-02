@@ -951,6 +951,25 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] setLanguage(String language, String userId, int index) {
+        Appmessages.KvItem item = Appmessages.KvItem.newBuilder()
+                .setKey(LANGUAGE)
+                .setValue(language)
+                .build();
+        Appmessages.UserInfo userInfo = Appmessages.UserInfo.newBuilder()
+                .addSettings(item)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(SET_USER_SETTINGS)
+                .setTargetId(userId)
+                .setData(userInfo.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -1922,6 +1941,8 @@ class PBData {
     private static final String RTC_MEMBER_ROOMS = "rtc_member_rooms";
     private static final String RTC_QRY = "rtc_qry";
     private static final String RTC_PING = "rtc_ping";
+    private static final String SET_USER_SETTINGS = "set_user_settings";
+    private static final String LANGUAGE = "language";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
@@ -1973,6 +1994,7 @@ class PBData {
             put(RTC_PING, PBRcvObj.PBRcvType.rtcPingAck);
             put(RTC_MEMBER_ROOMS, PBRcvObj.PBRcvType.qryCallRoomsAck);
             put(RTC_QRY, PBRcvObj.PBRcvType.qryCallRoomAck);
+            put(SET_USER_SETTINGS, PBRcvObj.PBRcvType.simpleQryAck);
         }
     };
 
