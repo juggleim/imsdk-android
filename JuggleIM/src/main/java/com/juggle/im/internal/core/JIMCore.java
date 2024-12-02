@@ -135,6 +135,14 @@ public class JIMCore {
         sp.edit().putString(USER_ID, userId).apply();
     }
 
+    public String getSession() {
+        return mSession;
+    }
+
+    public void setSession(String session) {
+        mSession = session;
+    }
+
     public Context getContext() {
         return mContext;
     }
@@ -226,6 +234,7 @@ public class JIMCore {
     private String mAppKey;
     private String mToken;
     private String mUserId;
+    private String mSession;
     private Context mContext;
     private int mConnectionStatus;
     private final DBManager mDbManager = new DBManager();

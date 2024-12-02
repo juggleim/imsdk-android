@@ -160,6 +160,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
         if (errorCode == ConstInternal.ErrorCode.NONE) {
             mIntervalGenerator.reset();
             mCore.setUserId(userId);
+            mCore.setSession(session);
             openDB();
             mMessageManager.connectSuccess();
             mConversationManager.connectSuccess();
