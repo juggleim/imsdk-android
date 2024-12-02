@@ -221,7 +221,6 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
             JLogger.i("CON-BG", "Foreground");
             mIntervalGenerator.reset();
             mIsForeground = true;
-            mCore.getWebSocket().pushSwitch(false, mCore.getUserId());
             sendMessage(ConnEvent.ENTER_FOREGROUND);
         }
         mTopForegroundActivity = activity;
@@ -237,7 +236,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
         if (mTopForegroundActivity == activity) {
             JLogger.i("CON-BG", "Background");
             mIsForeground = false;
-            mCore.getWebSocket().pushSwitch(true, mCore.getUserId());
+            sendMessage(ConnEvent.ENTER_BACKGROUND);
             mTopForegroundActivity = null;
         }
     }
@@ -367,6 +366,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     public void enterConnected() {
         JLogger.getInstance().removeExpiredLogs();
         mCore.getWebSocket().startHeartbeat();
+        mCore.getWebSocket().pushSwitch(!mIsForeground, mCore.getUserId());
     }
 
     public void leaveConnected() {
@@ -391,6 +391,10 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     public int getReconnectInterval() {
         return mIntervalGenerator.getNextInterval();
+    }
+
+    public void pushSwitch(boolean isBackground) {
+        mCore.getWebSocket().pushSwitch(isBackground, mCore.getUserId());
     }
 
     public void notifyConnecting() {
