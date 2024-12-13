@@ -129,6 +129,14 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         });
     }
 
+    public void imKick() {
+        synchronized (this) {
+            for (CallSessionImpl loopSession : mCallSessionList) {
+                loopSession.sendMessage(CallEvent.HANGUP);
+            }
+        }
+    }
+
     @Override
     public void onCallInvite(RtcRoom room, UserInfo inviter, List<UserInfo> targetUsers) {
         if (room == null || room.getRoomId() == null) {

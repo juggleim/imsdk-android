@@ -418,6 +418,9 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     private void notify(JIMConst.ConnectionStatus status, int code, String extra) {
+        if (code == ConstInternal.ErrorCode.USER_KICKED_BY_OTHER_CLIENT) {
+            mCallManager.imKick();
+        }
         mCore.getCallbackHandler().post(() -> {
             if (mConnectionStatusListenerMap != null) {
                 for (Map.Entry<String, IConnectionStatusListener> entry : mConnectionStatusListenerMap.entrySet()) {
