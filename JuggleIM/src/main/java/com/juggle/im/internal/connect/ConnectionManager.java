@@ -351,6 +351,9 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     public boolean updateToken(String token) {
         boolean isUpdate = false;
+        if (token == null) {
+            token = "";
+        }
         if (mCore.getToken() == null || !mCore.getToken().equals(token)) {
             mCore.setToken(token);
             mCore.setUserId("");

@@ -11,8 +11,8 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 public interface LoginService {
-    @POST("/sms/send")
+    @POST("/jim/sms/send")
     Call<HttpResult<Void>> getVerificationCode(@Body CodeRequest phone);
-    @POST("/sms_login")
+    @POST("jim/sms_login")
     Call<HttpResult<LoginResult>> login(@Body LoginRequest phone);
 }

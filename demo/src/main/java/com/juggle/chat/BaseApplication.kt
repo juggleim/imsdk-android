@@ -125,7 +125,9 @@ class BaseApplication : MultiDexApplication() {
         initUIKit(this)
         val logConfig = JLogConfig.Builder(this).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).setLogWriteLevel(JLogLevel.JLogLevelVerbose).build()
         val initConfig = InitConfig.Builder().setJLogConfig(logConfig).build()
-        JIM.getInstance().init(this, "nsw3sue72begyv7y", initConfig)
+        val appKey = "nsw3sue72begyv7y"
+        JIM.getInstance().init(this, appKey, initConfig)
+        SendbirdUIKit.appKey = appKey
         CallCenter.getInstance().initZegoEngine(1881186044, this)
         // setup uikit configurations
         HttpsURLConnection.setDefaultSSLSocketFactory(SSLHelper.getTrustAllSSLSocketFactory())
