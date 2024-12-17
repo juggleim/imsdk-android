@@ -63,11 +63,9 @@ import com.juggle.im.model.messages.VoiceMessage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -1680,8 +1678,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     @Override
     public boolean onMessageReceive(ConcreteMessage message) {
         JLogger.i("MSG-Rcv", "direct message id is " + message.getMessageId());
-        if (mSyncProcessing) {
-            mSyncNotifyTime = message.getTimestamp();
+        // 只处理发件箱的消息，收件箱的消息直接抛弃（状态消息直接漏过）
+        boolean isStatusMessage = ((message.getFlags() & MessageContent.MessageFlag.IS_STATUS.getValue()) != 0);
+        if (mSyncProcessing && !isStatusMessage) {
+            if (message.getDirection() == Message.MessageDirection.SEND) {
+                mSyncNotifyTime = message.getTimestamp();
+            }
             return false;
         }
         List<ConcreteMessage> list = new ArrayList<>();
@@ -1697,8 +1699,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
         if (!isFinished) {
             sync();
-        } else if (mSyncNotifyTime > mCore.getMessageReceiveTime()) {
+        } else if (mSyncNotifyTime > mCore.getMessageSendSyncTime()) {
             sync();
+            mSyncNotifyTime = -1;
         } else {
             mSyncProcessing = false;
             if (mCachedSendTime > 0) {
@@ -1921,9 +1924,10 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         long receiveTime = 0;
         for (ConcreteMessage message : messages) {
             //获取消息时间
-            if (message.getDirection() == Message.MessageDirection.SEND) {
+            boolean isStatusMessage = ((message.getFlags() & MessageContent.MessageFlag.IS_STATUS.getValue()) != 0);
+            if (message.getDirection() == Message.MessageDirection.SEND && !isStatusMessage) {
                 sendTime = message.getTimestamp();
-            } else if (message.getDirection() == Message.MessageDirection.RECEIVE) {
+            } else if (message.getDirection() == Message.MessageDirection.RECEIVE && !isStatusMessage) {
                 receiveTime = message.getTimestamp();
             }
 
@@ -2325,7 +2329,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private boolean mSyncProcessing = true;
     private long mCachedReceiveTime = -1;
     private long mCachedSendTime = -1;
-    private long mSyncNotifyTime;
+    private long mSyncNotifyTime;//发件箱
     private boolean mChatroomSyncProcessing;
     private final ConcurrentHashMap<String, Long> mChatroomSyncMap;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
