@@ -114,7 +114,7 @@ class PBData {
                     break;
             }
         }
-        builder.setLanguage(language);
+//        builder.setLanguage(language);
         Connect.ConnectMsgBody body = builder.build();
         byte[] payload = mConverter.encode(body.toByteArray());
 
