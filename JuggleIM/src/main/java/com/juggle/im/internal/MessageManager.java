@@ -2289,7 +2289,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private void webSocketSyncChatroomMessage(String chatroomId, long syncTime, int prevMessageCount) {
         JLogger.i("MSG-ChrmSync", "id is " + chatroomId + ", time is " + syncTime + ", count is " + prevMessageCount);
         mChatroomSyncProcessing = true;
-        mCore.getWebSocket().syncChatroomMessages(chatroomId, syncTime, prevMessageCount);
+        mCore.getWebSocket().syncChatroomMessages(chatroomId, mCore.getUserId(), syncTime, prevMessageCount);
     }
 
     private void updateUserInfo(List<ConcreteMessage> messages) {

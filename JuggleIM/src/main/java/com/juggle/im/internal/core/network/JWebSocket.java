@@ -392,15 +392,15 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void syncChatroomMessages(String chatroomId, long syncTime, int prevMessageCount) {
-        byte[] bytes = mPbData.syncChatroomMessages(chatroomId, syncTime, prevMessageCount, mCmdIndex++);
+    public void syncChatroomMessages(String chatroomId, String userId, long syncTime, int prevMessageCount) {
+        byte[] bytes = mPbData.syncChatroomMessages(chatroomId, userId, syncTime, prevMessageCount, mCmdIndex++);
         JLogger.i("WS-Send", "syncChatroomMessages, id is " + chatroomId + ", time is " + syncTime + ", count is " + prevMessageCount);
         sendWhenOpen(bytes);
     }
 
-    public void syncChatroomAttributes(String chatroomId, long syncTime) {
+    public void syncChatroomAttributes(String chatroomId, String userId, long syncTime) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.syncChatroomAttributes(chatroomId, syncTime, mCmdIndex++);
+        byte[] bytes = mPbData.syncChatroomAttributes(chatroomId, userId, syncTime, mCmdIndex++);
         JLogger.i("WS-Send", "syncChatroomAttributes");
         ChatroomWebSocketCallback callback = new ChatroomWebSocketCallback();
         callback.mChatroomId = chatroomId;

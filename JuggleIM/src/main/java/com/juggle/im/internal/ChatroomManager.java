@@ -454,7 +454,7 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
 
     private void syncChatroomAttr(String chatroomId, long syncTime) {
         JLogger.i("CHRM-AttrSync", "id is " + chatroomId + ", time is " + syncTime);
-        mCore.getWebSocket().syncChatroomAttributes(chatroomId, syncTime);
+        mCore.getWebSocket().syncChatroomAttributes(chatroomId, mCore.getUserId(), syncTime);
     }
 
     private void stopAttrRetryTimer() {

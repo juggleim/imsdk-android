@@ -828,7 +828,7 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] syncChatroomMessages(String chatroomId, long syncTime, int prevMessageCount, int index) {
+    byte[] syncChatroomMessages(String chatroomId, String userId, long syncTime, int prevMessageCount, int index) {
         Chatroom.SyncChatroomReq req = Chatroom.SyncChatroomReq.newBuilder()
                 .setChatroomId(chatroomId)
                 .setSyncTime(syncTime)
@@ -837,7 +837,7 @@ class PBData {
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(SYNC_CHATROOM_MESSAGE)
-                .setTargetId(chatroomId)
+                .setTargetId(userId)
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
@@ -845,7 +845,7 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] syncChatroomAttributes(String chatroomId, long syncTime, int index) {
+    byte[] syncChatroomAttributes(String chatroomId, String userId, long syncTime, int index) {
         Chatroom.SyncChatroomReq req = Chatroom.SyncChatroomReq.newBuilder()
                 .setChatroomId(chatroomId)
                 .setSyncTime(syncTime)
@@ -853,7 +853,7 @@ class PBData {
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(SYNC_CHATROOM_ATTS)
-                .setTargetId(chatroomId)
+                .setTargetId(userId)
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());

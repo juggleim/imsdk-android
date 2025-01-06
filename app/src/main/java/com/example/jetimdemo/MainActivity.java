@@ -81,18 +81,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            JIM.getInstance().getConnectionManager().setLanguage("en", new IConnectionManager.ISimpleCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    int i = 1;
-                                }
-
-                                @Override
-                                public void onError(int errorCode) {
-
-                                    int i = 1;
-                                }
-                            });
+                            JIM.getInstance().getChatroomManager().joinChatroom("chatroom1001");
 
 
 //                            JIM.getInstance().getCallManager().startSingleCall("asdfsadf", null);
