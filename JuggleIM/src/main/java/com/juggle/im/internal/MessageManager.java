@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.juggle.im.JErrorCode;
+import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.interfaces.IChatroomManager;
@@ -12,6 +13,7 @@ import com.juggle.im.interfaces.IMessageUploadProvider;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.GetGlobalMuteCallback;
 import com.juggle.im.internal.core.network.JWebSocket;
+import com.juggle.im.internal.core.network.MessageReactionListCallback;
 import com.juggle.im.internal.core.network.QryHisMsgCallback;
 import com.juggle.im.internal.core.network.QryReadDetailCallback;
 import com.juggle.im.internal.core.network.SendMessageCallback;
@@ -30,6 +32,7 @@ import com.juggle.im.internal.model.messages.DeleteMsgMessage;
 import com.juggle.im.internal.model.messages.GroupReadNtfMessage;
 import com.juggle.im.internal.model.messages.LogCommandMessage;
 import com.juggle.im.internal.model.messages.MarkUnreadMessage;
+import com.juggle.im.internal.model.messages.MsgExSetMessage;
 import com.juggle.im.internal.model.messages.ReadNtfMessage;
 import com.juggle.im.internal.model.messages.RecallCmdMessage;
 import com.juggle.im.internal.model.messages.TopConvMessage;
@@ -47,6 +50,8 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
@@ -100,6 +105,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(ClearTotalUnreadMessage.class);
         ContentTypeCenter.getInstance().registerContentType(MarkUnreadMessage.class);
         ContentTypeCenter.getInstance().registerContentType(CallFinishNotifyMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(MsgExSetMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -1496,7 +1502,151 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void addMessageReaction(String messageId, Conversation conversation, String reactionId, ISimpleCallback callback) {
+        if (messageId == null || messageId.isEmpty()
+        || conversation == null || conversation.getConversationId().isEmpty()
+        || reactionId == null || reactionId.isEmpty()) {
+            JLogger.e("MSG-ReactionAdd", "invalid parameter");
+            mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-ReactionAdd", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        mCore.getWebSocket().addMessageReaction(messageId, conversation, reactionId, mCore.getUserId(), new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                JLogger.i("MSG-ReactionAdd", "success");
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                    MessageReaction reaction = new MessageReaction();
+                    reaction.setMessageId(messageId);
+                    MessageReactionItem item = new MessageReactionItem();
+                    item.setReactionId(reactionId);
+                    UserInfo currentUser = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+                    item.setUserInfoList(Collections.singletonList(currentUser));
+                    reaction.setItemList(Collections.singletonList(item));
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageReactionAdd(conversation, reaction);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-ReactionAdd", "error, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void removeMessageReaction(String messageId, Conversation conversation, String reactionId, ISimpleCallback callback) {
+        if (messageId == null || messageId.isEmpty()
+                || conversation == null || conversation.getConversationId().isEmpty()
+                || reactionId == null || reactionId.isEmpty()) {
+            JLogger.e("MSG-ReactionRemove", "invalid parameter");
+            mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-ReactionRemove", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        mCore.getWebSocket().removeMessageReaction(messageId, conversation, reactionId, mCore.getUserId(), new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                JLogger.i("MSG-ReactionRemove", "success");
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                    MessageReaction reaction = new MessageReaction();
+                    reaction.setMessageId(messageId);
+                    MessageReactionItem item = new MessageReactionItem();
+                    item.setReactionId(reactionId);
+                    UserInfo currentUser = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+                    item.setUserInfoList(Collections.singletonList(currentUser));
+                    reaction.setItemList(Collections.singletonList(item));
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageReactionRemove(conversation, reaction);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-ReactionRemove", "error, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void getMessagesReaction(List<String> messageIdList, Conversation conversation, IMessageReactionListCallback callback) {
+        if (messageIdList == null || messageIdList.isEmpty()
+        || conversation == null || conversation.getConversationId().isEmpty()) {
+            JLogger.e("MSG-ReactionGet", "invalid parameter");
+            mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-ReactionGet", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        mCore.getWebSocket().getMessagesReaction(messageIdList, conversation, new MessageReactionListCallback() {
+            @Override
+            public void onSuccess(List<MessageReaction> reactionList) {
+                JLogger.i("MSG-ReactionGet", "success");
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(reactionList));
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-ReactionGet", "error, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+
+    }
+
+    @Override
     public void setMute(boolean isMute, List<TimePeriod> periods, ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Mute", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
         TimeZone timezone = TimeZone.getDefault();
         String zoneName = timezone.getID();
         if (zoneName == null) {
@@ -1929,6 +2079,32 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 sendTime = message.getTimestamp();
             } else if (message.getDirection() == Message.MessageDirection.RECEIVE && !isStatusMessage) {
                 receiveTime = message.getTimestamp();
+            }
+
+            //reaction
+            if (message.getContentType().equals(MsgExSetMessage.CONTENT_TYPE)) {
+                MsgExSetMessage cmd = (MsgExSetMessage) message.getContent();
+                if (!cmd.getAddItemList().isEmpty()) {
+                    MessageReaction reaction = new MessageReaction();
+                    reaction.setMessageId(cmd.getOriginalMessageId());
+                    reaction.setItemList(cmd.getAddItemList());
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            mCore.getCallbackHandler().post(() -> entry.getValue().onMessageReactionAdd(message.getConversation(), reaction));
+                        }
+                    }
+                }
+                if (!cmd.getRemoveItemList().isEmpty()) {
+                    MessageReaction reaction = new MessageReaction();
+                    reaction.setMessageId(cmd.getOriginalMessageId());
+                    reaction.setItemList(cmd.getRemoveItemList());
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            mCore.getCallbackHandler().post(() -> entry.getValue().onMessageReactionRemove(message.getConversation(), reaction));
+                        }
+                    }
+                }
+                continue;
             }
 
             //recall message

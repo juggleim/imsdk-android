@@ -31,6 +31,8 @@ import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
+import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
@@ -39,6 +41,8 @@ import com.juggle.im.push.PushChannel;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -902,6 +906,63 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] addMsgSet(String messageId, Conversation conversation, String key, String userId, int index) {
+        Appmessages.MsgExtItem item = Appmessages.MsgExtItem.newBuilder().setKey(key).setValue(userId).build();
+        Appmessages.MsgExt ext = Appmessages.MsgExt.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setMsgId(messageId)
+                .setExt(item)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(MSG_EX_SET)
+                .setTargetId(messageId)
+                .setData(ext.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] removeMsgSet(String messageId, Conversation conversation, String key, String userId, int index) {
+        Appmessages.MsgExtItem item = Appmessages.MsgExtItem.newBuilder().setKey(key).setValue(userId).build();
+        Appmessages.MsgExt ext = Appmessages.MsgExt.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setMsgId(messageId)
+                .setExt(item)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(DEL_MSG_EX_SET)
+                .setTargetId(messageId)
+                .setData(ext.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] queryMsgExSet(List<String> messageIdList, Conversation conversation, int index) {
+        Appmessages.QryMsgExtReq.Builder builder = Appmessages.QryMsgExtReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue());
+        for (String messageId : messageIdList) {
+            builder.addMsgIds(messageId);
+        }
+        Appmessages.QryMsgExtReq req = builder.build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_MSG_EX_SET)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] qryFirstUnreadMessage(Conversation conversation, int index) {
         Appmessages.QryFirstUnreadMsgReq req = Appmessages.QryFirstUnreadMsgReq.newBuilder()
                 .setTargetId(conversation.getConversationId())
@@ -1099,6 +1160,9 @@ class PBData {
                             break;
                         case PBRcvObj.PBRcvType.qryCallRoomAck:
                             obj = qryCallRoomAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.qryMsgExtAck:
+                            obj = qryMsgExtAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         default:
                             break;
@@ -1333,6 +1397,44 @@ class PBData {
         PBRcvObj.RtcQryCallRoomsAck a = new PBRcvObj.RtcQryCallRoomsAck(body);
         a.rooms = outRooms;
         obj.mRtcQryCallRoomsAck = a;
+        return obj;
+    }
+
+    private PBRcvObj qryMsgExtAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.MsgExtItemsList list = Appmessages.MsgExtItemsList.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.qryMsgExtAck);
+        List<MessageReaction> reactionList = new ArrayList<>();
+        for (Appmessages.MsgExtItems pbItems : list.getItemsList()) {
+            MessageReaction reaction = new MessageReaction();
+            reaction.setMessageId(pbItems.getMsgId());
+            List<MessageReactionItem> itemList = new ArrayList<>();
+            boolean isUpdate = false;
+            for (Appmessages.MsgExtItem pbItem : pbItems.getExtsList()) {
+                UserInfo user = userInfoWithPBUserInfo(pbItem.getUserInfo());
+                isUpdate = false;
+                for (MessageReactionItem loopItem : itemList) {
+                    if (loopItem.getReactionId().equals(pbItem.getKey())) {
+                        isUpdate = true;
+                        List<UserInfo> userInfoList = loopItem.getUserInfoList();
+                        userInfoList.add(user);
+                        loopItem.setUserInfoList(userInfoList);
+                        break;
+                    }
+                }
+                if (!isUpdate) {
+                    MessageReactionItem reactionItem = new MessageReactionItem();
+                    reactionItem.setReactionId(pbItem.getKey());
+                    reactionItem.setUserInfoList(new ArrayList<>(Collections.singletonList(user)));
+                    itemList.add(reactionItem);
+                }
+            }
+            reaction.setItemList(itemList);
+            reactionList.add(reaction);
+        }
+        PBRcvObj.QryMsgExtAck ack = new PBRcvObj.QryMsgExtAck(body);
+        ack.reactionList = reactionList;
+        obj.mQryMsgExtAck = ack;
         return obj;
     }
 
@@ -1943,6 +2045,9 @@ class PBData {
     private static final String RTC_PING = "rtc_ping";
     private static final String SET_USER_SETTINGS = "set_user_settings";
     private static final String LANGUAGE = "language";
+    private static final String MSG_EX_SET = "msg_exset";
+    private static final String DEL_MSG_EX_SET = "del_msg_exset";
+    private static final String QRY_MSG_EX_SET = "qry_msg_exset";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
@@ -1995,6 +2100,9 @@ class PBData {
             put(RTC_MEMBER_ROOMS, PBRcvObj.PBRcvType.qryCallRoomsAck);
             put(RTC_QRY, PBRcvObj.PBRcvType.qryCallRoomAck);
             put(SET_USER_SETTINGS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(DEL_MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(QRY_MSG_EX_SET, PBRcvObj.PBRcvType.qryMsgExtAck);
         }
     };
 

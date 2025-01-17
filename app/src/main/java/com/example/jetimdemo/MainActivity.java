@@ -36,6 +36,7 @@ import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
@@ -48,6 +49,7 @@ import com.juggle.im.model.messages.VoiceMessage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -81,11 +83,45 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            JIM.getInstance().getChatroomManager().joinChatroom("chatroom1001");
 
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "CYXf6GNeM");
+//                            JIM.getInstance().getMessageManager().getMessagesReaction(Collections.singletonList("nwnrv8pkaa6g3hx7"), c, new IMessageManager.IMessageReactionListCallback() {
+//                                @Override
+//                                public void onSuccess(List<MessageReaction> reactionList) {
+//                                    int i = 0;
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//                                    int i = 1;
+//                                }
+//                            });
 
-//                            JIM.getInstance().getCallManager().startSingleCall("asdfsadf", null);
+//                            JIM.getInstance().getMessageManager().removeMessageReaction("nwnrv8pkaa6g3hx7", c, "reactionId1", new IMessageManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    int i = 1;
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//
+//                                    int i = 1;
+//                                }
+//                            });
 
+//                            JIM.getInstance().getMessageManager().addMessageReaction("nwnrv8pkaa6g3hx7", c, "reactionId1", new IMessageManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    int i = 1;
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//                                    int o = 1;
+//
+//                                }
+//                            });
 
 
 
@@ -195,6 +231,16 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
             @Override
             public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
                 Log.d("zzb", "onMessageClear, conversation is " + conversation.getConversationId() + ", timestamp is " + timestamp + ", senderId is " + senderId);
+            }
+
+            @Override
+            public void onMessageReactionAdd(Conversation conversation, MessageReaction reaction) {
+                Log.d("demo", "onMessageReactionAdd, original messageId is " + reaction.getMessageId());
+            }
+
+            @Override
+            public void onMessageReactionRemove(Conversation conversation, MessageReaction reaction) {
+                Log.d("demo", "onMessageReactionRemove, original messageId is " + reaction.getMessageId());
             }
         });
         JIM.getInstance().getConversationManager().addListener("main", new IConversationManager.IConversationListener() {

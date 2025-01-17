@@ -9,6 +9,7 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
@@ -109,6 +110,11 @@ public interface IMessageManager {
         void onProgress(Message message, int errorCode, int processCount, int totalCount);
 
         void onComplete();
+    }
+
+    interface IMessageReactionListCallback {
+        void onSuccess(List<MessageReaction> reactionList);
+        void onError(int errorCode);
     }
 
     interface IGetMuteStatusCallback {
@@ -311,6 +317,40 @@ public interface IMessageManager {
                           IBroadcastMessageCallback callback);
 
     /**
+     * 添加消息回应
+     * @param messageId 消息 id
+     * @param conversation 消息所属会话
+     * @param reactionId 回应 id
+     * @param callback 结果回调
+     */
+    void addMessageReaction(String messageId,
+                            Conversation conversation,
+                            String reactionId,
+                            ISimpleCallback callback);
+
+    /**
+     * 删除消息回应
+     * @param messageId 消息 id
+     * @param conversation 消息所属会话
+     * @param reactionId 回应 id
+     * @param callback 结果回调
+     */
+    void removeMessageReaction(String messageId,
+                               Conversation conversation,
+                               String reactionId,
+                               ISimpleCallback callback);
+
+    /**
+     * 批量获取消息回应（消息必须属于同一个会话）
+     * @param messageIdList 消息 id 列表
+     * @param conversation 消息所属会话
+     * @param callback 结果回调
+     */
+    void getMessagesReaction(List<String> messageIdList,
+                             Conversation conversation,
+                             IMessageReactionListCallback callback);
+
+    /**
      * 设置消息全局免打扰。
      *
      * @param isMute 是否免打扰
@@ -348,6 +388,12 @@ public interface IMessageManager {
 
         //当 senderId 有值时，表示只清空这个用户发送的消息
         void onMessageClear(Conversation conversation, long timestamp, String senderId);
+
+        //新增消息回应的回调
+        void onMessageReactionAdd(Conversation conversation, MessageReaction reaction);
+
+        //删除消息回应的回调
+        void onMessageReactionRemove(Conversation conversation, MessageReaction reaction);
     }
 
     interface IMessageSyncListener {

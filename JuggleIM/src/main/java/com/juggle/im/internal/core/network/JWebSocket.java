@@ -416,6 +416,30 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void addMessageReaction(String messageId, Conversation conversation, String reactionId, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.addMsgSet(messageId, conversation, reactionId, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "add message reaction, messageId is " + messageId + ", reactionId is " + reactionId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void removeMessageReaction(String messageId, Conversation conversation, String reactionId, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.removeMsgSet(messageId, conversation, reactionId, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "remove message reaction, messageId is " + messageId + ", reactionId is " + reactionId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getMessagesReaction(List<String> messageIdList, Conversation conversation, MessageReactionListCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.queryMsgExSet(messageIdList, conversation, mCmdIndex++);
+        JLogger.i("WS-Send", "get messages reaction, count is " + messageIdList.size());
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void callInvite(String callId, boolean isMultiCall, List<String> userIdList, int engineType, CallAuthCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.callInvite(callId, isMultiCall, userIdList, engineType, mCmdIndex++);
@@ -539,6 +563,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             sCallback.onError(errorCode);
         } else if (callback instanceof RtcRoomListCallback) {
             RtcRoomListCallback sCallback = (RtcRoomListCallback) callback;
+            sCallback.onError(errorCode);
+        } else if (callback instanceof MessageReactionListCallback) {
+            MessageReactionListCallback sCallback = (MessageReactionListCallback) callback;
             sCallback.onError(errorCode);
         }
     }
@@ -703,6 +730,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.qryCallRoomAck:
                 //复用 mRtcQryCallRoomsAck
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
+                break;
+            case PBRcvObj.PBRcvType.qryMsgExtAck:
+                handleQryMsgExtAck(obj.mQryMsgExtAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -994,6 +1024,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.rooms);
+            }
+        }
+    }
+
+    private void handleQryMsgExtAck(PBRcvObj.QryMsgExtAck ack) {
+        JLogger.i("WS-Receive", "handleQryMsgExtAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof MessageReactionListCallback) {
+            MessageReactionListCallback callback = (MessageReactionListCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.reactionList);
             }
         }
     }

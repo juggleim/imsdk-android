@@ -28,7 +28,7 @@ afterEvaluate {
         }
         repositories {
             maven {
-                url = 'https://maven.jugglechat.com/repository/maven-releases/'
+                url = 'https://repo.juggle.im/repository/maven-releases/'
                 credentials {
                     username 'admin'
                     password 'jugglechat'
