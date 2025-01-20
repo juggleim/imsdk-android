@@ -834,6 +834,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         mentionMsg.setSenderId(message.getSenderUserId());
         mentionMsg.setMsgId(message.getMessageId());
         mentionMsg.setMsgTime(message.getTimestamp());
+        mentionMsg.setType(message.getMentionInfo().getType());
         ConversationMentionInfo mentionInfo = new ConversationMentionInfo();
         mentionInfo.setMentionMsgList(new ArrayList<>());
         mentionInfo.getMentionMsgList().add(mentionMsg);

@@ -84,33 +84,8 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "uzG-T49FcCo");
-                            TextMessage t = new TextMessage("5555");
-//                            JIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
-//                                @Override
-//                                public void onSuccess(Message message) {
-//
-//                                    int i = 1;
-//                                }
-//
-//                                @Override
-//                                public void onError(Message message, int errorCode) {
-//
-//                                    int i = 1;
-//                                }
-//                            });
-                            JIM.getInstance().getMessageManager().updateMessage("nwsjav4qapafjdh7", t, c, new IMessageManager.IMessageCallback() {
-                                @Override
-                                public void onSuccess(Message message) {
-                                    int o = 1;
-                                }
-
-                                @Override
-                                public void onError(int errorCode) {
-
-                                    int i = 1;
-                                }
-                            });
+                            List<ConversationInfo> list = JIM.getInstance().getConversationManager().getConversationInfoList();
+                            int o = 1;
 
 
 
@@ -131,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 
             }
         });
-        JIM.getInstance().getConnectionManager().connect("ChBuc3czc3VlNzJiZWd5djd5GiBM9ZSORP4y5TU8DsS8hwOZL64K6pSBmg9TkeL57oDhEw==");
+        JIM.getInstance().getConnectionManager().connect("ChBuc3czc3VlNzJiZWd5djd5GiBWTg16NeQ-1JvJQG1XN7qiOrISfZ9RzxqDy0ff8rAC-A==");
         Handler mH = new Handler(Looper.getMainLooper());
         mH.postDelayed(new Runnable() {
             @Override

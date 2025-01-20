@@ -1904,6 +1904,7 @@ class PBData {
         result.setSenderId(pbMentionMsg.getSenderId());
         result.setMsgId(pbMentionMsg.getMsgId());
         result.setMsgTime(pbMentionMsg.getMsgTime());
+        result.setType(MessageMentionInfo.MentionType.setValue(pbMentionMsg.getMentionTypeValue()));
         return result;
     }
 
