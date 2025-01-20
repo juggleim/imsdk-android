@@ -161,13 +161,18 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             }
 
             @Override
+            public void onMessageUpdate(Message message) {
+
+            }
+
+            @Override
             public void onMessageReactionAdd(Conversation conversation, MessageReaction reaction) {
 
             }
 
             @Override
             public void onMessageReactionRemove(Conversation conversation, MessageReaction reaction) {
-                
+
             }
         });
     }

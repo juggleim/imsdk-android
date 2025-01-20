@@ -568,6 +568,12 @@ public class DBManager {
         });
     }
 
+    public void setMessageFlags(String messageId, int flags) {
+        String sql = MessageSql.SQL_SET_MESSAGE_FLAGS;
+        Object[] args = new Object[]{flags, messageId};
+        execSQL(sql, args);
+    }
+
     public void updateMessage(ConcreteMessage message) {
         performTransaction(() -> {
             if (mDb == null) return;

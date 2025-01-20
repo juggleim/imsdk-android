@@ -44,7 +44,14 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 5) {
+            try {
+                sqLiteDatabase.execSQL(MessageSql.SQL_ALTER_ADD_FLAGS);
+            } catch (SQLiteConstraintException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 4;
+    private final static int version = 5;
 }

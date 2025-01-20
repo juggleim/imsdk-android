@@ -94,6 +94,12 @@ public interface IMessageManager {
         void onError(int errorCode);
     }
 
+    interface IMessageCallback {
+        void onSuccess(Message message);
+
+        void onError(int errorCode);
+    }
+
     interface ISendReadReceiptCallback {
         void onSuccess();
 
@@ -257,6 +263,8 @@ public interface IMessageManager {
 
     void recallMessage(String messageId, Map<String, String> extras, IRecallMessageCallback callback);
 
+    void updateMessage(String messageId, MessageContent content, Conversation conversation, IMessageCallback callback);
+
     void getRemoteMessages(Conversation conversation,
                            int count,
                            long startTime,
@@ -388,6 +396,9 @@ public interface IMessageManager {
 
         //当 senderId 有值时，表示只清空这个用户发送的消息
         void onMessageClear(Conversation conversation, long timestamp, String senderId);
+
+        //消息修改的回调
+        void onMessageUpdate(Message message);
 
         //新增消息回应的回调
         void onMessageReactionAdd(Conversation conversation, MessageReaction reaction);

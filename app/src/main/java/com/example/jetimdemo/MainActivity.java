@@ -84,44 +84,33 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "CYXf6GNeM");
-//                            JIM.getInstance().getMessageManager().getMessagesReaction(Collections.singletonList("nwnrv8pkaa6g3hx7"), c, new IMessageManager.IMessageReactionListCallback() {
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "uzG-T49FcCo");
+                            TextMessage t = new TextMessage("5555");
+//                            JIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
 //                                @Override
-//                                public void onSuccess(List<MessageReaction> reactionList) {
-//                                    int i = 0;
+//                                public void onSuccess(Message message) {
+//
+//                                    int i = 1;
 //                                }
 //
 //                                @Override
-//                                public void onError(int errorCode) {
+//                                public void onError(Message message, int errorCode) {
+//
 //                                    int i = 1;
 //                                }
 //                            });
+                            JIM.getInstance().getMessageManager().updateMessage("nwsjav4qapafjdh7", t, c, new IMessageManager.IMessageCallback() {
+                                @Override
+                                public void onSuccess(Message message) {
+                                    int o = 1;
+                                }
 
-//                            JIM.getInstance().getMessageManager().removeMessageReaction("nwnrv8pkaa6g3hx7", c, "reactionId1", new IMessageManager.ISimpleCallback() {
-//                                @Override
-//                                public void onSuccess() {
-//                                    int i = 1;
-//                                }
-//
-//                                @Override
-//                                public void onError(int errorCode) {
-//
-//                                    int i = 1;
-//                                }
-//                            });
+                                @Override
+                                public void onError(int errorCode) {
 
-//                            JIM.getInstance().getMessageManager().addMessageReaction("nwnrv8pkaa6g3hx7", c, "reactionId1", new IMessageManager.ISimpleCallback() {
-//                                @Override
-//                                public void onSuccess() {
-//                                    int i = 1;
-//                                }
-//
-//                                @Override
-//                                public void onError(int errorCode) {
-//                                    int o = 1;
-//
-//                                }
-//                            });
+                                    int i = 1;
+                                }
+                            });
 
 
 
@@ -142,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 
             }
         });
-        JIM.getInstance().getConnectionManager().connect(TOKEN1181);
+        JIM.getInstance().getConnectionManager().connect("ChBuc3czc3VlNzJiZWd5djd5GiBM9ZSORP4y5TU8DsS8hwOZL64K6pSBmg9TkeL57oDhEw==");
         Handler mH = new Handler(Looper.getMainLooper());
         mH.postDelayed(new Runnable() {
             @Override
@@ -231,6 +220,11 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
             @Override
             public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
                 Log.d("zzb", "onMessageClear, conversation is " + conversation.getConversationId() + ", timestamp is " + timestamp + ", senderId is " + senderId);
+            }
+
+            @Override
+            public void onMessageUpdate(Message message) {
+                Log.d("demo", "onMessageUpdate, messageId is " + message.getMessageId());
             }
 
             @Override

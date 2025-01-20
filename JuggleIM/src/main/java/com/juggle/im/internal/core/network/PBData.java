@@ -41,7 +41,6 @@ import com.juggle.im.push.PushChannel;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -274,6 +273,28 @@ class PBData {
                 .build();
 
         mMsgCmdMap.put(index, RECALL_MSG);
+
+        Connect.ImWebsocketMsg msg = createImWebsocketMsgWithQueryMsg(body);
+        return msg.toByteArray();
+    }
+
+    byte[] updateMessageData(String messageId, String contentType, byte[] msgData, Conversation conversation, long timestamp, long msgSeqNo, int index) {
+        Appmessages.ModifyMsgReq req = Appmessages.ModifyMsgReq.newBuilder()
+                .setMsgId(messageId)
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setMsgTime(timestamp)
+                .setMsgSeqNo(msgSeqNo)
+                .setMsgContent(ByteString.copyFrom(msgData))
+                .setMsgType(contentType)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(MODIFY_MSG)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, MODIFY_MSG);
 
         Connect.ImWebsocketMsg msg = createImWebsocketMsgWithQueryMsg(body);
         return msg.toByteArray();
@@ -1629,6 +1650,7 @@ class PBData {
             }
         }
         message.setFlags(downMsg.getFlags());
+        message.setEdit((message.getFlags() & MessageContent.MessageFlag.IS_MODIFIED.getValue()) != 0);
         GroupMessageReadInfo info = new GroupMessageReadInfo();
         info.setReadCount(downMsg.getReadCount());
         info.setMemberCount(downMsg.getMemberCount());
@@ -2010,6 +2032,7 @@ class PBData {
     private static final String SYNC_MSG = "sync_msgs";
     private static final String MARK_READ = "mark_read";
     private static final String RECALL_MSG = "recall_msg";
+    private static final String MODIFY_MSG = "modify_msg";
     private static final String DEL_CONV = "del_convers";
     private static final String CLEAR_UNREAD = "clear_unread";
     private static final String CLEAR_TOTAL_UNREAD = "clear_total_unread";
@@ -2103,6 +2126,7 @@ class PBData {
             put(MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(DEL_MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_MSG_EX_SET, PBRcvObj.PBRcvType.qryMsgExtAck);
+            put(MODIFY_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
         }
     };
 

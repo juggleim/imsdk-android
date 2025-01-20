@@ -18,7 +18,7 @@ public class RecallCmdMessage extends MessageContent {
 
     @Override
     public byte[] encode() {
-        //不会往外发
+        //不会往外发，也不存本地
         return new byte[0];
     }
 
@@ -80,16 +80,8 @@ public class RecallCmdMessage extends MessageContent {
         return mOriginalMessageTime;
     }
 
-    public void setOriginalMessageTime(long originalMessageTime) {
-        mOriginalMessageTime = originalMessageTime;
-    }
-
     public Map<String, String> getExtra() {
         return mExtra;
-    }
-
-    public void setExtra(Map<String, String> extra) {
-        mExtra = extra;
     }
 
     public static final String CONTENT_TYPE = "jg:recall";

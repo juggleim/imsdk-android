@@ -33,6 +33,7 @@ import com.juggle.im.internal.model.messages.GroupReadNtfMessage;
 import com.juggle.im.internal.model.messages.LogCommandMessage;
 import com.juggle.im.internal.model.messages.MarkUnreadMessage;
 import com.juggle.im.internal.model.messages.MsgExSetMessage;
+import com.juggle.im.internal.model.messages.MsgModifyMessage;
 import com.juggle.im.internal.model.messages.ReadNtfMessage;
 import com.juggle.im.internal.model.messages.RecallCmdMessage;
 import com.juggle.im.internal.model.messages.TopConvMessage;
@@ -106,6 +107,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(MarkUnreadMessage.class);
         ContentTypeCenter.getInstance().registerContentType(CallFinishNotifyMessage.class);
         ContentTypeCenter.getInstance().registerContentType(MsgExSetMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(MsgModifyMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -1009,6 +1011,78 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onError(int errorCode) {
                 JLogger.e("MSG-Recall", "fail, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void updateMessage(String messageId, MessageContent content, Conversation conversation, IMessageCallback callback) {
+        if (messageId == null || messageId.isEmpty()
+        || content == null
+        || conversation == null
+        || conversation.getConversationId() == null
+        || conversation.getConversationId().isEmpty()) {
+            JLogger.e("MSG-Update", "invalid parameter");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+
+        List<String> idList = new ArrayList<>(1);
+        idList.add(messageId);
+        List<Message> messages = getMessagesByMessageIds(idList);
+        if (messages.isEmpty()) {
+            int errorCode = JErrorCode.MESSAGE_NOT_EXIST;
+            JLogger.e("MSG-Update", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Update", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        ConcreteMessage m = (ConcreteMessage) messages.get(0);
+        mCore.getWebSocket().updateMessage(messageId, content, conversation, m.getTimestamp(), m.getSeqNo(), new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                JLogger.i("MSG-Update", "success");
+                updateMessageSendSyncTime(timestamp);
+                m.setContentType(content.getContentType());
+                m.setContent(content);
+                mCore.getDbManager().updateMessageContentWithMessageId(content, m.getContentType(), messageId);
+                int flags = m.getFlags() | MessageContent.MessageFlag.IS_MODIFIED.getValue();
+                m.setFlags(flags);
+                m.setEdit(true);
+                mCore.getDbManager().setMessageFlags(messageId, flags);
+
+                if (mSendReceiveListener != null) {
+                    mSendReceiveListener.onMessageUpdate(m);
+                }
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess(m);
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageUpdate(m);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-Update", "fail, code is " + errorCode);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
                 }
@@ -2049,6 +2123,28 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         insertRemoteMessages(messagesToSave);
     }
 
+    private Message handleModifyMessage(String messageId, String msgType, MessageContent content) {
+        if (messageId == null || messageId.isEmpty()) {
+            return null;
+        }
+        mCore.getDbManager().updateMessageContentWithMessageId(content, msgType, messageId);
+        List<String> ids = new ArrayList<>(1);
+        ids.add(messageId);
+        List<ConcreteMessage> messages = mCore.getDbManager().getConcreteMessagesByMessageIds(ids);
+        if (!messages.isEmpty()) {
+            ConcreteMessage message = messages.get(0);
+            int flags = message.getFlags() | MessageContent.MessageFlag.IS_MODIFIED.getValue();
+            message.setFlags(flags);
+            message.setEdit(true);
+            mCore.getDbManager().setMessageFlags(message.getMessageId(), flags);
+            if (mSendReceiveListener != null) {
+                mSendReceiveListener.onMessageUpdate(message);
+            }
+            return message;
+        }
+        return null;
+    }
+
     private Message handleRecallCmdMessage(Conversation conversation, String messageId, Map<String, String> extra) {
         RecallInfoMessage recallInfoMessage = new RecallInfoMessage();
         recallInfoMessage.setExtra(extra);
@@ -2101,6 +2197,21 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     if (mListenerMap != null) {
                         for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
                             mCore.getCallbackHandler().post(() -> entry.getValue().onMessageReactionRemove(message.getConversation(), reaction));
+                        }
+                    }
+                }
+                continue;
+            }
+
+            //modify message
+            if (message.getContentType().equals(MsgModifyMessage.CONTENT_TYPE)) {
+                MsgModifyMessage cmd = (MsgModifyMessage) message.getContent();
+                Message updatedMessage = handleModifyMessage(cmd.getOriginalMessageId(), cmd.getMessageType(), cmd.getMessageContent());
+                //updatedMessage 为空表示被修改的消息本地不存在，不需要回调
+                if (updatedMessage != null) {
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            mCore.getCallbackHandler().post(() -> entry.getValue().onMessageUpdate(updatedMessage));
                         }
                     }
                 }

@@ -66,6 +66,8 @@ class MessageSql {
         if (!TextUtils.isEmpty(referMsgId)) {
             message.setReferMsgId(referMsgId);
         }
+        message.setFlags(CursorHelper.readInt(cursor, COL_FLAGS));
+        message.setEdit((message.getFlags() & MessageContent.MessageFlag.IS_MODIFIED.getValue()) != 0);
         return message;
     }
 
@@ -77,11 +79,13 @@ class MessageSql {
         long seqNo = 0;
         long msgIndex = 0;
         String clientUid = "";
+        int flags = 0;
         if (message instanceof ConcreteMessage) {
             ConcreteMessage c = (ConcreteMessage) message;
             seqNo = c.getSeqNo();
             msgIndex = c.getMsgIndex();
             clientUid = c.getClientUid();
+            flags = c.getFlags();
         }
         cv.put(COL_CONVERSATION_TYPE, message.getConversation().getConversationType().getValue());
         cv.put(COL_CONVERSATION_ID, message.getConversation().getConversationId());
@@ -116,6 +120,7 @@ class MessageSql {
         if (message.hasReferredInfo()) {
             cv.put(COL_REFER_MSG_ID, message.getReferredMessage().getMessageId());
         }
+        cv.put(COL_FLAGS, flags);
         return cv;
     }
 
@@ -163,16 +168,19 @@ class MessageSql {
             + "search_content TEXT,"
             + "local_attribute TEXT,"
             + "mention_info TEXT,"
-            + "refer_msg_id VARCHAR (64)"
+            + "refer_msg_id VARCHAR (64),"
+            + "flags INTEGER"
             + ")";
 
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
     static final String SQL_CREATE_CLIENT_UID_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message_client_uid ON message(client_uid)";
     static final String SQL_CREATE_MESSAGE_CONVERSATION_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation ON message(conversation_type, conversation_id)";
+    static final String SQL_ALTER_ADD_FLAGS = "ALTER TABLE message ADD COLUMN flags INTEGER";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
     static final String SQL_GET_MESSAGE_WITH_CLIENT_UID = "SELECT * FROM message WHERE client_uid = ?";
     static final String SQL_SEARCH_MESSAGE_IN_CONVERSATIONS = "SELECT conversation_type, conversation_id, count(*) AS match_count FROM message ";
+    static final String SQL_SET_MESSAGE_FLAGS = "UPDATE message SET flags = ? WHERE message_uid = ?";
 
     static String sqlSearchMessageInConversations(MessageQueryOptions options, List<String> whereArgs) {
         List<String> whereClauses = new ArrayList<>();
@@ -409,4 +417,5 @@ class MessageSql {
     static final String COL_LOCAL_ATTRIBUTE = "local_attribute";
     static final String COL_MENTION_INFO = "mention_info";
     static final String COL_REFER_MSG_ID = "refer_msg_id";
+    static final String COL_FLAGS = "flags";
 }

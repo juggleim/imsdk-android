@@ -103,16 +103,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               String userId,
                               SendMessageCallback callback) {
         Integer key = mCmdIndex;
-        byte[] encodeBytes;
-        if (content instanceof MediaMessageContent) {
-            MediaMessageContent mediaContent = (MediaMessageContent) content;
-            String local = mediaContent.getLocalPath();
-            mediaContent.setLocalPath("");
-            encodeBytes = mediaContent.encode();
-            mediaContent.setLocalPath(local);
-        } else {
-            encodeBytes = content.encode();
-        }
+        byte[] encodeBytes = encodeContentData(content);
 
         byte[] bytes = mPbData.sendMessageData(content.getContentType(),
                 encodeBytes,
@@ -132,6 +123,20 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    private byte[] encodeContentData(MessageContent content) {
+        byte[] encodeBytes;
+        if (content instanceof MediaMessageContent) {
+            MediaMessageContent mediaContent = (MediaMessageContent) content;
+            String local = mediaContent.getLocalPath();
+            mediaContent.setLocalPath("");
+            encodeBytes = mediaContent.encode();
+            mediaContent.setLocalPath(local);
+        } else {
+            encodeBytes = content.encode();
+        }
+        return encodeBytes;
+    }
+
     public void recallMessage(String messageId,
                               Conversation conversation,
                               long timestamp,
@@ -141,6 +146,15 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, extras, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "recallMessage, messageId is " + messageId);
+        sendWhenOpen(bytes);
+    }
+
+    public void updateMessage(String messageId, MessageContent content, Conversation conversation, long timestamp, long msgSeqNo, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] contentBytes = encodeContentData(content);
+        byte[] bytes = mPbData.updateMessageData(messageId, content.getContentType(), contentBytes, conversation, timestamp, msgSeqNo, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "update message, messageId is " + messageId);
         sendWhenOpen(bytes);
     }
 
