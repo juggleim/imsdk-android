@@ -198,7 +198,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
-            public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo) {
+            public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo, String contentType, MessageContent content) {
                 JLogger.i("MSG-Send", "success, clientMsgNo is " + clientMsgNo);
                 mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, seqNo);
                 message.setClientMsgNo(clientMsgNo);
@@ -206,6 +206,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 message.setTimestamp(timestamp);
                 message.setSeqNo(seqNo);
                 message.setState(Message.MessageState.SENT);
+
+                if (contentType != null && content != null) {
+                    mCore.getDbManager().updateMessageContentWithMessageId(content, contentType, msgId);
+                    message.setContent(content);
+                    message.setContentType(contentType);
+                }
 
                 if (message.getContent() instanceof MergeMessage) {
                     MergeMessage mergeMessage = (MergeMessage) message.getContent();
@@ -2000,12 +2006,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid) {
+    public void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content) {
         if (clientUid == null || TextUtils.isEmpty(clientUid)
         || messageId == null || TextUtils.isEmpty(messageId)) {
             return;
         }
         mCore.getDbManager().updateMessageAfterSendWithClientUid(clientUid, messageId, timestamp, seqNo);
+        if (contentType != null && content != null) {
+            mCore.getDbManager().updateMessageContentWithMessageId(content, contentType, messageId);
+        }
     }
 
     @Override

@@ -84,8 +84,22 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         @Override
                         public void run() {
 
-                            List<ConversationInfo> list = JIM.getInstance().getConversationManager().getConversationInfoList();
-                            int o = 1;
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "111");
+                            ImageMessage image = new ImageMessage();
+                            image.setUrl("www.baidu.com");
+
+                            TextMessage t = new TextMessage("111111");
+                            JIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
+                                @Override
+                                public void onSuccess(Message message) {
+                                    int i = 1;
+                                }
+
+                                @Override
+                                public void onError(Message message, int errorCode) {
+                                    int i = 1;
+                                }
+                            });
 
 
 

@@ -8,6 +8,7 @@ import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.upload.UploadOssType;
 import com.juggle.im.internal.model.upload.UploadPreSignCred;
 import com.juggle.im.internal.model.upload.UploadQiNiuCred;
+import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
@@ -32,6 +33,8 @@ class PBRcvObj {
         long timestamp;
         long seqNo;
         String clientUid;
+        String contentType;
+        MessageContent content;
     }
 
     static class PublishMsgBody {
