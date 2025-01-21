@@ -1012,6 +1012,11 @@ class PBData {
                     a.timestamp = publishAckMsgBody.getTimestamp();
                     a.seqNo = publishAckMsgBody.getMsgSeqNo();
                     a.clientUid = publishAckMsgBody.getClientMsgId();
+                    if (publishAckMsgBody.hasModifiedMsg()) {
+                        Message modifiedMsg = messageWithDownMsg(publishAckMsgBody.getModifiedMsg());
+                        a.contentType = modifiedMsg.getContentType();
+                        a.content = modifiedMsg.getContent();
+                    }
                     obj.mPublishMsgAck = a;
                 }
                 break;

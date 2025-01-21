@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package app_messages;
 
+import "appmessages.proto";
+
 message ConnectMsgBody{
     string protoId = 1;
     string sdkVersion = 2; //sdk 版本
@@ -54,6 +56,7 @@ message PublishAckMsgBody{
     int64 msgSeqNo = 5;
     int32 memberCount = 6;
     string clientMsgId = 7;
+    DownMsg modifiedMsg = 8;
 }
 
 message QueryMsgBody{

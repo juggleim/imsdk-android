@@ -80,10 +80,22 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "111");
+                            ImageMessage image = new ImageMessage();
+                            image.setUrl("www.baidu.com");
 
-//                            JIM.getInstance().getCallManager().startSingleCall("asdfsadf", null);
+                            TextMessage t = new TextMessage("111111");
+                            JIM.getInstance().getMessageManager().sendMessage(image, c, new IMessageManager.ISendMessageCallback() {
+                                @Override
+                                public void onSuccess(Message message) {
+                                    int i = 1;
+                                }
 
-
+                                @Override
+                                public void onError(Message message, int errorCode) {
+                                    int i = 1;
+                                }
+                            });
 
 
                         }
