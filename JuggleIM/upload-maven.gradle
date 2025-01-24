@@ -13,7 +13,7 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.juggle.im'
                 artifactId = 'juggle'
-                version = '1.8.5'
+                version = '1.8.5.1'
                 pom {
                     name = 'JuggleIM'
                     description = 'JuggleIM Android SDK'
