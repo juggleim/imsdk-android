@@ -8,6 +8,8 @@ import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.upload.UploadOssType;
 import com.juggle.im.internal.model.upload.UploadPreSignCred;
 import com.juggle.im.internal.model.upload.UploadQiNiuCred;
+import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 
@@ -31,6 +33,8 @@ class PBRcvObj {
         long timestamp;
         long seqNo;
         String clientUid;
+        String contentType;
+        MessageContent content;
     }
 
     static class PublishMsgBody {
@@ -143,6 +147,13 @@ class PBRcvObj {
         }
     }
 
+    static class QryMsgExtAck extends QryAck {
+        List<MessageReaction> reactionList;
+        QryMsgExtAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
     static class PublishMsgNtf {
         long syncTime;
         String chatroomId;
@@ -202,6 +213,7 @@ class PBRcvObj {
         static final int rtcPingAck = 30;
         static final int qryCallRoomsAck = 31;
         static final int qryCallRoomAck = 32;
+        static final int qryMsgExtAck = 33;
     }
 
     public enum PBChatroomEventType {
@@ -297,6 +309,7 @@ class PBRcvObj {
     RtcInviteEventNtf mRtcInviteEventNtf;
     CallAuthAck mCallInviteAck;
     RtcQryCallRoomsAck mRtcQryCallRoomsAck;
+    QryMsgExtAck mQryMsgExtAck;
 
     private int mRcvType;
 }

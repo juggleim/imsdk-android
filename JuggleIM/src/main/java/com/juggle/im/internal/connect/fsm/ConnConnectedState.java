@@ -72,6 +72,14 @@ public class ConnConnectedState extends ConnBaseState {
                 manager.transitionToIdleState();
                 break;
 
+            case ConnEvent.ENTER_FOREGROUND:
+                manager.pushSwitch(false);
+                break;
+
+            case ConnEvent.ENTER_BACKGROUND:
+                manager.pushSwitch(true);
+                break;
+
             default:
                 return false;
         }

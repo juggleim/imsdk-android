@@ -45,7 +45,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mCompeteStatusList = new ArrayList<>();
     }
 
-    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, List<String> servers) {
+    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, String language, List<String> servers) {
         JLogger.i("WS-Connect", "appKey is " + appKey + ", token is " + token + ", servers is " + servers);
         mSendHandler.post(() -> {
             mAppKey = appKey;
@@ -56,6 +56,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             mPushToken = pushToken;
             mNetworkType = networkType;
             mCarrier = carrier;
+            mLanguage = language;
 
             resetWebSocketClient();
             ExecutorService executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_COUNT);
@@ -102,16 +103,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               String userId,
                               SendMessageCallback callback) {
         Integer key = mCmdIndex;
-        byte[] encodeBytes;
-        if (content instanceof MediaMessageContent) {
-            MediaMessageContent mediaContent = (MediaMessageContent) content;
-            String local = mediaContent.getLocalPath();
-            mediaContent.setLocalPath("");
-            encodeBytes = mediaContent.encode();
-            mediaContent.setLocalPath(local);
-        } else {
-            encodeBytes = content.encode();
-        }
+        byte[] encodeBytes = encodeContentData(content);
 
         byte[] bytes = mPbData.sendMessageData(content.getContentType(),
                 encodeBytes,
@@ -131,6 +123,20 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    private byte[] encodeContentData(MessageContent content) {
+        byte[] encodeBytes;
+        if (content instanceof MediaMessageContent) {
+            MediaMessageContent mediaContent = (MediaMessageContent) content;
+            String local = mediaContent.getLocalPath();
+            mediaContent.setLocalPath("");
+            encodeBytes = mediaContent.encode();
+            mediaContent.setLocalPath(local);
+        } else {
+            encodeBytes = content.encode();
+        }
+        return encodeBytes;
+    }
+
     public void recallMessage(String messageId,
                               Conversation conversation,
                               long timestamp,
@@ -140,6 +146,15 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, extras, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "recallMessage, messageId is " + messageId);
+        sendWhenOpen(bytes);
+    }
+
+    public void updateMessage(String messageId, MessageContent content, Conversation conversation, long timestamp, long msgSeqNo, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] contentBytes = encodeContentData(content);
+        byte[] bytes = mPbData.updateMessageData(messageId, content.getContentType(), contentBytes, conversation, timestamp, msgSeqNo, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "update message, messageId is " + messageId);
         sendWhenOpen(bytes);
     }
 
@@ -391,18 +406,50 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void syncChatroomMessages(String chatroomId, long syncTime, int prevMessageCount) {
-        byte[] bytes = mPbData.syncChatroomMessages(chatroomId, syncTime, prevMessageCount, mCmdIndex++);
+    public void syncChatroomMessages(String chatroomId, String userId, long syncTime, int prevMessageCount) {
+        byte[] bytes = mPbData.syncChatroomMessages(chatroomId, userId, syncTime, prevMessageCount, mCmdIndex++);
         JLogger.i("WS-Send", "syncChatroomMessages, id is " + chatroomId + ", time is " + syncTime + ", count is " + prevMessageCount);
         sendWhenOpen(bytes);
     }
 
-    public void syncChatroomAttributes(String chatroomId, long syncTime) {
+    public void syncChatroomAttributes(String chatroomId, String userId, long syncTime) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.syncChatroomAttributes(chatroomId, syncTime, mCmdIndex++);
+        byte[] bytes = mPbData.syncChatroomAttributes(chatroomId, userId, syncTime, mCmdIndex++);
         JLogger.i("WS-Send", "syncChatroomAttributes");
         ChatroomWebSocketCallback callback = new ChatroomWebSocketCallback();
         callback.mChatroomId = chatroomId;
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void setLanguage(String language, String userId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.setLanguage(language, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "set language: " + language);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void addMessageReaction(String messageId, Conversation conversation, String reactionId, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.addMsgSet(messageId, conversation, reactionId, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "add message reaction, messageId is " + messageId + ", reactionId is " + reactionId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void removeMessageReaction(String messageId, Conversation conversation, String reactionId, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.removeMsgSet(messageId, conversation, reactionId, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "remove message reaction, messageId is " + messageId + ", reactionId is " + reactionId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getMessagesReaction(List<String> messageIdList, Conversation conversation, MessageReactionListCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.queryMsgExSet(messageIdList, conversation, mCmdIndex++);
+        JLogger.i("WS-Send", "get messages reaction, count is " + messageIdList.size());
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }
@@ -531,6 +578,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof RtcRoomListCallback) {
             RtcRoomListCallback sCallback = (RtcRoomListCallback) callback;
             sCallback.onError(errorCode);
+        } else if (callback instanceof MessageReactionListCallback) {
+            MessageReactionListCallback sCallback = (MessageReactionListCallback) callback;
+            sCallback.onError(errorCode);
         }
     }
 
@@ -554,7 +604,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         void onChatroomMessageReceive(List<ConcreteMessage> messages);
         void onSyncNotify(long syncTime);
         void onChatroomSyncNotify(String chatroomId, long syncTime);
-        void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid);
+        void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content);
     }
 
     public interface IWebSocketChatroomListener {
@@ -695,6 +745,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 //复用 mRtcQryCallRoomsAck
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
                 break;
+            case PBRcvObj.PBRcvType.qryMsgExtAck:
+                handleQryMsgExtAck(obj.mQryMsgExtAck);
+                break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
                 break;
@@ -773,7 +826,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 mPushToken,
                 mNetworkType,
                 mCarrier,
-                "");
+                "",
+                mLanguage);
         sendWhenOpen(bytes);
     }
 
@@ -801,7 +855,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) {
             if (ack.code == 0) {
-                mMessageListener.onMessageSend(ack.msgId, ack.timestamp, ack.seqNo, ack.clientUid);
+                mMessageListener.onMessageSend(ack.msgId, ack.timestamp, ack.seqNo, ack.clientUid, ack.contentType, ack.content);
             }
             return;
         }
@@ -810,7 +864,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             if (ack.code != 0) {
                 callback.onError(ack.code, callback.getClientMsgNo());
             } else {
-                callback.onSuccess(callback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.seqNo);
+                callback.onSuccess(callback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.seqNo, ack.contentType, ack.content);
             }
         }
     }
@@ -984,6 +1038,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.rooms);
+            }
+        }
+    }
+
+    private void handleQryMsgExtAck(PBRcvObj.QryMsgExtAck ack) {
+        JLogger.i("WS-Receive", "handleQryMsgExtAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof MessageReactionListCallback) {
+            MessageReactionListCallback callback = (MessageReactionListCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.reactionList);
             }
         }
     }
@@ -1180,6 +1250,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private String mCarrier;
     private PushChannel mPushChannel;
     private String mPushToken;
+    private String mLanguage;
     private final PBData mPbData;
     private final WebSocketCommandManager mWebSocketCommandManager;
     private final HeartbeatManager mHeartbeatManager;

@@ -14,13 +14,13 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 public interface GroupsService {
-    @GET("groups/mygroups")
+    @GET("/jim/groups/mygroups")
     Call<HttpResult<ListResult<GroupBean>>> getGroupList(@Query("start_id") String startId, @Query("count") int count);
 
 
-    @POST("groups/add")
+    @POST("/jim/groups/add")
     Call<HttpResult<CreateGroupResult>> createGroup(@Body RequestBody body);
 
-    @POST("groups/members/add")
+    @POST("/jim/groups/members/add")
     Call<HttpResult<Object>> addMember(@Body RequestBody body);
 }

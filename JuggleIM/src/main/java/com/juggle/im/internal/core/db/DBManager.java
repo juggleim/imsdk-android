@@ -115,12 +115,9 @@ public class DBManager {
     }
 
     public void insertConversations(List<ConcreteConversationInfo> list, IDbInsertConversationsCallback callback) {
-        if (mDb == null) return;
-
         List<ConcreteConversationInfo> insertConversations = new ArrayList<>();
         List<ConcreteConversationInfo> updateConversations = new ArrayList<>();
         performTransaction(() -> {
-            if (mDb == null) return;
             for (ConcreteConversationInfo info : list) {
                 ConcreteConversationInfo dbInfo = getConversationInfo(info.getConversation());
                 if (dbInfo != null) {
@@ -201,10 +198,9 @@ public class DBManager {
 
     public void deleteConversationInfo(List<Conversation> conversations) {
         performTransaction(() -> {
-            if (mDb == null) return;
             for (Conversation conversation : conversations) {
                 String[] args = new String[]{conversation.getConversationId()};
-                mDb.execSQL(ConversationSql.sqlDeleteConversation(conversation.getConversationType().getValue()), args);
+                execSQL(ConversationSql.sqlDeleteConversation(conversation.getConversationType().getValue()), args);
             }
         });
     }
@@ -545,7 +541,6 @@ public class DBManager {
 
     public void insertMessages(List<ConcreteMessage> list) {
         performTransaction(() -> {
-            if (mDb == null) return;
             for (ConcreteMessage message : list) {
                 ConcreteMessage m = null;
                 //messageId 排重
@@ -568,9 +563,14 @@ public class DBManager {
         });
     }
 
+    public void setMessageFlags(String messageId, int flags) {
+        String sql = MessageSql.SQL_SET_MESSAGE_FLAGS;
+        Object[] args = new Object[]{flags, messageId};
+        execSQL(sql, args);
+    }
+
     public void updateMessage(ConcreteMessage message) {
         performTransaction(() -> {
-            if (mDb == null) return;
             ContentValues cv = MessageSql.getMessageUpdateCV(message);
             update(message.getClientMsgNo(), MessageSql.TABLE, cv);
         });
@@ -630,9 +630,8 @@ public class DBManager {
 
     public void setGroupMessageReadInfo(Map<String, GroupMessageReadInfo> messages) {
         performTransaction(() -> {
-            if (mDb == null) return;
             for (Map.Entry<String, GroupMessageReadInfo> entry : messages.entrySet()) {
-                mDb.execSQL(MessageSql.sqlSetGroupReadInfo(entry.getValue().getReadCount(), entry.getValue().getMemberCount(), entry.getKey()));
+                execSQL(MessageSql.sqlSetGroupReadInfo(entry.getValue().getReadCount(), entry.getValue().getMemberCount(), entry.getKey()));
             }
         });
     }
@@ -680,7 +679,6 @@ public class DBManager {
 
     public void insertUserInfoList(List<UserInfo> userInfoList) {
         performTransaction(() -> {
-            if (mDb == null) return;
             for (UserInfo info : userInfoList) {
                 String extra = UserInfoSql.stringFromMap(info.getExtra());
                 String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), extra};
@@ -707,7 +705,6 @@ public class DBManager {
 
     public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
         performTransaction(() -> {
-            if (mDb == null) return;
             for (GroupInfo info : groupInfoList) {
                 String extra = UserInfoSql.stringFromMap(info.getExtra());
                 String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), extra};
@@ -716,28 +713,28 @@ public class DBManager {
         });
     }
 
-    private Cursor rawQuery(String sql, String[] selectionArgs) {
+    private synchronized Cursor rawQuery(String sql, String[] selectionArgs) {
         if (mDb == null) {
             return null;
         }
         return mDb.rawQuery(sql, selectionArgs);
     }
 
-    private void execSQL(String sql) {
+    private synchronized void execSQL(String sql) {
         if (mDb == null) {
             return;
         }
         mDb.execSQL(sql);
     }
 
-    private void execSQL(String sql, Object[] bindArgs) {
+    private synchronized void execSQL(String sql, Object[] bindArgs) {
         if (mDb == null) {
             return;
         }
         mDb.execSQL(sql, bindArgs);
     }
 
-    private long insert(String table, ContentValues cv) {
+    private synchronized long insert(String table, ContentValues cv) {
         if (mDb == null) {
             return -1;
         }
@@ -745,7 +742,7 @@ public class DBManager {
     }
 
     //执行事务
-    private boolean performTransaction(TransactionOperation operation) {
+    private synchronized boolean performTransaction(TransactionOperation operation) {
         if (mDb == null) return false;
 
         boolean success = false;
@@ -762,7 +759,7 @@ public class DBManager {
         return success;
     }
 
-    private long update(long msgClientNo, String table, ContentValues cv) {
+    private synchronized long update(long msgClientNo, String table, ContentValues cv) {
         if (mDb == null) {
             return -1;
         }

@@ -420,6 +420,7 @@ message MentionMsg{
   string senderId = 1;
   string msgId = 2;
   int64 msgTime = 3;
+  MentionType mentionType = 4;
 }
 
 message QryMentionMsgsReq{
@@ -835,4 +836,19 @@ message OnlineOfflineMsg {
   int64 timestamp = 7;
   string connectionExt = 8;
   string instanceId = 9;
+}
+
+message QryMsgExtReq{
+  string targetId = 1;
+  ChannelType channelType = 2;
+  repeated string msgIds = 3;
+}
+
+message MsgExtItemsList{
+  repeated MsgExtItems items = 1;
+}
+
+message MsgExtItems{
+  string msgId = 1;
+  repeated MsgExtItem exts = 2;
 }

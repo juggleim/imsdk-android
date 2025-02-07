@@ -30,6 +30,7 @@ import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageReaction;
 import com.sendbird.android.collection.CollectionEventSource;
 import com.sendbird.android.collection.MessageContext;
 import com.sendbird.android.exception.SendbirdException;
@@ -157,6 +158,21 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             @Override
             public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
                 loadInitial(0);
+            }
+
+            @Override
+            public void onMessageUpdate(Message message) {
+
+            }
+
+            @Override
+            public void onMessageReactionAdd(Conversation conversation, MessageReaction reaction) {
+
+            }
+
+            @Override
+            public void onMessageReactionRemove(Conversation conversation, MessageReaction reaction) {
+
             }
         });
     }

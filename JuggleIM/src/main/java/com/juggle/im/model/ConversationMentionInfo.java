@@ -15,6 +15,7 @@ public class ConversationMentionInfo {
         private String mSenderId;
         private String mMsgId;
         private long mMsgTime;
+        private MessageMentionInfo.MentionType mType;
 
         public String getSenderId() {
             return mSenderId;
@@ -38,6 +39,14 @@ public class ConversationMentionInfo {
 
         public void setMsgTime(long msgTime) {
             this.mMsgTime = msgTime;
+        }
+
+        public MessageMentionInfo.MentionType getType() {
+            return mType;
+        }
+
+        public void setType(MessageMentionInfo.MentionType type) {
+            mType = type;
         }
 
         @Override
@@ -64,6 +73,7 @@ public class ConversationMentionInfo {
                     jsonMentionMsg.putOpt(MENTION_MSG_SENDER_ID, mentionMsg.getSenderId());
                     jsonMentionMsg.putOpt(MENTION_MSG_ID, mentionMsg.getMsgId());
                     jsonMentionMsg.putOpt(MENTION_MSG_TIME, mentionMsg.getMsgTime());
+                    jsonMentionMsg.putOpt(MENTION_TYPE, mentionMsg.getType().getValue());
                     jsonMentionMsgs.put(jsonMentionMsg);
                 }
                 jsonObject.putOpt(MENTION_MSG_LIST, jsonMentionMsgs);
@@ -89,6 +99,7 @@ public class ConversationMentionInfo {
                     mentionMsg.setSenderId(jsonUser.optString(MENTION_MSG_SENDER_ID));
                     mentionMsg.setMsgId(jsonUser.optString(MENTION_MSG_ID));
                     mentionMsg.setMsgTime(jsonUser.optLong(MENTION_MSG_TIME));
+                    mentionMsg.setType(MessageMentionInfo.MentionType.setValue(jsonUser.optInt(MENTION_TYPE)));
                     mentionMsgs.add(mentionMsg);
                 }
                 mMentionMsgList = mentionMsgs;
@@ -115,4 +126,5 @@ public class ConversationMentionInfo {
     private static final String MENTION_MSG_SENDER_ID = "senderId";
     private static final String MENTION_MSG_ID = "msgId";
     private static final String MENTION_MSG_TIME = "msgTime";
+    private static final String MENTION_TYPE = "type";
 }

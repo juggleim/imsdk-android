@@ -76,6 +76,41 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     @Override
+    public void setLanguage(String language, ISimpleCallback callback) {
+        JLogger.i("CON-Lang", "language is " + language);
+        if (language == null || language.isEmpty()) {
+            JLogger.w("CON-Lang", "language is empty");
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(JErrorCode.INVALID_PARAM);
+                }
+            });
+            return;
+        }
+        mCore.getWebSocket().setLanguage(language, mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                JLogger.i("CON-Lang", "success");
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CON-Lang", "error code is " + errorCode);
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
     public JIMConst.ConnectionStatus getConnectionStatus() {
         return JIMConst.ConnectionStatus.setStatus(mCore.getConnectionStatus());
     }
@@ -125,6 +160,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
         if (errorCode == ConstInternal.ErrorCode.NONE) {
             mIntervalGenerator.reset();
             mCore.setUserId(userId);
+            mCore.setSession(session);
             openDB();
             mMessageManager.connectSuccess();
             mConversationManager.connectSuccess();
@@ -186,7 +222,6 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
             JLogger.i("CON-BG", "Foreground");
             mIntervalGenerator.reset();
             mIsForeground = true;
-            mCore.getWebSocket().pushSwitch(false, mCore.getUserId());
             sendMessage(ConnEvent.ENTER_FOREGROUND);
         }
         mTopForegroundActivity = activity;
@@ -202,7 +237,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
         if (mTopForegroundActivity == activity) {
             JLogger.i("CON-BG", "Background");
             mIsForeground = false;
-            mCore.getWebSocket().pushSwitch(true, mCore.getUserId());
+            sendMessage(ConnEvent.ENTER_BACKGROUND);
             mTopForegroundActivity = null;
         }
     }
@@ -280,7 +315,6 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     private void prepareStateMachine() {
-        //todo
         mSuperState = new ConnSuperState();
         mSuperState.setConnectionManager(this);
         mIdleState = new ConnIdleState();
@@ -317,6 +351,9 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     public boolean updateToken(String token) {
         boolean isUpdate = false;
+        if (token == null) {
+            token = "";
+        }
         if (mCore.getToken() == null || !mCore.getToken().equals(token)) {
             mCore.setToken(token);
             mCore.setUserId("");
@@ -327,12 +364,13 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     public void connect() {
         openDB();
-        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getServers());
+        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getSystemLanguage(), mCore.getServers());
     }
 
     public void enterConnected() {
         JLogger.getInstance().removeExpiredLogs();
         mCore.getWebSocket().startHeartbeat();
+        mCore.getWebSocket().pushSwitch(!mIsForeground, mCore.getUserId());
     }
 
     public void leaveConnected() {
@@ -359,6 +397,10 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
         return mIntervalGenerator.getNextInterval();
     }
 
+    public void pushSwitch(boolean isBackground) {
+        mCore.getWebSocket().pushSwitch(isBackground, mCore.getUserId());
+    }
+
     public void notifyConnecting() {
         notify(JIMConst.ConnectionStatus.CONNECTING, JErrorCode.NONE, "");
     }
@@ -376,6 +418,9 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     private void notify(JIMConst.ConnectionStatus status, int code, String extra) {
+        if (code == ConstInternal.ErrorCode.USER_KICKED_BY_OTHER_CLIENT) {
+            mCallManager.imKick();
+        }
         mCore.getCallbackHandler().post(() -> {
             if (mConnectionStatusListenerMap != null) {
                 for (Map.Entry<String, IConnectionStatusListener> entry : mConnectionStatusListenerMap.entrySet()) {

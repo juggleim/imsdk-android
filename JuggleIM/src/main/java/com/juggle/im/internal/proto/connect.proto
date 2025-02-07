@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package app_messages;
 
+import "appmessages.proto";
+
 message ConnectMsgBody{
     string protoId = 1;
     string sdkVersion = 2; //sdk 版本
@@ -22,6 +24,10 @@ message ConnectMsgBody{
     
     string packageName = 14;
     string pushChannel = 15;
+    string ext = 16;
+    string instanceId = 17;//客户端实例标识,用于多开时识别不同的实例，clientSession
+    string language = 18;//语言设置
+    bool isBackend = 19;//app是否在后台
 }
 
 message ConnectAckMsgBody{
@@ -54,6 +60,7 @@ message PublishAckMsgBody{
     int64 msgSeqNo = 5;
     int32 memberCount = 6;
     string clientMsgId = 7;
+    DownMsg modifiedMsg = 8;
 }
 
 message QueryMsgBody{

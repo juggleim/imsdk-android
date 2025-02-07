@@ -13,7 +13,7 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.juggle.call.zego'
                 artifactId = 'juggle'
-                version = '1.8.2.1'
+                version = '1.8.5.1'
                 pom {
                     name = 'JuggleCallZego'
                     description = 'JuggleCall Android SDK'
@@ -28,7 +28,7 @@ afterEvaluate {
         }
         repositories {
             maven {
-                url = 'https://maven.jugglechat.com/repository/maven-releases/'
+                url = 'https://repo.juggle.im/repository/maven-releases/'
                 credentials {
                     username 'admin'
                     password 'jugglechat'

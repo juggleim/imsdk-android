@@ -19,7 +19,7 @@ public class MarkUnreadMessage extends MessageContent {
 
     @Override
     public byte[] encode() {
-        //不会往外发
+        //不会往外发，也不入库
         return new byte[0];
     }
 

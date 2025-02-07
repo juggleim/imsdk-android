@@ -70,6 +70,7 @@ public class SendbirdUIKit {
     public static volatile String avatar;
 
     public static volatile String authorization;
+    public static volatile String appKey;
 
     /**
      * UIKit log level. It depends on android Log level.

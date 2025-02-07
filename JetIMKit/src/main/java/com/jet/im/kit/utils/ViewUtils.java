@@ -134,7 +134,13 @@ public class ViewUtils {
             @Nullable OnItemClickListener<User> mentionClickListener,
             boolean enabledMention
     ) {
-        String displayedMessage = message.getContent() instanceof TextMessage ? ((TextMessage) message.getContent()).getContent() : "";
+        String displayedMessage = "";
+        if (message.getContent() instanceof  TextMessage) {
+            TextMessage textMessage = ((TextMessage) message.getContent());
+            if (textMessage.getContent() != null) {
+                displayedMessage = textMessage.getContent();
+            }
+        }
         final SpannableString text = new SpannableString(displayedMessage);
         if (uiConfig != null) {
             final TextUIConfig messageTextUIConfig = MessageUtils.isMine(message) ? uiConfig.getMyMessageTextUIConfig() : uiConfig.getOtherMessageTextUIConfig();

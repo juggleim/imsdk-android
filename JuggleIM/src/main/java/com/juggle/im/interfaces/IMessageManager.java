@@ -9,6 +9,7 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
@@ -65,7 +66,13 @@ public interface IMessageManager {
     }
 
     interface IGetMessagesCallbackV3 {
-        //messages: 消息列表，timestamp: 消息时间戳，拉下一批消息的时候可以使用，hasMore: 是否还有更多消息，code: 结果码，0 为成功
+        /**
+         * 结果回调
+         * @param messages 消息列表
+         * @param timestamp 消息时间戳，拉下一批消息的时候可以使用
+         * @param hasMore 是否还有更多消息
+         * @param code 结果码，0 为成功。code 不为 0 的时候，如果本地存在缓存消息，则会在 messages 里返回本地消息
+         */
         void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code);
     }
 
@@ -87,6 +94,12 @@ public interface IMessageManager {
         void onError(int errorCode);
     }
 
+    interface IMessageCallback {
+        void onSuccess(Message message);
+
+        void onError(int errorCode);
+    }
+
     interface ISendReadReceiptCallback {
         void onSuccess();
 
@@ -103,6 +116,11 @@ public interface IMessageManager {
         void onProgress(Message message, int errorCode, int processCount, int totalCount);
 
         void onComplete();
+    }
+
+    interface IMessageReactionListCallback {
+        void onSuccess(List<MessageReaction> reactionList);
+        void onError(int errorCode);
     }
 
     interface IGetMuteStatusCallback {
@@ -245,6 +263,8 @@ public interface IMessageManager {
 
     void recallMessage(String messageId, Map<String, String> extras, IRecallMessageCallback callback);
 
+    void updateMessage(String messageId, MessageContent content, Conversation conversation, IMessageCallback callback);
+
     void getRemoteMessages(Conversation conversation,
                            int count,
                            long startTime,
@@ -263,7 +283,13 @@ public interface IMessageManager {
                      GetMessageOptions options,
                      IGetMessagesCallbackV2 callback);
 
-    /// 获取消息，结果按照消息时间正序排列（旧的在前，新的在后）。当消息有缺失并且网络有问题的时候，返回本地缓存的消息。
+    /**
+     * 获取消息，结果按照消息时间正序排列（旧的在前，新的在后）。当消息有缺失并且网络有问题的时候，返回本地缓存的消息。
+     * @param conversation 会话对象
+     * @param direction 拉取方向
+     * @param options 获取消息选项
+     * @param callback 回调
+     */
     void getMessages(Conversation conversation,
                      JIMConst.PullDirection direction,
                      GetMessageOptions options,
@@ -297,6 +323,40 @@ public interface IMessageManager {
     void broadcastMessage(MessageContent content,
                           List<Conversation> conversations,
                           IBroadcastMessageCallback callback);
+
+    /**
+     * 添加消息回应
+     * @param messageId 消息 id
+     * @param conversation 消息所属会话
+     * @param reactionId 回应 id
+     * @param callback 结果回调
+     */
+    void addMessageReaction(String messageId,
+                            Conversation conversation,
+                            String reactionId,
+                            ISimpleCallback callback);
+
+    /**
+     * 删除消息回应
+     * @param messageId 消息 id
+     * @param conversation 消息所属会话
+     * @param reactionId 回应 id
+     * @param callback 结果回调
+     */
+    void removeMessageReaction(String messageId,
+                               Conversation conversation,
+                               String reactionId,
+                               ISimpleCallback callback);
+
+    /**
+     * 批量获取消息回应（消息必须属于同一个会话）
+     * @param messageIdList 消息 id 列表
+     * @param conversation 消息所属会话
+     * @param callback 结果回调
+     */
+    void getMessagesReaction(List<String> messageIdList,
+                             Conversation conversation,
+                             IMessageReactionListCallback callback);
 
     /**
      * 设置消息全局免打扰。
@@ -336,6 +396,15 @@ public interface IMessageManager {
 
         //当 senderId 有值时，表示只清空这个用户发送的消息
         void onMessageClear(Conversation conversation, long timestamp, String senderId);
+
+        //消息修改的回调
+        void onMessageUpdate(Message message);
+
+        //新增消息回应的回调
+        void onMessageReactionAdd(Conversation conversation, MessageReaction reaction);
+
+        //删除消息回应的回调
+        void onMessageReactionRemove(Conversation conversation, MessageReaction reaction);
     }
 
     interface IMessageSyncListener {

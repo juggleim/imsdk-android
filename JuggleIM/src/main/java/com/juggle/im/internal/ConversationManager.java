@@ -834,6 +834,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         mentionMsg.setSenderId(message.getSenderUserId());
         mentionMsg.setMsgId(message.getMessageId());
         mentionMsg.setMsgTime(message.getTimestamp());
+        mentionMsg.setType(message.getMentionInfo().getType());
         ConversationMentionInfo mentionInfo = new ConversationMentionInfo();
         mentionInfo.setMentionMsgList(new ArrayList<>());
         mentionInfo.getMentionMsgList().add(mentionMsg);
@@ -959,7 +960,10 @@ public class ConversationManager implements IConversationManager, MessageManager
     private void updateConversationLastMessage(ConcreteConversationInfo info, ConcreteMessage
             lastMessage, ConversationUpdater mentionUpdater) {
         //判断会话最新消息是否有变化
-        boolean isLastMessageUpdate = info.getLastMessage() == null || info.getLastMessage().getClientMsgNo() != lastMessage.getClientMsgNo() || !Objects.equals(info.getLastMessage().getContentType(), lastMessage.getContentType());
+        boolean isLastMessageUpdate = info.getLastMessage() == null
+                || info.getLastMessage().getClientMsgNo() != lastMessage.getClientMsgNo()
+                || !Objects.equals(info.getLastMessage().getContentType(), lastMessage.getContentType())
+                || info.getLastMessage().getContent().hashCode() != lastMessage.getContent().hashCode();
         //会话最新消息有变化，更新会话最新消息
         if (isLastMessageUpdate) {
             mCore.getDbManager().updateLastMessageWithoutIndex(lastMessage);

@@ -39,6 +39,11 @@ internal class SendbirdChatImpl : SendbirdChatContract {
         accessToken: String?,
         handler: com.jet.im.kit.interfaces.ConnectHandler?
     ) {
+        if (JIM.getInstance().connectionManager.connectionStatus == JIMConst.ConnectionStatus.CONNECTED) {
+            handler?.onConnected(null)
+            return
+        }
+
         val listener = object : IConnectionStatusListener {
             override fun onStatusChange(
                 status: JIMConst.ConnectionStatus?,
@@ -46,7 +51,7 @@ internal class SendbirdChatImpl : SendbirdChatContract {
                 extra: String
             ) {
                 if (status == JIMConst.ConnectionStatus.CONNECTED) {
-                    handler?.onConnected(null);
+                    handler?.onConnected(null)
                     JIM.getInstance().connectionManager.removeConnectionStatusListener("kit")
                 } else if (status == JIMConst.ConnectionStatus.FAILURE) {
                     handler?.onConnected(RuntimeException());

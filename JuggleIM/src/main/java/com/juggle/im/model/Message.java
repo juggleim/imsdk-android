@@ -182,6 +182,14 @@ public class Message {
         mIsDelete = delete;
     }
 
+    public boolean isEdit() {
+        return mIsEdit;
+    }
+
+    public void setEdit(boolean edit) {
+        mIsEdit = edit;
+    }
+
     private Conversation mConversation;
     /// 消息类型
     private String mContentType;
@@ -208,4 +216,6 @@ public class Message {
     private String mLocalAttribute;
     ///是否已删除
     private boolean mIsDelete;
+    ///是否被编辑
+    private boolean mIsEdit;
 }

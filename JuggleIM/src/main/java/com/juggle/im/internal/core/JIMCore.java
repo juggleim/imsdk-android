@@ -58,6 +58,13 @@ public class JIMCore {
         return JUtility.getCarrier(mContext);
     }
 
+    public String getSystemLanguage() {
+        if (mContext == null) {
+            return "";
+        }
+        return JUtility.getSystemLanguage(mContext);
+    }
+
     public List<String> getNaviUrls() {
         if (mNaviUrls == null) {
             mNaviUrls = new ArrayList<>();
@@ -126,6 +133,14 @@ public class JIMCore {
         }
         SharedPreferences sp = JUtility.getSP(mContext);
         sp.edit().putString(USER_ID, userId).apply();
+    }
+
+    public String getSession() {
+        return mSession;
+    }
+
+    public void setSession(String session) {
+        mSession = session;
     }
 
     public Context getContext() {
@@ -219,6 +234,7 @@ public class JIMCore {
     private String mAppKey;
     private String mToken;
     private String mUserId;
+    private String mSession;
     private Context mContext;
     private int mConnectionStatus;
     private final DBManager mDbManager = new DBManager();

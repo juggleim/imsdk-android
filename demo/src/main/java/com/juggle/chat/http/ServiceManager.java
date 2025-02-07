@@ -41,6 +41,7 @@ public class ServiceManager {
                         if (!TextUtils.isEmpty(SendbirdUIKit.authorization)) {
                             request = request.newBuilder().addHeader("authorization", SendbirdUIKit.authorization).build();
                         }
+                        request = request.newBuilder().addHeader("appkey", SendbirdUIKit.appKey).build();
                         return chain.proceed(request);
                     }
                 })
