@@ -15,4 +15,4 @@ _备注：由于微信群二维码有时间限制，加入微信讨论可优先�
 
 JuggleIM 官方开源的 Android IM SDK 源码，提供 IM 即时通讯功能，包含 IM 基础连接、重连、单聊、群聊、直播聊天室等功能模块，支持发送文本、图片、文件或自定义等多种消息类型。
 
-通常情况下，开发者可根据官方文档集成使用：[https://www.jugglechat.com/](https://www.jugglechat.com/)
+通常情况下，开发者可根据官方文档集成使用：[https://www.juggle.im/](https://www.juggle.im/)
