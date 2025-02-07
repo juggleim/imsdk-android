@@ -52,7 +52,7 @@ public class ServiceManager {
                 }).build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://appserver.jugglechat.com")
+                .baseUrl("xxx")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpClient)
                 .build();
