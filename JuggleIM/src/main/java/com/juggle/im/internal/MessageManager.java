@@ -1606,11 +1606,30 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     if (callback != null) {
                         callback.onSuccess();
                     }
+                    UserInfo currentUser = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+
+                    //update reaction db
+                    List<MessageReaction> dbReactions = mCore.getDbManager().getMessageReactions(Collections.singletonList(messageId));
+                    if (!dbReactions.isEmpty()) {
+                        MessageReaction dbReaction = dbReactions.get(0);
+                        for (MessageReactionItem item : dbReaction.getItemList()) {
+                            if (reactionId.equals(item.getReactionId())) {
+                                List<UserInfo> userInfoList = item.getUserInfoList();
+                                userInfoList.add(currentUser);
+                                item.setUserInfoList(userInfoList);
+                                break;
+                            }
+                        }
+                        mCore.getDbManager().setMessageReactions(Collections.singletonList(dbReaction));
+                    }
+
+                    //callback delegate
+                    //callback 只有新增的，不用本地做合并，因为本地不全（特别是收到别的用户的 reaction 时，不能返回不全的数据）
                     MessageReaction reaction = new MessageReaction();
                     reaction.setMessageId(messageId);
                     MessageReactionItem item = new MessageReactionItem();
                     item.setReactionId(reactionId);
-                    UserInfo currentUser = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+
                     item.setUserInfoList(Collections.singletonList(currentUser));
                     reaction.setItemList(Collections.singletonList(item));
                     if (mListenerMap != null) {
@@ -1656,6 +1675,28 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     if (callback != null) {
                         callback.onSuccess();
                     }
+
+                    // update reaction db
+                    List<MessageReaction> dbReactions = mCore.getDbManager().getMessageReactions(Collections.singletonList(messageId));
+                    if (!dbReactions.isEmpty()) {
+                        MessageReaction dbReaction = dbReactions.get(0);
+                        for (MessageReactionItem item : dbReaction.getItemList()) {
+                            if (reactionId.equals(item.getReactionId())) {
+                                List<UserInfo> userInfoList = new ArrayList<>();
+                                for (UserInfo userInfo : item.getUserInfoList()) {
+                                    if (!mCore.getUserId().equals(userInfo.getUserId())) {
+                                        userInfoList.add(userInfo);
+                                    }
+                                }
+                                item.setUserInfoList(userInfoList);
+                                break;
+                            }
+                        }
+                        mCore.getDbManager().setMessageReactions(Collections.singletonList(dbReaction));
+                    }
+
+                    //callback delegate
+                    //callback 只有新增的，不用本地做合并，因为本地不全（特别是收到别的用户的 reaction 时，不能返回不全的数据）
                     MessageReaction reaction = new MessageReaction();
                     reaction.setMessageId(messageId);
                     MessageReactionItem item = new MessageReactionItem();
@@ -1701,6 +1742,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(List<MessageReaction> reactionList) {
                 JLogger.i("MSG-ReactionGet", "success");
+                mCore.getDbManager().setMessageReactions(reactionList);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(reactionList));
                 }
@@ -1715,6 +1757,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
         });
 
+    }
+
+    @Override
+    public List<MessageReaction> getCachedMessagesReaction(List<String> messageIdList) {
+        return mCore.getDbManager().getMessageReactions(messageIdList);
     }
 
     @Override

@@ -359,6 +359,13 @@ public interface IMessageManager {
                              IMessageReactionListCallback callback);
 
     /**
+     * 获取缓存的消息回应（缓存的数据不一定是最新版本，可用于第一时间渲染，优化用户体验）
+     * @param messageIdList 消息 id 列表
+     * @return 消息回应列表
+     */
+    List<MessageReaction> getCachedMessagesReaction(List<String> messageIdList);
+
+    /**
      * 设置消息全局免打扰。
      *
      * @param isMute 是否免打扰

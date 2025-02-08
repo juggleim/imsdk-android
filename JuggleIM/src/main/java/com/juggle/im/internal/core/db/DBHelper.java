@@ -23,6 +23,7 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_INDEX);
+        sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
     }
 
     @Override
@@ -51,7 +52,14 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 6) {
+            try {
+                sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
+            } catch (SQLiteConstraintException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 5;
+    private final static int version = 6;
 }

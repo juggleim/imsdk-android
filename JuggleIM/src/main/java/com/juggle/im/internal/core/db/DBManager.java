@@ -20,6 +20,7 @@ import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.UserInfo;
 
@@ -713,6 +714,35 @@ public class DBManager {
         });
     }
 
+    public List<MessageReaction> getMessageReactions(List<String> messageIds) {
+        List<MessageReaction> result = new ArrayList<>();
+        if (messageIds == null || messageIds.isEmpty()) {
+            return result;
+        }
+        String sql = ReactionSql.sqlGetReaction(messageIds.size());
+        String[] args = messageIds.toArray(new String[0]);
+        Cursor cursor = rawQuery(sql, args);
+        if (cursor != null) {
+            addReactionsFromCursor(result, cursor);
+            cursor.close();
+        }
+        return result;
+    }
+
+    public void setMessageReactions(List<MessageReaction> reactions) {
+        performTransaction(() -> {
+            for (MessageReaction reaction : reactions) {
+                if (!TextUtils.isEmpty(reaction.getMessageId())
+                && reaction.getItemList() != null
+                && !reaction.getItemList().isEmpty()) {
+                    String itemListJson = ReactionSql.jsonWithReactionItemList(reaction.getItemList());
+                    String[] args = new String[]{reaction.getMessageId(), itemListJson};
+                    execSQL(ReactionSql.SQL_SET_REACTION, args);
+                }
+            }
+        });
+    }
+
     private synchronized Cursor rawQuery(String sql, String[] selectionArgs) {
         if (mDb == null) {
             return null;
@@ -786,6 +816,13 @@ public class DBManager {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             ConcreteMessage message = getMessageWithCursor(cursor);
             list.add(message);
+        }
+    }
+
+    private void addReactionsFromCursor(List<MessageReaction> list, Cursor cursor) {
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            MessageReaction reaction = ReactionSql.reactionWithCursor(cursor);
+            list.add(reaction);
         }
     }
 
