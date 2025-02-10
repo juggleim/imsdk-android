@@ -7,6 +7,8 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.Menu
@@ -45,6 +47,8 @@ import com.jet.im.kit.utils.IntentUtils
 import com.jet.im.kit.utils.PermissionUtils
 import com.jet.im.kit.utils.TextUtils
 import com.juggle.im.JIM
+import com.juggle.im.JIMConst
+import com.juggle.im.interfaces.IConnectionManager
 import com.sendbird.android.exception.SendbirdException
 import com.sendbird.android.params.UserUpdateParams
 import java.io.File
@@ -53,7 +57,7 @@ import java.util.Locale
 /**
  * Displays a settings screen.
  */
-class SampleSettingsFragment : Fragment() {
+class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusListener {
     private lateinit var binding: FragmentSampleSettingsBinding
     private val headerComponent = StateHeaderComponent()
     private var mediaUri: Uri? = null
@@ -96,6 +100,7 @@ class SampleSettingsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        JIM.getInstance().connectionManager.addConnectionStatusListener("SampleSettingsFragment", this)
     }
 
     override fun onCreateView(
@@ -159,6 +164,7 @@ class SampleSettingsFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        JIM.getInstance().connectionManager.removeConnectionStatusListener("SampleSettingsFragment")
     }
 
     private fun requestPermission(permissions: Array<String>) {
@@ -345,14 +351,11 @@ class SampleSettingsFragment : Fragment() {
                 requireContext().getDrawable(R.drawable.shape_oval, homeBackgroundTint)
             binding.itemHome.setOnClickListener {
                 Logger.d("++ home clicked")
-                JIM.getInstance().connectionManager.disconnect(false);
-                startActivity(
-                    Intent(
-                        activity,
-                        SelectServiceActivity::class.java
-                    )
-                )
-                activity?.finish()
+                if (JIM.getInstance().connectionManager.connectionStatus == JIMConst.ConnectionStatus.DISCONNECTED) {
+                    activity?.finish()
+                } else {
+                    JIM.getInstance().connectionManager.disconnect(false)
+                }
             }
         }
     }
@@ -549,5 +552,20 @@ class SampleSettingsFragment : Fragment() {
                 ContextUtils.getApplicationName(context)
             )
         }
+    }
+
+    override fun onStatusChange(status: JIMConst.ConnectionStatus?, code: Int, extra: String?) {
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed({
+            if (status == JIMConst.ConnectionStatus.DISCONNECTED) {
+                activity?.finish()
+            }
+        }, 200)
+    }
+
+    override fun onDbOpen() {
+    }
+
+    override fun onDbClose() {
     }
 }

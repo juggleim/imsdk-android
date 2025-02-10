@@ -87,7 +87,7 @@ open class LoginActivity : AppCompatActivity() {
                         GroupChannelMainActivity::class.java
                     )
                 )
-                finish()
+//                finish()
             }
 
             override fun onError(t: Throwable?) {
