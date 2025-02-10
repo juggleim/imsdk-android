@@ -15,6 +15,7 @@ import com.juggle.chat.databinding.ActivityLoginBinding
 import com.juggle.chat.http.CustomCallback
 import com.juggle.chat.http.ServiceManager
 import com.jet.im.kit.SendbirdUIKit
+import com.juggle.chat.common.preferences.PreferenceUtils
 import com.juggle.im.JIM
 import com.sendbird.android.SendbirdChat.sdkVersion
 
@@ -36,6 +37,8 @@ open class LoginActivity : AppCompatActivity() {
                 JIM.getInstance().sdkVersion,
                 JIM.getInstance().sdkVersion
             )
+            phone.setText(PreferenceUtils.phoneNumber)
+            code.setText(PreferenceUtils.verifyCode)
 
             saveButton.setOnClickListener {
                 val phone = binding.phone.text.toString().replace("\\s".toRegex(), "")
@@ -70,6 +73,8 @@ open class LoginActivity : AppCompatActivity() {
         verificationCode.enqueue(object : CustomCallback<HttpResult<LoginResult>, LoginResult>() {
             override fun onSuccess(k: LoginResult?) {
                 WaitingDialog.dismiss()
+                PreferenceUtils.phoneNumber = phone
+                PreferenceUtils.verifyCode = code
                 SendbirdUIKit.token = k?.im_token
                 SendbirdUIKit.authorization = k?.authorization ?: ""
                 SendbirdUIKit.userId = k?.user_id ?: ""
