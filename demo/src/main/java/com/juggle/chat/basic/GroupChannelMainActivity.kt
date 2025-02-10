@@ -31,6 +31,7 @@ class GroupChannelMainActivity : AppCompatActivity() {
         binding = ActivityGroupChannelMainBinding.inflate(layoutInflater).apply {
             setContentView(root)
             viewPager.adapter = MainAdapter(this@GroupChannelMainActivity)
+            viewPager.offscreenPageLimit = 5
             val isDarkMode = PreferenceUtils.themeMode.isUsingDarkTheme()
             val backgroundRedId =
                 if (isDarkMode) com.jet.im.kit.R.color.background_600 else com.jet.im.kit.R.color.background_50

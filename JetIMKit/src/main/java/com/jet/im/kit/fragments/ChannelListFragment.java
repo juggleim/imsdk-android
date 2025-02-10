@@ -606,9 +606,9 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        getViewModel().loadInitial();
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        getViewModel().loadInitial();
+//    }
 }
