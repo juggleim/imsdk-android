@@ -1,6 +1,7 @@
 package com.jet.im.kit.internal.ui.channels
 
 import android.content.Context
+import android.graphics.Color
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -95,6 +96,7 @@ internal class ChannelPreview @JvmOverloads constructor(
                 R.style.SendbirdBody3OnLight03
             )
             layout.findViewById<View>(R.id.root).setBackgroundResource(background)
+
             tvTitle.setAppearance(context, titleAppearance)
             tvMemberCount.setAppearance(context, memberCountAppearance)
             tvUpdatedAt.setAppearance(context, updatedAtAppearance)
@@ -217,6 +219,11 @@ internal class ChannelPreview @JvmOverloads constructor(
             tvUnreadMentionCount.visibility = if (unreadMentionCount > 0) VISIBLE else GONE
         } else {
             tvUnreadMentionCount.visibility = GONE
+        }
+        if (channel.isTop) {
+            layout.findViewById<View>(R.id.root).setBackgroundResource(R.color.conversation_top)
+        } else {
+            layout.findViewById<View>(R.id.root).setBackgroundResource(R.color.background_50)
         }
     }
 

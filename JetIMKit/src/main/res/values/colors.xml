@@ -39,4 +39,5 @@
 
     <color name="rc_voice_color">#0195ff</color>
     <color name="callkit_groupchatmembers">#72767B</color>
+    <color name="conversation_top">#f0f2f5</color>
 </resources>
