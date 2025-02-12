@@ -26,24 +26,24 @@ import com.jet.im.kit.utils.MessageUtils;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageReaction;
-import com.sendbird.android.collection.CollectionEventSource;
-import com.sendbird.android.collection.MessageContext;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Feedback;
 import com.sendbird.android.message.FeedbackRating;
-import com.sendbird.android.message.SendingStatus;
 import com.sendbird.android.params.MessageListParams;
 import com.sendbird.android.params.common.MessagePayloadFilter;
 import com.sendbird.android.user.User;
 
 import org.jetbrains.annotations.TestOnly;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
@@ -143,6 +143,8 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             @Override
             public void onMessageReceive(Message message) {
                 loadInitial(0);
+                markAsRead();
+                sendReceipt(Collections.singletonList(message));
             }
 
             @Override
@@ -215,7 +217,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     // Do not call loadInitial inside this function.
     private synchronized void initMessageCollection(final long startingPoint) {
         Logger.i(">> ChannelViewModel::initMessageCollection()");
-        final ConversationInfo channel = getChannel();
+        final ConversationInfo channel = getConversationInfo();
         if (channel == null) return;
         if (this.collection != null) {
             disposeMessageCollection();
@@ -389,7 +391,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @UiThread
     private synchronized void notifyChannelDataChanged() {
         Logger.d(">> ChannelViewModel::notifyChannelDataChanged()");
-        final ConversationInfo groupChannel = getChannel();
+        final ConversationInfo groupChannel = getConversationInfo();
         if (groupChannel == null) return;
         channelUpdated.setValue(groupChannel);
     }
@@ -430,7 +432,44 @@ public class ChannelViewModel extends BaseMessageListViewModel {
 
     private void markAsRead() {
         Logger.dev("markAsRead");
-//        if (channel != null) channel.markAsRead(null);
+        if (mConversationInfo == null || mConversationInfo.getConversation() == null) {
+            return;
+        }
+        JIM.getInstance().getConversationManager().clearUnreadCount(mConversationInfo.getConversation(), new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
+    private void sendReceipt(List<Message> messages) {
+        if (mConversationInfo == null
+        || mConversationInfo.getConversation() == null
+        || mConversationInfo.getConversation().getConversationType() != Conversation.ConversationType.PRIVATE) {
+            return;
+        }
+        List<String> messageIds = new ArrayList<>();
+        for (Message message : messages) {
+            if (message.getDirection() == Message.MessageDirection.RECEIVE && !message.isHasRead()) {
+                messageIds.add(message.getMessageId());
+            }
+        }
+        if (messageIds.size() == 0) {
+            return;
+        }
+        JIM.getInstance().getMessageManager().sendReadReceipt(mConversationInfo.getConversation(), messageIds, new IMessageManager.ISendReadReceiptCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
     }
 
     @UiThread
@@ -491,39 +530,22 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             return false;
         }
 
+        markAsRead();
         messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
         cachedMessages.clear();
-        JIM.getInstance().getMessageManager().getLocalAndRemoteMessages(conversation,
-                20, startingPoint, JIMConst.PullDirection.OLDER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
-                    @Override
-                    public void onGetLocalList(List<Message> messages, boolean hasRemote) {
-                        if (!hasRemote) {
-                            cachedMessages.clear();
-                            cachedMessages.addAll(messages);
-                            notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
-                            if (!messages.isEmpty()) {
-                                markAsRead();
-                            }
-                            messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-                        }
-                    }
-
-                    @Override
-                    public void onGetRemoteList(List<Message> messages) {
-                        cachedMessages.clear();
-                        cachedMessages.addAll(messages);
-                        notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
-                        if (!messages.isEmpty()) {
-                            markAsRead();
-                        }
-                        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-                    }
-
-                    @Override
-                    public void onGetRemoteListError(int errorCode) {
-                        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-                    }
-                });
+        GetMessageOptions options = new GetMessageOptions();
+        options.setStartTime(startingPoint);
+        options.setCount(20);
+        JIM.getInstance().getMessageManager().getMessages(conversation, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
+            @Override
+            public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
+                cachedMessages.clear();
+                cachedMessages.addAll(messages);
+                notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
+                messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
+                sendReceipt(messages);
+            }
+        });
 
         return true;
     }

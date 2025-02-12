@@ -250,6 +250,12 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void clearUnreadCount(Conversation conversation, ISimpleCallback callback) {
+        if (conversation == null || conversation.getConversationId() == null) {
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("CONV-ClearUnread", "fail, code is " + errorCode);

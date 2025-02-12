@@ -141,7 +141,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     protected void onBeforeReady(@NonNull ReadyStatus status, @NonNull ChannelModule module, @NonNull ChannelViewModel viewModel) {
         Logger.d(">> ChannelFragment::onBeforeReady()");
         super.onBeforeReady(status, module, viewModel);
-        final ConversationInfo channel = viewModel.getChannel();
+        final ConversationInfo channel = viewModel.getConversationInfo();
         onBindChannelHeaderComponent(module.getHeaderComponent(), viewModel, channel);
         onBindMessageListComponent(module.getMessageListComponent(), viewModel, channel);
         onBindMessageInputComponent(module.getMessageInputComponent(), viewModel, channel);
@@ -151,7 +151,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     @Override
     protected void onReady(@NonNull ReadyStatus status, @NonNull ChannelModule module, @NonNull ChannelViewModel viewModel) {
         shouldDismissLoadingDialog();
-        final ConversationInfo channel = viewModel.getChannel();
+        final ConversationInfo channel = viewModel.getConversationInfo();
         if (status == ReadyStatus.ERROR || channel == null) {
             if (isFragmentAlive()) {
                 toastError(R.string.sb_text_error_get_channel);
@@ -179,7 +179,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     @Override
     public void onDestroy() {
         super.onDestroy();
-        final ConversationInfo channel = getViewModel().getChannel();
+        final ConversationInfo channel = getViewModel().getConversationInfo();
         if (channel == null) {
             return;
         }
@@ -532,7 +532,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     }
 
     private void onInputModeChanged(@NonNull MessageInputView.Mode before, @NonNull MessageInputView.Mode current) {
-        final ConversationInfo channel = getViewModel().getChannel();
+        final ConversationInfo channel = getViewModel().getConversationInfo();
         final MessageInputComponent inputComponent = getModule().getMessageInputComponent();
         if (channel == null) return;
         inputComponent.notifyDataChanged(null, channel);

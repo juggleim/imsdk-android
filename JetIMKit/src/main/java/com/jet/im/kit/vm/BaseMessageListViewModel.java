@@ -36,7 +36,7 @@ import java.util.List;
 
 abstract public class BaseMessageListViewModel extends BaseViewModel implements OnPagedDataLoader<List<Message>> {
     @Nullable
-    ConversationInfo channel;
+    ConversationInfo mConversationInfo;
     @NonNull
     protected final Conversation conversation;
     @NonNull
@@ -47,7 +47,7 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     @VisibleForTesting
     BaseMessageListViewModel(@NonNull Conversation conversation, @NonNull SendbirdUIKitContract sendbirdUIKitContract) {
         super(sendbirdUIKitContract);
-        this.channel = null;
+        this.mConversationInfo = null;
         this.conversation = conversation;
     }
 
@@ -58,8 +58,8 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      * since 3.0.0
      */
     @Nullable
-    public ConversationInfo getChannel() {
-        return channel;
+    public ConversationInfo getConversationInfo() {
+        return mConversationInfo;
     }
 
 
@@ -122,18 +122,18 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     public void sendUserMessage(@NonNull UserMessageCreateParams params) {
         Logger.i("++ request send message : %s", params);
         TextMessage textMessage = new TextMessage(params.getMessage());
-        if (channel != null) {
-            JIM.getInstance().getMessageManager().sendMessage(textMessage, channel.getConversation(), new IMessageManager.ISendMessageCallback() {
+        if (mConversationInfo != null) {
+            JIM.getInstance().getMessageManager().sendMessage(textMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMessageCallback() {
                 @Override
                 public void onSuccess(Message message) {
                     Logger.i("++ sent message : %s", message);
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onError(Message message, int errorCode) {
                     Logger.e("send message error : %s", errorCode);
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
             });
         }
@@ -141,28 +141,28 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     }
 
     public void sendVoiceMessage(@NonNull String localPath, int duration) {
-        if (channel != null) {
+        if (mConversationInfo != null) {
             VoiceMessage voiceMessage = new VoiceMessage();
             voiceMessage.setLocalPath(localPath);
             voiceMessage.setDuration(duration);
-            JIM.getInstance().getMessageManager().sendMediaMessage(voiceMessage, channel.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
+            JIM.getInstance().getMessageManager().sendMediaMessage(voiceMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
                 @Override
                 public void onProgress(int progress, Message message) {
                 }
 
                 @Override
                 public void onSuccess(Message message) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onError(Message message, int errorCode) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onCancel(Message message) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
             });
         }
@@ -170,11 +170,11 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 
 
     public void sendImageMessage(@NonNull String localPath) {
-        if (channel != null) {
+        if (mConversationInfo != null) {
             ImageMessage imageMessage = new ImageMessage();
             imageMessage.setLocalPath(localPath);
             imageMessage.setThumbnailLocalPath(localPath);
-            JIM.getInstance().getMessageManager().sendMediaMessage(imageMessage, channel.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
+            JIM.getInstance().getMessageManager().sendMediaMessage(imageMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
                 @Override
                 public void onProgress(int progress, Message message) {
 
@@ -182,17 +182,17 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 
                 @Override
                 public void onSuccess(Message message) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onError(Message message, int errorCode) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onCancel(Message message) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
             });
         }
@@ -262,12 +262,12 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      *                since 3.0.0
      */
     public void deleteMessage(@NonNull Message message, @Nullable OnCompleteHandler handler) {
-        if (channel == null) return;
+        if (mConversationInfo == null) return;
         final Message.MessageState status = message.getState();
         if (status == Message.MessageState.SENT) {
             ArrayList<String> ids = new ArrayList<>();
             ids.add(message.getMessageId());
-            JIM.getInstance().getMessageManager().deleteMessagesByMessageIdList(channel.getConversation(), ids, new IMessageManager.ISimpleCallback() {
+            JIM.getInstance().getMessageManager().deleteMessagesByMessageIdList(mConversationInfo.getConversation(), ids, new IMessageManager.ISimpleCallback() {
                 @Override
                 public void onSuccess() {
                     if (handler != null) handler.onComplete(null);
@@ -299,8 +299,8 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
                     info = new ConversationInfo();
                     info.setConversation(conversation);
                 }
-                this.channel = info;
-                if (channel == null) {
+                this.mConversationInfo = info;
+                if (mConversationInfo == null) {
                     handler.onAuthenticationFailed();
                 } else {
                     handler.onAuthenticated();

@@ -22,7 +22,6 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.kit.activities.PhotoViewActivity;
 import com.jet.im.kit.activities.adapter.BaseMessageListAdapter;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
@@ -55,12 +54,10 @@ import com.jet.im.kit.utils.PermissionUtils;
 import com.jet.im.kit.utils.SoftInputUtils;
 import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
-import com.juggle.im.call.ICallSession;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.messages.FileMessage;
-import com.juggle.im.model.messages.ImageMessage;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
@@ -476,7 +473,7 @@ abstract public class BaseMessageListFragment<
         if (channelConfig.getInput().getEnableDocument()) {
             items.add(new DialogListItem(R.string.sb_text_channel_input_document, R.drawable.icon_document));
         }
-        ConversationInfo channel = getViewModel().getChannel();
+        ConversationInfo channel = getViewModel().getConversationInfo();
         assert channel != null;
         if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
             items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_camera));
@@ -535,8 +532,8 @@ abstract public class BaseMessageListFragment<
         requestPermission(PermissionUtils.RECORD_AUDIO_PERMISSION, () -> {
             if (getContext() == null) return;
 
-            assert getViewModel().getChannel() != null;
-            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getChannel().getConversation().getConversationId());
+            assert getViewModel().getConversationInfo() != null;
+            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId());
         });
     }
 
@@ -587,7 +584,7 @@ abstract public class BaseMessageListFragment<
      * since 3.9.0
      */
     public boolean isMultipleMediaEnabled() {
-        ConversationInfo channel = getViewModel().getChannel();
+        ConversationInfo channel = getViewModel().getConversationInfo();
         if (channel == null) return false;
         return channelConfig.getEnableMultipleFilesMessage();
     }
@@ -872,7 +869,7 @@ abstract public class BaseMessageListFragment<
                 @Override
                 public void onResult(@NonNull FileInfo info) {
                     BaseMessageListFragment.this.mediaUri = null;
-                    final ConversationInfo channel = getViewModel().getChannel();
+                    final ConversationInfo channel = getViewModel().getConversationInfo();
                     if (channel == null) return;
                     if (getContext() != null) {
                         getViewModel().sendImageMessage(info.getPath());
@@ -921,7 +918,7 @@ abstract public class BaseMessageListFragment<
      *             since 3.4.0
      */
     protected void sendVoiceFileMessage(@NonNull VoiceMessageInfo info) {
-        final ConversationInfo channel = getViewModel().getChannel();
+        final ConversationInfo channel = getViewModel().getConversationInfo();
         if (channel == null) return;
         if (getContext() != null) {
             getViewModel().sendVoiceMessage(info.getPath(),info.getDuration());
