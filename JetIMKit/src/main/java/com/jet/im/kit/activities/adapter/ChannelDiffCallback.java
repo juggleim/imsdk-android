@@ -29,7 +29,8 @@ class ChannelDiffCallback extends DiffUtil.Callback {
         //todo 比较值
         ChannelListAdapter.ChannelInfo oldChannel = oldChannelList.get(oldItemPosition);
         ChannelListAdapter.ChannelInfo newChannel = newChannelList.get(newItemPosition);
-        return newChannel.getUpdateTime() == oldChannel.getUpdateTime();
+        return newChannel.getConversationType() == oldChannel.getConversationType()
+                && newChannel.getConversationId().equals(oldChannel.getConversationId());
     }
 
     @Override
@@ -37,6 +38,27 @@ class ChannelDiffCallback extends DiffUtil.Callback {
         //todo 比较值
         ChannelListAdapter.ChannelInfo oldChannel = oldChannelList.get(oldItemPosition);
         ChannelListAdapter.ChannelInfo newChannel = newChannelList.get(newItemPosition);
-        return newChannel.getUpdateTime() == oldChannel.getUpdateTime();
+        boolean digestEqual = true;
+        if (newChannel.getLastMessage() != null
+            && newChannel.getLastMessage().getContent() != null
+            && newChannel.getLastMessage().getContent().conversationDigest() != null
+            && oldChannel.getLastMessage() != null
+            && oldChannel.getLastMessage().getContent() != null
+            && oldChannel.getLastMessage().getContent().conversationDigest() != null
+            && !newChannel.getLastMessage().getContent().conversationDigest().equals(oldChannel.getLastMessage().getContent().conversationDigest())) {
+            digestEqual = false;
+        }
+        boolean draftEqual = true;
+        if (newChannel.getDraft() != null
+            && !newChannel.getDraft().equals(oldChannel.getDraft())) {
+            draftEqual = false;
+        }
+
+        return newChannel.getUnreadCount() == oldChannel.getUnreadCount()
+                && newChannel.getUpdateTime() == oldChannel.getUpdateTime()
+                && digestEqual
+                && newChannel.isTop() == oldChannel.isTop()
+                && newChannel.isMute() == oldChannel.isMute()
+                && draftEqual;
     }
 }
