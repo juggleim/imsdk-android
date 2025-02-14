@@ -142,29 +142,51 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         this.sendbirdChatContract.addChannelHandler(ID_CHANNEL_EVENT_HANDLER, new IMessageManager.IMessageListener() {
             @Override
             public void onMessageReceive(Message message) {
-                loadInitial(0);
+                if (!message.getConversation().equals(conversation)) {
+                    return;
+                }
+                cachedMessages.add(message);
+                notifyDataSetChanged("onMessageReceive");
                 markAsRead();
                 sendReceipt(Collections.singletonList(message));
             }
 
             @Override
             public void onMessageRecall(Message message) {
-                loadInitial(0);
+                if (!message.getConversation().equals(conversation)) {
+                    return;
+                }
+                cachedMessages.add(message);
+                notifyDataSetChanged("onMessageRecall");
             }
 
             @Override
-            public void onMessageDelete(Conversation conversation, List<Long> clientMsgNos) {
-                loadInitial(0);
+            public void onMessageDelete(Conversation conversation2, List<Long> clientMsgNos) {
+                if (!conversation2.equals(conversation)) {
+                    return;
+                }
+                for (Long a : clientMsgNos) {
+                    cachedMessages.deleteByMessageId(a);
+                }
+                notifyDataSetChanged("onMessageDelete");
             }
 
             @Override
-            public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
-                loadInitial(0);
+            public void onMessageClear(Conversation conversation2, long timestamp, String senderId) {
+                if (!conversation2.equals(conversation)) {
+                    return;
+                }
+                cachedMessages.clear();
+                notifyDataSetChanged("onMessageClear");
             }
 
             @Override
             public void onMessageUpdate(Message message) {
-
+                if (!message.getConversation().equals(conversation)) {
+                    return;
+                }
+                cachedMessages.add(message);
+                notifyDataSetChanged("onMessageUpdate");
             }
 
             @Override
@@ -414,9 +436,6 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @NonNull
     @Override
     public List<Message> buildMessageList() {
-        MessageCollectionContract collection = this.collection;
-        if (collection == null) return Collections.emptyList();
-
         return cachedMessages.toList();
     }
 

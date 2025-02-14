@@ -309,6 +309,7 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
     private void notifyMessageListChanged(@NonNull ConversationInfo channel, @NonNull List<Message> messageList, @Nullable OnMessageListUpdateHandler callback) {
         BaseMessageListAdapter.this.messageList = messageList;
         BaseMessageListAdapter.this.channel = channel;
+        //todo diff
         notifyDataSetChanged();
         if (callback != null) {
             callback.onListUpdated(messageList);
