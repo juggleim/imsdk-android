@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.GroupMember;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.util.JLogger;
@@ -712,6 +713,31 @@ public class DBManager {
                 execSQL(UserInfoSql.SQL_INSERT_GROUP_INFO, args);
             }
         });
+    }
+
+    public GroupMember getGroupMember(String groupId, String userId) {
+        if (TextUtils.isEmpty(groupId) || TextUtils.isEmpty(userId)) {
+            return null;
+        }
+        GroupMember member = null;
+        String[] args = new String[]{groupId, userId};
+        Cursor cursor = rawQuery(UserInfoSql.SQL_GET_GROUP_MEMBER, args);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                member = UserInfoSql.groupMemberWithCursor(cursor);
+            }
+            cursor.close();
+        }
+        return member;
+    }
+
+    public void insertGroupMembers(List<GroupMember> members) {
+        if (members == null || members.isEmpty()) {
+            return;
+        }
+        List<String> whereArgs = new ArrayList<>();
+        String sql = UserInfoSql.sqlInsertGroupMembers(members, whereArgs);
+        execSQL(sql, whereArgs.toArray(new String[0]));
     }
 
     public List<MessageReaction> getMessageReactions(List<String> messageIds) {

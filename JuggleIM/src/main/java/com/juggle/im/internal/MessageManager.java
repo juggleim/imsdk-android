@@ -7,6 +7,7 @@ import com.juggle.im.JErrorCode;
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
+import com.juggle.im.interfaces.GroupMember;
 import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.interfaces.IMessageUploadProvider;
@@ -2638,12 +2639,18 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private void updateUserInfo(List<ConcreteMessage> messages) {
         Map<String, GroupInfo> groupInfoMap = new HashMap<>();
         Map<String, UserInfo> userInfoMap = new HashMap<>();
+        Map<String, GroupMember> groupMemberMap = new HashMap<>();
         for (ConcreteMessage message : messages) {
             if (message.getGroupInfo() != null && !TextUtils.isEmpty(message.getGroupInfo().getGroupId())) {
                 groupInfoMap.put(message.getGroupInfo().getGroupId(), message.getGroupInfo());
             }
             if (message.getTargetUserInfo() != null && !TextUtils.isEmpty(message.getTargetUserInfo().getUserId())) {
                 userInfoMap.put(message.getTargetUserInfo().getUserId(), message.getTargetUserInfo());
+            }
+            if (message.getGroupMemberInfo() != null && !TextUtils.isEmpty(message.getGroupMemberInfo().getGroupId()) && !TextUtils
+                    .isEmpty(message.getGroupMemberInfo().getUserId())) {
+                String key = message.getGroupMemberInfo().getGroupId() + "xxx" + message.getGroupMemberInfo().getUserId();
+                groupMemberMap.put(key, message.getGroupMemberInfo());
             }
             if (message.hasMentionInfo() && message.getMentionInfo().getTargetUsers() != null) {
                 for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
@@ -2655,6 +2662,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
         mUserInfoManager.insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
+        //todo cache
+        mCore.getDbManager().insertGroupMembers(new ArrayList<>(groupMemberMap.values()));
     }
 
     private void insertRemoteMessages(List<ConcreteMessage> messages) {

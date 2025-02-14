@@ -14,6 +14,7 @@ import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.interfaces.GroupMember;
 import com.juggle.im.internal.ContentTypeCenter;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
@@ -1662,6 +1663,7 @@ class PBData {
         message.setGroupMessageReadInfo(info);
         message.setGroupInfo(groupInfoWithPBGroupInfo(downMsg.getGroupInfo()));
         message.setTargetUserInfo(userInfoWithPBUserInfo(downMsg.getTargetUserInfo()));
+        message.setGroupMemberInfo(groupMemberWithPBGroupMember(downMsg.getGrpMemberInfo(), message.getGroupInfo().getGroupId(), message.getTargetUserInfo().getUserId()));
         if (downMsg.hasMentionInfo() && Appmessages.MentionType.MentionDefault != downMsg.getMentionInfo().getMentionType()) {
             MessageMentionInfo mentionInfo = new MessageMentionInfo();
             mentionInfo.setType(mentionTypeFromPbMentionType(downMsg.getMentionInfo().getMentionType()));
@@ -1833,6 +1835,27 @@ class PBData {
         if (pbUserInfo.getExtFieldsCount() > 0) {
             Map<String, String> extra = new HashMap<>();
             for (Appmessages.KvItem item : pbUserInfo.getExtFieldsList()) {
+                extra.put(item.getKey(), item.getValue());
+            }
+            result.setExtra(extra);
+        }
+        return result;
+    }
+
+    private GroupMember groupMemberWithPBGroupMember(Appmessages.GrpMemberInfo pbGroupMember, String groupId, String userId) {
+        if (pbGroupMember == null) {
+            return null;
+        }
+        if (pbGroupMember.getUpdatedTime() == 0) {
+            return null;
+        }
+        GroupMember result = new GroupMember();
+        result.setGroupId(groupId);
+        result.setUserId(userId);
+        result.setGroupDisplayName(pbGroupMember.getGrpDisplayName());
+        if (pbGroupMember.getExtFieldsCount() > 0) {
+            Map<String, String> extra = new HashMap<>();
+            for (Appmessages.KvItem item : pbGroupMember.getExtFieldsList()) {
                 extra.put(item.getKey(), item.getValue());
             }
             result.setExtra(extra);

@@ -8,4 +8,6 @@ public interface IUserInfoManager {
     UserInfo getUserInfo(String userId);
 
     GroupInfo getGroupInfo(String groupId);
+
+    GroupMember getGroupMember(String groupId, String userId);
 }
