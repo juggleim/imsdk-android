@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.google.android.material.tabs.TabLayout
 import com.juggle.chat.R
 import com.juggle.chat.common.SampleSettingsFragment
 import com.juggle.chat.common.consts.StringSet
@@ -79,6 +80,14 @@ class GroupChannelMainActivity : AppCompatActivity() {
                     }
                 }
             }.attach()
+            tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab) {
+                    // 去掉切换动画
+                    viewPager.setCurrentItem(tab.position, false)
+                }
+                override fun onTabUnselected(tab: TabLayout.Tab) {}
+                override fun onTabReselected(tab: TabLayout.Tab) {}
+            })
             redirectChannelIfNeeded(intent)
         }
     }

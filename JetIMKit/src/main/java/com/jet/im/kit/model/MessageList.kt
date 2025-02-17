@@ -57,7 +57,7 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
 
     @Synchronized
     fun add(message: Message) {
-        Logger.d(">> MessageList::addAll()")
+        Logger.d(">> MessageList::add()")
         val createdAt = message.timestamp
         val dateStr = DateUtils.getDateString(createdAt)
         var timeline = timelineMap[dateStr]
