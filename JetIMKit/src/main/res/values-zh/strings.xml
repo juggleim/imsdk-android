@@ -305,9 +305,9 @@ Please turn it on in the application permission management page of \"Settings\"<
     <string name="rc_voip_cancel">Cancel</string>
     <string name="rc_voip_ok">Confirm</string>
 
-    <string name="j_set_read">Mark as Read</string>
-    <string name="j_set_unread">Mark as Unread</string>
-    <string name="j_mute_notifications">Mute Notifications</string>
-    <string name="j_unmute_notifications">Unmute Notifications</string>
-    <string name="j_delete">Delete</string>
+    <string name="j_set_read">设置已读</string>
+    <string name="j_set_unread">设置未读</string>
+    <string name="j_mute_notifications">消息免打扰</string>
+    <string name="j_unmute_notifications">消息提醒</string>
+    <string name="j_delete">删除</string>
 </resources>

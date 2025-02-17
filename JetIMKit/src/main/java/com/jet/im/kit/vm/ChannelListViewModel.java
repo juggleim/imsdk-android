@@ -202,6 +202,54 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
                 });
     }
 
+    public void setRead(ConversationInfo conversationInfo) {
+        JIM.getInstance().getConversationManager().clearUnreadCount(conversationInfo.getConversation(), new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
+    public void setUnread(ConversationInfo conversationInfo) {
+        JIM.getInstance().getConversationManager().setUnread(conversationInfo.getConversation(), new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
+    public void mute(ConversationInfo conversationInfo, boolean isMute) {
+        JIM.getInstance().getConversationManager().setMute(conversationInfo.getConversation(), isMute, new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
+    public void delete(ConversationInfo conversationInfo) {
+        JIM.getInstance().getConversationManager().deleteConversationInfo(conversationInfo.getConversation(), new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
     /**
      * Leaves the targeted channel.
      *

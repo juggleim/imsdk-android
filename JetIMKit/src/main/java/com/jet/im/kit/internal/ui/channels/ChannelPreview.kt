@@ -111,10 +111,13 @@ internal class ChannelPreview @JvmOverloads constructor(
     fun drawChannel(channel: ConversationInfo) {
         val context = context
         val lastMessage = channel.lastMessage
-        val unreadMessageCount = channel.unreadCount
+        var unreadMessageCount = channel.unreadCount
+        if (unreadMessageCount == 0 && channel.hasUnread()) {
+            unreadMessageCount = 1
+        }
         //todo @未读数
         val unreadMentionCount = 0
-        ivPushEnabled.visibility = if (ChannelUtils.isChannelPushOff(channel)) VISIBLE else GONE
+        ivPushEnabled.visibility = if (channel.isMute) VISIBLE else GONE
         val pushEnabledTint = SendbirdUIKit.getDefaultThemeMode().monoTintResId
         ivPushEnabled.setImageDrawable(
             DrawableUtils.setTintList(
@@ -128,7 +131,13 @@ internal class ChannelPreview @JvmOverloads constructor(
         tvUnreadCount.text =
             if (unreadMessageCount > 99) context.getString(R.string.sb_text_channel_list_unread_count_max) else unreadMessageCount.toString()
         tvUnreadCount.visibility = if (unreadMessageCount > 0) VISIBLE else GONE
-        tvUnreadCount.setBackgroundResource(if (SendbirdUIKit.isDarkMode()) R.drawable.sb_shape_unread_message_count_dark else R.drawable.sb_shape_unread_message_count)
+        if (channel.isMute) {
+            tvUnreadCount.text = ""
+            tvUnreadCount.height = 8
+            tvUnreadCount.setBackgroundResource(R.drawable.sb_shape_unread_message_count_mute)
+        } else {
+            tvUnreadCount.setBackgroundResource(if (SendbirdUIKit.isDarkMode()) R.drawable.sb_shape_unread_message_count_dark else R.drawable.sb_shape_unread_message_count)
+        }
         //todo ivFrozen
         ivFrozen.visibility = GONE
 //        if (channel.isFrozen) {
