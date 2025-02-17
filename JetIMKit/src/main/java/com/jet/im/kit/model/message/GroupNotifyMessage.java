@@ -109,9 +109,9 @@ public class GroupNotifyMessage extends MessageContent {
         String ul = userList.toString();
         switch (mType) {
             case ADD_MEMBER:
-                return sender + " 邀请" + ul + " 加入群聊";
+                return sender + " 邀请 " + ul + " 加入群聊";
             case REMOVE_MEMBER:
-                return sender + " 将" + ul + " 移除群聊";
+                return sender + " 将 " + ul + " 移除群聊";
             case RENAME:
                 return sender + " 修改群名称为 " + mName;
             case CHANGE_OWNER:
