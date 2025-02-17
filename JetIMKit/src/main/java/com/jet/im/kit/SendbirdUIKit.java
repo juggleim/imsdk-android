@@ -36,6 +36,8 @@ import com.jet.im.kit.model.UserMentionConfig;
 import com.jet.im.kit.model.VoiceRecorderConfig;
 import com.jet.im.kit.model.configurations.Common;
 import com.jet.im.kit.model.configurations.UIKitConfig;
+import com.jet.im.kit.model.message.FriendNotifyMessage;
+import com.jet.im.kit.model.message.GroupNotifyMessage;
 import com.jet.im.kit.utils.FileUtils;
 import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.utils.UIKitPrefs;
@@ -315,6 +317,7 @@ public class SendbirdUIKit {
         FileUtils.removeDeletableDir(context.getApplicationContext());
         UIKitPrefs.init(context.getApplicationContext());
         EmojiManager.init();
+        registerMessages();
     }
 
     /**
@@ -653,6 +656,11 @@ public class SendbirdUIKit {
         if (handler != null) {
             handler.onDisconnected();
         }
+    }
+
+    private static void registerMessages() {
+        JIM.getInstance().getMessageManager().registerContentType(GroupNotifyMessage.class);
+        JIM.getInstance().getMessageManager().registerContentType(FriendNotifyMessage.class);
     }
 
     /**

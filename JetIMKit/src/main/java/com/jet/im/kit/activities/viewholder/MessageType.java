@@ -39,6 +39,10 @@ public enum MessageType {
      */
     VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER(7),
     /**
+     * Message type sent by the administrator.
+     */
+    VIEW_TYPE_ADMIN_MESSAGE(8),
+    /**
      * Message type that displays the date.
      */
     VIEW_TYPE_TIME_LINE(9),

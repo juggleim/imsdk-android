@@ -338,10 +338,12 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         ConversationInfo toBeRemove;
         for (ConversationInfo newInfo : newList) {
             toBeRemove = null;
-            for (ConversationInfo oldInfo : oldList) {
-                if (oldInfo.getConversation().equals(newInfo.getConversation())) {
-                    toBeRemove = oldInfo;
-                    break;
+            if (oldList != null) {
+                for (ConversationInfo oldInfo : oldList) {
+                    if (oldInfo.getConversation().equals(newInfo.getConversation())) {
+                        toBeRemove = oldInfo;
+                        break;
+                    }
                 }
             }
             if (toBeRemove != null) {

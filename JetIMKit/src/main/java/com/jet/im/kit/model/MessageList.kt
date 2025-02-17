@@ -156,7 +156,7 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
         private fun createTimelineMessage(anchorMessage: Message): Message {
             var timelineMessage = Message()
             timelineMessage.content = TimelineMessage(anchorMessage.timestamp)
-            timelineMessage.timestamp=anchorMessage.timestamp
+            timelineMessage.timestamp=anchorMessage.timestamp-1
             return timelineMessage
         }
     }

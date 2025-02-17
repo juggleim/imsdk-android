@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.jet.im.kit.consts.StringSet;
+import com.jet.im.kit.databinding.SbViewAdminMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileImageMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileVideoMessageBinding;
@@ -31,6 +32,8 @@ import com.jet.im.kit.internal.ui.viewholders.OtherVoiceMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.TimelineViewHolder;
 import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.model.TimelineMessage;
+import com.jet.im.kit.model.message.FriendNotifyMessage;
+import com.jet.im.kit.model.message.GroupNotifyMessage;
 import com.jet.im.kit.utils.MessageUtils;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
@@ -42,6 +45,7 @@ import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.MultipleFilesMessage;
 import com.sendbird.android.message.UserMessage;
+import com.sendbird.uikit.internal.ui.viewholders.AdminMessageViewHolder;
 
 /**
  * A Factory manages a type of messages.
@@ -114,6 +118,9 @@ public class MessageViewHolderFactory {
             case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
                 holder = new OtherVideoFileMessageViewHolder(SbViewOtherFileVideoMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
+            case VIEW_TYPE_ADMIN_MESSAGE:
+                holder = new AdminMessageViewHolder(SbViewAdminMessageBinding.inflate(inflater, parent, false), new MessageListUIParams.Builder().setUseMessageGroupUI(false).build());
+                break;
             case VIEW_TYPE_TIME_LINE:
                 holder = new TimelineViewHolder(SbViewTimeLineMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
@@ -184,13 +191,9 @@ public class MessageViewHolderFactory {
             } else {
                 type = MessageType.VIEW_TYPE_FILE_MESSAGE_OTHER;
             }
-        }
-        else if (content instanceof FileMessage) {
-            if (MessageUtils.isMine(message)) {
-                type = MessageType.VIEW_TYPE_FILE_MESSAGE_ME;
-            } else {
-                type = MessageType.VIEW_TYPE_FILE_MESSAGE_OTHER;
-            }
+        } else if (content instanceof FriendNotifyMessage
+        || content instanceof GroupNotifyMessage) {
+            type = MessageType.VIEW_TYPE_ADMIN_MESSAGE;
         }
 //        else if (message instanceof MultipleFilesMessage && MessageExtensionsKt.containsOnlyImageFiles((MultipleFilesMessage) message)) {
 //            if (MessageUtils.isMine(message)) {
