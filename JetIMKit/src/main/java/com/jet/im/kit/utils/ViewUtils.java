@@ -47,6 +47,7 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
+import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FileMessage;
@@ -296,6 +297,21 @@ public class ViewUtils {
                 message.getMessageId(),
                 image.getThumbnailUrl(),
                 image.getUrl(),
+                StringSet.image,
+                null,
+                R.dimen.sb_size_48
+        );
+    }
+
+    public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull VideoMessage videoMessage, @NonNull Message message) {
+        if (TextUtils.isEmpty(videoMessage.getSnapshotUrl())) {
+            return;
+        }
+        drawThumbnail(
+                view,
+                message.getMessageId(),
+                videoMessage.getSnapshotUrl(),
+                videoMessage.getUrl(),
                 StringSet.image,
                 null,
                 R.dimen.sb_size_48

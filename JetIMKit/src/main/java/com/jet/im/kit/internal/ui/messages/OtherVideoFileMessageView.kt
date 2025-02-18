@@ -15,6 +15,7 @@ import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.messages.VideoMessage
 import com.sendbird.android.channel.GroupChannel
 import com.sendbird.android.message.BaseMessage
 import com.sendbird.android.message.FileMessage
@@ -87,7 +88,7 @@ internal class OtherVideoFileMessageView @JvmOverloads constructor(
         }
         ViewUtils.drawNickname(binding.tvNickname, message, messageUIConfig, false)
         ViewUtils.drawProfile(binding.ivProfileView, message)
-//        ViewUtils.drawThumbnail(binding.ivThumbnail, (message as VideoMessage))
+        ViewUtils.drawThumbnail(binding.ivThumbnail, (message.content as VideoMessage), message)
         ViewUtils.drawThumbnailIcon(binding.ivThumbnailIcon, StringSet.video)
         ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
         val paddingTop =

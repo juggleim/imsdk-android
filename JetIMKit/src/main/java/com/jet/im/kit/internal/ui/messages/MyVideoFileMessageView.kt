@@ -4,21 +4,22 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
-import com.sendbird.android.channel.GroupChannel
-import com.sendbird.android.message.BaseMessage
-import com.sendbird.android.message.FileMessage
-import com.sendbird.android.message.SendingStatus
 import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.consts.MessageGroupType
+import com.jet.im.kit.consts.StringSet
 import com.jet.im.kit.databinding.SbViewMyFileVideoMessageComponentBinding
 import com.jet.im.kit.model.MessageListUIParams
-import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.utils.DateUtils
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.messages.VideoMessage
+import com.sendbird.android.channel.GroupChannel
+import com.sendbird.android.message.BaseMessage
+import com.sendbird.android.message.FileMessage
+import com.sendbird.android.message.SendingStatus
 
 internal class MyVideoFileMessageView @JvmOverloads constructor(
     context: Context,
@@ -89,12 +90,13 @@ internal class MyVideoFileMessageView @JvmOverloads constructor(
             it.myMessageBackground?.let { bg -> binding.contentPanel.background = bg }
         }
         ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
-//        ViewUtils.drawThumbnail(binding.ivThumbnail, (message as FileMessage))
-//        ViewUtils.drawThumbnailIcon(binding.ivThumbnailIcon, message)
-//        val paddingTop =
-//            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-//        val paddingBottom =
-//            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-//        binding.root.setPadding(binding.root.paddingLeft, paddingTop, binding.root.paddingRight, paddingBottom)
+
+        ViewUtils.drawThumbnail(binding.ivThumbnail, (message.content as VideoMessage), message)
+        ViewUtils.drawThumbnailIcon(binding.ivThumbnailIcon, StringSet.video)
+        val paddingTop =
+            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
+        val paddingBottom =
+            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
+        binding.root.setPadding(binding.root.paddingLeft, paddingTop, binding.root.paddingRight, paddingBottom)
     }
 }

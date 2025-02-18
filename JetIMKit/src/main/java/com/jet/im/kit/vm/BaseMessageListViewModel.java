@@ -1,5 +1,7 @@
 package com.jet.im.kit.vm;
 
+import android.media.MediaMetadataRetriever;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -23,8 +25,10 @@ import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
+import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.collection.Traceable;
 import com.sendbird.android.params.FileMessageCreateParams;
@@ -168,13 +172,64 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
         }
     }
 
-
     public void sendImageMessage(@NonNull String localPath) {
         if (mConversationInfo != null) {
             ImageMessage imageMessage = new ImageMessage();
             imageMessage.setLocalPath(localPath);
             imageMessage.setThumbnailLocalPath(localPath);
             JIM.getInstance().getMessageManager().sendMediaMessage(imageMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
+                @Override
+                public void onProgress(int progress, Message message) {
+
+                }
+
+                @Override
+                public void onSuccess(Message message) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onError(Message message, int errorCode) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onCancel(Message message) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+            });
+        }
+    }
+
+    public void sendVideoMessage(@NonNull VideoMessage videoMessage) {
+        if (mConversationInfo != null) {
+            JIM.getInstance().getMessageManager().sendMediaMessage(videoMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
+                @Override
+                public void onProgress(int progress, Message message) {
+
+                }
+
+                @Override
+                public void onSuccess(Message message) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onError(Message message, int errorCode) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onCancel(Message message) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+            });
+        }
+    }
+
+    public void sendFileMessage(@NonNull FileMessage fileMessage) {
+        if (mConversationInfo != null) {
+            JIM.getInstance().getMessageManager().sendMediaMessage(fileMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
                 @Override
                 public void onProgress(int progress, Message message) {
 

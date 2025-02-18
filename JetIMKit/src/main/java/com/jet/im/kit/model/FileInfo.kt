@@ -1,16 +1,12 @@
 package com.jet.im.kit.model
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.WorkerThread
-import com.sendbird.android.exception.SendbirdException
-import com.sendbird.android.message.MessageMetaArray
-import com.sendbird.android.message.ThumbnailSize
-import com.sendbird.android.message.UploadableFileInfo
-import com.sendbird.android.params.FileMessageCreateParams
-import com.sendbird.android.params.MultipleFilesMessageCreateParams
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.consts.StringSet
 import com.jet.im.kit.interfaces.OnResultHandler
@@ -20,6 +16,12 @@ import com.jet.im.kit.internal.tasks.TaskQueue.addTask
 import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.FileUtils
 import com.jet.im.kit.utils.ImageUtils
+import com.sendbird.android.exception.SendbirdException
+import com.sendbird.android.message.MessageMetaArray
+import com.sendbird.android.message.ThumbnailSize
+import com.sendbird.android.message.UploadableFileInfo
+import com.sendbird.android.params.FileMessageCreateParams
+import com.sendbird.android.params.MultipleFilesMessageCreateParams
 import java.io.File
 import java.io.IOException
 import java.util.Locale
@@ -36,7 +38,8 @@ class FileInfo internal constructor(
     val thumbnailHeight: Int,
     val thumbnailPath: String? = null,
     val cacheDir: File? = null,
-    internal val voiceMetaInfo: VoiceMetaInfo? = null
+    internal val voiceMetaInfo: VoiceMetaInfo? = null,
+    val duration: Int = 0
 ) {
     val file: File
 
@@ -232,6 +235,7 @@ class FileInfo internal constructor(
                     var thumbnailPath = path
                     var thumbnailWidth = resizingSize.first / 2
                     var thumbnailHeight = resizingSize.second / 2
+                    var duration = 0
                     if (cursor.moveToFirst()) {
                         val name = cursor.getString(nameIndex)
                         var size = cursor.getLong(sizeIndex).toInt()
@@ -261,6 +265,33 @@ class FileInfo internal constructor(
                             thumbnailPath = path
                             thumbnailWidth = dimension.first
                             thumbnailHeight = dimension.second
+                            if (mimeType.startsWith(StringSet.video)) {
+                                try {
+                                    MediaMetadataRetriever().use { retriever ->
+                                        retriever.setDataSource(context, uri)
+                                        val durationString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                                        duration = durationString?.toInt() ?: 0
+                                        val thumbnail = retriever.frameAtTime
+                                        val snapshotFileName = String.format(Locale.US, "snapshot_%s", name)
+                                        val destFile = FileUtils.createCachedDirFile(context, snapshotFileName)
+                                        if (destFile.exists() && destFile.length() > 0) {
+                                            thumbnailPath = destFile.absolutePath
+                                        } else {
+                                            thumbnail?.let {
+                                                thumbnailPath = FileUtils.bitmapToFile(
+                                                    thumbnail,
+                                                    destFile,
+                                                    30,
+                                                    Bitmap.CompressFormat.JPEG
+                                                ).absolutePath
+                                            }
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    Logger.e("MediaMetadataRetriever exception is " + e);
+                                }
+
+                            }
                         }
                         Logger.d("==============================================================================")
                         Logger.d("++ FILE PATH : %s", path)
@@ -280,6 +311,9 @@ class FileInfo internal constructor(
                             thumbnailWidth,
                             thumbnailHeight,
                             thumbnailPath,
+                            null,
+                            null,
+                            duration
                         )
                     }
                 }

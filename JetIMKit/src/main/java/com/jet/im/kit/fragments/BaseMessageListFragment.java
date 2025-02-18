@@ -58,6 +58,7 @@ import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.messages.FileMessage;
+import com.juggle.im.model.messages.VideoMessage;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
@@ -100,7 +101,7 @@ abstract public class BaseMessageListFragment<
     private Uri mediaUri;
 
     private final ActivityResultLauncher<Intent> getContentLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        SendbirdChat.setAutoBackgroundDetection(true);
+//        SendbirdChat.setAutoBackgroundDetection(true);
         final Intent intent = result.getData();
         int resultCode = result.getResultCode();
 
@@ -111,23 +112,23 @@ abstract public class BaseMessageListFragment<
         }
     });
     private final ActivityResultLauncher<Intent> takeCameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        SendbirdChat.setAutoBackgroundDetection(true);
+//        SendbirdChat.setAutoBackgroundDetection(true);
         int resultCode = result.getResultCode();
 
         if (resultCode != RESULT_OK || getContext() == null) return;
         final Uri mediaUri = this.mediaUri;
         if (mediaUri != null && isFragmentAlive()) {
-            sendFileMessage(mediaUri);
+            sendMediaMessage(mediaUri);
         }
     });
     private final ActivityResultLauncher<Intent> takeVideoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        SendbirdChat.setAutoBackgroundDetection(true);
+//        SendbirdChat.setAutoBackgroundDetection(true);
         int resultCode = result.getResultCode();
 
         if (resultCode != RESULT_OK) return;
         final Uri mediaUri = this.mediaUri;
         if (mediaUri != null && isFragmentAlive()) {
-            sendFileMessage(mediaUri);
+            sendMediaMessage(mediaUri);
         }
     });
 
@@ -515,7 +516,7 @@ abstract public class BaseMessageListFragment<
      * since 2.0.1
      */
     public void takeCamera() {
-        SendbirdChat.setAutoBackgroundDetection(false);
+//        SendbirdChat.setAutoBackgroundDetection(false);
         requestPermission(PermissionUtils.CAMERA_PERMISSION, () -> {
             if (getContext() == null) return;
             this.mediaUri = FileUtils.createImageFileUri(getContext());
@@ -543,7 +544,7 @@ abstract public class BaseMessageListFragment<
      * since 3.2.1
      */
     public void takeVideo() {
-        SendbirdChat.setAutoBackgroundDetection(false);
+//        SendbirdChat.setAutoBackgroundDetection(false);
         requestPermission(PermissionUtils.CAMERA_PERMISSION, () -> {
             if (getContext() == null) return;
             this.mediaUri = FileUtils.createVideoFileUri(getContext());
@@ -570,7 +571,7 @@ abstract public class BaseMessageListFragment<
         ActivityResultContracts.PickVisualMedia.VisualMediaType mediaType =
                 channelConfig.getInput().getGallery().getPickVisualMediaType();
         if (mediaType != null) {
-            SendbirdChat.setAutoBackgroundDetection(false);
+//            SendbirdChat.setAutoBackgroundDetection(false);
             picker.launch(new PickVisualMediaRequest.Builder()
                     .setMediaType(mediaType)
                     .build());
@@ -597,7 +598,7 @@ abstract public class BaseMessageListFragment<
      */
     @VisibleForTesting
     void onMultipleMediaResult(@NonNull List<Uri> uris) {
-        SendbirdChat.setAutoBackgroundDetection(true);
+//        SendbirdChat.setAutoBackgroundDetection(true);
         if (uris.isEmpty()) return;
         if (uris.size() > getMultipleFilesMessageFileCountLimit()) {
             showConfirmDialog(getString(R.string.sb_text_error_multiple_files_count_limit, getMultipleFilesMessageFileCountLimit()));
@@ -620,7 +621,7 @@ abstract public class BaseMessageListFragment<
     @VisibleForTesting
     void onImageResult(@Nullable Uri uri) {
         if (uri != null && isFragmentAlive()) {
-            sendImageMessage(uri);
+            sendMediaMessage(uri);
         }
     }
 
@@ -747,7 +748,7 @@ abstract public class BaseMessageListFragment<
      * since 2.0.1
      */
     public void takeFile() {
-        SendbirdChat.setAutoBackgroundDetection(false);
+//        SendbirdChat.setAutoBackgroundDetection(false);
         final String[] permissions = PermissionUtils.GET_CONTENT_PERMISSION;
         if (permissions.length > 0) {
             requestPermission(permissions, () -> {
@@ -863,7 +864,7 @@ abstract public class BaseMessageListFragment<
      * @param uri A file Uri
      *            since 1.0.4
      */
-    protected void sendImageMessage(@NonNull Uri uri) {
+    protected void sendMediaMessage(@NonNull Uri uri) {
         if (getContext() != null) {
             FileInfo.fromUri(getContext(), uri, false, new OnResultHandler<FileInfo>() {
                 @Override
@@ -872,7 +873,18 @@ abstract public class BaseMessageListFragment<
                     final ConversationInfo channel = getViewModel().getConversationInfo();
                     if (channel == null) return;
                     if (getContext() != null) {
-                        getViewModel().sendImageMessage(info.getPath());
+                        if (info.getMimeType()!= null && info.getMimeType().startsWith((StringSet.video))) {
+                            VideoMessage videoMessage = new VideoMessage();
+                            videoMessage.setLocalPath(info.getPath());
+                            videoMessage.setSnapshotLocalPath(info.getThumbnailPath());
+                            videoMessage.setHeight(info.getThumbnailHeight());
+                            videoMessage.setWidth(info.getThumbnailWidth());
+                            videoMessage.setSize(info.getSize());
+                            videoMessage.setDuration(info.getDuration());
+                            getViewModel().sendVideoMessage(videoMessage);
+                        } else {
+                            getViewModel().sendImageMessage(info.getPath());
+                        }
                     }
                 }
 
@@ -898,7 +910,15 @@ abstract public class BaseMessageListFragment<
                 @Override
                 public void onResult(@NonNull FileInfo info) {
                     BaseMessageListFragment.this.mediaUri = null;
-                    sendFileMessage(info);
+                    final ConversationInfo channel = getViewModel().getConversationInfo();
+                    if (channel == null) return;
+                    if (getContext() != null) {
+                        FileMessage fileMessage = new FileMessage();
+                        fileMessage.setLocalPath(info.getPath());
+                        fileMessage.setName(info.getFileName());
+                        fileMessage.setSize(info.getSize());
+                        getViewModel().sendFileMessage(fileMessage);
+                    }
                 }
 
                 @Override

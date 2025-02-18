@@ -62,12 +62,10 @@
             android:gravity="center"
             android:paddingTop="@dimen/sb_size_7"
             android:paddingBottom="@dimen/sb_size_7"
-            android:paddingRight="@dimen/sb_size_12"
-            android:paddingLeft="@dimen/sb_size_12"
             android:paddingStart="@dimen/sb_size_12"
             android:paddingEnd="@dimen/sb_size_12"
             app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintTop_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/contentBarrier"
             app:layout_constraintBottom_toBottomOf="parent" >

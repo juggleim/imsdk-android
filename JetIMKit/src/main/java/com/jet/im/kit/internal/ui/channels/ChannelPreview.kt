@@ -133,9 +133,16 @@ internal class ChannelPreview @JvmOverloads constructor(
         tvUnreadCount.visibility = if (unreadMessageCount > 0) VISIBLE else GONE
         if (channel.isMute) {
             tvUnreadCount.text = ""
-            tvUnreadCount.height = 8
+            tvUnreadCount.layoutParams = tvUnreadCount.layoutParams.apply {
+                width = 8.dpToPx(tvUnreadCount.context)
+                height = 8.dpToPx(tvUnreadCount.context)
+            }
             tvUnreadCount.setBackgroundResource(R.drawable.sb_shape_unread_message_count_mute)
         } else {
+            tvUnreadCount.layoutParams = tvUnreadCount.layoutParams.apply {
+                width = ViewGroup.LayoutParams.WRAP_CONTENT
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+            }
             tvUnreadCount.setBackgroundResource(if (SendbirdUIKit.isDarkMode()) R.drawable.sb_shape_unread_message_count_dark else R.drawable.sb_shape_unread_message_count)
         }
         //todo ivFrozen
@@ -235,6 +242,8 @@ internal class ChannelPreview @JvmOverloads constructor(
             layout.findViewById<View>(R.id.root).setBackgroundResource(R.color.background_50)
         }
     }
+
+    fun Int.dpToPx(context: Context): Int = (this * context.resources.displayMetrics.density).toInt()
 
     companion object {
         private fun setLastMessage(
