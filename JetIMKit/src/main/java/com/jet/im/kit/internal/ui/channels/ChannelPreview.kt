@@ -254,27 +254,29 @@ internal class ChannelPreview @JvmOverloads constructor(
 //                }
             }
             // todo 最后一条消息内容
+            message = channel.lastMessage?.content?.conversationDigest().toString()
             channel.lastMessage?.content?.let {
+                message = it.conversationDigest()
                 when (it) {
                     is TextMessage -> {
                         textView.maxLines = 2
                         textView.ellipsize = TextUtils.TruncateAt.END
-                        message = it.content
+//                        message = it.content
                     }
 
                     is VoiceMessage -> {
                         textView.maxLines = 1
                         textView.ellipsize = TextUtils.TruncateAt.MIDDLE
-                        message = "[语音]"
+//                        message = "[语音]"
                     }
 
                     is ImageMessage -> {
                         textView.maxLines = 1
                         textView.ellipsize = TextUtils.TruncateAt.MIDDLE
-                        message = "[图片]"
+//                        message = "[图片]"
                     }
                     else ->{
-                        message="暂不支持此消息"
+//                        message="暂不支持此消息"
                     }
 
                 }

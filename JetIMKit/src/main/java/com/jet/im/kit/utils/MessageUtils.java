@@ -77,7 +77,9 @@ public class MessageUtils {
     public static boolean isGroupChanged(@Nullable Message frontMessage, @Nullable Message backMessage, @NonNull MessageListUIParams messageListUIParams) {
         return frontMessage == null ||
                 frontMessage.getSenderUserId() == null ||
+                frontMessage.getContent() instanceof TimelineMessage ||
                 backMessage == null ||
+                backMessage.getContent() instanceof TimelineMessage ||
                 !backMessage.getState().equals(Message.MessageState.SENT) ||
                 !frontMessage.getState().equals(Message.MessageState.SENT) ||
                 !frontMessage.getSenderUserId().equals(backMessage.getSenderUserId()) ||
