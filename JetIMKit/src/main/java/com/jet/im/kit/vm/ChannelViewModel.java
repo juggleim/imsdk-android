@@ -593,39 +593,21 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         if (oldestMessage != null) {
             startingPoint = oldestMessage.getTimestamp();
         }
-        JIM.getInstance().getMessageManager().getLocalAndRemoteMessages(conversation,
-                20, startingPoint, JIMConst.PullDirection.OLDER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
-                    @Override
-                    public void onGetLocalList(List<Message> messages, boolean hasRemote) {
-                        if (!hasRemote) {
-                            if(messages.size()<20){
-                                hasPrevious=false;
-                            }
-                            cachedMessages.addAll(messages);
-                            result.set(messages);
-                            notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
-                            lock.countDown();
-                        }
-                    }
+        GetMessageOptions options = new GetMessageOptions();
+        options.setStartTime(startingPoint);
+        options.setCount(20);
+        JIM.getInstance().getMessageManager().getMessages(conversation, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
+            @Override
+            public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
+                hasPrevious = hasMore;
+                cachedMessages.addAll(messages);
+                result.set(messages);
+                notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
+                lock.countDown();
+                sendReceipt(messages);
+            }
+        });
 
-                    @Override
-                    public void onGetRemoteList(List<Message> messages) {
-                        if(messages.size()<20){
-                            hasPrevious=false;
-                        }
-                        cachedMessages.addAll(messages);
-                        result.set(messages);
-                        notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
-                        lock.countDown();
-                    }
-
-                    @Override
-                    public void onGetRemoteListError(int errorCode) {
-                        result.set(Collections.emptyList());
-                        notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
-                        lock.countDown();
-                    }
-                });
         lock.await();
         messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
         return result.get();
@@ -655,39 +637,21 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         if (oldestMessage != null) {
             startingPoint = oldestMessage.getTimestamp();
         }
-        JIM.getInstance().getMessageManager().getLocalAndRemoteMessages(conversation,
-                20, startingPoint, JIMConst.PullDirection.NEWER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
-                    @Override
-                    public void onGetLocalList(List<Message> messages, boolean hasRemote) {
-                        if (!hasRemote) {
-                            if(messages.size()<20){
-                                hasNext=false;
-                            }
-                            cachedMessages.addAll(messages);
-                            result.set(messages);
-                            notifyDataSetChanged(StringSet.ACTION_NEXT);
-                            lock.countDown();
-                        }
-                    }
-
-                    @Override
-                    public void onGetRemoteList(List<Message> messages) {
-                        if(messages.size()<20){
-                            hasNext=false;
-                        }
-                        cachedMessages.addAll(messages);
-                        result.set(messages);
-                        notifyDataSetChanged(StringSet.ACTION_NEXT);
-                        lock.countDown();
-                    }
-
-                    @Override
-                    public void onGetRemoteListError(int errorCode) {
-                        result.set(Collections.emptyList());
-                        notifyDataSetChanged(StringSet.ACTION_NEXT);
-                        lock.countDown();
-                    }
-                });
+        GetMessageOptions options = new GetMessageOptions();
+        options.setStartTime(startingPoint);
+        options.setCount(20);
+        JIM.getInstance().getMessageManager().getMessages(conversation, JIMConst.PullDirection.NEWER, options, new IMessageManager.IGetMessagesCallbackV3() {
+            @Override
+            public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
+                hasNext = hasMore;
+                cachedMessages.addAll(messages);
+                result.set(messages);
+                notifyDataSetChanged(StringSet.ACTION_NEXT);
+                lock.countDown();
+                sendReceipt(messages);
+            }
+        });
+        
         lock.await();
         messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
         return result.get();
