@@ -37,6 +37,8 @@ import com.juggle.im.internal.model.messages.MsgExSetMessage;
 import com.juggle.im.internal.model.messages.MsgModifyMessage;
 import com.juggle.im.internal.model.messages.ReadNtfMessage;
 import com.juggle.im.internal.model.messages.RecallCmdMessage;
+import com.juggle.im.internal.model.messages.TagAddConvMessage;
+import com.juggle.im.internal.model.messages.TagDelConvMessage;
 import com.juggle.im.internal.model.messages.TopConvMessage;
 import com.juggle.im.internal.model.messages.UnDisturbConvMessage;
 import com.juggle.im.internal.util.FileUtils;
@@ -109,6 +111,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(CallFinishNotifyMessage.class);
         ContentTypeCenter.getInstance().registerContentType(MsgExSetMessage.class);
         ContentTypeCenter.getInstance().registerContentType(MsgModifyMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(TagAddConvMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(TagDelConvMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -2111,6 +2115,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         void onConversationsClearTotalUnread(long clearTime);
         void onConversationSetUnread(Conversation conversation);
         void onMessageUpdate(ConcreteMessage message);
+        void onConversationsAddToTag(String tagId, List<Conversation> conversations);
+        void onConversationsRemoveFromTag(String tagId, List<Conversation> conversations);
     }
 
     public void setSendReceiveListener(ISendReceiveListener sendReceiveListener) {
@@ -2232,6 +2238,38 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 sendTime = message.getTimestamp();
             } else if (message.getDirection() == Message.MessageDirection.RECEIVE && !isStatusMessage) {
                 receiveTime = message.getTimestamp();
+            }
+
+            //tag add conversation
+            if (message.getContentType().equals(TagAddConvMessage.CONTENT_TYPE)) {
+                if (message.getTimestamp() <= mCore.getConversationSyncTime()) {
+                    continue;
+                }
+                TagAddConvMessage cmd = (TagAddConvMessage) message.getContent();
+                if (cmd.getConversations() == null
+                || cmd.getConversations().isEmpty()
+                || TextUtils.isEmpty(cmd.getTagId())) {
+                    continue;
+                }
+                mCore.getDbManager().addConversationsToTag(cmd.getConversations(), cmd.getTagId());
+                mSendReceiveListener.onConversationsAddToTag(cmd.getTagId(), cmd.getConversations());
+                continue;
+            }
+
+            //tag remove conversation
+            if (message.getContentType().equals(TagDelConvMessage.CONTENT_TYPE)) {
+                if (message.getTimestamp() <= mCore.getConversationSyncTime()) {
+                    continue;
+                }
+                TagDelConvMessage cmd = (TagDelConvMessage) message.getContent();
+                if (cmd.getConversations() == null
+                        || cmd.getConversations().isEmpty()
+                        || TextUtils.isEmpty(cmd.getTagId())) {
+                    continue;
+                }
+                mCore.getDbManager().removeConversationsFromTag(cmd.getConversations(), cmd.getTagId());
+                mSendReceiveListener.onConversationsRemoveFromTag(cmd.getTagId(), cmd.getConversations());
+                continue;
             }
 
             //reaction

@@ -1053,6 +1053,52 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] addConversationsToTag(List<Conversation> conversations, String tagId, String userId, int index) {
+        Appmessages.TagConvers.Builder builder = Appmessages.TagConvers.newBuilder();
+        builder.setTag(tagId);
+        for (Conversation conversation : conversations) {
+            Appmessages.SimpleConversation sc = Appmessages.SimpleConversation.newBuilder()
+                    .setTargetId(conversation.getConversationId())
+                    .setChannelTypeValue(conversation.getConversationType().getValue())
+                    .build();
+            builder.addConvers(sc);
+        }
+        Appmessages.TagConvers tagConvers = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(TAG_ADD_CONVERS)
+                .setTargetId(userId)
+                .setData(tagConvers.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] removeConversationsFromTag(List<Conversation> conversations, String tagId, String userId, int index) {
+        Appmessages.TagConvers.Builder builder = Appmessages.TagConvers.newBuilder();
+        builder.setTag(tagId);
+        for (Conversation conversation : conversations) {
+            Appmessages.SimpleConversation sc = Appmessages.SimpleConversation.newBuilder()
+                    .setTargetId(conversation.getConversationId())
+                    .setChannelTypeValue(conversation.getConversationType().getValue())
+                    .build();
+            builder.addConvers(sc);
+        }
+        Appmessages.TagConvers tagConvers = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(TAG_DEL_CONVERS)
+                .setTargetId(userId)
+                .setData(tagConvers.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -1781,6 +1827,13 @@ class PBData {
             }
         }
         info.setUnread(conversation.getUnreadTag()==1);
+        if (conversation.getConverTagsCount() > 0) {
+            List<String> tagIdList = new ArrayList<>();
+            for (Appmessages.ConverTag pbTag : conversation.getConverTagsList()) {
+                tagIdList.add(pbTag.getTag());
+            }
+            info.setTagIdList(tagIdList);
+        }
         return info;
     }
 
@@ -2100,6 +2153,8 @@ class PBData {
     private static final String MSG_EX_SET = "msg_exset";
     private static final String DEL_MSG_EX_SET = "del_msg_exset";
     private static final String QRY_MSG_EX_SET = "qry_msg_exset";
+    private static final String TAG_ADD_CONVERS = "tag_add_convers";
+    private static final String TAG_DEL_CONVERS = "tag_del_convers";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
@@ -2156,6 +2211,8 @@ class PBData {
             put(DEL_MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_MSG_EX_SET, PBRcvObj.PBRcvType.qryMsgExtAck);
             put(MODIFY_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(TAG_ADD_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(TAG_DEL_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
         }
     };
 

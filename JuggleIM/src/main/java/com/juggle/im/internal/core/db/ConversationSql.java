@@ -3,16 +3,21 @@ package com.juggle.im.internal.core.db;
 import android.database.Cursor;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.juggle.im.JIMConst;
 import com.juggle.im.internal.ContentTypeCenter;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationMentionInfo;
+import com.juggle.im.model.GetConversationOptions;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageMentionInfo;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class ConversationSql {
 
@@ -231,6 +236,34 @@ class ConversationSql {
 
     static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index = last_read_message_index AND unread_tag = 1 THEN 1 WHEN last_message_index - last_read_message_index > 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info WHERE mute = 0";
 
+    static final String SQL_GET_UNREAD_COUNT_WITH_TAG = "SELECT SUM(CASE WHEN last_message_index = last_read_message_index AND unread_tag = 1 THEN 1 WHEN last_message_index - last_read_message_index > 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info INNER JOIN conversation_tag ON conversation_info.conversation_type = conversation_tag.conversation_type AND conversation_info.conversation_id = conversation_tag.conversation_id WHERE tag_id = ?";
+
+    static final String SQL_CLEAR_TAG_BY_CONVERSATION = "DELETE FROM conversation_tag WHERE conversation_type = ? AND conversation_id = ?";
+
+    static final String SQL_INSERT_CONVERSATION_TAG = "INSERT INTO conversation_tag (tag_id, conversation_type, conversation_id) VALUES ";
+
+    static String sqlAddConversationsToTag(@NonNull List<Conversation> conversations, @NonNull String tagId, @NonNull List<String> args) {
+        StringBuilder sql = new StringBuilder(ConversationSql.SQL_INSERT_CONVERSATION_TAG);
+        for (int j = 0; j < conversations.size(); j++) {
+            Conversation conversation = conversations.get(j);
+            sql.append(CursorHelper.getQuestionMarkPlaceholder(3));
+            if (j != conversations.size() - 1) {
+                sql.append(", ");
+            }
+            args.add(tagId);
+            args.add(String.valueOf(conversation.getConversationType().getValue()));
+            args.add(conversation.getConversationId());
+        }
+        return sql.toString();
+    }
+
+    static final String SQL_REMOVE_CONVERSATION_FROM_TAG = "DELETE FROM conversation_tag WHERE conversation_type = ? AND conversation_id = ? AND tag_id = ?";
+
+    static final String SQL_GET_CONVERSATIONS_BY_TAG = "SELECT * FROM conversation_info INNER JOIN conversation_tag"
+            + " ON conversation_info.conversation_type = conversation_tag.conversation_type"
+            + " AND conversation_info.conversation_id = conversation_tag.conversation_id"
+            + " WHERE tag_id = ? AND ";
+
     static String sqlGetUnreadCountWithTypes(int[] conversationTypes) {
         return SQL_GET_TOTAL_UNREAD_COUNT + sqlAndConversationTypeIn(conversationTypes);
     }
@@ -292,6 +325,13 @@ class ConversationSql {
             + "unread_tag BOOLEAN"
             + ")";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation ON conversation_info(conversation_type, conversation_id)";
+    static final String SQL_CREATE_TAG_TABLE = "CREATE TABLE IF NOT EXISTS conversation_tag ("
+                                                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                                + "tag_id VARCHAR (64),"
+                                                + "conversation_type SMALLINT,"
+                                                + "conversation_id VARCHAR (64)"
+                                                + ")";
+    static final String SQL_CREATE_TAG_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation_tag ON conversation_tag(tag_id, conversation_type, conversation_id)";
     static final String SQL_ADD_COLUMN_UNREAD_TAG = "ALTER TABLE conversation_info ADD COLUMN unread_tag BOOLEAN";
     static final String SQL_INSERT_CONVERSATION = "INSERT OR REPLACE INTO conversation_info"
             + "(conversation_type, conversation_id, timestamp, last_message_id,"
@@ -324,20 +364,31 @@ class ConversationSql {
     static final String SQL_LAST_MESSAGE_EQUALS_QUESTION = ", last_message_index=?";
     static final String SQL_WHERE_CONVERSATION_IS = " WHERE conversation_type = ? AND conversation_id = ?";
 
-    static String sqlGetConversationsBy(int[] conversationTypes, int count, long timestamp, JIMConst.PullDirection direction, JIMConst.TopConversationsOrderType type) {
-        StringBuilder sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
-        if (direction == JIMConst.PullDirection.OLDER) {
-            sql.append(" timestamp < ").append(timestamp);
+    static String sqlGetConversationsWithOptions(GetConversationOptions options, List<String> args, JIMConst.TopConversationsOrderType type) {
+        StringBuilder sql;
+        if (!TextUtils.isEmpty(options.getTagId())) {
+            sql = new StringBuilder(SQL_GET_CONVERSATIONS_BY_TAG);
+            args.add(options.getTagId());
         } else {
-            sql.append(" timestamp > ").append(timestamp);
+            sql = new StringBuilder("SELECT * FROM conversation_info WHERE");
         }
-        sql.append(sqlAndConversationTypeIn(conversationTypes));
+        long ts = options.getTimestamp();
+        if (ts == 0) {
+            ts = Long.MAX_VALUE;
+        }
+        if (options.getPullDirection() == JIMConst.PullDirection.OLDER) {
+            sql.append(" timestamp < ?");
+        } else {
+            sql.append(" timestamp > ?");
+        }
+        args.add(String.valueOf(ts));
+        sql.append(sqlAndConversationTypeIn(options.getConversationTypes()));
         if (type == JIMConst.TopConversationsOrderType.ORDER_BY_TOP_TIME) {
             sql.append(" ORDER BY is_top DESC, top_time DESC, timestamp DESC");
         } else {
             sql.append(" ORDER BY is_top DESC, timestamp DESC");
         }
-        sql.append(" LIMIT ").append(count);
+        sql.append(" LIMIT ").append(options.getCount());
         return sql.toString();
     }
 

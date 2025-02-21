@@ -26,6 +26,8 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_INDEX);
         sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_TABLE);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX);
     }
 
     @Override
@@ -69,7 +71,15 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 8) {
+            try {
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_TABLE);
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX);
+            } catch (SQLiteConstraintException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 7;
+    private final static int version = 8;
 }

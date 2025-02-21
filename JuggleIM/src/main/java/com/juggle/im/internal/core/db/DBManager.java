@@ -16,6 +16,7 @@ import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.JSortTimeCounter;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GetConversationOptions;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.Message;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DBManager {
 
@@ -157,12 +159,14 @@ public class DBManager {
         return list;
     }
 
-    public List<ConversationInfo> getConversationInfoList(int[] conversationTypes, int count, long timestamp, JIMConst.PullDirection direction) {
-        if (timestamp == 0) {
-            timestamp = Long.MAX_VALUE;
+    public List<ConversationInfo> getConversationInfoList(GetConversationOptions options) {
+        if (options == null) {
+            return new ArrayList<>();
         }
-        String sql = ConversationSql.sqlGetConversationsBy(conversationTypes, count, timestamp, direction, mTopConversationsOrderType);
-        Cursor cursor = rawQuery(sql, null);
+        List<String> argList = new ArrayList<>();
+        String sql = ConversationSql.sqlGetConversationsWithOptions(options, argList, mTopConversationsOrderType);
+        String[] args = argList.toArray(new String[0]);
+        Cursor cursor = rawQuery(sql, args);
         if (cursor == null) {
             return new ArrayList<>();
         }
@@ -273,6 +277,63 @@ public class DBManager {
             cursor.close();
         }
         return count;
+    }
+
+    public int getUnreadCountWithTag(String tagId) {
+        Cursor cursor = rawQuery(ConversationSql.SQL_GET_UNREAD_COUNT_WITH_TAG, new String[]{tagId});
+        int count = 0;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+            }
+            cursor.close();
+        }
+        return count;
+    }
+
+    public void updateConversationTag(List<ConcreteConversationInfo> conversationInfos) {
+        StringBuilder sql = new StringBuilder(ConversationSql.SQL_INSERT_CONVERSATION_TAG);
+        List<String> argList = new ArrayList<>();
+        performTransaction(() -> {
+            for (ConcreteConversationInfo info : conversationInfos) {
+                if (info.getTagIdList() != null && !info.getTagIdList().isEmpty()) {
+                    execSQL(ConversationSql.SQL_CLEAR_TAG_BY_CONVERSATION, new String[]{String.valueOf(info.getConversation().getConversationType().getValue()), info.getConversation().getConversationId()});
+                    for (String tagId : info.getTagIdList()) {
+                        sql.append(CursorHelper.getQuestionMarkPlaceholder(3)).append(", ");
+                        argList.add(tagId);
+                        argList.add(String.valueOf(info.getConversation().getConversationType().getValue()));
+                        argList.add(info.getConversation().getConversationId());
+                    }
+                }
+            }
+            String[] args = argList.toArray(new String[0]);
+            String last2 = sql.substring(sql.length()-2);
+            if (last2.equals(", ")) {
+                sql.delete(sql.length()-2, sql.length());
+                execSQL(sql.toString(), args);
+            }
+        });
+    }
+
+    public void addConversationsToTag(List<Conversation> conversations, String tagId) {
+        if (conversations == null || conversations.isEmpty() || TextUtils.isEmpty(tagId)) {
+            return;
+        }
+        List<String> argList = new ArrayList<>();
+        String sql = ConversationSql.sqlAddConversationsToTag(conversations, tagId, argList);
+        String[] args = argList.toArray(new String[0]);
+        execSQL(sql, args);
+    }
+
+    public void removeConversationsFromTag(List<Conversation> conversations, String tagId) {
+        if (conversations == null || conversations.isEmpty() || TextUtils.isEmpty(tagId)) {
+            return;
+        }
+        performTransaction(() -> {
+            for (Conversation conversation : conversations) {
+                execSQL(ConversationSql.SQL_REMOVE_CONVERSATION_FROM_TAG, new String[]{String.valueOf(conversation.getConversationType().getValue()), conversation.getConversationId(), tagId});
+            }
+        });
     }
 
     public void updateSortTime(Conversation conversation, long sortTime) {

@@ -3,6 +3,7 @@ package com.juggle.im.interfaces;
 import com.juggle.im.JIMConst;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GetConversationOptions;
 
 import java.util.List;
 
@@ -28,6 +29,13 @@ public interface IConversationManager {
                                                    int count,
                                                    long timestamp,
                                                    JIMConst.PullDirection direction);
+
+    /**
+     * 根据查询条件获取会话信息列表
+     * @param options 查询条件
+     * @return 会话信息列表
+     */
+    List<ConversationInfo> getConversationInfoList(GetConversationOptions options);
 
     /**
      * 分页获取会话信息列表，结果按照会话时间倒序排列（新的在前，旧的在后）
@@ -60,13 +68,41 @@ public interface IConversationManager {
 
     int getTotalUnreadCount();
 
+    /**
+     * 根据会话类型获取消息未读总数
+     * @param conversationTypes 会话类型列表
+     * @return 消息未读总数
+     */
     int getUnreadCountWithTypes(int[] conversationTypes);
+
+    /**
+     * 根据标签 id 获取消息未读总数
+     * @param tagId 标签 id
+     * @return 消息未读总数
+     */
+    int getUnreadCountWithTag(String tagId);
 
     void clearUnreadCount(Conversation conversation, ISimpleCallback callback);
 
     void clearTotalUnreadCount(ISimpleCallback callback);
 
     void setUnread(Conversation conversation, ISimpleCallback callback);
+
+    /**
+     * 将会话添加到标签
+     * @param conversations 会话列表
+     * @param tagId 标签 id
+     * @param callback 结果回调
+     */
+    void addConversationsToTag(List<Conversation> conversations, String tagId, ISimpleCallback callback);
+
+    /**
+     * 将会话从标签中删除
+     * @param conversations 会话列表
+     * @param tagId 标签 id
+     * @param callback 结果回调
+     */
+    void removeConversationsFromTag(List<Conversation> conversations, String tagId, ISimpleCallback callback);
 
     void setTopConversationsOrderType(JIMConst.TopConversationsOrderType type);
 
@@ -77,6 +113,10 @@ public interface IConversationManager {
     void addSyncListener(String key, IConversationSyncListener listener);
 
     void removeSyncListener(String key);
+
+    void addTagListener(String key, IConversationTagListener listener);
+
+    void removeTagListener(String key);
 
     interface IConversationListener {
         void onConversationInfoAdd(List<ConversationInfo> conversationInfoList);
@@ -90,5 +130,10 @@ public interface IConversationManager {
 
     interface IConversationSyncListener {
         void onConversationSyncComplete();
+    }
+
+    interface IConversationTagListener {
+        void onConversationsAddToTag(String tagId, List<Conversation> conversations);
+        void onConversationsRemoveFromTag(String tagId, List<Conversation> conversations);
     }
 }
