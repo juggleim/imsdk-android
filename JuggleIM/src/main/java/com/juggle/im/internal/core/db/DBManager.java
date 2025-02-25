@@ -839,28 +839,54 @@ public class DBManager {
         if (mDb == null) {
             return null;
         }
-        return mDb.rawQuery(sql, selectionArgs);
+        long start = System.currentTimeMillis();
+        Cursor c = mDb.rawQuery(sql, selectionArgs);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "rawQuery lasts for " + duration + "ms, sql is " + sql);
+        }
+        return c;
     }
 
     private synchronized void execSQL(String sql) {
         if (mDb == null) {
             return;
         }
+        long start = System.currentTimeMillis();
         mDb.execSQL(sql);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "execSQL lasts for " + duration + "ms, sql is " + sql);
+        }
     }
 
     private synchronized void execSQL(String sql, Object[] bindArgs) {
         if (mDb == null) {
             return;
         }
+        long start = System.currentTimeMillis();
         mDb.execSQL(sql, bindArgs);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "execSQL lasts for " + duration + "ms, sql is " + sql);
+        }
     }
 
     private synchronized long insert(String table, ContentValues cv) {
         if (mDb == null) {
             return -1;
         }
-        return mDb.insertWithOnConflict(table, "", cv, SQLiteDatabase.CONFLICT_IGNORE);
+        long start = System.currentTimeMillis();
+        long result = mDb.insertWithOnConflict(table, "", cv, SQLiteDatabase.CONFLICT_IGNORE);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "insert lasts for " + duration + "ms, table is " + table);
+        }
+        return result;
     }
 
     //执行事务
@@ -869,10 +895,16 @@ public class DBManager {
 
         boolean success = false;
         try {
+            long start = System.currentTimeMillis();
             mDb.beginTransaction();
             operation.execute();
             mDb.setTransactionSuccessful();
             success = true;
+            long end = System.currentTimeMillis();
+            long duration = end - start;
+            if (duration > DB_DURATION) {
+                JLogger.w("DB-Duration", "performTransaction lasts for " + duration + "ms");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -887,7 +919,15 @@ public class DBManager {
         }
         String whereCase = MessageSql.COL_MESSAGE_ID + " = ?";
         String[] whereArgs = {String.valueOf(msgClientNo)};
-        return mDb.updateWithOnConflict(table, cv, whereCase, whereArgs, SQLiteDatabase.CONFLICT_IGNORE);
+        long start = System.currentTimeMillis();
+        long result = mDb.updateWithOnConflict(table, cv, whereCase, whereArgs, SQLiteDatabase.CONFLICT_IGNORE);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "update lasts for " + duration + "ms, table is " + table);
+        }
+
+        return result;
     }
 
     private String getOrCreateDbPath(Context context, String appKey, String userId) {
@@ -949,6 +989,7 @@ public class DBManager {
     private JSortTimeCounter mSortTimeCounter;
     private static final String PATH_JET_IM = "jet_im";
     private static final String DB_NAME = "jetimdb";
+    private static final long DB_DURATION = 500;
 
     private interface TransactionOperation {
         void execute() throws Exception;
