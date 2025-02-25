@@ -3,6 +3,7 @@ package com.juggle.im.internal.core.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
@@ -322,7 +323,11 @@ public class DBManager {
         List<String> argList = new ArrayList<>();
         String sql = ConversationSql.sqlAddConversationsToTag(conversations, tagId, argList);
         String[] args = argList.toArray(new String[0]);
-        execSQL(sql, args);
+        try {
+            execSQL(sql, args);
+        } catch (SQLiteConstraintException e) {
+            JLogger.w("DB-Exception", "addConversationsToTag " + e.getMessage());
+        }
     }
 
     public void removeConversationsFromTag(List<Conversation> conversations, String tagId) {

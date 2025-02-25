@@ -1975,68 +1975,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
-        JLogger.i("MSG-Rcv", "messages count is " + messages.size() + ", isFinish is " + isFinished);
-        handleReceiveMessages(messages, true);
-
-        if (!isFinished) {
-            sync();
-        } else if (mSyncNotifyTime > mCore.getMessageSendSyncTime()) {
-            sync();
-            mSyncNotifyTime = -1;
-        } else {
-            mSyncProcessing = false;
-            if (mCachedSendTime > 0) {
-                mCore.setMessageSendSyncTime(mCachedSendTime);
-                mCachedSendTime = -1;
-            }
-            if (mCachedReceiveTime > 0) {
-                mCore.setMessageReceiveTime(mCachedReceiveTime);
-                mCachedReceiveTime = -1;
-            }
-            if (mSyncListenerMap != null) {
-                for (Map.Entry<String, IMessageSyncListener> entry : mSyncListenerMap.entrySet()) {
-                    mCore.getCallbackHandler().post(() -> entry.getValue().onMessageSyncComplete());
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onChatroomMessageReceive(List<ConcreteMessage> messages) {
-        JLogger.i("MSG-Rcv", "chatroom messages count is " + messages.size());
-        if (messages == null || messages.isEmpty()) {
-            checkChatroomSyncMap();
-            return;
-        }
-        List<ConcreteMessage> messagesToSave = messagesToSave(messages);
-        insertRemoteMessages(messagesToSave);
-
-        ConcreteMessage lastMessage = messages.get(messages.size()-1);
-        mChatroomManager.setSyncTime(lastMessage.getConversation().getConversationId(), lastMessage.getTimestamp());
-
-        for (ConcreteMessage message : messages) {
-            //cmd消息不回调
-            if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
-                continue;
-            }
-
-            //已存在的消息不回调
-            if (message.isExisted()) {
-                continue;
-            }
-
-            //执行回调
-            if (mListenerMap != null) {
-                for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
-                    mCore.getCallbackHandler().post(() -> entry.getValue().onMessageReceive(message));
-                }
-            }
-        }
-        checkChatroomSyncMap();
-    }
-
-    @Override
     public void onSyncNotify(long syncTime) {
         if (mSyncProcessing) {
             mSyncNotifyTime = syncTime;
@@ -2050,8 +1988,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void onChatroomSyncNotify(String chatroomId, long syncTime) {
-        if (mChatroomSyncProcessing) {
-            mChatroomSyncMap.put(chatroomId, syncTime);
+        if (isChatroomSyncProcessing()) {
+            setTimeForChatroomSyncMap(chatroomId, syncTime);
             return;
         }
         syncChatroomMessages(chatroomId, syncTime);
@@ -2157,6 +2095,68 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     public void connectSuccess() {
         mSyncProcessing = true;
         mSyncNotifyTime = 0;
+        setChatroomSyncProcessing(false);
+        clearChatroomSyncMap();
+    }
+
+    private void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
+        JLogger.i("MSG-Rcv", "messages count is " + messages.size() + ", isFinish is " + isFinished);
+        handleReceiveMessages(messages, true);
+
+        if (!isFinished) {
+            sync();
+        } else if (mSyncNotifyTime > mCore.getMessageSendSyncTime()) {
+            sync();
+            mSyncNotifyTime = -1;
+        } else {
+            mSyncProcessing = false;
+            if (mCachedSendTime > 0) {
+                mCore.setMessageSendSyncTime(mCachedSendTime);
+                mCachedSendTime = -1;
+            }
+            if (mCachedReceiveTime > 0) {
+                mCore.setMessageReceiveTime(mCachedReceiveTime);
+                mCachedReceiveTime = -1;
+            }
+            if (mSyncListenerMap != null) {
+                for (Map.Entry<String, IMessageSyncListener> entry : mSyncListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onMessageSyncComplete());
+                }
+            }
+        }
+    }
+
+    private void onChatroomMessageReceive(List<ConcreteMessage> messages) {
+        JLogger.i("MSG-Rcv", "chatroom messages count is " + messages.size());
+        if (messages == null || messages.isEmpty()) {
+            checkChatroomSyncMap();
+            return;
+        }
+        List<ConcreteMessage> messagesToSave = messagesToSave(messages);
+        insertRemoteMessages(messagesToSave);
+
+        ConcreteMessage lastMessage = messages.get(messages.size()-1);
+        mChatroomManager.setSyncTime(lastMessage.getConversation().getConversationId(), lastMessage.getTimestamp());
+
+        for (ConcreteMessage message : messages) {
+            //cmd消息不回调
+            if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
+                continue;
+            }
+
+            //已存在的消息不回调
+            if (message.isExisted()) {
+                continue;
+            }
+
+            //执行回调
+            if (mListenerMap != null) {
+                for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> entry.getValue().onMessageReceive(message));
+                }
+            }
+        }
+        checkChatroomSyncMap();
     }
 
     private List<ConcreteMessage> messagesToSave(List<ConcreteMessage> messages) {
@@ -2639,18 +2639,28 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private void sync() {
         JLogger.i("MSG-Sync", "receive time is " + mCore.getMessageReceiveTime() + ", send time is " + mCore.getMessageSendSyncTime());
         if (mCore.getWebSocket() != null) {
-            mCore.getWebSocket().syncMessages(mCore.getMessageReceiveTime(), mCore.getMessageSendSyncTime(), mCore.getUserId());
+            mCore.getWebSocket().syncMessages(mCore.getMessageReceiveTime(), mCore.getMessageSendSyncTime(), mCore.getUserId(), new QryHisMsgCallback() {
+                @Override
+                public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
+                    JLogger.i("MSG-Sync", "success");
+                    onMessageReceive(messages, isFinished);
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    JLogger.e("MSG-Sync", "error, code is " + errorCode);
+                    onMessageReceive(new ArrayList<>(), true);
+                }
+            });
         }
     }
 
     private void checkChatroomSyncMap() {
-        Iterator<Map.Entry<String, Long>> iterator = mChatroomSyncMap.entrySet().iterator();
-        if (iterator.hasNext()) {
-            Map.Entry<String, Long> firstEntry = iterator.next();
-            mChatroomSyncMap.remove(firstEntry.getKey());
-            syncChatroomMessages(firstEntry.getKey(), firstEntry.getValue());
+        Map.Entry<String, Long> entry = popChatroomSyncMap();
+        if (entry != null) {
+            syncChatroomMessages(entry.getKey(), entry.getValue());
         } else {
-            mChatroomSyncProcessing = false;
+            setChatroomSyncProcessing(false);
         }
     }
 
@@ -2670,8 +2680,20 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     private void webSocketSyncChatroomMessage(String chatroomId, long syncTime, int prevMessageCount) {
         JLogger.i("MSG-ChrmSync", "id is " + chatroomId + ", time is " + syncTime + ", count is " + prevMessageCount);
-        mChatroomSyncProcessing = true;
-        mCore.getWebSocket().syncChatroomMessages(chatroomId, mCore.getUserId(), syncTime, prevMessageCount);
+        setChatroomSyncProcessing(true);
+        mCore.getWebSocket().syncChatroomMessages(chatroomId, mCore.getUserId(), syncTime, prevMessageCount, new QryHisMsgCallback() {
+            @Override
+            public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
+                JLogger.i("MSG-ChrmSync", "success");
+                onChatroomMessageReceive(messages);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-ChrmSync", "error, code is " + errorCode);
+                onChatroomMessageReceive(new ArrayList<>());
+            }
+        });
     }
 
     private void updateUserInfo(List<ConcreteMessage> messages) {
@@ -2711,6 +2733,33 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     private String createClientUid() {
         return java.util.UUID.randomUUID().toString().replace("-", "");
+    }
+
+    private synchronized void setTimeForChatroomSyncMap(String chatroomId, long timestamp) {
+        mChatroomSyncMap.put(chatroomId, timestamp);
+    }
+
+    private synchronized Map.Entry<String, Long> popChatroomSyncMap() {
+        Iterator<Map.Entry<String, Long>> iterator = mChatroomSyncMap.entrySet().iterator();
+        if (iterator.hasNext()) {
+            Map.Entry<String, Long> firstEntry = iterator.next();
+            mChatroomSyncMap.remove(firstEntry.getKey());
+            return firstEntry;
+        } else {
+            return null;
+        }
+    }
+
+    private synchronized void clearChatroomSyncMap() {
+        mChatroomSyncMap.clear();
+    }
+
+    private synchronized boolean isChatroomSyncProcessing() {
+        return mChatroomSyncProcessing;
+    }
+
+    private synchronized void setChatroomSyncProcessing(boolean isProcessing) {
+        mChatroomSyncProcessing = isProcessing;
     }
 
     private final JIMCore mCore;
