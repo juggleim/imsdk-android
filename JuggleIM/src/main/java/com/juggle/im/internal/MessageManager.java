@@ -1607,6 +1607,10 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                         callback.onSuccess();
                     }
                     UserInfo currentUser = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+                    if (currentUser == null) {
+                        currentUser = new UserInfo();
+                        currentUser.setUserId(mCore.getUserId());
+                    }
 
                     //update reaction db
                     List<MessageReaction> dbReactions = mCore.getDbManager().getMessageReactions(Collections.singletonList(messageId));
@@ -1702,6 +1706,10 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     MessageReactionItem item = new MessageReactionItem();
                     item.setReactionId(reactionId);
                     UserInfo currentUser = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+                    if (currentUser == null) {
+                        currentUser = new UserInfo();
+                        currentUser.setUserId(mCore.getUserId());
+                    }
                     item.setUserInfoList(Collections.singletonList(currentUser));
                     reaction.setItemList(Collections.singletonList(item));
                     if (mListenerMap != null) {
