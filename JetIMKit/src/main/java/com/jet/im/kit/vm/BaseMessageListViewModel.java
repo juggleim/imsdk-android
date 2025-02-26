@@ -332,7 +332,7 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
                 @Override
                 public void onError(int errorCode) {
                     if (handler != null)
-                        handler.onComplete(new RuntimeException("erroCode:" + errorCode));
+                        handler.onComplete(new RuntimeException("errorCode:" + errorCode));
                     Logger.i("++ deleted message : %s", message);
                 }
             });

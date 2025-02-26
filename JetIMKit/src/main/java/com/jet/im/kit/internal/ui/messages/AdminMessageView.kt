@@ -12,6 +12,7 @@ import com.jet.im.kit.model.message.FriendNotifyMessage
 import com.jet.im.kit.model.message.GroupNotifyMessage
 import com.juggle.im.JIM
 import com.juggle.im.model.Message
+import com.juggle.im.model.messages.RecallInfoMessage
 import com.sendbird.android.message.BaseMessage
 
 internal class AdminMessageView @JvmOverloads internal constructor(
@@ -54,8 +55,29 @@ internal class AdminMessageView @JvmOverloads internal constructor(
             text = friendNotifyText(message)
         } else if (content is GroupNotifyMessage) {
             text = content.description()
+        } else if (content is RecallInfoMessage) {
+            text = recallText(message)
         }
         binding.tvMessage.text = text
+    }
+
+    private fun recallText(message: Message): String {
+        val tip: String
+        if (message.direction == Message.MessageDirection.RECEIVE) {
+            var userName = ""
+            val senderId = message.senderUserId
+            if (senderId != null) {
+                userName = senderId
+                val user = JIM.getInstance().userInfoManager.getUserInfo(senderId)
+                if (user != null) {
+                    userName = user.userName
+                }
+            }
+            tip = "$userName 撤回了一条消息"
+        } else {
+            tip = "你 撤回了一条消息"
+        }
+        return tip
     }
 
     private fun friendNotifyText(message: Message): String {

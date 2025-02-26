@@ -17,9 +17,12 @@ import com.jet.im.kit.utils.ChannelUtils
 import com.jet.im.kit.utils.DateUtils
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.MessageUtils
+import com.juggle.im.JIM
 import com.juggle.im.model.Conversation
 import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
 import com.juggle.im.model.messages.ImageMessage
+import com.juggle.im.model.messages.RecallInfoMessage
 import com.juggle.im.model.messages.TextMessage
 import com.juggle.im.model.messages.VoiceMessage
 import org.w3c.dom.Text
@@ -263,31 +266,57 @@ internal class ChannelPreview @JvmOverloads constructor(
 //                }
             }
             // todo 最后一条消息内容
-            message = channel.lastMessage?.content?.conversationDigest().toString()
-            channel.lastMessage?.content?.let {
-                message = it.conversationDigest()
-                when (it) {
-                    is TextMessage -> {
-                        textView.maxLines = 2
-                        textView.ellipsize = TextUtils.TruncateAt.END
+            val draft = channel.draft
+            if (!draft.isNullOrEmpty()) {
+                message = "[草稿] $draft"
+            } else {
+                message = channel.lastMessage?.content?.conversationDigest().toString()
+                channel.lastMessage?.content?.let {
+                    message = it.conversationDigest()
+                    when (it) {
+                        is RecallInfoMessage -> {
+                            val tip: String
+                            if (channel.lastMessage.direction == Message.MessageDirection.RECEIVE) {
+                                var userName = ""
+                                val senderId = channel.lastMessage.senderUserId
+                                if (senderId != null) {
+                                    userName = senderId
+                                    val user =
+                                        JIM.getInstance().userInfoManager.getUserInfo(senderId)
+                                    if (user != null) {
+                                        userName = user.userName
+                                    }
+                                }
+                                tip = "$userName 撤回了一条消息"
+                            } else {
+                                tip = "你 撤回了一条消息"
+                            }
+                            message = tip
+                        }
+
+                        is TextMessage -> {
+                            textView.maxLines = 2
+                            textView.ellipsize = TextUtils.TruncateAt.END
 //                        message = it.content
-                    }
+                        }
 
-                    is VoiceMessage -> {
-                        textView.maxLines = 1
-                        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+                        is VoiceMessage -> {
+                            textView.maxLines = 1
+                            textView.ellipsize = TextUtils.TruncateAt.MIDDLE
 //                        message = "[语音]"
-                    }
+                        }
 
-                    is ImageMessage -> {
-                        textView.maxLines = 1
-                        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+                        is ImageMessage -> {
+                            textView.maxLines = 1
+                            textView.ellipsize = TextUtils.TruncateAt.MIDDLE
 //                        message = "[图片]"
-                    }
-                    else ->{
-//                        message="暂不支持此消息"
-                    }
+                        }
 
+                        else -> {
+//                        message="暂不支持此消息"
+                        }
+
+                    }
                 }
             }
             textView.text = message

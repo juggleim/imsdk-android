@@ -19,8 +19,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.activities.adapter.MessageListAdapter;
+import com.jet.im.kit.activities.viewholder.MessageType;
+import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
 import com.jet.im.kit.consts.DialogEditTextParams;
 import com.jet.im.kit.consts.KeyboardDisplayType;
+import com.jet.im.kit.consts.ReplyType;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.consts.TypingIndicatorType;
 import com.jet.im.kit.interfaces.LoadingDialogHandler;
@@ -62,10 +65,13 @@ import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Feedback;
 import com.sendbird.android.message.FeedbackRating;
+import com.sendbird.android.message.SendingStatus;
 import com.sendbird.android.params.MessageListParams;
 import com.sendbird.android.params.UserMessageCreateParams;
 import com.sendbird.android.user.User;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -538,6 +544,74 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         inputComponent.notifyDataChanged(null, channel);
     }
 
+    @NonNull
+    @Override
+    protected List<DialogListItem> makeMessageContextMenu(@NonNull Message message) {
+        final List<DialogListItem> items = new ArrayList<>();
+        final Message.MessageState status = message.getState();
+
+        MessageType type = MessageViewHolderFactory.getMessageType(message);
+        DialogListItem copy = new DialogListItem(R.string.sb_text_channel_anchor_copy, R.drawable.icon_copy);
+        DialogListItem edit = new DialogListItem(R.string.sb_text_channel_anchor_edit, R.drawable.icon_edit);
+        DialogListItem save = new DialogListItem(R.string.sb_text_channel_anchor_save, R.drawable.icon_download);
+        DialogListItem delete = new DialogListItem(R.string.sb_text_channel_anchor_delete, R.drawable.icon_delete, false, false);
+        int replyStringRes = R.string.sb_text_channel_anchor_reply;
+        int replyDrawableRes = R.drawable.icon_reply;
+        DialogListItem reply = new DialogListItem(replyStringRes, replyDrawableRes, false, MessageUtils.hasParentMessage(message));
+        DialogListItem retry = new DialogListItem(R.string.sb_text_channel_anchor_retry, 0);
+        DialogListItem deleteFailed = new DialogListItem(R.string.sb_text_channel_anchor_delete, 0);
+
+        DialogListItem[] actions = null;
+        switch (type) {
+            case VIEW_TYPE_USER_MESSAGE_ME:
+                if (status == Message.MessageState.SENT) {
+                    actions = new DialogListItem[]{copy, edit, delete, reply};
+                } else if (MessageUtils.isFailed(message)) {
+                    actions = new DialogListItem[]{retry, deleteFailed};
+                }
+                break;
+            case VIEW_TYPE_USER_MESSAGE_OTHER:
+                actions = new DialogListItem[]{copy, reply};
+                break;
+            case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
+            case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
+            case VIEW_TYPE_FILE_MESSAGE_ME:
+                if (MessageUtils.isFailed(message)) {
+                    actions = new DialogListItem[]{retry, deleteFailed};
+                } else {
+                    actions = new DialogListItem[]{delete, save, reply};
+                }
+                break;
+            case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
+            case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
+            case VIEW_TYPE_FILE_MESSAGE_OTHER:
+                actions = new DialogListItem[]{save, reply};
+                break;
+            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_ME:
+            case VIEW_TYPE_VOICE_MESSAGE_ME:
+                if (MessageUtils.isFailed(message)) {
+                    actions = new DialogListItem[]{retry, deleteFailed};
+                } else {
+                    actions = new DialogListItem[]{delete};
+                    actions = new DialogListItem[]{delete, reply};
+                }
+                break;
+            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER:
+            case VIEW_TYPE_VOICE_MESSAGE_OTHER:
+                actions = new DialogListItem[]{reply};
+                break;
+            case VIEW_TYPE_UNKNOWN_MESSAGE_ME:
+                actions = new DialogListItem[]{delete};
+            default:
+                break;
+        }
+
+        if (actions != null) {
+            items.addAll(Arrays.asList(actions));
+        }
+        return items;
+    }
+
     @Override
     protected boolean onMessageContextMenuItemClicked(@NonNull Message message, @NonNull View view, int position, @NonNull DialogListItem item) {
         final MessageInputComponent inputComponent = getModule().getMessageInputComponent();
@@ -573,10 +647,32 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     void showMessageContextMenu(@NonNull View anchorView, @NonNull Message message, @NonNull List<DialogListItem> items) {
         int size = items.size();
         final DialogListItem[] actions = items.toArray(new DialogListItem[size]);
+        final RecyclerView messageListView = getModule().getMessageListComponent().getRecyclerView();
+        if (getContext() == null || messageListView == null || size == 0) return;
+//        MessageAnchorDialog messageAnchorDialog = new MessageAnchorDialog.Builder(anchorView, messageListView, actions)
+//                .setOnItemClickListener(createMessageActionListener(message))
+//                .setOnDismissListener(() -> anchorDialogShowing.set(false))
+//                .build();
+//        messageAnchorDialog.show();
+//        anchorDialogShowing.set(true);
+
+
+//        if (getViewModel().getChannel() != null && !(ChannelConfig.canSendReactions(channelConfig, getViewModel().getChannel()))) {
+//            final RecyclerView messageListView = getModule().getMessageListComponent().getRecyclerView();
+//            if (getContext() == null || messageListView == null || size == 0) return;
+//            MessageAnchorDialog messageAnchorDialog = new MessageAnchorDialog.Builder(anchorView, messageListView, actions)
+//                    .setOnItemClickListener(createMessageActionListener(message))
+//                    .setOnDismissListener(() -> anchorDialogShowing.set(false))
+//                    .build();
+//            messageAnchorDialog.show();
+//            anchorDialogShowing.set(true);
+//        } else
         if (MessageUtils.isUnknownType(message) || !MessageUtils.isSucceed(message)) {
             if (getContext() == null || size == 0) return;
             hideKeyboard();
             DialogUtils.showListBottomDialog(requireContext(), actions, createMessageActionListener(message));
+        } else {
+            showEmojiActionsDialog(message, actions);
         }
     }
 

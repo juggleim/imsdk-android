@@ -39,6 +39,7 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
+import com.juggle.im.model.messages.RecallInfoMessage;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
@@ -192,7 +193,8 @@ public class MessageViewHolderFactory {
                 type = MessageType.VIEW_TYPE_FILE_MESSAGE_OTHER;
             }
         } else if (content instanceof FriendNotifyMessage
-        || content instanceof GroupNotifyMessage) {
+        || content instanceof GroupNotifyMessage
+        || content instanceof RecallInfoMessage) {
             type = MessageType.VIEW_TYPE_ADMIN_MESSAGE;
         }
 //        else if (message instanceof MultipleFilesMessage && MessageExtensionsKt.containsOnlyImageFiles((MultipleFilesMessage) message)) {

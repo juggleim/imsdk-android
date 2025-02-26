@@ -61,12 +61,13 @@ import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.VideoMessage;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.exception.SendbirdException;
-import com.sendbird.android.message.BaseMessage;
+import com.sendbird.android.message.Emoji;
 import com.sendbird.android.params.FileMessageCreateParams;
 import com.sendbird.android.params.MultipleFilesMessageCreateParams;
 import com.sendbird.android.params.UserMessageCreateParams;
 import com.sendbird.android.params.UserMessageUpdateParams;
 import com.sendbird.android.user.User;
+import com.jet.im.kit.internal.ui.reactions.EmojiListView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -176,7 +177,7 @@ abstract public class BaseMessageListFragment<
      * since 2.2.3
      */
     @NonNull
-    protected List<DialogListItem> makeMessageContextMenu(@NonNull BaseMessage message) {
+    protected List<DialogListItem> makeMessageContextMenu(@NonNull Message message) {
         return new ArrayList<>();
     }
 
@@ -302,11 +303,8 @@ abstract public class BaseMessageListFragment<
             messageLongClickListener.onItemLongClick(view, position, message);
             return;
         }
-        //todo
 
-//        final SendingStatus status = message.getSendingStatus();
-//        if (status == SendingStatus.PENDING) return;
-//        showMessageContextMenu(view, message, makeMessageContextMenu(message));
+        showMessageContextMenu(view, message, makeMessageContextMenu(message));
     }
 
     /**
@@ -406,6 +404,53 @@ abstract public class BaseMessageListFragment<
                 getString(R.string.sb_text_button_ok),
                 null,
                 false);
+    }
+
+    void showEmojiActionsDialog(@NonNull Message message, @NonNull DialogListItem[] actions) {
+        boolean showMoreButton = false;
+
+        final BaseMessageListAdapter adapter = getModule().getMessageListComponent().getAdapter();
+        if (adapter == null) {
+            return;
+        }
+
+//        MessageExtensionsKt.setEmojiCategories(message, adapter.getEmojiCategories(message));
+//        final List<Emoji> emojiList = MessageExtensionsKt.allowedEmojiList(message);
+//        int shownEmojiSize = emojiList.size();
+//        if (emojiList.size() > 6) {
+//            showMoreButton = true;
+//            shownEmojiSize = 5;
+//        }
+        List<Emoji> shownEmojiList = new ArrayList<>(); //emojiList.subList(0, shownEmojiSize);
+
+        final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(requireContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
+        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, shownEmojiList, null, showMoreButton);
+        hideKeyboard();
+        if (actions.length > 0 || shownEmojiList.size() > 0) {
+            final AlertDialog dialog = DialogUtils.showContentViewAndListDialog(requireContext(), emojiListView, actions, createMessageActionListener(message));
+
+            emojiListView.setEmojiClickListener((view, position, emojiKey) -> {
+                dialog.dismiss();
+
+                if (!view.isSelected()) {
+                    // when adding emoji, check if it's allowed
+//                    if (!EmojiExtensionsKt.containsEmoji(emojiList, emojiKey)) {
+//                        toastError(R.string.sb_text_error_add_reaction);
+//                        return;
+//                    }
+                }
+
+//                getViewModel().toggleReaction(view, message, emojiKey, e -> {
+//                    if (e != null)
+//                        toastError(view.isSelected() ? R.string.sb_text_error_delete_reaction : R.string.sb_text_error_add_reaction);
+//                });
+            });
+
+            emojiListView.setMoreButtonClickListener(v -> {
+                dialog.dismiss();
+//                showEmojiListDialog(message);
+            });
+        }
     }
 
     private void showUserProfile(@NonNull User sender) {
