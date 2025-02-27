@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -57,10 +58,13 @@ import com.sendbird.android.user.Sender;
 import com.sendbird.android.user.User;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+
+import kotlin.Unit;
 
 /**
  * The helper class for the drawing views in the UIKit.
@@ -112,6 +116,7 @@ public class ViewUtils {
             drawUnknownMessage(textView, MessageUtils.isMine(message));
             return;
         }
+        final boolean isMine = MessageUtils.isMine(message);
         final Context context = textView.getContext();
         final CharSequence text = getDisplayableText(
                 context,
@@ -122,7 +127,18 @@ public class ViewUtils {
                 mentionClickListener,
                 enableMention
         );
-        textView.setText(text);
+
+        final SpannableStringBuilder builder = new SpannableStringBuilder(text);
+        if (message.isEdit()) {
+            final String edited = textView.getResources().getString(R.string.sb_text_channel_message_badge_edited);
+            final Spannable editedString = new SpannableString(edited);
+            if (uiConfig != null) {
+                final TextUIConfig editedTextMarkUIConfig = isMine ? uiConfig.getMyEditedTextMarkUIConfig() : uiConfig.getOtherEditedTextMarkUIConfig();
+                editedTextMarkUIConfig.bind(context, editedString, 0, editedString.length());
+            }
+            builder.append(editedString);
+        }
+        textView.setText(builder);
     }
 
     @NonNull

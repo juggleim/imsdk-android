@@ -33,6 +33,7 @@ import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.collection.Traceable;
 import com.sendbird.android.params.FileMessageCreateParams;
 import com.sendbird.android.params.UserMessageCreateParams;
+import com.sendbird.android.params.UserMessageUpdateParams;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -309,6 +310,20 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 //        }
     }
 
+    public void updateUserMessage(String messageId, String content, Conversation conversation, OnCompleteHandler handler) {
+        TextMessage t = new TextMessage(content);
+        JIM.getInstance().getMessageManager().updateMessage(messageId, t, conversation, new IMessageManager.IMessageCallback() {
+            @Override
+            public void onSuccess(Message message) {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (handler != null) handler.onComplete(new Exception());
+            }
+        });
+    }
+
     /**
      * Deletes a message.
      *
@@ -382,7 +397,7 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     }
 
     void onMessagesUpdated(@NonNull ConversationInfo channel, @NonNull Message message) {
-        if (message == null || message.getClientMsgNo() == 0) return;
+        if (message.getClientMsgNo() == 0) return;
         Message find = cachedMessages.getById(message.getClientMsgNo());
         String name;
         if (find == null) {

@@ -61,6 +61,7 @@ import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.VideoMessage;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.exception.SendbirdException;
+import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Emoji;
 import com.sendbird.android.params.FileMessageCreateParams;
 import com.sendbird.android.params.MultipleFilesMessageCreateParams;
@@ -98,6 +99,8 @@ abstract public class BaseMessageListFragment<
     private LA adapter;
     @NonNull
     protected ChannelConfig channelConfig = UIKitConfig.getGroupChannelConfig();
+    @Nullable
+    Message targetMessage;
     @Nullable
     private Uri mediaUri;
 
@@ -1005,6 +1008,12 @@ abstract public class BaseMessageListFragment<
             return;
         }
         sendFileMessageInternal(info, params);
+    }
+
+    protected void updateUserMessage(String messageId, String content, Conversation conversation) {
+        getViewModel().updateUserMessage(messageId, content, conversation, e -> {
+            if (e != null) toastError(R.string.sb_text_error_update_user_message);
+        });
     }
 
     /**

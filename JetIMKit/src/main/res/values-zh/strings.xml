@@ -22,7 +22,7 @@
     <string name="sb_text_channel_list_empty">No channels</string>
 
     <!-- Channel -->
-    <string name="sb_text_channel_message_badge_edited">&#160;(edited)</string>
+    <string name="sb_text_channel_message_badge_edited">&#160;(已编辑)</string>
     <string name="sb_text_channel_tooltip">%d new message</string>
     <string name="sb_text_channel_tooltip_with_count">%d new messages</string>
     <string name="sb_text_channel_anchor_copy">Copy</string>

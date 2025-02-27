@@ -68,6 +68,7 @@ import com.sendbird.android.message.FeedbackRating;
 import com.sendbird.android.message.SendingStatus;
 import com.sendbird.android.params.MessageListParams;
 import com.sendbird.android.params.UserMessageCreateParams;
+import com.sendbird.android.params.UserMessageUpdateParams;
 import com.sendbird.android.user.User;
 
 import java.util.ArrayList;
@@ -415,7 +416,19 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         inputComponent.setOnEditModeSaveButtonClickListener(editModeSaveButtonClickListener != null ? editModeSaveButtonClickListener : v -> {
             final EditText inputText = inputComponent.getEditTextView();
             if (inputText != null && !TextUtils.isEmpty(inputText.getText())) {
-                //todo
+                if (null != targetMessage) {
+//                    UserMessageUpdateParams params = new UserMessageUpdateParams(inputText.getText().toString());
+//                    if (inputText instanceof MentionEditText) {
+//                        final List<User> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
+//                        final CharSequence mentionedTemplate = ((MentionEditText) inputText).getMentionedTemplate();
+//                        Logger.d("++ mentioned template text=%s", mentionedTemplate);
+//                        params.setMentionedMessageTemplate(mentionedTemplate.toString());
+//                        params.setMentionedUsers(mentionedUsers);
+//                    }
+                    updateUserMessage(targetMessage.getMessageId(), inputText.getText().toString(), targetMessage.getConversation());
+                } else {
+                    Logger.d("Target message for update is missing");
+                }
             }
             inputComponent.requestInputMode(MessageInputView.Mode.DEFAULT);
         });
@@ -541,6 +554,25 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         final ConversationInfo channel = getViewModel().getConversationInfo();
         final MessageInputComponent inputComponent = getModule().getMessageInputComponent();
         if (channel == null) return;
+
+        switch (current) {
+//            case QUOTE_REPLY:
+            case EDIT:
+                inputComponent.notifyDataChanged(targetMessage, channel);
+                break;
+            default:
+//                if (before == MessageInputView.Mode.QUOTE_REPLY && targetMessage == null) {
+//                    final EditText input = inputComponent.getEditTextView();
+//                    final String defaultText = input != null && !TextUtils.isEmpty(input.getText())
+//                            ? inputComponent.getEditTextView().getText().toString() : "";
+//                    inputComponent.notifyDataChanged(null, channel, defaultText);
+//                } else
+                {
+                    inputComponent.notifyDataChanged(null, channel);
+                }
+                targetMessage = null;
+        }
+
         inputComponent.notifyDataChanged(null, channel);
     }
 
@@ -622,6 +654,10 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                 copy = ((TextMessage) message.getContent()).getContent();
             }
             copyTextToClipboard(copy);
+            return true;
+        } else if (key == R.string.sb_text_channel_anchor_edit) {
+            targetMessage = message;
+            inputComponent.requestInputMode(MessageInputView.Mode.EDIT);
             return true;
         } else if (key == R.string.sb_text_channel_anchor_delete) {
             if (MessageUtils.isFailed(message)) {
