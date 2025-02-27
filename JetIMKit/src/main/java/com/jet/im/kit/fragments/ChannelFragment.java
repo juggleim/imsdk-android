@@ -239,6 +239,21 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         });
     }
 
+    @Override
+    protected void shouldActivityFinish() {
+        String draft = "";
+        EditText editText = getModule().getMessageInputComponent().getEditTextView();
+        if (editText != null) {
+            draft = editText.getText().toString();
+        }
+        if (TextUtils.isNotEmpty(draft)) {
+            JIM.getInstance().getConversationManager().setDraft(getViewModel().getConversationInfo().getConversation(), getModule().getMessageInputComponent().getEditTextView().getText().toString());
+        } else {
+            JIM.getInstance().getConversationManager().clearDraft(getViewModel().getConversationInfo().getConversation());
+        }
+        super.shouldActivityFinish();
+    }
+
     /**
      * Called to bind events to the MessageListComponent and also bind ChannelViewModel.
      * This is called from {@link #onBeforeReady(ReadyStatus, ChannelModule, ChannelViewModel)} regardless of the value of {@link ReadyStatus}.

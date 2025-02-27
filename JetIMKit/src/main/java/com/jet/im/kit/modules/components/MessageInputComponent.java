@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 
+import com.jet.im.kit.utils.TextUtils;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.sendbird.android.user.User;
@@ -419,6 +420,9 @@ public class MessageInputComponent {
         if (messageInputView == null) return;
         final MessageInputView inputView = this.messageInputView;
         setHintMessageTextInternal(inputView, channel);
+        if (TextUtils.isNotEmpty(channel.getDraft())) {
+            inputView.setInputText(channel.getDraft());
+        }
     }
 
     /**

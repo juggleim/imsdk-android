@@ -2,7 +2,11 @@ package com.jet.im.kit.internal.ui.channels
 
 import android.content.Context
 import android.graphics.Color
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.TextUtils
+import android.text.style.ForegroundColorSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +17,7 @@ import android.widget.TextView
 import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.internal.extensions.setAppearance
+import com.jet.im.kit.model.TextUIConfig
 import com.jet.im.kit.utils.ChannelUtils
 import com.jet.im.kit.utils.DateUtils
 import com.jet.im.kit.utils.DrawableUtils
@@ -25,7 +30,6 @@ import com.juggle.im.model.messages.ImageMessage
 import com.juggle.im.model.messages.RecallInfoMessage
 import com.juggle.im.model.messages.TextMessage
 import com.juggle.im.model.messages.VoiceMessage
-import org.w3c.dom.Text
 
 internal class ChannelPreview @JvmOverloads constructor(
     context: Context,
@@ -266,9 +270,16 @@ internal class ChannelPreview @JvmOverloads constructor(
 //                }
             }
             // todo 最后一条消息内容
+            val spannableString: SpannableString
             val draft = channel.draft
             if (!draft.isNullOrEmpty()) {
-                message = "[草稿] $draft"
+                spannableString = SpannableString("[草稿] $draft")
+                spannableString.setSpan(
+                    ForegroundColorSpan(Color.RED),
+                    0,
+                    4,
+                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                )
             } else {
                 message = channel.lastMessage?.content?.conversationDigest().toString()
                 channel.lastMessage?.content?.let {
@@ -318,8 +329,10 @@ internal class ChannelPreview @JvmOverloads constructor(
 
                     }
                 }
+                spannableString = SpannableString(message)
             }
-            textView.text = message
+
+            textView.text = spannableString
         }
     }
 }
