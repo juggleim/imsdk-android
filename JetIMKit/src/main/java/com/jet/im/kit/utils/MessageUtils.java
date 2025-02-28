@@ -86,53 +86,6 @@ public class MessageUtils {
                 !DateUtils.hasSameTimeInMinute(frontMessage.getTimestamp(), backMessage.getTimestamp());
     }
 
-    public static boolean isGroupChanged(@Nullable BaseMessage frontMessage, @Nullable BaseMessage backMessage, @NonNull MessageListUIParams messageListUIParams) {
-        return frontMessage == null ||
-            frontMessage.getSender() == null ||
-            frontMessage instanceof AdminMessage ||
-            (hasParentMessage(frontMessage)) ||
-            backMessage == null ||
-            backMessage.getSender() == null ||
-            backMessage instanceof AdminMessage ||
-            (hasParentMessage(backMessage)) ||
-            !backMessage.getSendingStatus().equals(SendingStatus.SUCCEEDED) ||
-            !frontMessage.getSendingStatus().equals(SendingStatus.SUCCEEDED) ||
-            !frontMessage.getSender().equals(backMessage.getSender()) ||
-            !DateUtils.hasSameTimeInMinute(frontMessage.getCreatedAt(), backMessage.getCreatedAt());
-    }
-
-    @NonNull
-    public static MessageGroupType getMessageGroupType(@Nullable BaseMessage prevMessage,
-                                                       @NonNull BaseMessage message,
-                                                       @Nullable BaseMessage nextMessage,
-                                                       @NonNull MessageListUIParams messageListUIParams) {
-        if (!messageListUIParams.shouldUseMessageGroupUI()) {
-            return MessageGroupType.GROUPING_TYPE_SINGLE;
-        }
-
-        if (!message.getSendingStatus().equals(SendingStatus.SUCCEEDED)) {
-            return MessageGroupType.GROUPING_TYPE_SINGLE;
-        }
-
-        if (hasParentMessage(message)) {
-            return MessageGroupType.GROUPING_TYPE_SINGLE;
-        }
-
-        MessageGroupType messageGroupType = MessageGroupType.GROUPING_TYPE_BODY;
-        boolean isHead = messageListUIParams.shouldUseReverseLayout() ? MessageUtils.isGroupChanged(prevMessage, message, messageListUIParams) : MessageUtils.isGroupChanged(message, nextMessage, messageListUIParams);
-        boolean isTail = messageListUIParams.shouldUseReverseLayout() ? MessageUtils.isGroupChanged(message, nextMessage, messageListUIParams) : MessageUtils.isGroupChanged(prevMessage, message, messageListUIParams);
-
-        if (!isHead && isTail) {
-            messageGroupType = MessageGroupType.GROUPING_TYPE_TAIL;
-        } else if (isHead && !isTail) {
-            messageGroupType = MessageGroupType.GROUPING_TYPE_HEAD;
-        } else if (isHead) {
-            messageGroupType = MessageGroupType.GROUPING_TYPE_SINGLE;
-        }
-
-        return messageGroupType;
-    }
-
     @NonNull
     public static MessageGroupType getMessageGroupType(@Nullable Message prevMessage,
                                                        @NonNull Message message,
@@ -160,12 +113,12 @@ public class MessageUtils {
 
         return messageGroupType;
     }
-    public static boolean hasParentMessage(@NonNull BaseMessage message) {
-        return message.getParentMessageId() != 0L;
-    }
+//    public static boolean hasParentMessage(@NonNull BaseMessage message) {
+//        return message.getParentMessageId() != 0L;
+//    }
 
     public static boolean hasParentMessage(@NonNull Message message) {
-        return false;
+        return message.hasReferredInfo();
     }
 
     public static boolean hasThread(@NonNull BaseMessage message) {

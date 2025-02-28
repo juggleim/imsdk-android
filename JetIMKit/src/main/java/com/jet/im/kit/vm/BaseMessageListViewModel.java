@@ -20,11 +20,13 @@ import com.jet.im.kit.model.LiveDataEx;
 import com.jet.im.kit.model.MentionSuggestion;
 import com.jet.im.kit.model.MessageList;
 import com.jet.im.kit.model.MutableLiveDataEx;
+import com.jet.im.kit.utils.TextUtils;
 import com.juggle.im.JIM;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
@@ -118,17 +120,15 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 //        }
     }
 
-    /**
-     * Sends a text message to the channel.
-     *
-     * @param params Parameters to be applied to the message
-     *               since 3.0.0
-     */
-    public void sendUserMessage(@NonNull UserMessageCreateParams params) {
-        Logger.i("++ request send message : %s", params);
-        TextMessage textMessage = new TextMessage(params.getMessage());
+    public void sendTextMessage(String content, String parentMessageId) {
+        Logger.i("++ request send message : %s", content);
+        TextMessage textMessage = new TextMessage(content);
+        MessageOptions options = new MessageOptions();
+        if (TextUtils.isNotEmpty(parentMessageId)) {
+            options.setReferredMessageId(parentMessageId);
+        }
         if (mConversationInfo != null) {
-            JIM.getInstance().getMessageManager().sendMessage(textMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMessageCallback() {
+            JIM.getInstance().getMessageManager().sendMessage(textMessage, mConversationInfo.getConversation(), options, new IMessageManager.ISendMessageCallback() {
                 @Override
                 public void onSuccess(Message message) {
                     Logger.i("++ sent message : %s", message);
@@ -142,7 +142,6 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
                 }
             });
         }
-
     }
 
     public void sendVoiceMessage(@NonNull String localPath, int duration) {

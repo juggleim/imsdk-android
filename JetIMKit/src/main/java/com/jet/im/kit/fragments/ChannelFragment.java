@@ -60,6 +60,7 @@ import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.exception.SendbirdException;
@@ -551,18 +552,22 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         final EditText inputText = inputComponent.getEditTextView();
         if (inputText != null && !TextUtils.isEmpty(inputText.getText())) {
             final Editable editableText = inputText.getText();
-            UserMessageCreateParams params = new UserMessageCreateParams(editableText.toString());
-            if (channelConfig.getEnableMention()) {
-                if (inputText instanceof MentionEditText) {
-                    final List<User> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
-                    final CharSequence mentionedTemplate = ((MentionEditText) inputText).getMentionedTemplate();
-                    Logger.d("++ mentioned template text=%s", mentionedTemplate);
-                    params.setMentionedMessageTemplate(mentionedTemplate.toString());
-                    params.setMentionedUsers(mentionedUsers);
-                }
-            }
 
-            sendUserMessage(params);
+//            if (channelConfig.getEnableMention()) {
+//                if (inputText instanceof MentionEditText) {
+//                    final List<User> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
+//                    final CharSequence mentionedTemplate = ((MentionEditText) inputText).getMentionedTemplate();
+//                    Logger.d("++ mentioned template text=%s", mentionedTemplate);
+//                    params.setMentionedMessageTemplate(mentionedTemplate.toString());
+//                    params.setMentionedUsers(mentionedUsers);
+//                }
+//            }
+
+            String parentMessageId = "";
+            if (targetMessage != null) {
+                parentMessageId = targetMessage.getMessageId();
+            }
+            sendTextMessage(editableText.toString(), parentMessageId);
         }
     }
 
@@ -572,17 +577,17 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         if (channel == null) return;
 
         switch (current) {
-//            case QUOTE_REPLY:
+            case QUOTE_REPLY:
             case EDIT:
                 inputComponent.notifyDataChanged(targetMessage, channel);
                 break;
             default:
-//                if (before == MessageInputView.Mode.QUOTE_REPLY && targetMessage == null) {
-//                    final EditText input = inputComponent.getEditTextView();
-//                    final String defaultText = input != null && !TextUtils.isEmpty(input.getText())
-//                            ? inputComponent.getEditTextView().getText().toString() : "";
-//                    inputComponent.notifyDataChanged(null, channel, defaultText);
-//                } else
+                if (before == MessageInputView.Mode.QUOTE_REPLY && targetMessage == null) {
+                    final EditText input = inputComponent.getEditTextView();
+                    final String defaultText = input != null && !TextUtils.isEmpty(input.getText())
+                            ? inputComponent.getEditTextView().getText().toString() : "";
+                    inputComponent.notifyDataChanged(null, channel, defaultText);
+                } else
                 {
                     inputComponent.notifyDataChanged(null, channel);
                 }
@@ -607,7 +612,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         DialogListItem forward = new DialogListItem(R.string.sb_text_channel_anchor_forward, R.drawable.icon_thread, false, false);
         int replyStringRes = R.string.sb_text_channel_anchor_reply;
         int replyDrawableRes = R.drawable.icon_reply;
-        DialogListItem reply = new DialogListItem(replyStringRes, replyDrawableRes, false, MessageUtils.hasParentMessage(message));
+        DialogListItem reply = new DialogListItem(replyStringRes, replyDrawableRes, false, false);
         DialogListItem retry = new DialogListItem(R.string.sb_text_channel_anchor_retry, 0);
         DialogListItem deleteFailed = new DialogListItem(R.string.sb_text_channel_anchor_delete, 0);
 
@@ -695,6 +700,10 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             if (message.getContent() instanceof MediaMessageContent) {
                 saveFileMessage((MediaMessageContent) message.getContent());
             }
+            return true;
+        } else if (key == R.string.sb_text_channel_anchor_reply) {
+            this.targetMessage = message;
+            inputComponent.requestInputMode(MessageInputView.Mode.QUOTE_REPLY);
             return true;
         } else if (key == R.string.sb_text_channel_anchor_retry) {
             resendMessage(message);
@@ -792,7 +801,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         @Nullable
         private OnItemClickListener<Message> messageProfileClickListener;
         @Nullable
-        private OnItemClickListener<User> emojiReactionUserListProfileClickListener;
+        private OnItemClickListener<UserInfo> emojiReactionUserListProfileClickListener;
         @Nullable
         private OnItemLongClickListener<Message> messageLongClickListener;
         @Nullable
@@ -827,7 +836,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         @Nullable
         private View.OnClickListener voiceRecorderButtonClickListener;
         @Nullable
-        private OnItemClickListener<User> messageMentionClickListener;
+        private OnItemClickListener<UserInfo> messageMentionClickListener;
         @Nullable
         private ChannelFragment customFragment;
 
@@ -1210,7 +1219,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
          * since 3.9.2
          */
         @NonNull
-        public Builder setOnEmojiReactionUserListProfileClickListener(@NonNull OnItemClickListener<User> emojiReactionUserListProfileClickListener) {
+        public Builder setOnEmojiReactionUserListProfileClickListener(@NonNull OnItemClickListener<UserInfo> emojiReactionUserListProfileClickListener) {
             this.emojiReactionUserListProfileClickListener = emojiReactionUserListProfileClickListener;
             return this;
         }
@@ -1705,7 +1714,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
          * since 3.5.3
          */
         @NonNull
-        public Builder setOnMessageMentionClickListener(@NonNull OnItemClickListener<User> mentionClickListener) {
+        public Builder setOnMessageMentionClickListener(@NonNull OnItemClickListener<UserInfo> mentionClickListener) {
             this.messageMentionClickListener = mentionClickListener;
             return this;
         }

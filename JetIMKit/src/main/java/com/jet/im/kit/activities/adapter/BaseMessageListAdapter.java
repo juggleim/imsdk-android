@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.DiffUtil;
 
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.user.User;
@@ -56,7 +57,7 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
     @Nullable
     private OnIdentifiableItemLongClickListener<Message> listItemLongClickListener;
     @Nullable
-    protected OnItemClickListener<User> mentionClickListener;
+    protected OnItemClickListener<UserInfo> mentionClickListener;
 
     @Nullable
     protected OnFeedbackRatingClickListener feedbackRatingClickListener;
@@ -408,7 +409,7 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
      * @param listener The callback that will run
      *                 since 3.5.3
      */
-    public void setMentionClickListener(@Nullable OnItemClickListener<User> listener) {
+    public void setMentionClickListener(@Nullable OnItemClickListener<UserInfo> listener) {
         this.mentionClickListener = listener;
     }
 
@@ -419,7 +420,7 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
      * since 3.5.3
      */
     @Nullable
-    public OnItemClickListener<User> getMentionClickListener() {
+    public OnItemClickListener<UserInfo> getMentionClickListener() {
         return mentionClickListener;
     }
 

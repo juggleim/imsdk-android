@@ -65,97 +65,97 @@ class MessageDiffCallback extends DiffUtil.Callback {
     @Override
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
         if (oldChannel == null) return false;
-        BaseMessage oldMessage = oldMessageList.get(oldItemPosition);
-        BaseMessage newMessage = newMessageList.get(newItemPosition);
-
-        if (oldMessage.getSendingStatus() != newMessage.getSendingStatus()) {
-            return false;
-        }
-
-        if (oldMessage.getUpdatedAt() != newMessage.getUpdatedAt()) {
-            return false;
-        }
-
-        // In the case of Bot message stream mode, the `message` is updated, but `updated_at` is not updated.
-        boolean isBotOld = oldMessage.getSender() != null && oldMessage.getSender().isBot();
-        boolean isBotNew = newMessage.getSender() != null && newMessage.getSender().isBot();
-        if (isBotOld && isBotNew) {
-            if (!oldMessage.getMessage().equals(newMessage.getMessage())) {
-                return false;
-            }
-        }
-
-        Map<String, String> oldExtendedMessagePayload = oldMessage.getExtendedMessagePayload();
-        Map<String, String> newExtendedMessagePayload = newMessage.getExtendedMessagePayload();
-        if (!oldExtendedMessagePayload.equals(newExtendedMessagePayload)) {
-            return false;
-        }
-
-        if (messageListUIParams.shouldUseMessageReceipt()) {
-            if (oldChannel.getUnreadMemberCount(newMessage) != newChannel.getUnreadMemberCount(newMessage)) {
-                return false;
-            }
-
-            if (oldChannel.getUndeliveredMemberCount(newMessage) != newChannel.getUndeliveredMemberCount(newMessage)) {
-                return false;
-            }
-        }
-
-        if (oldChannel.isFrozen() != newChannel.isFrozen()) {
-            return false;
-        }
-
-        if (oldChannel.getMyRole() != newChannel.getMyRole()) {
-            return false;
-        }
-
-        List<Reaction> oldReactions = oldMessage.getReactions();
-        List<Reaction> newReactions = newMessage.getReactions();
-
-        if (oldReactions.size() != newReactions.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < oldReactions.size(); i++) {
-            Reaction oldReaction = oldReactions.get(i);
-            Reaction newReaction = newReactions.get(i);
-
-            if (!oldReaction.equals(newReaction)) {
-                return false;
-            }
-
-            if (!oldReaction.getUserIds().equals(newReaction.getUserIds())) {
-                return false;
-            }
-        }
-
-        if (oldMessage.getOgMetaData() == null && newMessage.getOgMetaData() != null) {
-            return false;
-        } else if (oldMessage.getOgMetaData() != null && !oldMessage.getOgMetaData().equals(newMessage.getOgMetaData())) {
-            return false;
-        }
-
-        if (oldMessage.getMyFeedbackStatus() != newMessage.getMyFeedbackStatus()) {
-            return false;
-        }
-
-        if (oldMessage.getMyFeedback() != newMessage.getMyFeedback()) {
-            return false;
-        }
-
-        if (oldMessage instanceof TypingIndicatorMessage && newMessage instanceof TypingIndicatorMessage) {
-            return ((TypingIndicatorMessage) oldMessage).getTypingUsers().equals(((TypingIndicatorMessage) newMessage).getTypingUsers()) ;
-        }
-        if (messageListUIParams.shouldUseMessageGroupUI()) {
-            BaseMessage oldPrevMessage = oldItemPosition - 1 < 0 ? null : oldMessageList.get(oldItemPosition - 1);
-            BaseMessage newPrevMessage = newItemPosition - 1 < 0 ? null : newMessageList.get(newItemPosition - 1);
-            BaseMessage oldNextMessage = oldItemPosition + 1 >= oldMessageList.size() ? null : oldMessageList.get(oldItemPosition + 1);
-            BaseMessage newNextMessage = newItemPosition + 1 >= newMessageList.size() ? null : newMessageList.get(newItemPosition + 1);
-            MessageGroupType oldMessageGroupType = MessageUtils.getMessageGroupType(oldPrevMessage, oldMessage, oldNextMessage, messageListUIParams);
-            MessageGroupType newMessageGroupType = MessageUtils.getMessageGroupType(newPrevMessage, newMessage, newNextMessage, messageListUIParams);
-
-            return oldMessageGroupType == newMessageGroupType;
-        }
+//        BaseMessage oldMessage = oldMessageList.get(oldItemPosition);
+//        BaseMessage newMessage = newMessageList.get(newItemPosition);
+//
+//        if (oldMessage.getSendingStatus() != newMessage.getSendingStatus()) {
+//            return false;
+//        }
+//
+//        if (oldMessage.getUpdatedAt() != newMessage.getUpdatedAt()) {
+//            return false;
+//        }
+//
+//        // In the case of Bot message stream mode, the `message` is updated, but `updated_at` is not updated.
+//        boolean isBotOld = oldMessage.getSender() != null && oldMessage.getSender().isBot();
+//        boolean isBotNew = newMessage.getSender() != null && newMessage.getSender().isBot();
+//        if (isBotOld && isBotNew) {
+//            if (!oldMessage.getMessage().equals(newMessage.getMessage())) {
+//                return false;
+//            }
+//        }
+//
+//        Map<String, String> oldExtendedMessagePayload = oldMessage.getExtendedMessagePayload();
+//        Map<String, String> newExtendedMessagePayload = newMessage.getExtendedMessagePayload();
+//        if (!oldExtendedMessagePayload.equals(newExtendedMessagePayload)) {
+//            return false;
+//        }
+//
+//        if (messageListUIParams.shouldUseMessageReceipt()) {
+//            if (oldChannel.getUnreadMemberCount(newMessage) != newChannel.getUnreadMemberCount(newMessage)) {
+//                return false;
+//            }
+//
+//            if (oldChannel.getUndeliveredMemberCount(newMessage) != newChannel.getUndeliveredMemberCount(newMessage)) {
+//                return false;
+//            }
+//        }
+//
+//        if (oldChannel.isFrozen() != newChannel.isFrozen()) {
+//            return false;
+//        }
+//
+//        if (oldChannel.getMyRole() != newChannel.getMyRole()) {
+//            return false;
+//        }
+//
+//        List<Reaction> oldReactions = oldMessage.getReactions();
+//        List<Reaction> newReactions = newMessage.getReactions();
+//
+//        if (oldReactions.size() != newReactions.size()) {
+//            return false;
+//        }
+//
+//        for (int i = 0; i < oldReactions.size(); i++) {
+//            Reaction oldReaction = oldReactions.get(i);
+//            Reaction newReaction = newReactions.get(i);
+//
+//            if (!oldReaction.equals(newReaction)) {
+//                return false;
+//            }
+//
+//            if (!oldReaction.getUserIds().equals(newReaction.getUserIds())) {
+//                return false;
+//            }
+//        }
+//
+//        if (oldMessage.getOgMetaData() == null && newMessage.getOgMetaData() != null) {
+//            return false;
+//        } else if (oldMessage.getOgMetaData() != null && !oldMessage.getOgMetaData().equals(newMessage.getOgMetaData())) {
+//            return false;
+//        }
+//
+//        if (oldMessage.getMyFeedbackStatus() != newMessage.getMyFeedbackStatus()) {
+//            return false;
+//        }
+//
+//        if (oldMessage.getMyFeedback() != newMessage.getMyFeedback()) {
+//            return false;
+//        }
+//
+//        if (oldMessage instanceof TypingIndicatorMessage && newMessage instanceof TypingIndicatorMessage) {
+//            return ((TypingIndicatorMessage) oldMessage).getTypingUsers().equals(((TypingIndicatorMessage) newMessage).getTypingUsers()) ;
+//        }
+//        if (messageListUIParams.shouldUseMessageGroupUI()) {
+//            BaseMessage oldPrevMessage = oldItemPosition - 1 < 0 ? null : oldMessageList.get(oldItemPosition - 1);
+//            BaseMessage newPrevMessage = newItemPosition - 1 < 0 ? null : newMessageList.get(newItemPosition - 1);
+//            BaseMessage oldNextMessage = oldItemPosition + 1 >= oldMessageList.size() ? null : oldMessageList.get(oldItemPosition + 1);
+//            BaseMessage newNextMessage = newItemPosition + 1 >= newMessageList.size() ? null : newMessageList.get(newItemPosition + 1);
+//            MessageGroupType oldMessageGroupType = MessageUtils.getMessageGroupType(oldPrevMessage, oldMessage, oldNextMessage, messageListUIParams);
+//            MessageGroupType newMessageGroupType = MessageUtils.getMessageGroupType(newPrevMessage, newMessage, newNextMessage, messageListUIParams);
+//
+//            return oldMessageGroupType == newMessageGroupType;
+//        }
 
         return true;
     }

@@ -22,6 +22,7 @@ import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.UserInfo
 
 internal class MyUserMessageView @JvmOverloads internal constructor(
     context: Context,
@@ -37,7 +38,7 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
     private val mentionedCurrentUserUIConfig: TextUIConfig
     private val sentAtAppearance: Int
     private val messageTextAppearance: Int
-    var mentionClickListener: OnItemClickListener<User>? = null
+    var mentionClickListener: OnItemClickListener<UserInfo>? = null
 
     init {
         val a = context.theme.obtainStyledAttributes(attrs, R.styleable.MessageView_User, defStyle, 0)
@@ -105,49 +106,6 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
         }
     }
 
-    override fun drawMessage(channel: GroupChannel, message: BaseMessage, params: MessageListUIParams) {
-        val messageGroupType = params.messageGroupType
-        val isSent = message.sendingStatus == SendingStatus.SUCCEEDED
-        val enableOgTag = message.ogMetaData != null && ChannelConfig.getEnableOgTag(params.channelConfig)
-        val enableMention = params.channelConfig.enableMention
-        binding.ogtagBackground.visibility = if (enableOgTag) VISIBLE else GONE
-        binding.ovOgtag.visibility = if (enableOgTag) VISIBLE else GONE
-        binding.tvSentAt.visibility =
-            if (isSent && (messageGroupType === MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType === MessageGroupType.GROUPING_TYPE_SINGLE)) VISIBLE else GONE
-        binding.ivStatus.drawStatus(message, channel, params.shouldUseMessageReceipt())
-
-        messageUIConfig?.let {
-            it.myMessageTextUIConfig.mergeFromTextAppearance(context, messageTextAppearance)
-            it.myEditedTextMarkUIConfig.mergeFromTextAppearance(context, editedAppearance)
-            it.myMentionUIConfig.mergeFromTextAppearance(context, mentionAppearance)
-            it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
-            it.myMessageBackground?.let { background -> binding.contentPanel.background = background }
-            it.myOgtagBackground?.let { ogtagBackground ->
-                binding.ogtagBackground.background = ogtagBackground
-                binding.ovOgtag.background = ogtagBackground
-            }
-            it.linkedTextColor?.let { linkedTextColor -> binding.tvMessage.setLinkTextColor(linkedTextColor) }
-        }
-
-        ViewUtils.drawTextMessage(
-            binding.tvMessage,
-            message,
-            messageUIConfig,
-            enableMention,
-            mentionedCurrentUserUIConfig,
-        ) { view, position, user ->
-            mentionClickListener?.onItemClick(view, position, user)
-        }
-        if (enableOgTag) ViewUtils.drawOgtag(binding.ovOgtag, message.ogMetaData)
-        ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
-
-        val paddingTop =
-            resources.getDimensionPixelSize(if (messageGroupType === MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType === MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        val paddingBottom =
-            resources.getDimensionPixelSize(if (messageGroupType === MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType === MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        binding.root.setPadding(binding.root.paddingLeft, paddingTop, binding.root.paddingRight, paddingBottom)
-    }
-
     override fun drawMessage(
         channel: ConversationInfo,
         message: Message,
@@ -192,5 +150,12 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
         val paddingBottom =
             resources.getDimensionPixelSize(if (messageGroupType === MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType === MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
         binding.root.setPadding(binding.root.paddingLeft, paddingTop, binding.root.paddingRight, paddingBottom)
+        ViewUtils.drawQuotedMessage(
+            binding.quoteReplyPanel,
+            channel,
+            message,
+            messageUIConfig?.repliedMessageTextUIConfig,
+            params
+        )
     }
 }

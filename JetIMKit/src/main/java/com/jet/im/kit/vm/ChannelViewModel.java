@@ -33,6 +33,7 @@ import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Feedback;
@@ -61,7 +62,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @NonNull
     private final String CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHAT" + System.currentTimeMillis();
     @NonNull
-    private final MutableLiveData<List<User>> typingMembers = new MutableLiveData<>();
+    private final MutableLiveData<List<UserInfo>> typingMembers = new MutableLiveData<>();
     @NonNull
     private final MutableLiveData<ConversationInfo> channelUpdated = new MutableLiveData<>();
     @NonNull
@@ -328,7 +329,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     @NonNull
-    public LiveData<List<User>> getTypingMembers() {
+    public LiveData<List<UserInfo>> getTypingMembers() {
         return typingMembers;
     }
 
@@ -439,8 +440,8 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         return cachedMessages.toList();
     }
 
-    private void removeThreadMessages(@NonNull List<BaseMessage> src) {
-        final ListIterator<BaseMessage> iterator = src.listIterator();
+    private void removeThreadMessages(@NonNull List<Message> src) {
+        final ListIterator<Message> iterator = src.listIterator();
         while (iterator.hasNext()) {
             if (MessageUtils.hasParentMessage(iterator.next())) {
                 iterator.remove();

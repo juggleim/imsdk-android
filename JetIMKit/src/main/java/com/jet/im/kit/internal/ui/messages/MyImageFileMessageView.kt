@@ -60,39 +60,6 @@ internal class MyImageFileMessageView @JvmOverloads internal constructor(
     }
 
     override fun drawMessage(
-        channel: GroupChannel,
-        message: BaseMessage,
-        params: MessageListUIParams
-    ) {
-        val isSent = message.sendingStatus == SendingStatus.SUCCEEDED
-        val messageGroupType = params.messageGroupType
-        binding.tvSentAt.visibility =
-            if (isSent && (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_SINGLE)) VISIBLE else GONE
-        binding.ivStatus.drawStatus(message, channel, params.shouldUseMessageReceipt())
-
-        messageUIConfig?.let {
-            it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
-            val background = it.myMessageBackground
-            background?.let { binding.contentPanel.background = background }
-        }
-
-        ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
-        ViewUtils.drawThumbnail(binding.ivThumbnail, (message as FileMessage))
-        ViewUtils.drawThumbnailIcon(binding.ivThumbnailIcon, message)
-
-        val paddingTop =
-            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        val paddingBottom =
-            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        binding.root.setPadding(
-            binding.root.paddingLeft,
-            paddingTop,
-            binding.root.paddingRight,
-            paddingBottom
-        )
-    }
-
-    override fun drawMessage(
         channel: ConversationInfo,
         message: Message,
         params: MessageListUIParams

@@ -14,6 +14,7 @@ import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.UserInfo
 
 internal class MyUserMessageViewHolder internal constructor(
     val binding: SbViewMyUserMessageBinding,
@@ -39,7 +40,7 @@ internal class MyUserMessageViewHolder internal constructor(
         )
     }
 
-    fun setOnMentionClickListener(listener: OnItemClickListener<User>?) {
+    fun setOnMentionClickListener(listener: OnItemClickListener<UserInfo>?) {
         binding.myUserMessage.mentionClickListener = listener
     }
 }

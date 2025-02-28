@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat;
 import com.jet.im.kit.utils.TextUtils;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.user.User;
 import com.jet.im.kit.R;
 import com.jet.im.kit.consts.KeyboardDisplayType;
@@ -467,7 +468,10 @@ public class MessageInputComponent {
                 inputView.setInputText(text);
             }
             inputView.showKeyboard();
-        }  else {
+        }  else if (MessageInputView.Mode.QUOTE_REPLY == mode) {
+            if (message != null) inputView.drawMessageToReply(message);
+            inputView.showKeyboard();
+        } else {
             inputView.setInputText(defaultText);
             final CharSequence text = inputView.getInputText();
             if (text != null) {
@@ -484,7 +488,7 @@ public class MessageInputComponent {
      * @param suggestedMentionList The updated suggested mention list.
      * since 3.0.0
      */
-    public void notifySuggestedMentionDataChanged(@NonNull List<User> suggestedMentionList) {
+    public void notifySuggestedMentionDataChanged(@NonNull List<UserInfo> suggestedMentionList) {
         Logger.d(">> MessageInputComponent::notifySuggestedMentionDataChanged()");
         if (getEditTextView() instanceof MentionEditText) {
             ((MentionEditText) getEditTextView()).notifySuggestedMentionDataChanged(suggestedMentionList);

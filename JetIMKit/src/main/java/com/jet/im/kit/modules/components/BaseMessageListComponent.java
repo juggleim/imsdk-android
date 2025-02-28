@@ -37,6 +37,7 @@ import com.jet.im.kit.model.configurations.ChannelConfig;
 import com.jet.im.kit.model.configurations.UIKitConfig;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FeedbackRating;
 import com.sendbird.android.user.User;
@@ -66,7 +67,7 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
     @Nullable
     private OnItemClickListener<Message> messageProfileClickListener;
     @Nullable
-    private OnItemClickListener<User> messageMentionClickListener;
+    private OnItemClickListener<UserInfo> messageMentionClickListener;
 
     @Nullable
     private OnFeedbackRatingClickListener feedbackRatingClickListener;
@@ -317,7 +318,7 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
      * @param messageMentionClickListener The callback that will run
      *                                    since 3.5.3
      */
-    public void setOnMessageMentionClickListener(@Nullable OnItemClickListener<User> messageMentionClickListener) {
+    public void setOnMessageMentionClickListener(@Nullable OnItemClickListener<UserInfo> messageMentionClickListener) {
         this.messageMentionClickListener = messageMentionClickListener;
     }
 
@@ -512,7 +513,7 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
      * @param user     The mentioned user that the clicked item displays
      *                 since 3.5.3
      */
-    protected void onMessageMentionClicked(@NonNull View view, int position, @NonNull User user) {
+    protected void onMessageMentionClicked(@NonNull View view, int position, @NonNull UserInfo user) {
         if (messageMentionClickListener != null)
             messageMentionClickListener.onItemClick(view, position, user);
     }

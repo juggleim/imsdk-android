@@ -28,7 +28,10 @@ import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.kit.utils.SoftInputUtils
 import com.jet.im.kit.utils.TextUtils
 import com.jet.im.kit.utils.ViewUtils
+import com.juggle.im.JIM
 import com.juggle.im.model.Message
+import com.juggle.im.model.messages.TextMessage
+import com.sendbird.android.message.BaseMessage
 import com.sendbird.android.message.FileMessage
 import com.sendbird.android.message.MultipleFilesMessage
 
@@ -109,7 +112,11 @@ class MessageInputView @JvmOverloads constructor(
                     setVoiceRecorderButtonVisibility(GONE)
                     binding.ibtnAdd.visibility = GONE
                 }
-
+                Mode.QUOTE_REPLY -> {
+                    setQuoteReplyPanelVisibility(VISIBLE)
+                    setEditPanelVisibility(GONE)
+                    addButtonVisibility = this@MessageInputView.addButtonVisibility
+                }
                 else -> {
                     setQuoteReplyPanelVisibility(GONE)
                     setEditPanelVisibility(GONE)
@@ -128,7 +135,12 @@ class MessageInputView @JvmOverloads constructor(
         /**
          * A mode to edit current message.
          */
-        EDIT
+        EDIT,
+
+        /**
+         * A mode to send a reply message about current message.
+         */
+        QUOTE_REPLY
     }
 
     fun showKeyboard() {
@@ -137,6 +149,62 @@ class MessageInputView @JvmOverloads constructor(
         )
     }
 
+    fun drawMessageToReply(message: Message) {
+        var displayMessage = ""
+        val content = message.content
+        if (content is TextMessage) {
+            displayMessage = content.content
+        }
+
+//        when (message) {
+////            is MultipleFilesMessage -> {
+////                val file = message.files.firstOrNull() ?: return
+////                ViewUtils.drawFileMessageIconToReply(binding.ivQuoteReplyMessageIcon, file.fileType)
+////                ViewUtils.drawThumbnail(
+////                    binding.ivQuoteReplyMessageImage,
+////                    message.getCacheKey(0),
+////                    file.url,
+////                    file.plainUrl,
+////                    file.fileType,
+////                    file.thumbnails,
+////                    null,
+////                    R.dimen.sb_size_1
+////                )
+////                binding.ivQuoteReplyMessageIcon.visibility = VISIBLE
+////                binding.ivQuoteReplyMessageImage.visibility = VISIBLE
+////                displayMessage = "${message.files.size} ${StringSet.photos}"
+////            }
+////
+////            is FileMessage -> {
+////                if (MessageUtils.isVoiceMessage(message)) {
+////                    binding.ivQuoteReplyMessageIcon.visibility = GONE
+////                    binding.ivQuoteReplyMessageImage.visibility = GONE
+////                } else {
+////                    ViewUtils.drawFileMessageIconToReply(binding.ivQuoteReplyMessageIcon, message)
+////                    ViewUtils.drawThumbnail(binding.ivQuoteReplyMessageImage, message)
+////                    binding.ivQuoteReplyMessageIcon.visibility = VISIBLE
+////                    binding.ivQuoteReplyMessageImage.visibility = VISIBLE
+////                }
+////                displayMessage = message.toDisplayText(context)
+////            }
+//
+//            else -> {
+//                binding.ivQuoteReplyMessageIcon.visibility = GONE
+//                binding.ivQuoteReplyMessageImage.visibility = GONE
+//            }
+//        }
+        binding.ivQuoteReplyMessageIcon.visibility = GONE
+        binding.ivQuoteReplyMessageImage.visibility = GONE
+
+        message.senderUserId?.let {
+            val userInfo = JIM.getInstance().userInfoManager.getUserInfo(message.senderUserId)
+            userInfo?.let {
+                binding.tvQuoteReplyTitle.text =
+                    String.format(context.getString(R.string.sb_text_reply_to), it.userName)
+            }
+        }
+        binding.tvQuoteReplyMessage.text = displayMessage
+    }
 
     override fun setEnabled(enabled: Boolean) {
         super.setEnabled(enabled)

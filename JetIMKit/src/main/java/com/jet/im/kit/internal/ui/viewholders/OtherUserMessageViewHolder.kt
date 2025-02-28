@@ -15,6 +15,7 @@ import com.jet.im.kit.internal.interfaces.OnFeedbackRatingClickListener
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.UserInfo
 
 internal class OtherUserMessageViewHolder internal constructor(
     val binding: SbViewOtherUserMessageBinding,
@@ -41,7 +42,7 @@ internal class OtherUserMessageViewHolder internal constructor(
         )
     }
 
-    fun setOnMentionClickListener(listener: OnItemClickListener<User>?) {
+    fun setOnMentionClickListener(listener: OnItemClickListener<UserInfo>?) {
         binding.otherMessageView.mentionClickListener = listener
     }
 

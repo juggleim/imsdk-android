@@ -54,7 +54,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="bottom"
-        app:constraint_referenced_ids="tvNickname" />
+        app:constraint_referenced_ids="tvNickname, quoteReplyPanel" />
+
+    <com.jet.im.kit.internal.ui.messages.OtherQuotedMessageView
+        android:id="@+id/quoteReplyPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/sb_size_12"
+        android:translationY="@dimen/sb_size_10"
+        app:layout_constraintStart_toEndOf="@+id/ivProfileView"
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/contentPanel"

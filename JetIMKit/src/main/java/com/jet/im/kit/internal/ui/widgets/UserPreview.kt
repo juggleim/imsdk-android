@@ -19,6 +19,7 @@ import com.jet.im.kit.internal.extensions.setAppearance
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.UserUtils
 import com.jet.im.kit.utils.ViewUtils
+import com.juggle.im.model.UserInfo
 
 internal class UserPreview @JvmOverloads constructor(
     context: Context,
@@ -72,13 +73,13 @@ internal class UserPreview @JvmOverloads constructor(
     companion object {
         // TODO (Remove : after all codes are converted as kotlin this annotation doesn't need)
         @JvmStatic
-        fun drawUser(preview: UserPreview, user: User, description: String, isMuted: Boolean) {
+        fun drawUser(preview: UserPreview, user: UserInfo, description: String, isMuted: Boolean) {
             val context = preview.context
             val isMe = user.userId == SendbirdUIKit.getAdapter()?.userInfo?.userId
             val nickname = UserUtils.getDisplayName(context, user)
             preview.setName(nickname)
             preview.setDescription(description)
-            preview.setImageFromUrl(user.profileUrl, user.plainProfileImageUrl)
+            preview.setImageFromUrl(user.portrait, user.portrait)
             preview.enableActionMenu(!isMe)
             preview.setVisibleOverlay(if (isMuted) VISIBLE else GONE)
             if (isMe) {

@@ -12,6 +12,7 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
 import android.util.Pair;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -34,22 +35,26 @@ import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.internal.model.GlideCachedUrlLoader;
+import com.jet.im.kit.internal.ui.messages.BaseQuotedMessageView;
 import com.jet.im.kit.internal.ui.messages.OgtagView;
 import com.jet.im.kit.internal.ui.messages.VoiceMessageView;
 import com.jet.im.kit.internal.ui.widgets.RoundCornerView;
 import com.jet.im.kit.internal.ui.widgets.VoiceProgressView;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.FileInfo;
+import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.model.MessageUIConfig;
 import com.jet.im.kit.model.TextUIConfig;
 import com.jet.im.kit.vm.PendingMessageRepository;
 import com.juggle.im.JIM;
+import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
+import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FileMessage;
 import com.sendbird.android.message.OGMetaData;
@@ -96,7 +101,7 @@ public class ViewUtils {
             @Nullable MessageUIConfig uiConfig,
             boolean enableMention,
             @Nullable TextUIConfig mentionedCurrentUserUIConfig,
-            @Nullable OnItemClickListener<User> mentionClickListener) {
+            @Nullable OnItemClickListener<UserInfo> mentionClickListener) {
 
     }
 
@@ -106,7 +111,7 @@ public class ViewUtils {
             @Nullable MessageUIConfig uiConfig,
             boolean enableMention,
             @Nullable TextUIConfig mentionedCurrentUserUIConfig,
-            @Nullable OnItemClickListener<User> mentionClickListener
+            @Nullable OnItemClickListener<UserInfo> mentionClickListener
     ) {
         if (message == null) {
             return;
@@ -148,7 +153,7 @@ public class ViewUtils {
             @Nullable MessageUIConfig uiConfig,
             @Nullable TextUIConfig mentionedCurrentUserUIConfig,
             boolean mentionClickable,
-            @Nullable OnItemClickListener<User> mentionClickListener,
+            @Nullable OnItemClickListener<UserInfo> mentionClickListener,
             boolean enabledMention
     ) {
         String displayedMessage = "";
@@ -199,27 +204,6 @@ public class ViewUtils {
                 Logger.e(e);
             }
         });
-    }
-
-    public static void drawNickname(
-            @NonNull TextView tvNickname,
-            @Nullable BaseMessage message,
-            @Nullable MessageUIConfig uiConfig,
-            boolean isOperator
-    ) {
-        if (message == null) {
-            return;
-        }
-
-        final Sender sender = message.getSender();
-        final Spannable nickname = new SpannableString(UserUtils.getDisplayName(tvNickname.getContext(), sender));
-        if (uiConfig != null) {
-            final boolean isMine = MessageUtils.isMine(message);
-            final TextUIConfig textUIConfig = isOperator ? uiConfig.getOperatorNicknameTextUIConfig() : (isMine ? uiConfig.getMyNicknameTextUIConfig() : uiConfig.getOtherNicknameTextUIConfig());
-            textUIConfig.bind(tvNickname.getContext(), nickname, 0, nickname.length());
-        }
-
-        tvNickname.setText(nickname);
     }
 
     public static void drawNickname(
@@ -479,6 +463,16 @@ public class ViewUtils {
         }
     }
 
+    public static void drawQuotedMessage(
+            @NonNull BaseQuotedMessageView replyPanel,
+            @NonNull ConversationInfo channel,
+            @NonNull Message message,
+            @Nullable TextUIConfig uiConfig,
+            @NonNull MessageListUIParams params) {
+        final boolean hasParentMessage = MessageUtils.hasParentMessage(message);
+        replyPanel.setVisibility(hasParentMessage ? View.VISIBLE : View.GONE);
+        replyPanel.drawQuotedMessage(channel, message, uiConfig, params);
+    }
 
     public static void drawSentAt(@NonNull TextView tvSentAt, @Nullable BaseMessage message, @Nullable MessageUIConfig uiConfig) {
         if (message == null) {

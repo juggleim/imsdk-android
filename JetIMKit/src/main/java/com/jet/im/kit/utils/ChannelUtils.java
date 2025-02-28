@@ -172,7 +172,7 @@ public class ChannelUtils {
     }
 
     @NonNull
-    public static String makeTypingText(@NonNull Context context, @NonNull List<? extends User> typingUsers) {
+    public static String makeTypingText(@NonNull Context context, @NonNull List<? extends UserInfo> typingUsers) {
         if (typingUsers.size() == 1) {
             return String.format(context.getString(R.string.sb_text_channel_typing_indicator_single),
                     UserUtils.getDisplayName(context, typingUsers.get(0), false));

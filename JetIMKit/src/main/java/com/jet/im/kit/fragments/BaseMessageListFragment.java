@@ -58,6 +58,7 @@ import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.VideoMessage;
@@ -89,13 +90,13 @@ abstract public class BaseMessageListFragment<
     @Nullable
     private OnItemClickListener<Message> messageProfileClickListener;
     @Nullable
-    private OnItemClickListener<User> emojiReactionUserListProfileClickListener;
+    private OnItemClickListener<UserInfo> emojiReactionUserListProfileClickListener;
     @Nullable
     private OnItemLongClickListener<Message> messageLongClickListener;
     @Nullable
     private OnItemLongClickListener<Message> messageProfileLongClickListener;
     @Nullable
-    private OnItemClickListener<User> messageMentionClickListener;
+    private OnItemClickListener<UserInfo> messageMentionClickListener;
     @Nullable
     private LoadingDialogHandler loadingDialogHandler;
     @Nullable
@@ -287,7 +288,7 @@ abstract public class BaseMessageListFragment<
      * @param user     The user that the clicked item displays
      *                 since 3.9.2
      */
-    protected void onEmojiReactionUserListProfileClicked(@NonNull View view, int position, @NonNull User user) {
+    protected void onEmojiReactionUserListProfileClicked(@NonNull View view, int position, @NonNull UserInfo user) {
         if (emojiReactionUserListProfileClickListener != null) {
             emojiReactionUserListProfileClickListener.onItemClick(view, position, user);
             return;
@@ -335,7 +336,7 @@ abstract public class BaseMessageListFragment<
      * @param user     The user that the clicked item displays
      *                 since 3.5.3
      */
-    protected void onMessageMentionClicked(@NonNull View view, int position, @NonNull User user) {
+    protected void onMessageMentionClicked(@NonNull View view, int position, @NonNull UserInfo user) {
         if (messageMentionClickListener != null) {
             messageMentionClickListener.onItemClick(view, position, user);
             return;
@@ -488,7 +489,7 @@ abstract public class BaseMessageListFragment<
         }
     }
 
-    private void showUserProfile(@NonNull User sender) {
+    private void showUserProfile(@NonNull UserInfo sender) {
         final Bundle args = getArguments();
         final boolean useUserProfile = args == null || args.getBoolean(StringSet.KEY_USE_USER_PROFILE, UIKitConfig.getCommon().getEnableUsingDefaultUserProfile());
         if (getContext() == null || SendbirdUIKit.getAdapter() == null || !useUserProfile) return;
@@ -923,19 +924,8 @@ abstract public class BaseMessageListFragment<
     protected void onBeforeUpdateUserMessage(@NonNull UserMessageUpdateParams params) {
     }
 
-    /**
-     * Sends a user message.
-     *
-     * @param params Params of user message. Refer to {@link UserMessageCreateParams}.
-     *               since 1.0.4
-     */
-    protected void sendUserMessage(@NonNull UserMessageCreateParams params) {
-        final CustomParamsHandler customHandler = SendbirdUIKit.getCustomParamsHandler();
-        if (customHandler != null) {
-            customHandler.onBeforeSendUserMessage(params);
-        }
-        onBeforeSendUserMessage(params);
-        getViewModel().sendUserMessage(params);
+    protected void sendTextMessage(String content, String parentMessageId) {
+        getViewModel().sendTextMessage(content, parentMessageId);
     }
 
     /**
@@ -1120,7 +1110,7 @@ abstract public class BaseMessageListFragment<
      * @param emojiReactionUserListProfileClickListener The callback that will run.
      *                                                  since 3.9.2
      */
-    void setOnEmojiReactionUserListProfileClickListener(@Nullable OnItemClickListener<User> emojiReactionUserListProfileClickListener) {
+    void setOnEmojiReactionUserListProfileClickListener(@Nullable OnItemClickListener<UserInfo> emojiReactionUserListProfileClickListener) {
         this.emojiReactionUserListProfileClickListener = emojiReactionUserListProfileClickListener;
     }
 
@@ -1130,7 +1120,7 @@ abstract public class BaseMessageListFragment<
      * @param messageMentionClickListener The callback that will run.
      *                                    since 3.5.3
      */
-    void setOnMessageMentionClickListener(@Nullable OnItemClickListener<User> messageMentionClickListener) {
+    void setOnMessageMentionClickListener(@Nullable OnItemClickListener<UserInfo> messageMentionClickListener) {
         this.messageMentionClickListener = messageMentionClickListener;
     }
 
