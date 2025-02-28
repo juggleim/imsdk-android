@@ -10,9 +10,11 @@ import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
+import com.juggle.im.JIM;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.ImageMessage;
 import com.sendbird.android.channel.ChannelType;
 import com.sendbird.android.message.FileMessage;
@@ -30,35 +32,27 @@ import com.jet.im.kit.utils.MessageUtils;
  */
 public class PhotoViewActivity extends AppCompatActivity {
     @NonNull
-    public static Intent newIntent(@NonNull Context context, Conversation conversation, @NonNull ImageMessage imageMessage, @NonNull Message message) {
-//        return newIntent(context, conversation, imageMessage, message, SendbirdUIKit.getDefaultThemeMode().getResId());
-        return new Intent();
+    public static Intent newIntent(@NonNull Context context, @NonNull ImageMessage imageMessage, @NonNull Message message) {
+        UserInfo sender = JIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId());
+        return newIntent(context,
+                message.getClientMsgNo(),
+                message.getConversation().getConversationId(),
+                imageMessage.getUrl(),
+                imageMessage.getThumbnailUrl(),
+                message.getMessageId(),
+                imageMessage.getUrl(),
+                "image/jpeg",
+                message.getTimestamp(),
+                message.getSenderUserId(),
+                sender.getUserName(),
+                true,
+                SendbirdUIKit.getDefaultThemeMode().getResId()
+                );
     }
-
-//    @NonNull
-//    public static Intent newIntent(@NonNull Context context, Conversation conversation, @NonNull ImageMessage imageMessage, @NonNull Message message, @StyleRes int themeResId) {
-//        return newIntent(
-//                context,
-//                channelType,
-//                message.getMessageId(),
-//                message.getChannelUrl(),
-//                message.getUrl(),
-//                message.getPlainUrl(),
-//                message.getRequestId(),
-//                message.getName(),
-//                message.getType(),
-//                message.getCreatedAt(),
-//                message.getSender() == null ? "0" : message.getSender().getUserId(),
-//                message.getSender() == null ? "" : message.getSender().getNickname(),
-//                MessageUtils.isDeletableMessage(message),
-//                themeResId
-//        );
-//    }
 
     @NonNull
     private static Intent newIntent(
             @NonNull Context context,
-            @NonNull Conversation channelType,
             long messageId,
             @NonNull String channelUrl,
             @NonNull String imageUrl,

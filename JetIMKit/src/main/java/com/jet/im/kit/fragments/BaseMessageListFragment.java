@@ -22,6 +22,7 @@ import androidx.appcompat.app.AlertDialog;
 
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.PhotoViewActivity;
 import com.jet.im.kit.activities.adapter.BaseMessageListAdapter;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
@@ -223,8 +224,7 @@ abstract public class BaseMessageListFragment<
             switch (type) {
                 case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
                 case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
-                    //todo 图片
-//                    startActivity(PhotoViewActivity.newIntent(requireContext(),(ImageMessage) message.getContent(),message));
+                    startActivity(PhotoViewActivity.newIntent(requireContext(),(ImageMessage) message.getContent(),message));
                     break;
                 case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
                 case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
