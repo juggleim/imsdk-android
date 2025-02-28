@@ -56,9 +56,12 @@ import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.messages.FileMessage;
+import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.VideoMessage;
+import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
@@ -346,7 +349,7 @@ abstract public class BaseMessageListFragment<
         return (view, position, item) -> onMessageContextMenuItemClicked(message, view, position, item);
     }
 
-    private void download(@NonNull FileMessage fileMessage) {
+    private void download(@NonNull MediaMessageContent mediaMessage) {
         toastSuccess(R.string.sb_text_toast_success_start_download_file);
         TaskQueue.addTask(new JobResultTask<Boolean>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -354,8 +357,21 @@ abstract public class BaseMessageListFragment<
             @NonNull
             public Boolean call() throws Exception {
                 if (getContext() == null) return false;
-                FileDownloader.getInstance().saveFile(getContext(), fileMessage.getUrl(),
-                        fileMessage.getType(), fileMessage.getName());
+                String type = "";
+                String name = String.valueOf(System.currentTimeMillis());
+                if (mediaMessage instanceof FileMessage) {
+                    FileMessage file = (FileMessage) mediaMessage;
+                    type = file.getType();
+                    name = file.getName();
+                } else if (mediaMessage instanceof ImageMessage) {
+                    type = "image/jpeg";
+                } else if (mediaMessage instanceof VoiceMessage) {
+                    type = "audio";
+                } else if (mediaMessage instanceof VideoMessage) {
+                    type = "video/mp4";
+                }
+                FileDownloader.getInstance().saveFile(getContext(), mediaMessage.getUrl(),
+                        type, name);
                 return true;
             }
 
@@ -394,6 +410,22 @@ abstract public class BaseMessageListFragment<
                 delete -> {
                     Logger.dev("delete");
                     deleteMessage(message);
+                },
+                getString(R.string.sb_text_button_cancel),
+                cancel -> Logger.dev("cancel"));
+    }
+
+    void showRecallWarningDialog(@NonNull Message message) {
+        if (getContext() == null) return;
+        String title;
+        title = getString(R.string.sb_text_dialog_recall_message);
+        DialogUtils.showWarningDialog(
+                requireContext(),
+                title,
+                getString(R.string.sb_text_button_recall),
+                delete -> {
+                    Logger.dev("recall");
+                    recallMessage(message);
                 },
                 getString(R.string.sb_text_button_cancel),
                 cancel -> Logger.dev("cancel"));
@@ -1028,6 +1060,12 @@ abstract public class BaseMessageListFragment<
         });
     }
 
+    protected void recallMessage(@NonNull Message message) {
+        getViewModel().recallMessage(message, e -> {
+            if (e != null) toastError(R.string.sb_text_error_recall_message);
+        });
+    }
+
     /**
      * Resends a failed message.
      *
@@ -1048,7 +1086,7 @@ abstract public class BaseMessageListFragment<
      * @param message A file message to download contents.
      *                since 2.2.3
      */
-    protected void saveFileMessage(@NonNull FileMessage message) {
+    protected void saveFileMessage(@NonNull MediaMessageContent message) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
             download(message);
         } else {

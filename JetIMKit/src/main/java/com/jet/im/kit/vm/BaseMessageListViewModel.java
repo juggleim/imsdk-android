@@ -341,16 +341,41 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
                 @Override
                 public void onSuccess() {
                     if (handler != null) handler.onComplete(null);
-
                 }
 
                 @Override
                 public void onError(int errorCode) {
-                    if (handler != null)
+                    if (handler != null) {
                         handler.onComplete(new RuntimeException("errorCode:" + errorCode));
+                    }
                     Logger.i("++ deleted message : %s", message);
                 }
             });
+        } else {
+            if (handler != null) {
+                handler.onComplete(new RuntimeException("Message not sent"));
+            }
+        }
+    }
+
+    public void recallMessage(@NonNull Message message, @NonNull OnCompleteHandler handler) {
+        if (mConversationInfo == null) return;
+        final Message.MessageState status = message.getState();
+        if (status == Message.MessageState.SENT) {
+            JIM.getInstance().getMessageManager().recallMessage(message.getMessageId(), null, new IMessageManager.IRecallMessageCallback() {
+                @Override
+                public void onSuccess(Message message) {
+                    handler.onComplete(null);
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    handler.onComplete(new RuntimeException("errorCode:" + errorCode));
+                    Logger.i("++ recall message : %s", message);
+                }
+            });
+        } else {
+            handler.onComplete(new RuntimeException("Message not sent"));
         }
     }
 

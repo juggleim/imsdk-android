@@ -75,9 +75,9 @@ internal class VoiceRecorder(
             setAudioEncodingBitRate(voiceRecorderConfig.bitRate)
             setOutputFile(recordFilePath)
             setMaxDuration(maxDurationMillis)
-            SendbirdChat.appInfo?.let {
-                setMaxFileSize(it.uploadSizeLimit)
-            }
+//            SendbirdChat.appInfo?.let {
+//                setMaxFileSize(it.uploadSizeLimit)
+//            }
             setOnInfoListener { _, what, _ ->
                 if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
                     Logger.i("VoiceRecorder >> MEDIA_RECORDER_INFO_MAX_DURATION_REACHED")

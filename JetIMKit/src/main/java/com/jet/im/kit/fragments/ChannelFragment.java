@@ -57,6 +57,7 @@ import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.messages.TextMessage;
@@ -602,6 +603,8 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         DialogListItem edit = new DialogListItem(R.string.sb_text_channel_anchor_edit, R.drawable.icon_edit);
         DialogListItem save = new DialogListItem(R.string.sb_text_channel_anchor_save, R.drawable.icon_download);
         DialogListItem delete = new DialogListItem(R.string.sb_text_channel_anchor_delete, R.drawable.icon_delete, false, false);
+        DialogListItem recall = new DialogListItem(R.string.sb_text_channel_anchor_recall, R.drawable.icon_delete, false, false);
+        DialogListItem forward = new DialogListItem(R.string.sb_text_channel_anchor_forward, R.drawable.icon_thread, false, false);
         int replyStringRes = R.string.sb_text_channel_anchor_reply;
         int replyDrawableRes = R.drawable.icon_reply;
         DialogListItem reply = new DialogListItem(replyStringRes, replyDrawableRes, false, MessageUtils.hasParentMessage(message));
@@ -612,13 +615,13 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         switch (type) {
             case VIEW_TYPE_USER_MESSAGE_ME:
                 if (status == Message.MessageState.SENT) {
-                    actions = new DialogListItem[]{copy, edit, delete, reply};
+                    actions = new DialogListItem[]{copy, edit, delete, recall, forward, reply};
                 } else if (MessageUtils.isFailed(message)) {
                     actions = new DialogListItem[]{retry, deleteFailed};
                 }
                 break;
             case VIEW_TYPE_USER_MESSAGE_OTHER:
-                actions = new DialogListItem[]{copy, reply};
+                actions = new DialogListItem[]{copy, delete, forward, reply};
                 break;
             case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
             case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
@@ -626,26 +629,25 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                 if (MessageUtils.isFailed(message)) {
                     actions = new DialogListItem[]{retry, deleteFailed};
                 } else {
-                    actions = new DialogListItem[]{delete, save, reply};
+                    actions = new DialogListItem[]{save, delete, recall, forward};
                 }
                 break;
             case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
             case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
             case VIEW_TYPE_FILE_MESSAGE_OTHER:
-                actions = new DialogListItem[]{save, reply};
+                actions = new DialogListItem[]{save, delete, forward};
                 break;
             case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_ME:
             case VIEW_TYPE_VOICE_MESSAGE_ME:
                 if (MessageUtils.isFailed(message)) {
                     actions = new DialogListItem[]{retry, deleteFailed};
                 } else {
-                    actions = new DialogListItem[]{delete};
-                    actions = new DialogListItem[]{delete, reply};
+                    actions = new DialogListItem[]{delete, recall, forward};
                 }
                 break;
             case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER:
             case VIEW_TYPE_VOICE_MESSAGE_OTHER:
-                actions = new DialogListItem[]{reply};
+                actions = new DialogListItem[]{delete, forward};
                 break;
             case VIEW_TYPE_UNKNOWN_MESSAGE_ME:
                 actions = new DialogListItem[]{delete};
@@ -674,6 +676,13 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             targetMessage = message;
             inputComponent.requestInputMode(MessageInputView.Mode.EDIT);
             return true;
+        } else if (key == R.string.sb_text_channel_anchor_recall) {
+            if (MessageUtils.isFailed(message)) {
+                Logger.dev("recall");
+                recallMessage(message);
+            } else {
+                showRecallWarningDialog(message);
+            }
         } else if (key == R.string.sb_text_channel_anchor_delete) {
             if (MessageUtils.isFailed(message)) {
                 Logger.dev("delete");
@@ -683,8 +692,8 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             }
             return true;
         } else if (key == R.string.sb_text_channel_anchor_save) {
-            if (message.getContent() instanceof com.juggle.im.model.messages.FileMessage) {
-                saveFileMessage((com.juggle.im.model.messages.FileMessage) message.getContent());
+            if (message.getContent() instanceof MediaMessageContent) {
+                saveFileMessage((MediaMessageContent) message.getContent());
             }
             return true;
         } else if (key == R.string.sb_text_channel_anchor_retry) {

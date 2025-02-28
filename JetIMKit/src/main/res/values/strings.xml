@@ -29,6 +29,8 @@
     <string name="sb_text_channel_anchor_save">Save</string>
     <string name="sb_text_channel_anchor_edit">Edit</string>
     <string name="sb_text_channel_anchor_delete">Delete</string>
+    <string name="sb_text_channel_anchor_recall">Recall</string>
+    <string name="sb_text_channel_anchor_forward">Forward</string>
     <string name="sb_text_channel_anchor_reply">Reply</string>
     <string name="sb_text_channel_anchor_reply_in_thread">Reply in thread</string>
     <string name="sb_text_channel_anchor_retry">Retry</string>
@@ -79,6 +81,7 @@
     <string name="sb_text_yesterday">Yesterday</string>
     <string name="sb_text_dialog_delete_file_message">Delete this file?</string>
     <string name="sb_text_dialog_delete_message">Delete this message?</string>
+    <string name="sb_text_dialog_recall_message">Recall this message?</string>
     <string name="sb_text_dialog_delete_multiple_files_message">Do you want to delete all %d photos?</string>
     <string name="sb_text_dialog_delete_channel">Delete channel?</string>
     <string name="sb_text_dialog_delete_channel_message">Once deleted, this channel can\'t be restored.</string>
@@ -96,6 +99,7 @@
     <string name="sb_text_button_create">Create</string>
     <string name="sb_text_button_save">Save</string>
     <string name="sb_text_button_delete">Delete</string>
+    <string name="sb_text_button_recall">Recall</string>
     <string name="sb_text_button_retry">Retry</string>
     <string name="sb_text_button_selected">Selected</string>
     <string name="sb_text_button_add">Add</string>
@@ -132,6 +136,7 @@
     <string name="sb_text_error_resend_message">Couldn\&#39;t send message. Try again.</string>
     <string name="sb_text_error_update_user_message">Couldn\&#39;t edit message.</string>
     <string name="sb_text_error_delete_message">Couldn\&#39;t delete message.</string>
+    <string name="sb_text_error_recall_message">Couldn\&#39;t recall message.</string>
     <string name="sb_text_error_copy_message">Couldn\&#39;t copy message.</string>
     <string name="sb_text_error_send_message">Couldn\&#39;t send message. Try again.</string>
     <string name="sb_text_error_message_filtered">Message filtered.</string>
