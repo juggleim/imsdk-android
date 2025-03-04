@@ -247,7 +247,7 @@ public class ChannelListAdapter extends BaseAdapter<ConversationInfo, BaseViewHo
             this.binding = binding;
             this.binding.channelPreview.setUseTypingIndicator(false);
             this.binding.channelPreview.setUseMessageReceiptStatus(false);
-            this.binding.channelPreview.setUseUnreadMentionCount(false);
+            this.binding.channelPreview.setUseUnreadMentionCount(true);
         }
 
         @Override

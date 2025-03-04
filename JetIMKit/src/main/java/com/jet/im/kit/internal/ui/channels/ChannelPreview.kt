@@ -239,7 +239,7 @@ internal class ChannelPreview @JvmOverloads constructor(
         }
         if (useUnreadMentionCount) {
             tvUnreadMentionCount.text = SendbirdUIKit.getUserMentionConfig().trigger
-            tvUnreadMentionCount.visibility = if (unreadMentionCount > 0) VISIBLE else GONE
+            tvUnreadMentionCount.visibility = if (channel.mentionInfo != null) VISIBLE else GONE
         } else {
             tvUnreadMentionCount.visibility = GONE
         }
