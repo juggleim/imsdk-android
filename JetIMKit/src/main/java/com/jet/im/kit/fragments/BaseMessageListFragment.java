@@ -55,6 +55,8 @@ import com.jet.im.kit.utils.PermissionUtils;
 import com.jet.im.kit.utils.SoftInputUtils;
 import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
+import com.juggle.im.JIM;
+import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.MediaMessageContent;
@@ -230,19 +232,36 @@ abstract public class BaseMessageListFragment<
                 case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
                 case VIEW_TYPE_FILE_MESSAGE_ME:
                 case VIEW_TYPE_FILE_MESSAGE_OTHER:
-                    //todo 文件
-//                    final FileMessage fileMessage = (FileMessage) message;
-//                    FileDownloader.downloadFile(requireContext(), fileMessage, new OnResultHandler<File>() {
-//                        @Override
-//                        public void onResult(@NonNull File file) {
-//                            showFile(file, fileMessage.getType());
-//                        }
-//
-//                        @Override
-//                        public void onError(@Nullable SendbirdException e) {
-//                            toastError(R.string.sb_text_error_download_file);
-//                        }
-//                    });
+                    JIM.getInstance().getMessageManager().downloadMediaMessage(message.getMessageId(), new IMessageManager.IDownloadMediaMessageCallback() {
+                        @Override
+                        public void onProgress(int progress, Message message) {
+
+                        }
+
+                        @Override
+                        public void onSuccess(Message message) {
+                            MediaMessageContent media = (MediaMessageContent) message.getContent();
+                            File file = new File(media.getLocalPath());
+                            String mimeType = "";
+                            if (media instanceof VideoMessage) {
+                                mimeType = "video/mp4";
+                            } else if (media instanceof FileMessage) {
+                                FileMessage fileMessage = (FileMessage) media;
+                                mimeType = fileMessage.getType();
+                            }
+                            showFile(file, mimeType);
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            toastError(R.string.sb_text_error_download_file);
+                        }
+
+                        @Override
+                        public void onCancel(Message message) {
+
+                        }
+                    });
                     break;
                 case VIEW_TYPE_VOICE_MESSAGE_ME:
                 case VIEW_TYPE_VOICE_MESSAGE_OTHER:
