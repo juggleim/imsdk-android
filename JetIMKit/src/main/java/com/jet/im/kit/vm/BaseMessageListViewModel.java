@@ -1,6 +1,6 @@
 package com.jet.im.kit.vm;
 
-import android.media.MediaMetadataRetriever;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +27,7 @@ import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageOptions;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
@@ -34,8 +35,6 @@ import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.collection.Traceable;
 import com.sendbird.android.params.FileMessageCreateParams;
-import com.sendbird.android.params.UserMessageCreateParams;
-import com.sendbird.android.params.UserMessageUpdateParams;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,9 +44,11 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     @Nullable
     ConversationInfo mConversationInfo;
     @NonNull
-    protected final Conversation conversation;
+    protected final Conversation mConversation;
     @NonNull
     final MessageList cachedMessages = new MessageList();
+    @NonNull
+    final List<MessageReaction> mMessageReactions = new ArrayList<>();
     @NonNull
     final MutableLiveDataEx<ChannelViewModel.ChannelMessageData> messageList = new MutableLiveDataEx<>();
 
@@ -55,7 +56,7 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     BaseMessageListViewModel(@NonNull Conversation conversation, @NonNull SendbirdUIKitContract sendbirdUIKitContract) {
         super(sendbirdUIKitContract);
         this.mConversationInfo = null;
-        this.conversation = conversation;
+        this.mConversation = conversation;
     }
 
     /**
@@ -379,6 +380,54 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     }
 
     /**
+     * Adds the reaction with {@code key} if the current user doesn't add it, otherwise the reaction will be deleted
+     *
+     * @param view View displaying the reaction with {@code key}
+     * @param message Message to which the reaction will be applieds
+     * @param key Key of reaction
+     * @param handler Callback handler called when this method is completed
+     * since 3.0.0
+     */
+    public void toggleReaction(@NonNull View view, @NonNull Message message, @NonNull String key, @Nullable OnCompleteHandler handler) {
+        if (mConversationInfo == null) return;
+        if (!view.isSelected()) {
+            Logger.i("__ add reaction : %s", key);
+            JIM.getInstance().getMessageManager().addMessageReaction(message.getMessageId(), mConversationInfo.getConversation(), key, new IMessageManager.ISimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    if (handler != null) {
+                        handler.onComplete(null);
+                    }
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    if (handler != null) {
+                        handler.onComplete(new RuntimeException());
+                    }
+                }
+            });
+        } else {
+            Logger.i("__ delete reaction : %s", key);
+            JIM.getInstance().getMessageManager().removeMessageReaction(message.getMessageId(), mConversationInfo.getConversation(), key, new IMessageManager.ISimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    if (handler != null) {
+                        handler.onComplete(null);
+                    }
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    if (handler != null) {
+                        handler.onComplete(new RuntimeException());
+                    }
+                }
+            });
+        }
+    }
+
+    /**
      * Tries to connect Sendbird Server and retrieve a channel instance.
      *
      * @param handler Callback notifying the result of authentication
@@ -388,10 +437,10 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     public void authenticate(@NonNull AuthenticateHandler handler) {
         connect((e) -> {
             if (e == null) {
-                ConversationInfo info = getChannel(conversation);
+                ConversationInfo info = getChannel(mConversation);
                 if (info == null) {
                     info = new ConversationInfo();
-                    info.setConversation(conversation);
+                    info.setConversation(mConversation);
                 }
                 this.mConversationInfo = info;
                 if (mConversationInfo == null) {

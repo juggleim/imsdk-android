@@ -39,6 +39,7 @@ import com.jet.im.kit.internal.ui.messages.VoiceMessageView;
 import com.jet.im.kit.internal.ui.widgets.VoiceMessageInputView;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.DialogListItem;
+import com.jet.im.kit.model.EmojiManager2;
 import com.jet.im.kit.model.FileInfo;
 import com.jet.im.kit.model.ReadyStatus;
 import com.jet.im.kit.model.VoiceMessageInfo;
@@ -469,14 +470,13 @@ abstract public class BaseMessageListFragment<
             return;
         }
 
-//        MessageExtensionsKt.setEmojiCategories(message, adapter.getEmojiCategories(message));
-//        final List<Emoji> emojiList = MessageExtensionsKt.allowedEmojiList(message);
-//        int shownEmojiSize = emojiList.size();
-//        if (emojiList.size() > 6) {
-//            showMoreButton = true;
-//            shownEmojiSize = 5;
-//        }
-        List<Emoji> shownEmojiList = new ArrayList<>(); //emojiList.subList(0, shownEmojiSize);
+        final List<String> emojiList = EmojiManager2.INSTANCE.getEmojiList();
+        int shownEmojiSize = emojiList.size();
+        if (emojiList.size() > 6) {
+            showMoreButton = true;
+            shownEmojiSize = 5;
+        }
+        List<String> shownEmojiList = emojiList.subList(0, shownEmojiSize);
 
         final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(requireContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
         final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, shownEmojiList, null, showMoreButton);
@@ -503,7 +503,7 @@ abstract public class BaseMessageListFragment<
 
             emojiListView.setMoreButtonClickListener(v -> {
                 dialog.dismiss();
-//                showEmojiListDialog(message);
+                showEmojiListDialog(message);
             });
         }
     }
@@ -521,6 +521,40 @@ abstract public class BaseMessageListFragment<
         if (getView() != null) {
             SoftInputUtils.hideSoftKeyboard(getView());
         }
+    }
+
+    void showEmojiListDialog(@NonNull Message message) {
+        if (getContext() == null) {
+            return;
+        }
+
+        final BaseMessageListAdapter adapter = getModule().getMessageListComponent().getAdapter();
+        if (adapter == null) {
+            return;
+        }
+
+        final List<String> emojiList = EmojiManager2.INSTANCE.getEmojiList();
+        final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(getContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
+        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, emojiList, null, false);
+        hideKeyboard();
+        final AlertDialog dialog = DialogUtils.showContentDialog(requireContext(), emojiListView);
+
+        emojiListView.setEmojiClickListener((view, position, emojiKey) -> {
+            dialog.dismiss();
+
+            if (!view.isSelected()) {
+                // when adding emoji, check if it's allowed
+//                if (!EmojiExtensionsKt.containsEmoji(emojiList, emojiKey)) {
+//                    toastError(R.string.sb_text_error_add_reaction);
+//                    return;
+//                }
+            }
+            //todo nathan
+            getViewModel().toggleReaction(view, message, emojiKey, e -> {
+                if (e != null)
+                    toastError(view.isSelected() ? R.string.sb_text_error_delete_reaction : R.string.sb_text_error_add_reaction);
+            });
+        });
     }
 
     void sendFileMessageInternal(@NonNull FileInfo fileInfo, @NonNull FileMessageCreateParams params) {

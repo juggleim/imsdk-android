@@ -6,6 +6,7 @@ import com.jet.im.kit.databinding.SbViewAdminMessageBinding
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
 import com.sendbird.android.channel.BaseChannel
 import com.sendbird.android.message.BaseMessage
 import com.sendbird.uikit.internal.ui.messages.AdminMessageView
@@ -20,7 +21,7 @@ internal class AdminMessageViewHolder constructor(
         adminMessageView = binding.adminMessageView
     }
 
-    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, reactionList: List<MessageReactionItem>, params: MessageListUIParams) {
         adminMessageView.messageUIConfig = messageUIConfig
         adminMessageView.drawMessage(message)
     }

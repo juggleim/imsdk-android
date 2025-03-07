@@ -38,6 +38,7 @@ import com.jet.im.kit.internal.model.GlideCachedUrlLoader;
 import com.jet.im.kit.internal.ui.messages.BaseQuotedMessageView;
 import com.jet.im.kit.internal.ui.messages.OgtagView;
 import com.jet.im.kit.internal.ui.messages.VoiceMessageView;
+import com.jet.im.kit.internal.ui.reactions.EmojiReactionListView;
 import com.jet.im.kit.internal.ui.widgets.RoundCornerView;
 import com.jet.im.kit.internal.ui.widgets.VoiceProgressView;
 import com.jet.im.kit.log.Logger;
@@ -45,6 +46,7 @@ import com.jet.im.kit.model.FileInfo;
 import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.model.MessageUIConfig;
 import com.jet.im.kit.model.TextUIConfig;
+import com.jet.im.kit.model.configurations.ChannelConfig;
 import com.jet.im.kit.vm.PendingMessageRepository;
 import com.juggle.im.JIM;
 import com.juggle.im.model.ConversationInfo;
@@ -54,6 +56,7 @@ import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
+import com.sendbird.android.channel.BaseChannel;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FileMessage;
@@ -204,6 +207,15 @@ public class ViewUtils {
                 Logger.e(e);
             }
         });
+    }
+
+    public static void drawReactionEnabled(@NonNull EmojiReactionListView view) {
+        boolean canSendReaction = true;
+        view.setClickable(canSendReaction);
+        if (view.useMoreButton() != canSendReaction) {
+            view.setUseMoreButton(canSendReaction);
+            view.refresh();
+        }
     }
 
     public static void drawNickname(

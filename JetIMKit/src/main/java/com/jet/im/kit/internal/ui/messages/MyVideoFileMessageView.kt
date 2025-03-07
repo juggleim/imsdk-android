@@ -15,6 +15,7 @@ import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
 import com.juggle.im.model.messages.VideoMessage
 import com.sendbird.android.channel.GroupChannel
 import com.sendbird.android.message.BaseMessage
@@ -43,8 +44,13 @@ internal class MyVideoFileMessageView @JvmOverloads constructor(
             val messageBackground =
                 a.getResourceId(R.styleable.MessageView_File_sb_message_me_background, R.drawable.sb_shape_chat_bubble)
             val messageBackgroundTint = a.getColorStateList(R.styleable.MessageView_File_sb_message_me_background_tint)
+            val emojiReactionListBackground = a.getResourceId(
+                R.styleable.MessageView_File_sb_message_emoji_reaction_list_background,
+                R.drawable.sb_shape_chat_bubble_reactions_light
+            )
             binding.contentPanel.background =
                 DrawableUtils.setTintList(context, messageBackground, messageBackgroundTint)
+            binding.emojiReactionListBackground.setBackgroundResource(emojiReactionListBackground)
             val bg =
                 if (SendbirdUIKit.isDarkMode()) R.drawable.sb_shape_image_message_background_dark else R.drawable.sb_shape_image_message_background
             binding.ivThumbnail.setBackgroundResource(bg)
@@ -56,10 +62,15 @@ internal class MyVideoFileMessageView @JvmOverloads constructor(
     override fun drawMessage(
         channel: ConversationInfo,
         message: Message,
+        reactionItemList: List<MessageReactionItem>,
         params: MessageListUIParams
     ) {
         val isSent = message.state == Message.MessageState.SENT
+        val enableReactions = reactionItemList.isNotEmpty()
         val messageGroupType = params.messageGroupType
+
+        binding.emojiReactionListBackground.visibility = if (enableReactions) VISIBLE else GONE
+        binding.rvEmojiReactionList.visibility = if (enableReactions) VISIBLE else GONE
         binding.tvSentAt.visibility =
             if (isSent && (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_SINGLE)) VISIBLE else GONE
         binding.tvSentAt.text = DateUtils.formatTime(context, message.timestamp)
@@ -67,8 +78,10 @@ internal class MyVideoFileMessageView @JvmOverloads constructor(
         messageUIConfig?.let {
             it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
             it.myMessageBackground?.let { bg -> binding.contentPanel.background = bg }
+            it.myReactionListBackground?.let { bg -> binding.emojiReactionListBackground.background = bg }
         }
         ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
+        ViewUtils.drawReactionEnabled(binding.rvEmojiReactionList)
 
         ViewUtils.drawThumbnail(binding.ivThumbnail, (message.content as VideoMessage), message)
         ViewUtils.drawThumbnailIcon(binding.ivThumbnailIcon, StringSet.video)

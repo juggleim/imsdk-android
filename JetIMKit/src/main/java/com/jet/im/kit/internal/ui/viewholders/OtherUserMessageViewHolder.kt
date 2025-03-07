@@ -15,6 +15,7 @@ import com.jet.im.kit.internal.interfaces.OnFeedbackRatingClickListener
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
 import com.juggle.im.model.UserInfo
 
 internal class OtherUserMessageViewHolder internal constructor(
@@ -22,13 +23,13 @@ internal class OtherUserMessageViewHolder internal constructor(
     messageListUIParams: MessageListUIParams
 ) : GroupChannelMessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, reactionList: List<MessageReactionItem>, params: MessageListUIParams) {
         binding.otherMessageView.messageUIConfig = messageUIConfig
-        binding.otherMessageView.drawMessage(channel, message, params)
+        binding.otherMessageView.drawMessage(channel, message, reactionList, params)
     }
 
     override fun setEmojiReaction(
-        reactionList: List<Reaction>,
+        reactionList: List<MessageReactionItem>,
         emojiReactionClickListener: OnItemClickListener<String>?,
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?

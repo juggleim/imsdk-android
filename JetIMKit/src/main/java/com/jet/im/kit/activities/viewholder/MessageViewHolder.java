@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageReactionItem;
 import com.sendbird.android.channel.BaseChannel;
 import com.sendbird.android.message.BaseMessage;
 import com.jet.im.kit.consts.MessageGroupType;
@@ -18,6 +19,7 @@ import com.jet.im.kit.utils.MessageUtils;
 
 import org.jetbrains.annotations.TestOnly;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,7 +51,9 @@ public abstract class MessageViewHolder extends RecyclerView.ViewHolder {
     public void onBindViewHolder(@NonNull ConversationInfo channel,
                                  @Nullable Message prevMessage,
                                  @NonNull Message message,
-                                 @Nullable Message nextMessage) {
+                                 @Nullable Message nextMessage,
+                                 @NonNull List<MessageReactionItem> reactionItemList
+                                 ) {
         if (prevMessage != null) {
             this.isNewDate = !DateUtils.hasSameDate(message.getTimestamp(), prevMessage.getTimestamp());
         } else {
@@ -63,7 +67,7 @@ public abstract class MessageViewHolder extends RecyclerView.ViewHolder {
         final MessageListUIParams params = new MessageListUIParams.Builder(messageListUIParams)
             .setMessageGroupType(messageGroupType)
             .build();
-        bind(channel, message, params);
+        bind(channel, message, reactionItemList, params);
 
         // for backward compatibility.
         // This function was deprecated, but it was called again for the backword compatibility.
@@ -132,7 +136,7 @@ public abstract class MessageViewHolder extends RecyclerView.ViewHolder {
      * @param params  Params used for as item view.
      * since 3.3.0
      */
-    public void bind(@NonNull ConversationInfo channel, @NonNull Message message, @NonNull MessageListUIParams params) {}
+    public void bind(@NonNull ConversationInfo channel, @NonNull Message message, @NonNull List<MessageReactionItem> reactionItemList, @NonNull MessageListUIParams params) {}
 
     /**
      * Returns a Map containing views to register a click event with an identifier.

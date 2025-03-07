@@ -27,7 +27,7 @@ internal class EmojiListView private constructor(context: Context) : FrameLayout
         @JvmStatic
         fun create(
             context: Context,
-            emojiList: List<Emoji>,
+            emojiList: List<String>,
             reactionList: List<Reaction>? = null,
             showMoreButton: Boolean = false
         ): EmojiListView {

@@ -1,8 +1,13 @@
 package com.juggle.im.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
 import java.util.Map;
 
-public class UserInfo {
+public class UserInfo implements Parcelable {
 
     public String getUserId() {
         return mUserId;
@@ -41,4 +46,38 @@ public class UserInfo {
     private String mPortrait;
 
     private Map<String, String> mExtra;
+
+    public UserInfo() {
+
+    }
+
+    protected UserInfo(Parcel in) {
+        mUserId = in.readString();
+        mUserName = in.readString();
+        mPortrait = in.readString();
+    }
+
+    public static final Creator<UserInfo> CREATOR = new Creator<UserInfo>() {
+        @Override
+        public UserInfo createFromParcel(Parcel source) {
+            return new UserInfo(source);
+        }
+
+        @Override
+        public UserInfo[] newArray(int size) {
+            return new UserInfo[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(mUserId);
+        dest.writeString(mUserName);
+        dest.writeString(mPortrait);
+    }
 }

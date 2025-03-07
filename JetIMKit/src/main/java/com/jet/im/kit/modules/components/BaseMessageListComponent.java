@@ -37,6 +37,7 @@ import com.jet.im.kit.model.configurations.ChannelConfig;
 import com.jet.im.kit.model.configurations.UIKitConfig;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.UserInfo;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FeedbackRating;
@@ -418,11 +419,11 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
      * @param callback    Callback when the message list is updated
      *                    since 3.0.0
      */
-    public void notifyDataSetChanged(@NonNull List<Message> messageList, @NonNull ConversationInfo channel, @Nullable OnMessageListUpdateHandler callback) {
+    public void notifyDataSetChanged(@NonNull List<Message> messageList, @NonNull ConversationInfo channel, @NonNull List<MessageReaction> reactionList, @Nullable OnMessageListUpdateHandler callback) {
         if (messageRecyclerView == null) return;
         final LA adapter = this.adapter;
         if (adapter != null) {
-            adapter.setItems(channel, messageList, callback);
+            adapter.setItems(channel, messageList, reactionList, callback);
         }
     }
 

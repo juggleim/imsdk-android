@@ -60,6 +60,7 @@ import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.VoiceMessage;
@@ -291,11 +292,12 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                 shouldDismissLoadingDialog();
             }
             final List<Message> messageList = receivedMessageData.getMessages();
+            final List<MessageReaction> reactionList = receivedMessageData.getReactions();
             Logger.d("++ result messageList size : %s, source = %s", messageList.size(), receivedMessageData.getTraceName());
 
             final String eventSource = receivedMessageData.getTraceName();
             // The callback coming from setItems is worked asynchronously. So `isInitCallFinished` flag has to mark in advance.
-            messageListComponent.notifyDataSetChanged(messageList, channel, messages -> {
+            messageListComponent.notifyDataSetChanged(messageList, channel, reactionList, messages -> {
                 if (!isFragmentAlive()) return;
 
                 if (eventSource != null) {

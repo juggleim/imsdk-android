@@ -15,11 +15,17 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.recyclerview.widget.DiffUtil;
 
+import com.jet.im.kit.interfaces.EmojiReactionHandler;
+import com.jet.im.kit.interfaces.OnEmojiReactionClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionLongClickListener;
+import com.jet.im.kit.model.EmojiManager2;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.UserInfo;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.message.BaseMessage;
+import com.sendbird.android.message.Reaction;
 import com.sendbird.android.user.User;
 import com.jet.im.kit.R;
 import com.jet.im.kit.activities.viewholder.MessageType;
@@ -50,8 +56,16 @@ import java.util.concurrent.Executors;
 abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message, MessageViewHolder> {
     @NonNull
     private List<Message> messageList = new ArrayList<>();
+    @NonNull
+    private List<MessageReaction> mMessageReactionList = new ArrayList<>();
     @Nullable
     private ConversationInfo channel;
+    @Nullable
+    private OnEmojiReactionClickListener emojiReactionClickListener;
+    @Nullable
+    private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
+    @Nullable
+    private OnItemClickListener<Message> emojiReactionMoreButtonClickListener;
     @Nullable
     private OnIdentifiableItemClickListener<Message> listItemClickListener;
     @Nullable
@@ -221,6 +235,52 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
         if (position > 0) {
             next = getItem(position - 1);
         }
+
+        MessageReaction reaction = null;
+        if (holder instanceof EmojiReactionHandler) {
+            EmojiReactionHandler emojiReactionHandler = (EmojiReactionHandler) holder;
+
+            for (MessageReaction r : mMessageReactionList) {
+                if (r.getMessageId().equals(current.getMessageId())) {
+                    reaction = r;
+                    break;
+                }
+            }
+
+            if (reaction != null) {
+                emojiReactionHandler.setEmojiReaction(reaction.getItemList(), EmojiManager2.INSTANCE.getEmojiList(), (view, reactionPosition, reactionKey) -> {
+                    int messagePosition = holder.getBindingAdapterPosition();
+                    if (messagePosition != NO_POSITION && emojiReactionClickListener != null) {
+                        emojiReactionClickListener.onEmojiReactionClick(
+                                view,
+                                reactionPosition,
+                                getItem(messagePosition),
+                                reactionKey
+                        );
+                    }
+                }, (view, reactionPosition, reactionKey) -> {
+                    int messagePosition = holder.getBindingAdapterPosition();
+                    if (messagePosition != NO_POSITION && emojiReactionLongClickListener != null) {
+                        emojiReactionLongClickListener.onEmojiReactionLongClick(
+                                view,
+                                reactionPosition,
+                                getItem(messagePosition),
+                                reactionKey
+                        );
+                    }
+                }, v -> {
+                    int messagePosition = holder.getBindingAdapterPosition();
+                    if (messagePosition != NO_POSITION && emojiReactionMoreButtonClickListener != null) {
+                        emojiReactionMoreButtonClickListener.onItemClick(
+                                v,
+                                messagePosition,
+                                getItem(messagePosition)
+                        );
+                    }
+                });
+            }
+        }
+
         if (holder instanceof MyUserMessageViewHolder) {
             MyUserMessageViewHolder myUserMessageViewHolder = (MyUserMessageViewHolder) holder;
             myUserMessageViewHolder.setOnMentionClickListener((view, pos, mentionedUser) -> {
@@ -248,7 +308,11 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
         }
 
         if (channel != null) {
-            holder.onBindViewHolder(channel, prev, current, next);
+            if (reaction != null) {
+                holder.onBindViewHolder(channel, prev, current, next, reaction.getItemList());
+            } else {
+                holder.onBindViewHolder(channel, prev, current, next, new ArrayList<>());
+            }
         }
     }
 
@@ -303,13 +367,14 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
      * @param messageList list to be displayed
      *                    since 2.2.0
      */
-    public void setItems(@NonNull final ConversationInfo channel, @NonNull final List<Message> messageList, @Nullable OnMessageListUpdateHandler callback) {
-        notifyMessageListChanged(channel, messageList, callback);
+    public void setItems(@NonNull final ConversationInfo channel, @NonNull final List<Message> messageList, @NonNull List<MessageReaction> reactionList, @Nullable OnMessageListUpdateHandler callback) {
+        notifyMessageListChanged(channel, messageList, reactionList, callback);
     }
 
-    private void notifyMessageListChanged(@NonNull ConversationInfo channel, @NonNull List<Message> messageList, @Nullable OnMessageListUpdateHandler callback) {
+    private void notifyMessageListChanged(@NonNull ConversationInfo channel, @NonNull List<Message> messageList, @NonNull List<MessageReaction> reactionList, @Nullable OnMessageListUpdateHandler callback) {
         BaseMessageListAdapter.this.messageList = messageList;
         BaseMessageListAdapter.this.channel = channel;
+        BaseMessageListAdapter.this.mMessageReactionList = reactionList;
         //todo diff
         notifyDataSetChanged();
         if (callback != null) {

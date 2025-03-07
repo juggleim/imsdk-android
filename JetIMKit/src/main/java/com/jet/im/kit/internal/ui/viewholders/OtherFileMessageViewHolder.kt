@@ -13,19 +13,20 @@ import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
 
 internal class OtherFileMessageViewHolder internal constructor(
     val binding: SbViewOtherFileMessageBinding,
     messageListUIParams: MessageListUIParams
 ) : GroupChannelMessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams){
+    override fun bind(channel: ConversationInfo, message: Message, reactionList: List<MessageReactionItem>, params: MessageListUIParams){
         binding.otherFileMessageView.messageUIConfig = messageUIConfig
-        binding.otherFileMessageView.drawMessage(channel, message, params)
+        binding.otherFileMessageView.drawMessage(channel, message, reactionList, params)
     }
 
     override fun setEmojiReaction(
-        reactionList: List<Reaction>,
+        reactionList: List<MessageReactionItem>,
         emojiReactionClickListener: OnItemClickListener<String>?,
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?

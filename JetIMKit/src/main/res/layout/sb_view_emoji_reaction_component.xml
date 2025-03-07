@@ -11,13 +11,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
+    <TextView
         android:id="@+id/ivEmoji"
         android:layout_width="@dimen/sb_size_20"
         android:layout_height="@dimen/sb_size_20"
-        android:src="@drawable/icon_question"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/sb_emoji_default_description"
+        android:textAppearance="@style/SendbirdSubtitle1Primary300"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

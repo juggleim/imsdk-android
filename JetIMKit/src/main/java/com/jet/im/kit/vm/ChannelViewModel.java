@@ -40,12 +40,12 @@ import com.sendbird.android.message.Feedback;
 import com.sendbird.android.message.FeedbackRating;
 import com.sendbird.android.params.MessageListParams;
 import com.sendbird.android.params.common.MessagePayloadFilter;
-import com.sendbird.android.user.User;
 
 import org.jetbrains.annotations.TestOnly;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.CountDownLatch;
@@ -99,10 +99,12 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     public static class ChannelMessageData {
         final List<Message> messages;
         final String traceName;
+        final List<MessageReaction> reactions;
 
-        ChannelMessageData(@Nullable String traceName, @NonNull List<Message> messages) {
+        ChannelMessageData(@Nullable String traceName, @NonNull List<Message> messages, @NonNull List<MessageReaction> reactions) {
             this.traceName = traceName;
             this.messages = messages;
+            this.reactions = reactions;
         }
 
         /**
@@ -125,6 +127,11 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         @Nullable
         public String getTraceName() {
             return traceName;
+        }
+
+        @NonNull
+        public List<MessageReaction> getReactions() {
+            return reactions;
         }
     }
 
@@ -429,7 +436,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             statusFrame.setValue(StatusFrameView.Status.NONE);
         }
 
-        messageList.setValue(new ChannelMessageData(traceName, finalMessageList));
+        messageList.setValue(new ChannelMessageData(traceName, finalMessageList, mMessageReactions));
     }
 
 
@@ -488,6 +495,41 @@ public class ChannelViewModel extends BaseMessageListViewModel {
 
             @Override
             public void onError(int errorCode) {
+            }
+        });
+    }
+
+    private void getMessageReaction(List<Message> messageList) {
+        if (messageList == null || messageList.isEmpty()) {
+            return;
+        }
+        List<String> messageIdList = new ArrayList<>();
+        for (Message message : messageList) {
+            messageIdList.add(message.getMessageId());
+        }
+        JIM.getInstance().getMessageManager().getMessagesReaction(messageIdList, mConversation, new IMessageManager.IMessageReactionListCallback() {
+            @Override
+            public void onSuccess(List<MessageReaction> reactionList) {
+                for (MessageReaction newReaction : reactionList) {
+                    if (newReaction == null || newReaction.getItemList().isEmpty()) {
+                        continue;
+                    }
+                    Iterator<MessageReaction> iterator = mMessageReactions.iterator();
+                    while (iterator.hasNext()) {
+                        MessageReaction oldReaction = iterator.next();
+                        if (oldReaction.getMessageId().equals(newReaction.getMessageId())) {
+                            iterator.remove();
+                            break;
+                        }
+                    }
+                    mMessageReactions.add(newReaction);
+                }
+                notifyDataSetChanged(StringSet.ACTION_GET_REACTIONS);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+
             }
         });
     }
@@ -556,7 +598,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         GetMessageOptions options = new GetMessageOptions();
         options.setStartTime(startingPoint);
         options.setCount(20);
-        JIM.getInstance().getMessageManager().getMessages(conversation, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
+        JIM.getInstance().getMessageManager().getMessages(mConversation, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
             @Override
             public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
                 cachedMessages.clear();
@@ -564,6 +606,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                 notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
                 messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
                 sendReceipt(messages);
+                getMessageReaction(messages);
             }
         });
 
@@ -597,7 +640,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         GetMessageOptions options = new GetMessageOptions();
         options.setStartTime(startingPoint);
         options.setCount(20);
-        JIM.getInstance().getMessageManager().getMessages(conversation, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
+        JIM.getInstance().getMessageManager().getMessages(mConversation, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
             @Override
             public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
                 hasPrevious = hasMore;
@@ -606,6 +649,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                 notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
                 lock.countDown();
                 sendReceipt(messages);
+                getMessageReaction(messages);
             }
         });
 
@@ -641,7 +685,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         GetMessageOptions options = new GetMessageOptions();
         options.setStartTime(startingPoint);
         options.setCount(20);
-        JIM.getInstance().getMessageManager().getMessages(conversation, JIMConst.PullDirection.NEWER, options, new IMessageManager.IGetMessagesCallbackV3() {
+        JIM.getInstance().getMessageManager().getMessages(mConversation, JIMConst.PullDirection.NEWER, options, new IMessageManager.IGetMessagesCallbackV3() {
             @Override
             public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
                 hasNext = hasMore;
@@ -650,6 +694,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                 notifyDataSetChanged(StringSet.ACTION_NEXT);
                 lock.countDown();
                 sendReceipt(messages);
+                getMessageReaction(messages);
             }
         });
         

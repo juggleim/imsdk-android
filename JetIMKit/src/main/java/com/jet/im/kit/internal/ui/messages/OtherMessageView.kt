@@ -14,6 +14,7 @@ import com.jet.im.kit.utils.MessageUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
 import com.sendbird.android.channel.BaseChannel
 import com.sendbird.android.message.BaseMessage
 import com.sendbird.android.message.SendingStatus
@@ -56,7 +57,7 @@ internal class OtherMessageView @JvmOverloads internal constructor(
         }
     }
 
-    fun drawMessage(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
+    fun drawMessage(channel: ConversationInfo, message: Message, reactionItemList: List<MessageReactionItem>, params: MessageListUIParams) {
         val messageGroupType = params.messageGroupType
         val isSent = message.state == Message.MessageState.SENT
         val showProfile =

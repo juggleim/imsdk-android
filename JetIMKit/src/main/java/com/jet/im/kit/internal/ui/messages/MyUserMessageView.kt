@@ -22,6 +22,7 @@ import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
 import com.juggle.im.model.UserInfo
 
 internal class MyUserMessageView @JvmOverloads internal constructor(
@@ -55,6 +56,10 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
             val messageBackground =
                 a.getResourceId(R.styleable.MessageView_User_sb_message_me_background, R.drawable.sb_shape_chat_bubble)
             val messageBackgroundTint = a.getColorStateList(R.styleable.MessageView_User_sb_message_me_background_tint)
+            val emojiReactionListBackground = a.getResourceId(
+                R.styleable.MessageView_User_sb_message_emoji_reaction_list_background,
+                R.drawable.sb_shape_chat_bubble_reactions_light
+            )
             val ogtagBackground = a.getResourceId(
                 R.styleable.MessageView_User_sb_message_me_ogtag_background,
                 R.drawable.sb_message_og_background
@@ -88,6 +93,7 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
             binding.tvMessage.setLinkTextColor(linkTextColor)
             binding.contentPanel.background =
                 DrawableUtils.setTintList(context, messageBackground, messageBackgroundTint)
+            binding.emojiReactionListBackground.setBackgroundResource(emojiReactionListBackground)
             binding.ogtagBackground.background =
                 DrawableUtils.setTintList(context, ogtagBackground, ogtagBackgroundTint)
             binding.ovOgtag.background =
@@ -109,12 +115,17 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
     override fun drawMessage(
         channel: ConversationInfo,
         message: Message,
+        reactionItemList: List<MessageReactionItem>,
         params: MessageListUIParams
     ) {
         val messageGroupType = params.messageGroupType
         val isSent = message.state == Message.MessageState.SENT
         val enableOgTag = false
         val enableMention = params.channelConfig.enableMention
+        val enableReactions = reactionItemList.isNotEmpty()
+
+        binding.emojiReactionListBackground.visibility = if (enableReactions) VISIBLE else GONE
+        binding.rvEmojiReactionList.visibility = if (enableReactions) VISIBLE else GONE
         binding.ogtagBackground.visibility = if (enableOgTag) VISIBLE else GONE
         binding.ovOgtag.visibility = if (enableOgTag) VISIBLE else GONE
         binding.tvSentAt.visibility =
@@ -127,6 +138,9 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
             it.myMentionUIConfig.mergeFromTextAppearance(context, mentionAppearance)
             it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
             it.myMessageBackground?.let { background -> binding.contentPanel.background = background }
+            it.myReactionListBackground?.let { reactionBackground ->
+                binding.emojiReactionListBackground.background = reactionBackground
+            }
             it.myOgtagBackground?.let { ogtagBackground ->
                 binding.ogtagBackground.background = ogtagBackground
                 binding.ovOgtag.background = ogtagBackground
@@ -143,6 +157,7 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
         ) { view, position, user ->
             mentionClickListener?.onItemClick(view, position, user)
         }
+        ViewUtils.drawReactionEnabled(binding.rvEmojiReactionList)
         ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
 
         val paddingTop =

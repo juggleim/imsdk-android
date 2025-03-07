@@ -26,12 +26,12 @@ import java.util.Map;
  *
  * since 1.1.0
  */
-public class EmojiListAdapter extends BaseAdapter<Emoji, BaseViewHolder<Emoji>> {
+public class EmojiListAdapter extends BaseAdapter<String, BaseViewHolder<String>> {
     private static final int VIEW_EMOJI = 0;
     private static final int VIEW_EMOJI_MORE = 1;
 
     @NonNull
-    private final List<Emoji> emojiList;
+    private final List<String> emojiList;
     @NonNull
     private final Map<String, List<String>> reactionUserMap = new HashMap<>();
     @Nullable
@@ -49,7 +49,7 @@ public class EmojiListAdapter extends BaseAdapter<Emoji, BaseViewHolder<Emoji>> 
      *                       <code>false</code> otherwise.
      * since 1.1.0
      */
-    public EmojiListAdapter(@NonNull List<Emoji> emojiList,
+    public EmojiListAdapter(@NonNull List<String> emojiList,
                             @Nullable List<Reaction> reactionList,
                             boolean showMoreButton) {
         this.emojiList = emojiList;
@@ -76,7 +76,7 @@ public class EmojiListAdapter extends BaseAdapter<Emoji, BaseViewHolder<Emoji>> 
      */
     @NonNull
     @Override
-    public BaseViewHolder<Emoji> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public BaseViewHolder<String> onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         if (viewType == VIEW_EMOJI_MORE) {
             return new EmojiMoreViewHolder(new EmojiView(parent.getContext()));
@@ -96,8 +96,8 @@ public class EmojiListAdapter extends BaseAdapter<Emoji, BaseViewHolder<Emoji>> 
      * since 1.1.0
      */
     @Override
-    public void onBindViewHolder(@NonNull BaseViewHolder<Emoji> holder, int position) {
-        Emoji current = getItem(position);
+    public void onBindViewHolder(@NonNull BaseViewHolder<String> holder, int position) {
+        String current = getItem(position);
         int type = getItemViewType(position);
 
         if (type == VIEW_EMOJI_MORE) {
@@ -108,16 +108,16 @@ public class EmojiListAdapter extends BaseAdapter<Emoji, BaseViewHolder<Emoji>> 
             });
         } else {
             if (!reactionUserMap.isEmpty() && current != null) {
-                List<String> userIds = reactionUserMap.get(current.getKey());
+                List<String> userIds = reactionUserMap.get(current);
                 holder.itemView.setSelected(userIds != null && SendbirdChat.getCurrentUser() != null && userIds.contains(SendbirdChat.getCurrentUser().getUserId()));
             }
 
             holder.itemView.setOnClickListener(v -> {
-                Emoji emoji = getItem(holder.getBindingAdapterPosition());
+                String emoji = getItem(holder.getBindingAdapterPosition());
                 if (emojiClickListener != null && emoji != null) {
                     emojiClickListener.onItemClick(v,
                         holder.getBindingAdapterPosition(),
-                        emoji.getKey());
+                        emoji);
                 }
             });
         }
@@ -150,7 +150,7 @@ public class EmojiListAdapter extends BaseAdapter<Emoji, BaseViewHolder<Emoji>> 
      */
     @Override
     @Nullable
-    public Emoji getItem(int position) {
+    public String getItem(int position) {
         if (position >= emojiList.size()) {
             return null;
         }
@@ -165,7 +165,7 @@ public class EmojiListAdapter extends BaseAdapter<Emoji, BaseViewHolder<Emoji>> 
      */
     @Override
     @NonNull
-    public List<Emoji> getItems() {
+    public List<String> getItems() {
         return emojiList;
     }
 

@@ -16,6 +16,7 @@ import com.jet.im.kit.model.MessageListUIParams
 import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
+import com.juggle.im.model.MessageReactionItem
 
 internal class MyMessageView @JvmOverloads internal constructor(
     context: Context,
@@ -44,15 +45,21 @@ internal class MyMessageView @JvmOverloads internal constructor(
                 )
             val messageBackgroundTint =
                 a.getColorStateList(R.styleable.MessageView_sb_message_me_background_tint)
+            val emojiReactionListBackground = a.getResourceId(
+                R.styleable.MessageView_sb_message_emoji_reaction_list_background,
+                R.drawable.sb_shape_chat_bubble_reactions_light
+            )
             binding.contentPanel.background =
                 DrawableUtils.setTintList(context, messageBackground, messageBackgroundTint)
+            binding.emojiReactionListBackground.setBackgroundResource(emojiReactionListBackground)
         } finally {
             a.recycle()
         }
     }
 
-    fun drawMessage(channel: BaseChannel, message: BaseMessage, params: MessageListUIParams) {
+    fun drawMessage(channel: BaseChannel, message: BaseMessage, reactionItemList: List<MessageReactionItem>, params: MessageListUIParams) {
         val isSent = message.sendingStatus == SendingStatus.SUCCEEDED
+        val enableReactions = message.reactions.isNotEmpty()
         val messageGroupType = params.messageGroupType
         binding.tvSentAt.visibility =
             if (isSent && (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_SINGLE)) VISIBLE else GONE

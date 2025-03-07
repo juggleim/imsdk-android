@@ -14,6 +14,8 @@ import com.jet.im.kit.internal.extensions.toComponentListContextThemeWrapper
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
+import com.sendbird.android.message.Emoji
 import com.sendbird.android.message.Reaction
 
 /**
@@ -39,8 +41,8 @@ open class OtherMessageViewHolder(
     }
 
     @CallSuper
-    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
-        binding.root.drawMessage(channel, message, params)
+    override fun bind(channel: ConversationInfo, message: Message, reactionList: List<MessageReactionItem>, params: MessageListUIParams) {
+        binding.root.drawMessage(channel, message, reactionList, params)
     }
 
     @CallSuper
@@ -59,11 +61,38 @@ open class OtherMessageViewHolder(
      * @param moreButtonClickListener The callback to be invoked when the emoji reaction more button is clicked and held.
      * @since 3.12.0
      */
-    final override fun setEmojiReaction(
-        reactionList: List<Reaction>,
+    fun setEmojiReaction(
+        reactionList: List<MessageReactionItem>,
         emojiReactionClickListener: OnItemClickListener<String>?,
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
+        binding.root.binding.rvEmojiReactionList.apply {
+            setReactionList(reactionList)
+            setClickListeners(emojiReactionClickListener, emojiReactionLongClickListener, moreButtonClickListener)
+        }
+    }
+
+    /**
+     * Sets message reaction data.
+     *
+     * @param reactionList List of reactions which the message has.
+     * @param totalEmojiList The total list of emojis allowed for this message. This value is used to compare whether `add` button should be displayed from the reactions view. Defaults to [EmojiManager.allEmojis].
+     * @param emojiReactionClickListener The callback to be invoked when the emoji reaction is clicked and held.
+     * @param emojiReactionLongClickListener The callback to be invoked when the emoji reaction is long clicked and held.
+     * @param moreButtonClickListener The callback to be invoked when the emoji reaction more button is clicked and held.
+     * @since 3.20.0
+     */
+    final override fun setEmojiReaction(
+        reactionList: List<MessageReactionItem>,
+        totalEmojiList: List<String>,
+        emojiReactionClickListener: OnItemClickListener<String>?,
+        emojiReactionLongClickListener: OnItemLongClickListener<String>?,
+        moreButtonClickListener: View.OnClickListener?
+    ) {
+        binding.root.binding.rvEmojiReactionList.apply {
+            setReactionList(reactionList, totalEmojiList)
+            setClickListeners(emojiReactionClickListener, emojiReactionLongClickListener, moreButtonClickListener)
+        }
     }
 }

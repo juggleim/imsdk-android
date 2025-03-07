@@ -7,6 +7,7 @@ import com.sendbird.android.message.BaseMessage
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
 
 internal abstract class GroupChannelMessageView @JvmOverloads constructor(
     context: Context,
@@ -17,6 +18,7 @@ internal abstract class GroupChannelMessageView @JvmOverloads constructor(
     abstract fun drawMessage(
         channel: ConversationInfo,
         message: Message,
+        reactionItemList: List<MessageReactionItem>,
         params: MessageListUIParams
     )
 }
