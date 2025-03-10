@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -373,14 +374,28 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
     }
 
     private void notifyMessageListChanged(@NonNull ConversationInfo channel, @NonNull List<Message> messageList, @NonNull List<MessageReaction> reactionList, @Nullable OnMessageListUpdateHandler callback) {
-        BaseMessageListAdapter.this.messageList = messageList;
-        BaseMessageListAdapter.this.channel = channel;
-        BaseMessageListAdapter.this.mMessageReactionList = reactionList;
-        //todo diff
-        notifyDataSetChanged();
-        if (callback != null) {
-            callback.onListUpdated(messageList);
-        }
+        final List<Message> copiedMessages = Collections.unmodifiableList(messageList);
+        final List<MessageReaction> copiedReactions = Collections.unmodifiableList(reactionList);
+        differWorker.submit(() -> {
+            final CountDownLatch lock = new CountDownLatch(1);
+            final MessageDiffCallback diffCallback = new MessageDiffCallback(BaseMessageListAdapter.this.messageList, messageList, BaseMessageListAdapter.this.mMessageReactionList, reactionList);
+            final DiffUtil.DiffResult diffResult = calculateDiff(diffCallback);
+
+            sendbirdUIKit.runOnUIThread(() -> {
+                try {
+                    BaseMessageListAdapter.this.messageList = copiedMessages;
+                    BaseMessageListAdapter.this.mMessageReactionList = copiedReactions;
+                    diffResult.dispatchUpdatesTo(BaseMessageListAdapter.this);
+                    if (callback != null) {
+                        callback.onListUpdated(messageList);
+                    }
+                } finally {
+                    lock.countDown();
+                }
+            });
+            lock.await();
+            return true;
+        });
     }
 
     /**
