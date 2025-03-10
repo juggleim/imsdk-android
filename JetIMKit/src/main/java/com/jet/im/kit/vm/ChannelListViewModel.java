@@ -337,6 +337,8 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         }
         if (oldList == null) {
             oldList = new ArrayList<>();
+        } else {
+            oldList = new ArrayList<>(oldList);
         }
         ConversationInfo toBeRemove;
         for (ConversationInfo newInfo : newList) {

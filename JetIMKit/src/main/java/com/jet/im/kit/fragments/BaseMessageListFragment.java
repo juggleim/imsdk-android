@@ -480,7 +480,11 @@ abstract public class BaseMessageListFragment<
         List<String> shownEmojiList = emojiList.subList(0, shownEmojiSize);
 
         final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(requireContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
-        List<MessageReactionItem> reactionItemList = getViewModel().getReactionByMessageId(message.getMessageId()).getItemList();
+        MessageReaction messageReaction = getViewModel().getReactionByMessageId(message.getMessageId());
+        List<MessageReactionItem> reactionItemList = null;
+        if (messageReaction != null) {
+            reactionItemList = messageReaction.getItemList();
+        }
         final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, shownEmojiList, reactionItemList, showMoreButton);
         hideKeyboard();
         if (actions.length > 0 || shownEmojiList.size() > 0) {
@@ -562,7 +566,11 @@ abstract public class BaseMessageListFragment<
 
         final List<String> emojiList = EmojiManager2.INSTANCE.getEmojiList();
         final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(getContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
-        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, emojiList, reaction.getItemList(), false);
+        List<MessageReactionItem> messageReactionItemList = null;
+        if (reaction != null) {
+            messageReactionItemList = reaction.getItemList();
+        }
+        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, emojiList, messageReactionItemList, false);
         hideKeyboard();
         final AlertDialog dialog = DialogUtils.showContentDialog(requireContext(), emojiListView);
 
@@ -576,7 +584,6 @@ abstract public class BaseMessageListFragment<
 //                    return;
 //                }
             }
-            //todo nathan
             getViewModel().toggleReaction(view, message, emojiKey, e -> {
                 if (e != null)
                     toastError(view.isSelected() ? R.string.sb_text_error_delete_reaction : R.string.sb_text_error_add_reaction);
