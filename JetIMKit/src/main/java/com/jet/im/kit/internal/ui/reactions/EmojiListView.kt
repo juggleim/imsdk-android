@@ -9,6 +9,7 @@ import com.jet.im.kit.R
 import com.jet.im.kit.activities.adapter.EmojiListAdapter
 import com.jet.im.kit.databinding.SbViewEmojiListBinding
 import com.jet.im.kit.interfaces.OnItemClickListener
+import com.juggle.im.model.MessageReactionItem
 import kotlin.math.min
 
 internal class EmojiListView private constructor(context: Context) : FrameLayout(context) {
@@ -28,7 +29,7 @@ internal class EmojiListView private constructor(context: Context) : FrameLayout
         fun create(
             context: Context,
             emojiList: List<String>,
-            reactionList: List<Reaction>? = null,
+            reactionList: List<MessageReactionItem>? = null,
             showMoreButton: Boolean = false
         ): EmojiListView {
             val emojiListView = EmojiListView(context)

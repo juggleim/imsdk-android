@@ -28,6 +28,7 @@ import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
@@ -427,6 +428,16 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
         }
     }
 
+    public MessageReaction getReactionByMessageId(@NonNull String messageId) {
+        MessageReaction result = null;
+        for (MessageReaction reaction : mMessageReactions) {
+            if (reaction.getMessageId().equals(messageId)) {
+                result = reaction;
+            }
+        }
+        return result;
+    }
+
     /**
      * Tries to connect Sendbird Server and retrieve a channel instance.
      *
@@ -471,7 +482,7 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 
     void onMessagesUpdated(@NonNull ConversationInfo channel, @NonNull Message message) {
         if (message.getClientMsgNo() == 0) return;
-        Message find = cachedMessages.getById(message.getClientMsgNo());
+        Message find = cachedMessages.getByClientNo(message.getClientMsgNo());
         String name;
         if (find == null) {
             cachedMessages.add(message);

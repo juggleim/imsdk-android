@@ -1,6 +1,5 @@
 package com.jet.im.kit.model
 
-import com.sendbird.android.message.BaseMessage
 import com.jet.im.kit.log.Logger
 import com.jet.im.kit.utils.DateUtils
 import com.juggle.im.model.Message
@@ -142,8 +141,13 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
     }
 
     @Synchronized
-    fun getById(messageId: Long): Message? {
-        return messages.find { it.clientMsgNo == messageId }
+    fun getByClientNo(clientNo: Long): Message? {
+        return messages.find { it.clientMsgNo == clientNo }
+    }
+
+    @Synchronized
+    fun getById(messageId: String): Message? {
+        return messages.find { it.messageId.equals(messageId) }
     }
 
     @Synchronized

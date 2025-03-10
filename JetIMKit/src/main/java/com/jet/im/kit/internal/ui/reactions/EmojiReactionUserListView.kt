@@ -60,10 +60,9 @@ internal class EmojiReactionUserListView @JvmOverloads constructor(
     fun setEmojiReactionUserData(
         fragment: Fragment,
         currentPosition: Int,
-        reactionList: List<MessageReactionItem>,
-        reactionUserInfo: Map<MessageReactionItem, List<UserInfo?>>
+        reactionList: List<MessageReactionItem>
     ) {
-        val pagerAdapter = UserListPagerAdapter(fragment, reactionList, reactionUserInfo).apply {
+        val pagerAdapter = UserListPagerAdapter(fragment, reactionList).apply {
             this.onProfileClickListener = OnItemClickListener<UserInfo> { view, position, data ->
                 this@EmojiReactionUserListView.onProfileClickListener?.onItemClick(view, position, data)
             }
@@ -82,8 +81,7 @@ internal class EmojiReactionUserListView @JvmOverloads constructor(
 
     private class UserListPagerAdapter(
         fragment: Fragment,
-        reactionList: List<MessageReactionItem>,
-        reactionUserInfo: Map<MessageReactionItem, List<UserInfo?>>
+        reactionList: List<MessageReactionItem>
     ) : FragmentStateAdapter(fragment) {
         private val itemCount: Int
         private val fragmentList: MutableList<Fragment> = ArrayList()
@@ -93,14 +91,14 @@ internal class EmojiReactionUserListView @JvmOverloads constructor(
         override fun getItemCount(): Int = itemCount
 
         init {
-            itemCount = reactionUserInfo.size
+            itemCount = reactionList.size
             reactionList.forEach {
                 val userListFragment = UserListFragment().apply {
                     this.onProfileClickListener = OnItemClickListener<UserInfo> { view, position, data ->
                         this@UserListPagerAdapter.onProfileClickListener.onItemClick(view, position, data)
                     }
                 }
-                reactionUserInfo[it]?.let { userList ->
+                it.userInfoList.let { userList ->
                     val bundle = Bundle()
                     bundle.putInt(StringSet.KEY_EMOJI_REACTION_USER_LIST_SIZE, userList.size)
                     userList.forEachIndexed { index, user ->

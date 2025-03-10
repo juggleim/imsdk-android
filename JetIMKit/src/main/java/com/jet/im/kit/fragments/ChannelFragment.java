@@ -29,6 +29,9 @@ import com.jet.im.kit.consts.TypingIndicatorType;
 import com.jet.im.kit.interfaces.LoadingDialogHandler;
 import com.jet.im.kit.interfaces.OnConsumableClickListener;
 import com.jet.im.kit.interfaces.OnEditTextResultListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionLongClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionMoreClickListener;
 import com.jet.im.kit.interfaces.OnInputModeChangedListener;
 import com.jet.im.kit.interfaces.OnInputTextChangedListener;
 import com.jet.im.kit.interfaces.OnItemClickListener;
@@ -97,6 +100,12 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     private OnConsumableClickListener scrollFirstButtonClickListener;
     @Nullable
     private View.OnClickListener inputLeftButtonClickListener;
+    @Nullable
+    private OnEmojiReactionClickListener emojiReactionClickListener;
+    @Nullable
+    private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
+    @Nullable
+    private OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener;
     @Nullable
     private OnInputTextChangedListener inputTextChangedListener;
     @Nullable
@@ -274,6 +283,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         messageListComponent.setOnMessageProfileClickListener(this::onMessageProfileClicked);
         messageListComponent.setOnMessageLongClickListener(this::onMessageLongClicked);
         messageListComponent.setOnMessageMentionClickListener(this::onMessageMentionClicked);
+        messageListComponent.setOnEmojiReactionClickListener(emojiReactionClickListener != null ? emojiReactionClickListener : (view, position, message, reactionKey) -> toggleReaction(view, message, reactionKey));
+        messageListComponent.setOnEmojiReactionLongClickListener(emojiReactionLongClickListener != null ? emojiReactionLongClickListener : (view, position, message, reactionKey) -> showEmojiReactionDialog(message, position));
+        messageListComponent.setOnEmojiReactionMoreButtonClickListener(emojiReactionMoreButtonClickListener != null ? emojiReactionMoreButtonClickListener : (view, position, message, reaction) -> showEmojiListDialog(message, reaction));
         messageListComponent.setOnFeedbackRatingClickListener(this::onFeedbackRatingClicked);
         messageListComponent.setOnTooltipClickListener(tooltipClickListener != null ? tooltipClickListener : this::onMessageTooltipClicked);
         messageListComponent.setOnScrollBottomButtonClickListener(scrollBottomButtonClickListener);
@@ -811,6 +823,12 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         @Nullable
         private View.OnClickListener inputLeftButtonListener;
         @Nullable
+        private OnEmojiReactionClickListener emojiReactionClickListener;
+        @Nullable
+        private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
+        @Nullable
+        private OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener;
+        @Nullable
         private MessageListParams params;
         @Nullable
         private LoadingDialogHandler loadingDialogHandler;
@@ -1184,6 +1202,45 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         @NonNull
         public Builder setMessageListParams(@NonNull MessageListParams params) {
             this.params = params;
+            return this;
+        }
+
+        /**
+         * Sets the click listener on the emoji reaction of the message.
+         *
+         * @param emojiReactionClickListener The callback that will run.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         * since 1.1.0
+         */
+        @NonNull
+        public Builder setEmojiReactionClickListener(@NonNull OnEmojiReactionClickListener emojiReactionClickListener) {
+            this.emojiReactionClickListener = emojiReactionClickListener;
+            return this;
+        }
+
+        /**
+         * Sets the long click listener on the emoji reaction of the message.
+         *
+         * @param emojiReactionLongClickListener The callback that will run.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         * since 1.1.0
+         */
+        @NonNull
+        public Builder setEmojiReactionLongClickListener(@NonNull OnEmojiReactionLongClickListener emojiReactionLongClickListener) {
+            this.emojiReactionLongClickListener = emojiReactionLongClickListener;
+            return this;
+        }
+
+        /**
+         * Sets the click listener on the emoji reaction more button.
+         *
+         * @param emojiReactionMoreButtonClickListener The callback that will run.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         * since 1.1.0
+         */
+        @NonNull
+        public Builder setEmojiReactionMoreButtonClickListener(@NonNull OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener) {
+            this.emojiReactionMoreButtonClickListener = emojiReactionMoreButtonClickListener;
             return this;
         }
 
@@ -1761,6 +1818,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             fragment.setOnMessageClickListener(messageClickListener);
             fragment.setOnMessageLongClickListener(messageLongClickListener);
             fragment.inputLeftButtonClickListener = inputLeftButtonListener;
+            fragment.emojiReactionClickListener = emojiReactionClickListener;
+            fragment.emojiReactionLongClickListener = emojiReactionLongClickListener;
+            fragment.emojiReactionMoreButtonClickListener = emojiReactionMoreButtonClickListener;
             fragment.setOnMessageProfileClickListener(messageProfileClickListener);
             fragment.setOnEmojiReactionUserListProfileClickListener(emojiReactionUserListProfileClickListener);
             fragment.setOnMessageProfileLongClickListener(messageProfileLongClickListener);

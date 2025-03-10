@@ -27,15 +27,28 @@ internal class MyVideoFileMessageViewHolder internal constructor(
 
     override fun setEmojiReaction(
         reactionList: List<MessageReactionItem>,
+        totalEmojiList: List<String>,
         emojiReactionClickListener: OnItemClickListener<String>?,
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
+        binding.myVideoFileMessageView.binding.rvEmojiReactionList.apply {
+            setReactionList(reactionList, totalEmojiList)
+            setClickListeners(emojiReactionClickListener, emojiReactionLongClickListener, moreButtonClickListener)
+        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
         return mapOf(
             ClickableViewIdentifier.Chat.name to binding.myVideoFileMessageView.binding.ivThumbnailOverlay,
         )
+    }
+
+    override fun setEmojiReaction(
+        reactionList: MutableList<out MessageReactionItem>,
+        emojiReactionClickListener: OnItemClickListener<String>?,
+        emojiReactionLongClickListener: OnItemLongClickListener<String>?,
+        moreButtonClickListener: View.OnClickListener?
+    ) {
     }
 }

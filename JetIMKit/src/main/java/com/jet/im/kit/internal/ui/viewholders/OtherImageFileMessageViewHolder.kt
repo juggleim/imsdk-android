@@ -1,10 +1,6 @@
 package com.jet.im.kit.internal.ui.viewholders
 
 import android.view.View
-import com.sendbird.android.channel.BaseChannel
-import com.sendbird.android.channel.GroupChannel
-import com.sendbird.android.message.BaseMessage
-import com.sendbird.android.message.Reaction
 import com.jet.im.kit.activities.viewholder.GroupChannelMessageViewHolder
 import com.jet.im.kit.consts.ClickableViewIdentifier
 import com.jet.im.kit.databinding.SbViewOtherFileImageMessageBinding
@@ -27,11 +23,15 @@ internal class OtherImageFileMessageViewHolder internal constructor(
 
     override fun setEmojiReaction(
         reactionList: List<MessageReactionItem>,
+        totalEmojiList: List<String>,
         emojiReactionClickListener: OnItemClickListener<String>?,
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
-
+        binding.otherImageFileMessageView.binding.rvEmojiReactionList.apply {
+            setReactionList(reactionList, totalEmojiList)
+            setClickListeners(emojiReactionClickListener, emojiReactionLongClickListener, moreButtonClickListener)
+        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
@@ -39,5 +39,13 @@ internal class OtherImageFileMessageViewHolder internal constructor(
             ClickableViewIdentifier.Chat.name to binding.otherImageFileMessageView.binding.ivThumbnailOverlay,
             ClickableViewIdentifier.Profile.name to binding.otherImageFileMessageView.binding.ivProfileView,
         )
+    }
+
+    override fun setEmojiReaction(
+        reactionList: MutableList<out MessageReactionItem>,
+        emojiReactionClickListener: OnItemClickListener<String>?,
+        emojiReactionLongClickListener: OnItemLongClickListener<String>?,
+        moreButtonClickListener: View.OnClickListener?
+    ) {
     }
 }

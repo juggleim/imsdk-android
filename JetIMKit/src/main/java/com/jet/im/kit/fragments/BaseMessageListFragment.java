@@ -33,9 +33,11 @@ import com.jet.im.kit.interfaces.LoadingDialogHandler;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.interfaces.OnItemLongClickListener;
 import com.jet.im.kit.interfaces.OnResultHandler;
+import com.jet.im.kit.internal.extensions.EmojiExtensionsKt;
 import com.jet.im.kit.internal.tasks.JobResultTask;
 import com.jet.im.kit.internal.tasks.TaskQueue;
 import com.jet.im.kit.internal.ui.messages.VoiceMessageView;
+import com.jet.im.kit.internal.ui.reactions.EmojiReactionUserListView;
 import com.jet.im.kit.internal.ui.widgets.VoiceMessageInputView;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.DialogListItem;
@@ -62,6 +64,8 @@ import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
@@ -69,13 +73,10 @@ import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.exception.SendbirdException;
-import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.message.Emoji;
 import com.sendbird.android.params.FileMessageCreateParams;
 import com.sendbird.android.params.MultipleFilesMessageCreateParams;
 import com.sendbird.android.params.UserMessageCreateParams;
 import com.sendbird.android.params.UserMessageUpdateParams;
-import com.sendbird.android.user.User;
 import com.jet.im.kit.internal.ui.reactions.EmojiListView;
 
 import java.io.File;
@@ -479,7 +480,8 @@ abstract public class BaseMessageListFragment<
         List<String> shownEmojiList = emojiList.subList(0, shownEmojiSize);
 
         final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(requireContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
-        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, shownEmojiList, null, showMoreButton);
+        List<MessageReactionItem> reactionItemList = getViewModel().getReactionByMessageId(message.getMessageId()).getItemList();
+        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, shownEmojiList, reactionItemList, showMoreButton);
         hideKeyboard();
         if (actions.length > 0 || shownEmojiList.size() > 0) {
             final AlertDialog dialog = DialogUtils.showContentViewAndListDialog(requireContext(), emojiListView, actions, createMessageActionListener(message));
@@ -489,21 +491,21 @@ abstract public class BaseMessageListFragment<
 
                 if (!view.isSelected()) {
                     // when adding emoji, check if it's allowed
-//                    if (!EmojiExtensionsKt.containsEmoji(emojiList, emojiKey)) {
-//                        toastError(R.string.sb_text_error_add_reaction);
-//                        return;
-//                    }
+                    if (!EmojiExtensionsKt.containsEmoji(emojiList, emojiKey)) {
+                        toastError(R.string.sb_text_error_add_reaction);
+                        return;
+                    }
                 }
 
-//                getViewModel().toggleReaction(view, message, emojiKey, e -> {
-//                    if (e != null)
-//                        toastError(view.isSelected() ? R.string.sb_text_error_delete_reaction : R.string.sb_text_error_add_reaction);
-//                });
+                getViewModel().toggleReaction(view, message, emojiKey, e -> {
+                    if (e != null)
+                        toastError(view.isSelected() ? R.string.sb_text_error_delete_reaction : R.string.sb_text_error_add_reaction);
+                });
             });
 
             emojiListView.setMoreButtonClickListener(v -> {
                 dialog.dismiss();
-                showEmojiListDialog(message);
+                showEmojiListDialog(message, getViewModel().getReactionByMessageId(message.getMessageId()));
             });
         }
     }
@@ -523,7 +525,32 @@ abstract public class BaseMessageListFragment<
         }
     }
 
-    void showEmojiListDialog(@NonNull Message message) {
+    void toggleReaction(@NonNull View view, @NonNull Message message, @NonNull String reactionKey) {
+        getViewModel().toggleReaction(view, message, reactionKey, e -> {
+            if (e != null && isFragmentAlive()) {
+                toastError(view.isSelected() ? R.string.sb_text_error_delete_reaction : R.string.sb_text_error_add_reaction);
+            }
+        });
+    }
+
+    void showEmojiReactionDialog(@NonNull Message message, int position) {
+        if (getContext() == null) {
+            return;
+        }
+        //todo reaction
+
+        final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(getContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
+        final EmojiReactionUserListView emojiReactionUserListView = new EmojiReactionUserListView(contextThemeWrapper);
+        emojiReactionUserListView.setOnProfileClickListener(this::onEmojiReactionUserListProfileClicked);
+
+        emojiReactionUserListView.setEmojiReactionUserData(this,
+                position,
+                getViewModel().getReactionByMessageId(message.getMessageId()).getItemList());
+        hideKeyboard();
+        DialogUtils.showContentDialog(requireContext(), emojiReactionUserListView);
+    }
+
+    void showEmojiListDialog(@NonNull Message message, MessageReaction reaction) {
         if (getContext() == null) {
             return;
         }
@@ -535,7 +562,7 @@ abstract public class BaseMessageListFragment<
 
         final List<String> emojiList = EmojiManager2.INSTANCE.getEmojiList();
         final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(getContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
-        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, emojiList, null, false);
+        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, emojiList, reaction.getItemList(), false);
         hideKeyboard();
         final AlertDialog dialog = DialogUtils.showContentDialog(requireContext(), emojiListView);
 

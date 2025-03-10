@@ -27,10 +27,15 @@ internal class OtherFileMessageViewHolder internal constructor(
 
     override fun setEmojiReaction(
         reactionList: List<MessageReactionItem>,
+        totalEmojiList: List<String>,
         emojiReactionClickListener: OnItemClickListener<String>?,
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
+        binding.otherFileMessageView.binding.rvEmojiReactionList.apply {
+            setReactionList(reactionList, totalEmojiList)
+            setClickListeners(emojiReactionClickListener, emojiReactionLongClickListener, moreButtonClickListener)
+        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
@@ -38,5 +43,13 @@ internal class OtherFileMessageViewHolder internal constructor(
             ClickableViewIdentifier.Chat.name to binding.otherFileMessageView.binding.contentPanelWithReactions,
             ClickableViewIdentifier.Profile.name to binding.otherFileMessageView.binding.ivProfileView,
         )
+    }
+
+    override fun setEmojiReaction(
+        reactionList: MutableList<out MessageReactionItem>,
+        emojiReactionClickListener: OnItemClickListener<String>?,
+        emojiReactionLongClickListener: OnItemLongClickListener<String>?,
+        moreButtonClickListener: View.OnClickListener?
+    ) {
     }
 }

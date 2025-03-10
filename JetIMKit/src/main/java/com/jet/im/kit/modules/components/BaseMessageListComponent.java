@@ -22,6 +22,9 @@ import com.jet.im.kit.activities.adapter.BaseMessageListAdapter;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.fragments.ItemAnimator;
 import com.jet.im.kit.interfaces.OnConsumableClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionLongClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionMoreClickListener;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.interfaces.OnItemLongClickListener;
 import com.jet.im.kit.interfaces.OnMessageListUpdateHandler;
@@ -77,6 +80,12 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
     private OnItemLongClickListener<Message> messageLongClickListener;
     @Nullable
     private OnItemLongClickListener<Message> messageProfileLongClickListener;
+    @Nullable
+    private OnEmojiReactionClickListener emojiReactionClickListener;
+    @Nullable
+    private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
+    @Nullable
+    private OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener;
     @Nullable
     OnPagedDataLoader<List<Message>> pagedDataLoader;
     @Nullable
@@ -144,6 +153,15 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
         }
         if (this.adapter.getOnListItemLongClickListener() == null) {
             this.adapter.setOnListItemLongClickListener(this::onListItemLongClicked);
+        }
+        if (this.adapter.getEmojiReactionClickListener() == null) {
+            this.adapter.setEmojiReactionClickListener(this::onEmojiReactionClicked);
+        }
+        if (this.adapter.getEmojiReactionLongClickListener() == null) {
+            this.adapter.setEmojiReactionLongClickListener(this::onEmojiReactionLongClicked);
+        }
+        if (this.adapter.getEmojiReactionMoreButtonClickListener() == null) {
+            this.adapter.setEmojiReactionMoreButtonClickListener(this::onEmojiReactionMoreButtonClicked);
         }
         if (this.adapter.getMentionClickListener() == null) {
             this.adapter.setMentionClickListener(this::onMessageMentionClicked);
@@ -353,7 +371,35 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
         this.messageProfileLongClickListener = messageProfileLongClickListener;
     }
 
+    /**
+     * Register a callback to be invoked when the emoji reaction of the message is clicked.
+     *
+     * @param emojiReactionClickListener The callback that will run
+     * since 3.0.0
+     */
+    public void setOnEmojiReactionClickListener(@Nullable OnEmojiReactionClickListener emojiReactionClickListener) {
+        this.emojiReactionClickListener = emojiReactionClickListener;
+    }
 
+    /**
+     * Register a callback to be invoked when the emoji reaction of the message is long-clicked.
+     *
+     * @param emojiReactionLongClickListener The callback that will run
+     * since 3.0.0
+     */
+    public void setOnEmojiReactionLongClickListener(@Nullable OnEmojiReactionLongClickListener emojiReactionLongClickListener) {
+        this.emojiReactionLongClickListener = emojiReactionLongClickListener;
+    }
+
+    /**
+     * Register a callback to be invoked when the button to see more emojis on the message is clicked.
+     *
+     * @param emojiReactionMoreButtonClickListener The callback that will run
+     * since 3.0.0
+     */
+    public void setOnEmojiReactionMoreButtonClickListener(@Nullable OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener) {
+        this.emojiReactionMoreButtonClickListener = emojiReactionMoreButtonClickListener;
+    }
 
     /**
      * Register a callback to be invoked when the button to scroll to the bottom is clicked.
@@ -554,6 +600,47 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
     protected void onMessageProfileLongClicked(@NonNull View view, int position, @NonNull Message message) {
         if (messageProfileLongClickListener != null)
             messageProfileLongClickListener.onItemLongClick(view, position, message);
+    }
+
+    /**
+     * Called when the emoji reaction of the message is clicked.
+     *
+     * @param view        The view that was clicked
+     * @param position    The position that was clicked
+     * @param message     The message that was clicked
+     * @param reactionKey The reaction key that was clicked
+     * since 3.0.0
+     */
+    protected void onEmojiReactionClicked(@NonNull View view, int position, @NonNull Message message, @NonNull String reactionKey) {
+        if (emojiReactionClickListener != null)
+            emojiReactionClickListener.onEmojiReactionClick(view, position, message, reactionKey);
+    }
+
+    /**
+     * Called when the emoji reaction of the message is long-clicked.
+     *
+     * @param view        The view that was long-clicked
+     * @param position    The position that was long-clicked
+     * @param message     The message that was long-clicked
+     * @param reactionKey The reaction key that was long-clicked
+     * since 3.0.0
+     */
+    protected void onEmojiReactionLongClicked(@NonNull View view, int position, @NonNull Message message, @NonNull String reactionKey) {
+        if (emojiReactionLongClickListener != null)
+            emojiReactionLongClickListener.onEmojiReactionLongClick(view, position, message, reactionKey);
+    }
+
+    /**
+     * Called when the button to see more emojis on the message is clicked.
+     *
+     * @param view     The view that was clicked
+     * @param position The position that was clicked
+     * @param message  The message that was clicked
+     * since 3.0.0
+     */
+    protected void onEmojiReactionMoreButtonClicked(@NonNull View view, int position, @NonNull Message message, MessageReaction reaction) {
+        if (emojiReactionMoreButtonClickListener != null)
+            emojiReactionMoreButtonClickListener.onEmojiReactionMoreClick(view, position, message, reaction);
     }
 
     /**

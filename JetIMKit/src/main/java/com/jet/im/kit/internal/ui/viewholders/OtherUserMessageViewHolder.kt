@@ -17,6 +17,7 @@ import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
 import com.juggle.im.model.MessageReactionItem
 import com.juggle.im.model.UserInfo
+import com.sendbird.android.message.Emoji
 
 internal class OtherUserMessageViewHolder internal constructor(
     val binding: SbViewOtherUserMessageBinding,
@@ -30,10 +31,15 @@ internal class OtherUserMessageViewHolder internal constructor(
 
     override fun setEmojiReaction(
         reactionList: List<MessageReactionItem>,
+        totalEmojiList: List<String>,
         emojiReactionClickListener: OnItemClickListener<String>?,
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
+        binding.otherMessageView.binding.rvEmojiReactionList.apply {
+            setReactionList(reactionList, totalEmojiList)
+            setClickListeners(emojiReactionClickListener, emojiReactionLongClickListener, moreButtonClickListener)
+        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
@@ -41,6 +47,14 @@ internal class OtherUserMessageViewHolder internal constructor(
             ClickableViewIdentifier.Chat.name to binding.otherMessageView.binding.contentPanel,
             ClickableViewIdentifier.Profile.name to binding.otherMessageView.binding.ivProfileView,
         )
+    }
+
+    override fun setEmojiReaction(
+        reactionList: MutableList<out MessageReactionItem>,
+        emojiReactionClickListener: OnItemClickListener<String>?,
+        emojiReactionLongClickListener: OnItemLongClickListener<String>?,
+        moreButtonClickListener: View.OnClickListener?
+    ) {
     }
 
     fun setOnMentionClickListener(listener: OnItemClickListener<UserInfo>?) {

@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import com.jet.im.kit.interfaces.EmojiReactionHandler;
 import com.jet.im.kit.interfaces.OnEmojiReactionClickListener;
 import com.jet.im.kit.interfaces.OnEmojiReactionLongClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionMoreClickListener;
 import com.jet.im.kit.model.EmojiManager2;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
@@ -25,8 +26,6 @@ import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.UserInfo;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.message.Reaction;
-import com.sendbird.android.user.User;
 import com.jet.im.kit.R;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolder;
@@ -65,7 +64,7 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
     @Nullable
     private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
     @Nullable
-    private OnItemClickListener<Message> emojiReactionMoreButtonClickListener;
+    private OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener;
     @Nullable
     private OnIdentifiableItemClickListener<Message> listItemClickListener;
     @Nullable
@@ -248,6 +247,7 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
             }
 
             if (reaction != null) {
+                final MessageReaction mr = reaction;
                 emojiReactionHandler.setEmojiReaction(reaction.getItemList(), EmojiManager2.INSTANCE.getEmojiList(), (view, reactionPosition, reactionKey) -> {
                     int messagePosition = holder.getBindingAdapterPosition();
                     if (messagePosition != NO_POSITION && emojiReactionClickListener != null) {
@@ -271,10 +271,11 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
                 }, v -> {
                     int messagePosition = holder.getBindingAdapterPosition();
                     if (messagePosition != NO_POSITION && emojiReactionMoreButtonClickListener != null) {
-                        emojiReactionMoreButtonClickListener.onItemClick(
+                        emojiReactionMoreButtonClickListener.onEmojiReactionMoreClick(
                                 v,
                                 messagePosition,
-                                getItem(messagePosition)
+                                getItem(messagePosition),
+                                mr
                         );
                     }
                 });
@@ -466,6 +467,69 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
     @Nullable
     public OnIdentifiableItemLongClickListener<Message> getOnListItemLongClickListener() {
         return listItemLongClickListener;
+    }
+
+    /**
+     * Register a callback to be invoked when the emoji reaction is clicked.
+     *
+     * @param listener The callback that will run
+     * since 1.1.0
+     */
+    public void setEmojiReactionClickListener(@Nullable OnEmojiReactionClickListener listener) {
+        this.emojiReactionClickListener = listener;
+    }
+
+    /**
+     * Returns a callback to be invoked when the emoji reaction is clicked.
+     *
+     * @return {@code OnEmojiReactionClickListener} to be invoked when the emoji reaction is clicked.
+     * since 3.0.0
+     */
+    @Nullable
+    public OnEmojiReactionClickListener getEmojiReactionClickListener() {
+        return emojiReactionClickListener;
+    }
+
+    /**
+     * Register a callback to be invoked when the emoji reaction is long clicked and held.
+     *
+     * @param listener The callback that will run
+     * since 1.1.0
+     */
+    public void setEmojiReactionLongClickListener(@Nullable OnEmojiReactionLongClickListener listener) {
+        this.emojiReactionLongClickListener = listener;
+    }
+
+    /**
+     * Returns a callback to be invoked when the emoji reaction is long clicked and held.
+     *
+     * @return {@code OnEmojiReactionLongClickListener} to be invoked when the emoji reaction is long clicked and held.
+     * since 3.0.0
+     */
+    @Nullable
+    public OnEmojiReactionLongClickListener getEmojiReactionLongClickListener() {
+        return emojiReactionLongClickListener;
+    }
+
+    /**
+     * Register a callback to be invoked when the emoji reaction more button is clicked.
+     *
+     * @param listener The callback that will run
+     * since 1.1.0
+     */
+    public void setEmojiReactionMoreButtonClickListener(@Nullable OnEmojiReactionMoreClickListener listener) {
+        this.emojiReactionMoreButtonClickListener = listener;
+    }
+
+    /**
+     * Returns a callback to be invoked when the emoji reaction more button is clicked.
+     *
+     * @return {OnItemClickListener<BaseMessage>} to be invoked when the emoji reaction more button is clicked.
+     * since 3.0.0
+     */
+    @Nullable
+    public OnEmojiReactionMoreClickListener getEmojiReactionMoreButtonClickListener() {
+        return emojiReactionMoreButtonClickListener;
     }
 
     /**

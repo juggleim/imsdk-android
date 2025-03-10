@@ -225,12 +225,16 @@ public class EmojiReactionListAdapter extends BaseAdapter<MessageReactionItem, B
      * since 1.1.0
      */
     public void setReactionList(@NonNull List<MessageReactionItem> reactionList) {
-        final EmojiReactionDiffCallback diffCallback = new EmojiReactionDiffCallback(this.reactionList, reactionList);
-        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
-
         this.reactionList.clear();
         this.reactionList.addAll(reactionList);
-        diffResult.dispatchUpdatesTo(this);
+        notifyDataSetChanged();
+        //todo diff
+//        final EmojiReactionDiffCallback diffCallback = new EmojiReactionDiffCallback(this.reactionList, reactionList);
+//        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
+//
+//        this.reactionList.clear();
+//        this.reactionList.addAll(reactionList);
+//        diffResult.dispatchUpdatesTo(this);
     }
 
     /**

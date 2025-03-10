@@ -33,6 +33,7 @@ import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.UserInfo;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
@@ -198,15 +199,107 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             }
 
             @Override
-            public void onMessageReactionAdd(Conversation conversation, MessageReaction reaction) {
-
+            public void onMessageReactionAdd(Conversation conversation2, MessageReaction reaction) {
+                if (!conversation.equals(conversation2)) {
+                    return;
+                }
+                MessageReaction oldReaction = null;
+                for (MessageReaction r : mMessageReactions) {
+                    if (reaction.getMessageId().equals(r.getMessageId())) {
+                        oldReaction = r;
+                        break;
+                    }
+                }
+                if (oldReaction != null) {
+                    oldReaction.setItemList(mergeReaction(oldReaction.getItemList(), reaction.getItemList()));
+                } else {
+                    mMessageReactions.add(reaction);
+                }
+                notifyDataSetChanged(StringSet.ACTION_GET_REACTIONS);
             }
 
             @Override
-            public void onMessageReactionRemove(Conversation conversation, MessageReaction reaction) {
-
+            public void onMessageReactionRemove(Conversation conversation2, MessageReaction reaction) {
+                if (!conversation.equals(conversation2)) {
+                    return;
+                }
+                MessageReaction oldReaction = null;
+                for (MessageReaction r : mMessageReactions) {
+                    if (reaction.getMessageId().equals(r.getMessageId())) {
+                        oldReaction = r;
+                        break;
+                    }
+                }
+                if (oldReaction != null) {
+                    oldReaction.setItemList(removeReaction(oldReaction.getItemList(), reaction.getItemList()));
+                }
+                notifyDataSetChanged(StringSet.ACTION_GET_REACTIONS);
             }
         });
+    }
+
+    private List<MessageReactionItem> mergeReaction(List<MessageReactionItem> oldItemList, List<MessageReactionItem> newItemList) {
+        boolean needMerge = false;
+        List<MessageReactionItem> result = new ArrayList<>(oldItemList);
+        for (MessageReactionItem newItem : newItemList) {
+            needMerge = false;
+            for (MessageReactionItem oldItem : result) {
+                if (oldItem.getReactionId().equals(newItem.getReactionId())) {
+                    needMerge = true;
+                    List<UserInfo> userInfoList = new ArrayList<>(oldItem.getUserInfoList());
+                    for (UserInfo newUserInfo : newItem.getUserInfoList()) {
+                        if (findUser(userInfoList, newUserInfo)) {
+                            continue;
+                        }
+                        userInfoList.add(newUserInfo);
+                    }
+                    oldItem.setUserInfoList(userInfoList);
+                    break;
+                }
+            }
+            if (!needMerge) {
+                result.add(newItem);
+            }
+        }
+        return result;
+    }
+
+    private List<MessageReactionItem> removeReaction(List<MessageReactionItem> oldItemList, List<MessageReactionItem> newItemList) {
+        List<MessageReactionItem> result = new ArrayList<>(oldItemList);
+        for (MessageReactionItem newItem : newItemList) {
+            for (MessageReactionItem oldItem : result) {
+                if (oldItem.getReactionId().equals(newItem.getReactionId())) {
+                    ArrayList<UserInfo> userInfoList = new ArrayList<>(oldItem.getUserInfoList());
+                    for (UserInfo newUserInfo : newItem.getUserInfoList()) {
+                        removeUser(userInfoList, newUserInfo);
+                    }
+                    oldItem.setUserInfoList(userInfoList);
+                    break;
+                }
+            }
+        }
+        result.removeIf(item -> item.getUserInfoList().isEmpty());
+        return result;
+    }
+
+    private boolean findUser(List<UserInfo> list, UserInfo userInfo) {
+        for (UserInfo u : list) {
+            if (userInfo.getUserId().equals(u.getUserId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removeUser(ArrayList<UserInfo> list, UserInfo userInfo) {
+        Iterator<UserInfo> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            UserInfo u = iterator.next();
+            if (u.getUserId().equals(userInfo.getUserId())) {
+                iterator.remove();
+                break;
+            }
+        }
     }
 
     /**
@@ -217,7 +310,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     public boolean hasMessageById(long messageId) {
-        return cachedMessages.getById(messageId) != null;
+        return cachedMessages.getByClientNo(messageId) != null;
     }
 
     /**
@@ -229,7 +322,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      */
     @Nullable
     public Message getMessageById(long messageId) {
-        return cachedMessages.getById(messageId);
+        return cachedMessages.getByClientNo(messageId);
     }
 
     /**

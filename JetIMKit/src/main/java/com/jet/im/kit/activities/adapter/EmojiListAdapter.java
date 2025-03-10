@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.juggle.im.JIM;
+import com.juggle.im.model.MessageReactionItem;
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.message.Emoji;
 import com.sendbird.android.message.Reaction;
@@ -17,6 +20,7 @@ import com.jet.im.kit.internal.ui.reactions.EmojiView;
 import com.jet.im.kit.internal.ui.viewholders.EmojiMoreViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.EmojiViewHolder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,12 +54,16 @@ public class EmojiListAdapter extends BaseAdapter<String, BaseViewHolder<String>
      * since 1.1.0
      */
     public EmojiListAdapter(@NonNull List<String> emojiList,
-                            @Nullable List<Reaction> reactionList,
+                            @Nullable List<MessageReactionItem> reactionList,
                             boolean showMoreButton) {
         this.emojiList = emojiList;
         if (reactionList != null) {
-            for (Reaction reaction : reactionList) {
-                reactionUserMap.put(reaction.getKey(), reaction.getUserIds());
+            for (MessageReactionItem reaction : reactionList) {
+                List<String> userIdList = new ArrayList<>();
+                for (UserInfo userInfo : reaction.getUserInfoList()) {
+                    userIdList.add(userInfo.getUserId());
+                }
+                reactionUserMap.put(reaction.getReactionId(), userIdList);
             }
         }
         this.showMoreButton = showMoreButton;
@@ -109,7 +117,7 @@ public class EmojiListAdapter extends BaseAdapter<String, BaseViewHolder<String>
         } else {
             if (!reactionUserMap.isEmpty() && current != null) {
                 List<String> userIds = reactionUserMap.get(current);
-                holder.itemView.setSelected(userIds != null && SendbirdChat.getCurrentUser() != null && userIds.contains(SendbirdChat.getCurrentUser().getUserId()));
+                holder.itemView.setSelected(userIds != null && JIM.getInstance().getCurrentUserId() != null && userIds.contains(JIM.getInstance().getCurrentUserId()));
             }
 
             holder.itemView.setOnClickListener(v -> {
