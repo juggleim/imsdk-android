@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.jet.im.kit.modules.components.StateHeaderComponent;
+import com.juggle.chat.R;
 import com.juggle.chat.bean.FriendBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
@@ -38,7 +39,7 @@ public class FriendListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentFriendsGroupsBinding.inflate(inflater, container, false);
-        headerComponent.getParams().setTitle("Friends");
+        headerComponent.getParams().setTitle(getString(R.string.text_tab_friends));
         headerComponent.getParams().setUseLeftButton(false);
         headerComponent.getParams().setRightButtonText("Add");
         headerComponent.setOnRightButtonClickListener(v -> startActivity(AddFriendListActivity.newIntent(getContext())));

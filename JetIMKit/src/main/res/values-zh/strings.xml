@@ -1,6 +1,6 @@
 <resources>
     <!-- Header Title -->
-    <string name="sb_text_header_channel_list">Conversations</string>
+    <string name="sb_text_header_channel_list">消息</string>
     <string name="sb_text_header_channel_settings">Channel information</string>
     <string name="sb_text_header_member_list">Members</string>
     <string name="sb_text_header_invite_member">Invite users</string>

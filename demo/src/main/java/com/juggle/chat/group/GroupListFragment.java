@@ -44,7 +44,7 @@ public class GroupListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentGroupsBinding.inflate(inflater, container, false);
-        headerComponent.getParams().setTitle("Groups");
+        headerComponent.getParams().setTitle(getString(R.string.text_tab_groups));
         headerComponent.getParams().setUseLeftButton(false);
         headerComponent.getParams().setRightButtonText("Add");
         headerComponent.setOnRightButtonClickListener(v -> startActivity(SelectGroupMemberActivity.newIntent(getContext())));

@@ -11,20 +11,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.activities.ChannelActivity;
 import com.jet.im.kit.modules.components.StateHeaderComponent;
+import com.juggle.chat.R;
 import com.juggle.chat.bean.ChatRoomBean;
-import com.juggle.chat.bean.FriendBean;
-import com.juggle.chat.bean.HttpResult;
-import com.juggle.chat.bean.ListResult;
 import com.juggle.chat.common.adapter.CommonAdapter;
 import com.juggle.chat.common.adapter.MultiItemTypeAdapter;
-import com.juggle.chat.common.widgets.TitleBar;
 import com.juggle.chat.databinding.FragmentChatroomBinding;
-import com.juggle.chat.friends.add.AddFriendListActivity;
-import com.juggle.chat.http.CustomCallback;
-import com.juggle.chat.http.ServiceManager;
 import com.juggle.im.model.Conversation;
 
 import java.util.ArrayList;
@@ -41,7 +34,7 @@ public class ChatRoomListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentChatroomBinding.inflate(inflater, container, false);
-        headerComponent.getParams().setTitle("Chatrooms");
+        headerComponent.getParams().setTitle(getString(R.string.text_tab_chatroom));
         headerComponent.getParams().setUseLeftButton(false);
         headerComponent.getParams().setUseRightButton(false);
         View header = headerComponent.onCreateView(requireContext(), inflater, binding.headerComponent, savedInstanceState);
