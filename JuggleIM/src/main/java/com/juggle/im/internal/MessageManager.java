@@ -1289,7 +1289,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 null);
 
         boolean needRemote = false;
-        if (localMessages.size() < count) {
+        if (localMessages.size() < count+1) {
             needRemote = true;
         } else {
             long seqNo = -1;
