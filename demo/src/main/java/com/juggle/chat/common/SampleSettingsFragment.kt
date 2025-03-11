@@ -19,14 +19,12 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.juggle.chat.R
-import com.juggle.chat.SelectServiceActivity
 import com.juggle.chat.common.consts.StringSet
 import com.juggle.chat.common.extensions.getDrawable
 import com.juggle.chat.common.extensions.isUsingDarkTheme
@@ -111,8 +109,6 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
         binding = FragmentSampleSettingsBinding.inflate(inflater, container, false)
         headerComponent.params.title = getString(R.string.text_settings_header_title)
         headerComponent.params.setUseLeftButton(false)
-        headerComponent.params.rightButtonText =
-            getString(R.string.text_settings_header_edit_button)
         val header =
             headerComponent.onCreateView(
                 requireContext(),
@@ -217,70 +213,27 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
         }
 
         with(binding) {
-            val isDarkTheme = PreferenceUtils.themeMode.isUsingDarkTheme()
-            background.setBackgroundResource(if (isDarkTheme) com.jet.im.kit.R.color.background_600 else com.jet.im.kit.R.color.background_50)
+            background.setBackgroundResource(com.jet.im.kit.R.color.background_50)
             tvNickname.setTextColor(
                 ResourcesCompat.getColor(
                     resources,
-                    if (isDarkTheme) com.jet.im.kit.R.color.ondark_01 else com.jet.im.kit.R.color.onlight_01,
+                    com.jet.im.kit.R.color.onlight_01,
                     null
                 )
             )
-            idDivider.setBackgroundResource(if (isDarkTheme) com.jet.im.kit.R.drawable.sb_line_divider_dark else com.jet.im.kit.R.drawable.sb_line_divider_light)
-            tvUserIdBadge.setTextColor(
-                ResourcesCompat.getColor(
-                    resources,
-                    if (isDarkTheme) com.jet.im.kit.R.color.ondark_02 else com.jet.im.kit.R.color.onlight_02,
-                    null
-                )
-            )
-            tvUserId.setTextColor(
-                ResourcesCompat.getColor(
-                    resources,
-                    if (isDarkTheme) com.jet.im.kit.R.color.ondark_01 else com.jet.im.kit.R.color.onlight_01,
-                    null
-                )
-            )
-            profileDivider.setBackgroundResource(if (isDarkTheme) com.jet.im.kit.R.drawable.sb_line_divider_dark else com.jet.im.kit.R.drawable.sb_line_divider_light)
-            itemDarkTheme.setBackgroundResource(if (isDarkTheme) com.jet.im.kit.R.drawable.selector_rectangle_dark600 else com.jet.im.kit.R.drawable.selector_rectangle_light)
-            tvDarkThemeName.setTextColor(
-                ResourcesCompat.getColor(
-                    resources,
-                    if (isDarkTheme) com.jet.im.kit.R.color.ondark_01 else com.jet.im.kit.R.color.onlight_01,
-                    null
-                )
-            )
-            darkThemeDivider.setBackgroundResource(if (isDarkTheme) com.jet.im.kit.R.drawable.sb_line_divider_dark else com.jet.im.kit.R.drawable.sb_line_divider_light)
-            itemDisturb.setBackgroundResource(if (isDarkTheme) com.jet.im.kit.R.drawable.selector_rectangle_dark600 else com.jet.im.kit.R.drawable.selector_rectangle_light)
-            tvDisturbName.setTextColor(
-                ResourcesCompat.getColor(
-                    resources,
-                    if (isDarkTheme) com.jet.im.kit.R.color.ondark_01 else com.jet.im.kit.R.color.onlight_01,
-                    null
-                )
-            )
-            disturbDivider.setBackgroundResource(if (isDarkTheme) com.jet.im.kit.R.drawable.sb_line_divider_dark else com.jet.im.kit.R.drawable.sb_line_divider_light)
-            itemHome.setBackgroundResource(if (isDarkTheme) com.jet.im.kit.R.drawable.selector_rectangle_dark600 else com.jet.im.kit.R.drawable.selector_rectangle_light)
+
+            profileDivider.setBackgroundResource(com.jet.im.kit.R.drawable.sb_line_divider_light)
+            itemHome.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
             tvHomeName.setTextColor(
                 ResourcesCompat.getColor(
                     resources,
-                    if (isDarkTheme) com.jet.im.kit.R.color.ondark_01 else com.jet.im.kit.R.color.onlight_01,
+                    com.jet.im.kit.R.color.onlight_01,
                     null
                 )
             )
-            signOutDivider.setBackgroundResource(if (isDarkTheme) com.jet.im.kit.R.drawable.sb_line_divider_dark else com.jet.im.kit.R.drawable.sb_line_divider_light)
-            val switchTrackTint =
-                if (isDarkTheme) com.jet.im.kit.R.color.sb_switch_track_dark else com.jet.im.kit.R.color.sb_switch_track_light
-            val switchThumbTint =
-                if (isDarkTheme) com.jet.im.kit.R.color.sb_switch_thumb_dark else com.jet.im.kit.R.color.sb_switch_thumb_light
-            binding.itemDarkTheme.setOnClickListener {
-                Logger.d("++ dark theme clicked")
-                updateDarkTheme()
-            }
+            signOutDivider.setBackgroundResource(com.jet.im.kit.R.drawable.sb_line_divider_light)
 
             val useHeader = arguments?.getBoolean(StringSet.SETTINGS_USE_HEADER, true) ?: true
-            val useDoNotDisturb =
-                arguments?.getBoolean(StringSet.SETTINGS_USE_DO_NOT_DISTURB, true) ?: true
             this@SampleSettingsFragment.headerComponent.rootView?.visibility =
                 if (useHeader) View.VISIBLE else View.GONE
             this@SampleSettingsFragment.headerComponent.setOnRightButtonClickListener {
@@ -289,60 +242,36 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
             }
 
             loadUserProfileUrl(SendbirdUIKit.avatar)
-            binding.tvUserId.text = SendbirdUIKit.userId
             binding.tvNickname.text = SendbirdUIKit.nickname
+
+            itemQrCode.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
+            itemQrCode.setOnClickListener {
+                Logger.d("++ qrcode clicked")
+            }
+
+            itemPushSetting.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
+            itemQrCode.setOnClickListener {
+                Logger.d("++ push setting clicked")
+            }
+
+            itemGlobalDisturb.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
+            itemQrCode.setOnClickListener {
+                Logger.d("++ global disturb clicked")
+            }
+
+            itemPrivacyPolicy.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
+            itemQrCode.setOnClickListener {
+                Logger.d("++ privacy policy clicked")
+            }
+
+            itemUserAgreement.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
+            itemQrCode.setOnClickListener {
+                Logger.d("++ user agreement clicked")
+            }
 
             val iconTint =
                 if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.background_700 else com.jet.im.kit.R.color.background_50
-            val themeBackgroundTint =
-                if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.background_300 else com.jet.im.kit.R.color.background_400
-            binding.ivDarkThemeIcon.setImageDrawable(
-                requireContext().getDrawable(R.drawable.icon_theme, iconTint)
-            )
-            binding.ivDarkThemeIcon.background =
-                requireContext().getDrawable(R.drawable.shape_oval, themeBackgroundTint)
-            binding.scDarkThemeSwitch.trackTintList = AppCompatResources.getColorStateList(
-                requireContext(), switchTrackTint
-            )
-            binding.scDarkThemeSwitch.thumbTintList = AppCompatResources.getColorStateList(
-                requireContext(), switchThumbTint
-            )
-            binding.scDarkThemeSwitch.isChecked = isDarkTheme
-            SendbirdUIKit.setDefaultThemeMode(if (isDarkTheme) SendbirdUIKit.ThemeMode.Dark else SendbirdUIKit.ThemeMode.Light)
-            binding.scDarkThemeSwitch.setOnClickListener {
-                Logger.d("++ dark theme clicked")
-                updateDarkTheme()
-            }
-            val disturbBackgroundTint =
-                if (SendbirdUIKit.isDarkMode()) com.jet.im.kit.R.color.secondary_200 else com.jet.im.kit.R.color.secondary_300
-            binding.ivDisturbIcon.setImageDrawable(
-                requireContext().getDrawable(R.drawable.icon_notifications_filled, iconTint)
-            )
-            binding.ivDisturbIcon.background =
-                requireContext().getDrawable(R.drawable.shape_oval, disturbBackgroundTint)
-//            binding.itemDisturb.visibility = if (useDoNotDisturb) View.VISIBLE else View.GONE
-            if (useDoNotDisturb) {
-                binding.itemDisturb.setOnClickListener {
-                    Logger.d("++ disturb clicked")
-                    updateDoNotDisturb()
-                }
-                binding.scDisturbSwitch.trackTintList = AppCompatResources.getColorStateList(
-                    requireContext(), switchTrackTint
-                )
-                binding.scDisturbSwitch.thumbTintList = AppCompatResources.getColorStateList(
-                    requireContext(), switchThumbTint
-                )
-//                getDoNotDisturb(DoNotDisturbHandler { b: Boolean, _: Int, _: Int, _: Int, _: Int, _: String?, _: SendbirdException? ->
-//                    PreferenceUtils.doNotDisturb = b
-//                    if (isActive) {
-//                        binding.scDisturbSwitch.isChecked = PreferenceUtils.doNotDisturb
-//                    }
-//                })
-                binding.scDisturbSwitch.setOnClickListener {
-                    Logger.d("++ disturb clicked")
-                    updateDoNotDisturb()
-                }
-            }
+            SendbirdUIKit.setDefaultThemeMode(SendbirdUIKit.ThemeMode.Light)
             val homeBackgroundTint = SendbirdUIKit.getDefaultThemeMode().errorColorResId
             binding.ivHomeIcon.setImageDrawable(
                 requireContext().getDrawable(R.drawable.icon_leave, iconTint)
@@ -441,41 +370,6 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
 //                loadUserProfileUrl(profileUrl)
 //            }
 //        })
-    }
-
-    private fun updateDarkTheme() {
-        val themeMode =
-            if (SendbirdUIKit.isDarkMode()) SendbirdUIKit.ThemeMode.Light else SendbirdUIKit.ThemeMode.Dark
-        SendbirdUIKit.setDefaultThemeMode(themeMode)
-        PreferenceUtils.themeMode = themeMode
-        binding.scDarkThemeSwitch.isChecked = themeMode.isUsingDarkTheme()
-        if (activity != null) {
-            requireActivity().finish()
-            startActivity(requireActivity().intent)
-        }
-    }
-
-    private fun updateDoNotDisturb() {
-        binding.scDisturbSwitch.isChecked = !PreferenceUtils.doNotDisturb
-        Logger.d("update do not disturb : " + !PreferenceUtils.doNotDisturb)
-//        setDoNotDisturb(
-//            !PreferenceUtils.doNotDisturb,
-//            0,
-//            0,
-//            23,
-//            59,
-//            TimeZone.getDefault().id,
-//            CompletionHandler { e: SendbirdException? ->
-//                if (e != null) {
-//                    ContextUtils.toastError(context, R.string.text_error_update_do_not_disturb)
-//                    if (isActive) {
-//                        binding.scDisturbSwitch.isChecked = PreferenceUtils.doNotDisturb
-//                    }
-//                    return@CompletionHandler
-//                }
-//                Logger.d("update do not disturb on callback : " + !PreferenceUtils.doNotDisturb)
-//                PreferenceUtils.doNotDisturb = !PreferenceUtils.doNotDisturb
-//            })
     }
 
     private fun showMediaSelectDialog() {

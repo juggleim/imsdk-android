@@ -162,7 +162,7 @@ class GroupChannelMainActivity : AppCompatActivity() {
     private class MainAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
         override fun getItemCount(): Int = PAGE_SIZE
         override fun createFragment(position: Int): Fragment {
-            var fragment: Fragment
+            val fragment: Fragment
             if (position == 0) {
                 fragment = FragmentProviders.channelList.provide(Bundle())
             } else if (position == 1) {
@@ -172,7 +172,7 @@ class GroupChannelMainActivity : AppCompatActivity() {
             }
             else if (position == 3) {
                 fragment = ChatRoomListFragment()
-            }else {
+            } else {
                 fragment = SampleSettingsFragment()
             }
             return fragment

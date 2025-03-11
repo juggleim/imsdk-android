@@ -127,4 +127,10 @@
     <string name="text_resend">Resend</string>
     <string name="text_delete">Delete</string>
     <string name="text_custom_header">Custom Header</string>
+
+    <string name="text_my_qrcode">我的二维码</string>
+    <string name="text_push_setting">推送设置</string>
+    <string name="text_global_disturb">全局免打扰</string>
+    <string name="text_privacy_policy">隐私协议</string>
+    <string name="text_user_agreement">用户协议</string>
 </resources>

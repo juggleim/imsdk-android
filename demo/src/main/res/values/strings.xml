@@ -127,4 +127,10 @@
     <string name="text_resend">Resend</string>
     <string name="text_delete">Delete</string>
     <string name="text_custom_header">Custom Header</string>
+
+    <string name="text_my_qrcode">My QR code</string>
+    <string name="text_push_setting">Push setting</string>
+    <string name="text_global_disturb">Global disturb</string>
+    <string name="text_privacy_policy">Privacy policy</string>
+    <string name="text_user_agreement">User agreement</string>
 </resources>
