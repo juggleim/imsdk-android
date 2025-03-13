@@ -44,6 +44,7 @@ import com.jet.im.kit.utils.FileUtils
 import com.jet.im.kit.utils.IntentUtils
 import com.jet.im.kit.utils.PermissionUtils
 import com.jet.im.kit.utils.TextUtils
+import com.juggle.chat.settings.WebViewActivity
 import com.juggle.im.JIM
 import com.juggle.im.JIMConst
 import com.juggle.im.interfaces.IConnectionManager
@@ -247,26 +248,31 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
             itemQrCode.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
             itemQrCode.setOnClickListener {
                 Logger.d("++ qrcode clicked")
+                qrcode()
             }
 
             itemPushSetting.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
-            itemQrCode.setOnClickListener {
+            itemPushSetting.setOnClickListener {
                 Logger.d("++ push setting clicked")
+                pushSetting()
             }
 
             itemGlobalDisturb.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
-            itemQrCode.setOnClickListener {
+            itemGlobalDisturb.setOnClickListener {
                 Logger.d("++ global disturb clicked")
+                globalDisturb()
             }
 
             itemPrivacyPolicy.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
-            itemQrCode.setOnClickListener {
+            itemPrivacyPolicy.setOnClickListener {
                 Logger.d("++ privacy policy clicked")
+                privacyPolicy()
             }
 
             itemUserAgreement.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
-            itemQrCode.setOnClickListener {
+            itemUserAgreement.setOnClickListener {
                 Logger.d("++ user agreement clicked")
+                userAgreement()
             }
 
             val iconTint =
@@ -287,6 +293,34 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
                 }
             }
         }
+    }
+
+    private fun qrcode() {
+
+    }
+
+    private fun pushSetting() {
+
+    }
+
+    private fun globalDisturb() {
+
+    }
+
+    private fun privacyPolicy() {
+        context?.let {
+            val intent = WebViewActivity.newIntent(it, getString(R.string.text_privacy_policy), "https://www.juggle.im/jc/privacy.html")
+            startActivity(intent)
+        }
+
+    }
+
+    private fun userAgreement() {
+        context?.let {
+            val intent = WebViewActivity.newIntent(it, getString(R.string.text_user_agreement), "https://www.juggle.im/jc/user.html")
+            startActivity(intent)
+        }
+
     }
 
     private fun showEditProfileDialog() {
