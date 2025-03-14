@@ -44,6 +44,7 @@ import com.jet.im.kit.utils.FileUtils
 import com.jet.im.kit.utils.IntentUtils
 import com.jet.im.kit.utils.PermissionUtils
 import com.jet.im.kit.utils.TextUtils
+import com.juggle.chat.settings.GlobalDisturbSettingActivity
 import com.juggle.chat.settings.PushSettingActivity
 import com.juggle.chat.settings.WebViewActivity
 import com.juggle.im.JIM
@@ -308,7 +309,10 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
     }
 
     private fun globalDisturb() {
-
+        context?.let {
+            val intent = GlobalDisturbSettingActivity.newIntent(it)
+            startActivity(intent)
+        }
     }
 
     private fun privacyPolicy() {

@@ -43,6 +43,7 @@
         <activity android:name=".settings.WebViewActivity" />
         <activity android:name=".settings.PushSettingActivity" />
         <activity android:name=".settings.PushLanguageSettingActivity" />
+        <activity android:name=".settings.GlobalDisturbSettingActivity" />
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"

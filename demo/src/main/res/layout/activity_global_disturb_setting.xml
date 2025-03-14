@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.juggle.chat.component.HeadComponent
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        app:head_title_text="@string/text_global_disturb"/>
+
+    <LinearLayout
+        android:id="@+id/list_view"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/itemAllow"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_56"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingLeft="@dimen/sb_size_16"
+            android:paddingRight="@dimen/sb_size_16">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="允许通知"
+                android:textAppearance="@style/SendbirdSubtitle2OnLight01"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <CheckBox
+                android:id="@+id/cb_allow"
+                android:button="@null"
+                android:clickable="false"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:importantForAccessibility="no"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/item_8_to_12"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_56"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingLeft="@dimen/sb_size_16"
+            android:paddingRight="@dimen/sb_size_16">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="免打扰时段 08:00 ~ 12:00"
+                android:textAppearance="@style/SendbirdSubtitle2OnLight01"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <CheckBox
+                android:id="@+id/cb_8_to_12"
+                android:button="@null"
+                android:clickable="false"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:importantForAccessibility="no"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/item_19_to_20"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_56"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingLeft="@dimen/sb_size_16"
+            android:paddingRight="@dimen/sb_size_16">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="免打扰时段 19:00 ~ 20:00"
+                android:textAppearance="@style/SendbirdSubtitle2OnLight01"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <CheckBox
+                android:id="@+id/cb_19_to_20"
+                android:button="@null"
+                android:clickable="false"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:importantForAccessibility="no"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/item_23_to_06"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_56"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingLeft="@dimen/sb_size_16"
+            android:paddingRight="@dimen/sb_size_16">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="免打扰时段 23:00 ~ 06:00"
+                android:textAppearance="@style/SendbirdSubtitle2OnLight01"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <CheckBox
+                android:id="@+id/cb_23_to_06"
+                android:button="@null"
+                android:clickable="false"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:importantForAccessibility="no"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/item_disturb"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_56"
+            android:clickable="true"
+            android:focusable="true"
+            android:paddingLeft="@dimen/sb_size_16"
+            android:paddingRight="@dimen/sb_size_16">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="全天免打扰"
+                android:textAppearance="@style/SendbirdSubtitle2OnLight01"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+            <CheckBox
+                android:id="@+id/cb_disturb"
+                android:button="@null"
+                android:clickable="false"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:importantForAccessibility="no"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

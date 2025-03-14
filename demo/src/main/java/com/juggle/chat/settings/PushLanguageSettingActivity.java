@@ -63,7 +63,6 @@ public class PushLanguageSettingActivity extends AppCompatActivity {
         LinearLayout listView = findViewById(R.id.list_view);
         listView.addView(innerContainer);
         innerContainer.addView(mStatusFrameView);
-        mStatusFrameView.setStatus(StatusFrameView.Status.LOADING);
 
         getLanguage();
     }
