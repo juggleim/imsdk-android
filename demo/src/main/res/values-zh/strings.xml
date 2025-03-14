@@ -133,4 +133,5 @@
     <string name="text_global_disturb">全局免打扰</string>
     <string name="text_privacy_policy">隐私协议</string>
     <string name="text_user_agreement">用户协议</string>
+    <string name="text_push_language_setting">推送语言设置</string>
 </resources>

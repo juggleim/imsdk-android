@@ -28,6 +28,7 @@ import com.juggle.im.internal.connect.fsm.ConnSuperState;
 import com.juggle.im.internal.connect.fsm.ConnWaitingForConnectState;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.JWebSocket;
+import com.juggle.im.internal.core.network.WebSocketDataCallback;
 import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.IntervalGenerator;
 import com.juggle.im.internal.util.JLogger;
@@ -87,6 +88,16 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
             });
             return;
         }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.w("CON-Lang", "setLanguage error, errorCode is " + errorCode);
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            });
+            return;
+        }
         mCore.getWebSocket().setLanguage(language, mCore.getUserId(), new WebSocketSimpleCallback() {
             @Override
             public void onSuccess() {
@@ -101,6 +112,42 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
             @Override
             public void onError(int errorCode) {
                 JLogger.e("CON-Lang", "error code is " + errorCode);
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void getLanguage(JIMConst.IResultCallback<String> callback) {
+        JLogger.i("CON-Lang", "get");
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.w("CON-Lang", "getLanguage error, errorCode is " + errorCode);
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            });
+            return;
+        }
+        mCore.getWebSocket().getLanguage(mCore.getUserId(), new WebSocketDataCallback<String>() {
+            @Override
+            public void onSuccess(String data) {
+                JLogger.i("CON-Lang", "get success, language is " + data);
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess(data);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CON-Lang", "get error code is " + errorCode);
                 mCore.getCallbackHandler().post(() -> {
                     if (callback != null) {
                         callback.onError(errorCode);

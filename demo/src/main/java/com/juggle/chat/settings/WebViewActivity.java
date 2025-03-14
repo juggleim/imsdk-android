@@ -9,7 +9,6 @@ import android.webkit.WebViewClient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 
 import com.juggle.chat.R;
 import com.juggle.chat.component.HeadComponent;

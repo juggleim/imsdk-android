@@ -41,6 +41,8 @@
         <activity android:name=".group.select.SelectGroupMemberActivity" />
         <activity android:name=".friends.add.AddFriendListActivity" />
         <activity android:name=".settings.WebViewActivity" />
+        <activity android:name=".settings.PushSettingActivity" />
+        <activity android:name=".settings.PushLanguageSettingActivity" />
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"

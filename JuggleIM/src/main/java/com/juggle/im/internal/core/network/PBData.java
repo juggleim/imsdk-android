@@ -1053,6 +1053,24 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] getLanguage(String userId, int index) {
+        Appmessages.KvItem item = Appmessages.KvItem.newBuilder()
+                .setKey(LANGUAGE)
+                .build();
+        Appmessages.UserInfo userInfo = Appmessages.UserInfo.newBuilder()
+                .addSettings(item)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(GET_USER_SETTINGS)
+                .setTargetId(userId)
+                .setData(userInfo.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] addConversationsToTag(List<Conversation> conversations, String tagId, String userId, int index) {
         Appmessages.TagConvers.Builder builder = Appmessages.TagConvers.newBuilder();
         builder.setTag(tagId);
@@ -1233,6 +1251,9 @@ class PBData {
                             break;
                         case PBRcvObj.PBRcvType.qryCallRoomAck:
                             obj = qryCallRoomAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getUserInfoAck:
+                            obj = getUserInfoAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.qryMsgExtAck:
                             obj = qryMsgExtAckWithImWebsocketMsg(queryAckMsgBody);
@@ -1423,10 +1444,10 @@ class PBData {
         PBRcvObj obj = new PBRcvObj();
         Rtcroom.RtcAuth rtcAuth = Rtcroom.RtcAuth.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.callAuthAck);
-        PBRcvObj.CallAuthAck a = new PBRcvObj.CallAuthAck(body);
+        PBRcvObj.StringAck a = new PBRcvObj.StringAck(body);
         Rtcroom.ZegoAuth zegoAuth = rtcAuth.getZegoAuth();
-        a.zegoToken = zegoAuth.getToken();
-        obj.mCallInviteAck = a;
+        a.str = zegoAuth.getToken();
+        obj.mStringAck = a;
         return obj;
     }
 
@@ -1470,6 +1491,23 @@ class PBData {
         PBRcvObj.RtcQryCallRoomsAck a = new PBRcvObj.RtcQryCallRoomsAck(body);
         a.rooms = outRooms;
         obj.mRtcQryCallRoomsAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getUserInfoAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.UserInfo userInfo = Appmessages.UserInfo.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getUserInfoAck);
+        String s = "";
+        for (Appmessages.KvItem item : userInfo.getSettingsList()) {
+            if (item.getKey().equals(LANGUAGE)) {
+                s = item.getValue();
+                break;
+            }
+        }
+        PBRcvObj.StringAck a = new PBRcvObj.StringAck(body);
+        a.str = s;
+        obj.mStringAck = a;
         return obj;
     }
 
@@ -2149,6 +2187,7 @@ class PBData {
     private static final String RTC_QRY = "rtc_qry";
     private static final String RTC_PING = "rtc_ping";
     private static final String SET_USER_SETTINGS = "set_user_settings";
+    private static final String GET_USER_SETTINGS = "get_user_settings";
     private static final String LANGUAGE = "language";
     private static final String MSG_EX_SET = "msg_exset";
     private static final String DEL_MSG_EX_SET = "del_msg_exset";
@@ -2207,6 +2246,7 @@ class PBData {
             put(RTC_MEMBER_ROOMS, PBRcvObj.PBRcvType.qryCallRoomsAck);
             put(RTC_QRY, PBRcvObj.PBRcvType.qryCallRoomAck);
             put(SET_USER_SETTINGS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(GET_USER_SETTINGS, PBRcvObj.PBRcvType.getUserInfoAck);
             put(MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(DEL_MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_MSG_EX_SET, PBRcvObj.PBRcvType.qryMsgExtAck);

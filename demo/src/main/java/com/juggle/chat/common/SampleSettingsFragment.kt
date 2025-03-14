@@ -44,6 +44,7 @@ import com.jet.im.kit.utils.FileUtils
 import com.jet.im.kit.utils.IntentUtils
 import com.jet.im.kit.utils.PermissionUtils
 import com.jet.im.kit.utils.TextUtils
+import com.juggle.chat.settings.PushSettingActivity
 import com.juggle.chat.settings.WebViewActivity
 import com.juggle.im.JIM
 import com.juggle.im.JIMConst
@@ -300,7 +301,10 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
     }
 
     private fun pushSetting() {
-
+        context?.let {
+            val intent = PushSettingActivity.newIntent(it)
+            startActivity(intent)
+        }
     }
 
     private fun globalDisturb() {

@@ -133,4 +133,5 @@
     <string name="text_global_disturb">Global disturb</string>
     <string name="text_privacy_policy">Privacy policy</string>
     <string name="text_user_agreement">User agreement</string>
+    <string name="text_push_language_setting">Push language setting</string>
 </resources>

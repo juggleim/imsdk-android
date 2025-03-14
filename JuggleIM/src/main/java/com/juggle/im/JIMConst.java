@@ -34,4 +34,9 @@ public class JIMConst {
         ORDER_BY_TOP_TIME,
         ORDER_BY_MESSAGE_TIME
     }
+
+    public interface IResultCallback<T> {
+        void onSuccess(T data);
+        void onError(int errorCode);
+    }
 }

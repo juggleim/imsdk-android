@@ -435,6 +435,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void getLanguage(String userId, WebSocketDataCallback<String> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getLanguage(userId, mCmdIndex++);
+        JLogger.i("WS-Send", "get language");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void addMessageReaction(String messageId, Conversation conversation, String reactionId, String userId, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.addMsgSet(messageId, conversation, reactionId, userId, mCmdIndex++);
@@ -602,6 +610,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof MessageReactionListCallback) {
             MessageReactionListCallback sCallback = (MessageReactionListCallback) callback;
             sCallback.onError(errorCode);
+        } else if (callback instanceof WebSocketDataCallback) {
+            WebSocketDataCallback sCallback = (WebSocketDataCallback) callback;
+            sCallback.onError(errorCode);
         }
     }
 
@@ -753,7 +764,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 handleRtcInviteEventNtf(obj.mRtcInviteEventNtf);
                 break;
             case PBRcvObj.PBRcvType.callAuthAck:
-                handleRtcInviteAck(obj.mCallInviteAck);
+                handleRtcInviteAck(obj.mStringAck);
                 break;
             case PBRcvObj.PBRcvType.qryCallRoomsAck:
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
@@ -761,6 +772,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.qryCallRoomAck:
                 //复用 mRtcQryCallRoomsAck
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
+                break;
+            case PBRcvObj.PBRcvType.getUserInfoAck:
+                handleGetUserInfoAck(obj.mStringAck);
                 break;
             case PBRcvObj.PBRcvType.qryMsgExtAck:
                 handleQryMsgExtAck(obj.mQryMsgExtAck);
@@ -1041,7 +1055,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
-    private void handleRtcInviteAck(PBRcvObj.CallAuthAck ack) {
+    private void handleRtcInviteAck(PBRcvObj.StringAck ack) {
         JLogger.i("WS-Receive", "handleRtcInviteAck");
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) {
@@ -1052,7 +1066,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {
-                callback.onSuccess(ack.zegoToken);
+                callback.onSuccess(ack.str);
             }
         }
     }
@@ -1069,6 +1083,23 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.rooms);
+            }
+        }
+    }
+
+    private void handleGetUserInfoAck(PBRcvObj.StringAck ack) {
+        JLogger.i("WS-Receive", "handleGetUserInfoAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof WebSocketDataCallback) {
+            @SuppressWarnings("unchecked")
+            WebSocketDataCallback<String> callback = (WebSocketDataCallback<String>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.str);
             }
         }
     }
