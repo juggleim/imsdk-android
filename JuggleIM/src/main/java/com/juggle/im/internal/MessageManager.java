@@ -1778,6 +1778,26 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void uploadImage(String localPath, JIMConst.IResultCallback<String> callback) {
+        UploadManager uploadManager = new UploadManager(mCore);
+        uploadManager.uploadImage(localPath, new JIMConst.IResultCallback<String>() {
+            @Override
+            public void onSuccess(String data) {
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(data));
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
     public void setMute(boolean isMute, List<TimePeriod> periods, ISimpleCallback callback) {
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;

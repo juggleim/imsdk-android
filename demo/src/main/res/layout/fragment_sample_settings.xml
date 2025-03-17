@@ -17,26 +17,34 @@
             android:layout_height="wrap_content"
             />
 
-        <ImageView
-            android:id="@+id/ivProfileView"
-            android:layout_width="@dimen/sb_size_64"
-            android:layout_height="@dimen/sb_size_64"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/sb_size_24"
-            android:layout_marginBottom="@dimen/sb_size_4"/>
-
-        <TextView
-            android:id="@+id/tvNickname"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/itemProfile"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/sb_size_4"
-            android:layout_marginBottom="@dimen/sb_size_24"
-            android:ellipsize="middle"
-            android:singleLine="true"
-            android:paddingLeft="@dimen/sb_size_16"
-            android:paddingRight="@dimen/sb_size_16"
-            android:textAppearance="@style/SendbirdH1OnLight01" />
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/ivProfileView"
+                android:layout_width="@dimen/sb_size_64"
+                android:layout_height="@dimen/sb_size_64"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/sb_size_24"
+                android:layout_marginBottom="@dimen/sb_size_4"/>
+
+            <TextView
+                android:id="@+id/tvNickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/sb_size_4"
+                android:layout_marginBottom="@dimen/sb_size_24"
+                android:ellipsize="middle"
+                android:singleLine="true"
+                android:paddingLeft="@dimen/sb_size_16"
+                android:paddingRight="@dimen/sb_size_16"
+                android:textAppearance="@style/SendbirdH1OnLight01" />
+
+        </LinearLayout>
 
         <View
             android:id="@+id/profileDivider"

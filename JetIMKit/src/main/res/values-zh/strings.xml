@@ -67,9 +67,9 @@
     <string name="sb_text_channel_settings_delete_channel">Delete channel</string>
     <string name="sb_text_channel_settings_change_channel_name">Change name</string>
     <string name="sb_text_channel_settings_change_channel_name_hint">Enter name</string>
-    <string name="sb_text_channel_settings_change_channel_image">Change channel image</string>
-    <string name="sb_text_channel_settings_change_channel_image_camera">Take photo</string>
-    <string name="sb_text_channel_settings_change_channel_image_gallery">Choose photo</string>
+    <string name="sb_text_channel_settings_change_channel_image">更换图片</string>
+    <string name="sb_text_channel_settings_change_channel_image_camera">拍照</string>
+    <string name="sb_text_channel_settings_change_channel_image_gallery">我的相册</string>
     <string name="sb_text_channel_settings_message_search">Search in channel</string>
 
     <!-- User List -->

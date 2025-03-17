@@ -1,7 +1,6 @@
 package com.juggle.chat.http;
 
 import com.juggle.chat.bean.CreateGroupResult;
-import com.juggle.chat.bean.FriendBean;
 import com.juggle.chat.bean.GroupBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;

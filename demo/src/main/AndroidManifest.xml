@@ -44,6 +44,8 @@
         <activity android:name=".settings.PushSettingActivity" />
         <activity android:name=".settings.PushLanguageSettingActivity" />
         <activity android:name=".settings.GlobalDisturbSettingActivity" />
+        <activity android:name=".settings.ProfileSettingActivity" />
+        <activity android:name=".settings.NicknameSettingActivity" />
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"

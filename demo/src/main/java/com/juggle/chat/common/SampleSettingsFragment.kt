@@ -45,6 +45,7 @@ import com.jet.im.kit.utils.IntentUtils
 import com.jet.im.kit.utils.PermissionUtils
 import com.jet.im.kit.utils.TextUtils
 import com.juggle.chat.settings.GlobalDisturbSettingActivity
+import com.juggle.chat.settings.ProfileSettingActivity
 import com.juggle.chat.settings.PushSettingActivity
 import com.juggle.chat.settings.WebViewActivity
 import com.juggle.im.JIM
@@ -159,6 +160,10 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
     override fun onResume() {
         super.onResume()
         setHasOptionsMenu(true)
+        if (SendbirdUIKit.avatar != null) {
+            loadUserProfileUrl(SendbirdUIKit.avatar)
+        }
+        binding.tvNickname.text = SendbirdUIKit.nickname
     }
 
     override fun onDestroy() {
@@ -244,8 +249,9 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
                 showEditProfileDialog()
             }
 
-            loadUserProfileUrl(SendbirdUIKit.avatar)
-            binding.tvNickname.text = SendbirdUIKit.nickname
+            itemProfile.setOnClickListener {
+                profileEdit()
+            }
 
             itemQrCode.setBackgroundResource(com.jet.im.kit.R.drawable.selector_rectangle_light)
             itemQrCode.setOnClickListener {
@@ -329,6 +335,13 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
             startActivity(intent)
         }
 
+    }
+
+    private fun profileEdit() {
+        context?.let {
+            val intent = ProfileSettingActivity.newIntent(it)
+            startActivity(intent)
+        }
     }
 
     private fun showEditProfileDialog() {

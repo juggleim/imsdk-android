@@ -134,4 +134,7 @@
     <string name="text_privacy_policy">Privacy policy</string>
     <string name="text_user_agreement">User agreement</string>
     <string name="text_push_language_setting">Push language setting</string>
+    <string name="text_profile">Profile</string>
+    <string name="text_portrait">Portrait</string>
+    <string name="text_update_nickname">Update nickname</string>
 </resources>

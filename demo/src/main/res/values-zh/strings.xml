@@ -12,7 +12,7 @@
     <string name="text_version_info">UIKit v%1$s &#160;&#160;&#160;&#160; SDK v%2$s</string>
     <string name="text_hint_code">验证码(000000)</string>
     <string name="text_hint_phone">手机号</string>
-    <string name="text_hint_nickname">Nickname</string>
+    <string name="text_hint_nickname">昵称</string>
     <string name="text_sign_in">登录</string>
     <string name="text_sign_out">退出登录</string>
     <string name="text_sign_out_lower">退出登录</string>
@@ -134,4 +134,7 @@
     <string name="text_privacy_policy">隐私协议</string>
     <string name="text_user_agreement">用户协议</string>
     <string name="text_push_language_setting">推送语言设置</string>
+    <string name="text_profile">个人信息</string>
+    <string name="text_portrait">头像</string>
+    <string name="text_update_nickname">修改昵称</string>
 </resources>

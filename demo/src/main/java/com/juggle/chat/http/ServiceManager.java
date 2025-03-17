@@ -26,9 +26,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ServiceManager {
     public static final MediaType MEDIA_TYPE_JSON =
             MediaType.parse("application/json;charset=UTF-8");
-    private static LoginService loginService;
-    private static FriendsService friendsService;
-    private static GroupsService groupsService;
+    private static final LoginService loginService;
+    private static final FriendsService friendsService;
+    private static final GroupsService groupsService;
+    private static final UserService userService;
 
     static {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
@@ -60,6 +61,7 @@ public class ServiceManager {
         loginService = retrofit.create(LoginService.class);
         friendsService = retrofit.create(FriendsService.class);
         groupsService = retrofit.create(GroupsService.class);
+        userService = retrofit.create(UserService.class);
     }
 
     /**
@@ -84,5 +86,9 @@ public class ServiceManager {
 
     public static GroupsService getGroupsService() {
         return groupsService;
+    }
+
+    public static UserService getUserService() {
+        return userService;
     }
 }

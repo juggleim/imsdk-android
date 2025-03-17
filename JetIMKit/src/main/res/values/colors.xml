@@ -36,6 +36,8 @@
     <color name="information">#adc9ff</color>
     <color name="highlight">#fff2b6</color>
 
+    <color name="secondary_main">@color/secondary_300</color>
+
     <color name="primary_dark">@color/primary_400</color>
     <color name="primary_main">@color/primary_300</color>
 

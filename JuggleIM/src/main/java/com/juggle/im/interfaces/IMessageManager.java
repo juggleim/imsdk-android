@@ -366,6 +366,13 @@ public interface IMessageManager {
     List<MessageReaction> getCachedMessagesReaction(List<String> messageIdList);
 
     /**
+     * 上传图片
+     * @param localPath 图片路径
+     * @param callback 成功的时候回调图片的远端 url
+     */
+    void uploadImage(String localPath, JIMConst.IResultCallback<String> callback);
+
+    /**
      * 设置消息全局免打扰。
      *
      * @param isMute 是否免打扰
