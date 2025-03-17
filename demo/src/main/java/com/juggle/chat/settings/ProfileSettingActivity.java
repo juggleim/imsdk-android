@@ -128,7 +128,6 @@ public class ProfileSettingActivity extends AppCompatActivity {
         updateAvatar();
         TextView tvNickname = findViewById(R.id.tvNickname);
         tvNickname.setText(SendbirdUIKit.nickname);
-        //todo profile
     }
 
     private void updateAvatar() {

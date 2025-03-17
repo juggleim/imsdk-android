@@ -73,6 +73,7 @@ public class SendbirdUIKit {
 
     public static volatile String authorization;
     public static volatile String appKey;
+    public static final String FRIEND_CONVERSATION_ID = "friend_apply";
 
     /**
      * UIKit log level. It depends on android Log level.

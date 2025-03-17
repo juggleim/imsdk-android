@@ -2,7 +2,9 @@ package com.jet.im.kit.fragments;
 
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -70,9 +72,17 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
         return ViewModelProviders.getChannelList().provide(this, query);
     }
 
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return getModule().onCreateView(requireActivity(), inflater, getArguments());
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         getModule().getStatusComponent().notifyStatusChanged(StatusFrameView.Status.LOADING);
+        onBeforeReady(ReadyStatus.READY, getModule(), getViewModel());
+        onReady(ReadyStatus.READY, getModule(), getViewModel());
     }
 
     @Override

@@ -6,6 +6,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.jet.im.kit.SendbirdUIKit;
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IConversationManager;
@@ -342,6 +343,10 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         }
         ConversationInfo toBeRemove;
         for (ConversationInfo newInfo : newList) {
+            if (newInfo.getConversation().getConversationType() == Conversation.ConversationType.SYSTEM
+            && newInfo.getConversation().getConversationId().equals(SendbirdUIKit.FRIEND_CONVERSATION_ID)) {
+                continue;
+            }
             toBeRemove = null;
             for (ConversationInfo oldInfo : oldList) {
                 if (oldInfo.getConversation().equals(newInfo.getConversation())) {

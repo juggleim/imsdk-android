@@ -17,12 +17,14 @@ import com.juggle.chat.http.ServiceManager
 import com.jet.im.kit.SendbirdUIKit
 import com.juggle.chat.common.preferences.PreferenceUtils
 import com.juggle.im.JIM
-import com.sendbird.android.SendbirdChat.sdkVersion
+import com.juggle.im.JIMConst
+import com.juggle.im.interfaces.IConnectionManager.IConnectionStatusListener
 
 /**
  * Displays a login screen.
  */
-open class LoginActivity : AppCompatActivity() {
+open class LoginActivity : AppCompatActivity(), IConnectionStatusListener {
+    private val key = "LoginActivity"
     protected val binding by lazy { ActivityLoginBinding.inflate(layoutInflater) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +57,12 @@ open class LoginActivity : AppCompatActivity() {
             }
         }
         setContentView(binding.root)
+        JIM.getInstance().connectionManager.addConnectionStatusListener(key, this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        JIM.getInstance().connectionManager.removeConnectionStatusListener(key)
     }
 
     open fun onSendCode(phone: String) {
@@ -81,12 +89,7 @@ open class LoginActivity : AppCompatActivity() {
                 SendbirdUIKit.nickname = k?.nickname ?: ""
                 SendbirdUIKit.avatar = k?.avatar ?: ""
 
-                startActivity(
-                    Intent(
-                        this@LoginActivity,
-                        GroupChannelMainActivity::class.java
-                    )
-                )
+                JIM.getInstance().connectionManager.connect(k?.im_token)
 //                finish()
             }
 
@@ -96,5 +99,20 @@ open class LoginActivity : AppCompatActivity() {
             }
         })
 
+    }
+
+    override fun onStatusChange(status: JIMConst.ConnectionStatus?, code: Int, extra: String?) {
+    }
+
+    override fun onDbOpen() {
+        startActivity(
+            Intent(
+                this@LoginActivity,
+                GroupChannelMainActivity::class.java
+            )
+        )
+    }
+
+    override fun onDbClose() {
     }
 }
