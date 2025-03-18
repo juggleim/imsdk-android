@@ -38,7 +38,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".group.select.SelectGroupMemberActivity" />
+        <activity android:name=".contacts.group.select.SelectGroupMemberActivity" />
         <activity android:name=".contacts.add.AddFriendListActivity" />
         <activity android:name=".settings.WebViewActivity" />
         <activity android:name=".settings.PushSettingActivity" />
@@ -46,8 +46,8 @@
         <activity android:name=".settings.GlobalDisturbSettingActivity" />
         <activity android:name=".settings.ProfileSettingActivity" />
         <activity android:name=".settings.NicknameSettingActivity" />
-        <activity android:name=".contacts.GroupListActivity" />
-        <activity android:name=".contacts.ChatroomListActivity" />
+        <activity android:name=".contacts.group.GroupListActivity" />
+        <activity android:name=".contacts.chatroom.ChatroomListActivity" />
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"

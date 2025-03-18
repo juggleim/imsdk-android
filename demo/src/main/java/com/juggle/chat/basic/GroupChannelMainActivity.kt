@@ -20,7 +20,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.activities.ChannelActivity
 import com.jet.im.kit.providers.FragmentProviders
-import com.juggle.chat.chatroom.ChatRoomListFragment
+import com.juggle.chat.bots.BotListFragment
 import com.juggle.im.JIM
 import com.juggle.im.interfaces.IConversationManager.IConversationListener
 import com.juggle.im.model.Conversation
@@ -65,8 +65,8 @@ class GroupChannelMainActivity : AppCompatActivity(), IConversationListener {
                     2 -> {
                         CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
-                            setTitle(getString(R.string.text_tab_chatroom))
-                            setIcon(com.jet.im.kit.R.drawable.icon_chatroom)
+                            setTitle(getString(R.string.text_bots))
+                            setIcon(R.drawable.icon_bots)
                         }
                     }
 
@@ -172,7 +172,8 @@ class GroupChannelMainActivity : AppCompatActivity(), IConversationListener {
             } else if (position == 1) {
                 fragment = FriendListFragment()
             } else if (position == 2) {
-                fragment = ChatRoomListFragment()
+                fragment =
+                    BotListFragment()
             } else {
                 fragment = SampleSettingsFragment()
             }

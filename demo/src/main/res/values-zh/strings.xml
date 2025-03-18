@@ -138,4 +138,5 @@
     <string name="text_portrait">头像</string>
     <string name="text_update_nickname">修改昵称</string>
     <string name="text_new_friend">新朋友</string>
+    <string name="text_bots">智能体</string>
 </resources>

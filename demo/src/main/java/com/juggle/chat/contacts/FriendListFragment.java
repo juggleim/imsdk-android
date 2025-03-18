@@ -16,6 +16,8 @@ import com.juggle.chat.R;
 import com.juggle.chat.bean.FriendBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
+import com.juggle.chat.contacts.chatroom.ChatroomListActivity;
+import com.juggle.chat.contacts.group.GroupListActivity;
 import com.juggle.chat.databinding.FragmentFriendsGroupsBinding;
 import com.juggle.chat.contacts.add.AddFriendListActivity;
 import com.juggle.chat.http.CustomCallback;
