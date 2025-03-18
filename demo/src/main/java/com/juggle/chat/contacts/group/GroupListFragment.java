@@ -25,6 +25,7 @@ import com.juggle.chat.bean.ListResult;
 import com.juggle.chat.common.adapter.CommonAdapter;
 import com.juggle.chat.common.adapter.MultiItemTypeAdapter;
 import com.juggle.chat.common.adapter.ViewHolder;
+import com.juggle.chat.contacts.group.select.SelectGroupMemberActivity;
 import com.juggle.chat.databinding.FragmentGroupsBinding;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
@@ -45,7 +46,7 @@ public class GroupListFragment extends Fragment {
 
         binding.headerView.getTitleTextView().setText(getString(R.string.text_tab_groups));
         binding.headerView.setLeftButtonImageResource(R.drawable.icon_back);
-        binding.headerView.setLeftButtonTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(getContext()));
+        binding.headerView.setLeftButtonTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(requireContext()));
         binding.headerView.setOnLeftButtonClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,6 +57,9 @@ public class GroupListFragment extends Fragment {
         });
         binding.headerView.setRightButtonImageResource(com.jet.im.kit.R.drawable.icon_create);
         binding.headerView.setRightButtonTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(getContext()));
+        binding.headerView.setOnRightButtonClickListener(v -> {
+            startActivity(SelectGroupMemberActivity.newIntent(getContext()));
+        });
 
         adapter = new CommonAdapter<GroupBean>(R.layout.sb_view_member_list_item) {
             @Override

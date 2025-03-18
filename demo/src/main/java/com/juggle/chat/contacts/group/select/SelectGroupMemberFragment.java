@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.jet.im.kit.modules.components.StateHeaderComponent;
+import com.juggle.chat.R;
 import com.juggle.chat.base.BasePageFragment;
 import com.juggle.chat.bean.CreateGroupResult;
 import com.juggle.chat.bean.FriendBean;
@@ -39,9 +41,7 @@ import okhttp3.RequestBody;
  */
 public class SelectGroupMemberFragment
         extends BasePageFragment<AddFriendListViewModel> {
-    private FragmentCreateGroupsBinding binding;
-    private CommonAdapter<SelectFriendBean> adapter = new SelectMemberAdapter();
-
+    private final CommonAdapter<SelectFriendBean> adapter = new SelectMemberAdapter();
 
     @NonNull
     @Override
@@ -51,15 +51,28 @@ public class SelectGroupMemberFragment
 
     @Override
     protected View createView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentCreateGroupsBinding.inflate(inflater, container, false);
-        binding.rvList.setAdapter(adapter);
-        binding.rvList.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.tvTitle.setOnRightIconClickListener(new TitleBar.OnRightIconClickListener() {
-            @Override
-            public void onRightIconClick(View v) {
-                showAddFriendDialog();
+        com.juggle.chat.databinding.FragmentCreateGroupsBinding binding = FragmentCreateGroupsBinding.inflate(inflater, container, false);
+
+        StateHeaderComponent headerComponent = new StateHeaderComponent();
+        headerComponent.getParams().setTitle("");
+        headerComponent.getParams().setUseLeftButton(true);
+        headerComponent.getParams().setUseRightButton(true);
+        headerComponent.getParams().setLeftButtonIcon(requireContext().getDrawable(R.drawable.icon_back));
+        headerComponent.getParams().setLeftButtonIconTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(requireContext()));
+        headerComponent.getParams().setRightButtonText(requireContext().getString(R.string.text_header_create_button));
+        headerComponent.setOnLeftButtonClickListener(v -> {
+            if (getActivity() != null) {
+                getActivity().finish();
             }
         });
+        headerComponent.setOnRightButtonClickListener(v -> {
+            showAddFriendDialog();
+        });
+        View header = headerComponent.onCreateView(requireContext(), inflater, binding.headerComponent, savedInstanceState);
+        binding.headerComponent.addView(header);
+
+        binding.rvList.setAdapter(adapter);
+        binding.rvList.setLayoutManager(new LinearLayoutManager(getContext()));
         return binding.getRoot();
     }
 

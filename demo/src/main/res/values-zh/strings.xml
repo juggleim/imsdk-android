@@ -49,7 +49,7 @@
     <string name="text_live_streams">Live streams</string>
     <string name="text_community">Community</string>
     <string name="text_live_streaming_description">Preset channels developed by UIKit</string>
-    <string name="text_header_create_button">Create</string>
+    <string name="text_header_create_button">创建</string>
     <string name="text_input_channel_name_hint">Enter channel name</string>
     <string name="text_live">LIVE</string>
     <string name="text_participants">%s participants</string>
