@@ -47,6 +47,7 @@
         <activity android:name=".settings.ProfileSettingActivity" />
         <activity android:name=".settings.NicknameSettingActivity" />
         <activity android:name=".contacts.GroupListActivity" />
+        <activity android:name=".contacts.ChatroomListActivity" />
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"

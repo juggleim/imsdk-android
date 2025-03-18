@@ -17,6 +17,8 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.modules.components.StateHeaderComponent;
+import com.jet.im.kit.utils.DrawableUtils;
+import com.jet.im.kit.utils.TextUtils;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.GroupBean;
 import com.juggle.chat.bean.HttpResult;
@@ -62,11 +64,13 @@ public class GroupListFragment extends Fragment {
         adapter = new CommonAdapter<GroupBean>(R.layout.sb_view_member_list_item) {
             @Override
             public void bindData(ViewHolder viewHolder, GroupBean item, int position) {
-                if (item.getGroup_portrait() != null) {
+                if (TextUtils.isNotEmpty(item.getGroup_portrait())) {
                     Glide.with(viewHolder.itemView.getContext())
                             .load(item.getGroup_portrait())
                             .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                             .into(viewHolder.<ImageView>getView(R.id.ivProfile));
+                } else {
+                    viewHolder.<ImageView>getView(R.id.ivProfile).setImageDrawable(DrawableUtils.getDefaultDrawable(viewHolder.itemView.getContext()));
                 }
                 viewHolder.setText(R.id.tvNickname, item.getGroup_name());
             }

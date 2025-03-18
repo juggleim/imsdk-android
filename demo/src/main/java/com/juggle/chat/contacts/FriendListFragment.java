@@ -50,7 +50,7 @@ public class FriendListFragment extends Fragment {
                 } else if (position == 1) {
                     startActivity(GroupListActivity.newIntent(requireContext()));
                 } else if (position == 2) {
-
+                    startActivity(ChatroomListActivity.newIntent(requireContext()));
                 } else {
                     startActivity(ChannelActivity.newIntent(requireContext(), Conversation.ConversationType.PRIVATE.getValue(), data.getUser_id()));
                 }

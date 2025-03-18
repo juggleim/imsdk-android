@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.activities.ChannelActivity;
 import com.jet.im.kit.modules.components.StateHeaderComponent;
 import com.juggle.chat.R;
@@ -34,11 +35,20 @@ public class ChatRoomListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentChatroomBinding.inflate(inflater, container, false);
-        headerComponent.getParams().setTitle(getString(R.string.text_tab_chatroom));
-        headerComponent.getParams().setUseLeftButton(false);
-        headerComponent.getParams().setUseRightButton(false);
-        View header = headerComponent.onCreateView(requireContext(), inflater, binding.headerComponent, savedInstanceState);
-        binding.headerComponent.addView(header);
+
+        binding.headerView.getTitleTextView().setText(getString(R.string.text_tab_chatroom));
+        binding.headerView.setLeftButtonImageResource(R.drawable.icon_back);
+        binding.headerView.setLeftButtonTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(getContext()));
+        binding.headerView.setOnLeftButtonClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
+            }
+        });
+        binding.headerView.getRightButton().setVisibility(View.GONE);
+
         adapter.setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener<ChatRoomBean>() {
             @Override
             public void onItemClick(View view, RecyclerView.ViewHolder holder, ChatRoomBean bean, int position) {
