@@ -32,7 +32,6 @@ import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.utils.FileUtils;
 import com.jet.im.kit.utils.IntentUtils;
 import com.jet.im.kit.utils.PermissionUtils;
-import com.jet.im.kit.utils.TextUtils;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.UserInfoRequest;
@@ -40,9 +39,7 @@ import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
-import com.juggle.im.internal.uploader.FileUtil;
 
-import java.io.File;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;

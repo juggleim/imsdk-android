@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
+import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.modules.components.StateHeaderComponent;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.GroupBean;
@@ -24,6 +25,7 @@ import com.juggle.chat.common.adapter.CommonAdapter;
 import com.juggle.chat.common.adapter.MultiItemTypeAdapter;
 import com.juggle.chat.common.adapter.ViewHolder;
 import com.juggle.chat.common.widgets.TitleBar;
+import com.juggle.chat.component.HeadComponent;
 import com.juggle.chat.databinding.FragmentGroupsBinding;
 import com.juggle.chat.group.select.SelectGroupMemberActivity;
 import com.juggle.chat.http.CustomCallback;
@@ -36,22 +38,28 @@ import com.juggle.im.model.Conversation;
  */
 public class GroupListFragment extends Fragment {
     private FragmentGroupsBinding binding;
-    private final StateHeaderComponent headerComponent = new StateHeaderComponent();
     private CommonAdapter<GroupBean> adapter;
-
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentGroupsBinding.inflate(inflater, container, false);
-        headerComponent.getParams().setTitle(getString(R.string.text_tab_groups));
-        headerComponent.getParams().setUseLeftButton(false);
-        headerComponent.getParams().setRightButtonText("Add");
-        headerComponent.setOnRightButtonClickListener(v -> startActivity(SelectGroupMemberActivity.newIntent(getContext())));
-        View header = headerComponent.onCreateView(requireContext(), inflater, binding.headerComponent, savedInstanceState);
-        binding.headerComponent.addView(header);
-        adapter = new CommonAdapter<GroupBean>(R.layout.sb_view_member_list_item) {
 
+        binding.headerView.getTitleTextView().setText(getString(R.string.text_tab_groups));
+        binding.headerView.setLeftButtonImageResource(R.drawable.icon_back);
+        binding.headerView.setLeftButtonTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(getContext()));
+        binding.headerView.setOnLeftButtonClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
+            }
+        });
+        binding.headerView.setRightButtonImageResource(com.jet.im.kit.R.drawable.icon_create);
+        binding.headerView.setRightButtonTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(getContext()));
+
+        adapter = new CommonAdapter<GroupBean>(R.layout.sb_view_member_list_item) {
             @Override
             public void bindData(ViewHolder viewHolder, GroupBean item, int position) {
                 if (item.getGroup_portrait() != null) {
@@ -91,7 +99,6 @@ public class GroupListFragment extends Fragment {
                 if (listResult.getItems() != null && !listResult.getItems().isEmpty()) {
                     adapter.setData(listResult.getItems());
                 }
-
             }
         });
     }

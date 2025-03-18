@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.jet.im.kit.SendbirdUIKit;
 import com.juggle.chat.R;
-import com.juggle.chat.bean.CreateGroupResult;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.UserInfoRequest;
 import com.juggle.chat.component.HeadComponent;

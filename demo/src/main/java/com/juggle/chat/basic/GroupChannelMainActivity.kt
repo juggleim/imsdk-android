@@ -15,8 +15,7 @@ import com.juggle.chat.common.extensions.isUsingDarkTheme
 import com.juggle.chat.common.preferences.PreferenceUtils
 import com.juggle.chat.common.widgets.CustomTabView
 import com.juggle.chat.databinding.ActivityGroupChannelMainBinding
-import com.juggle.chat.friends.FriendListFragment
-import com.juggle.chat.group.GroupListFragment
+import com.juggle.chat.contacts.FriendListFragment
 import com.google.android.material.tabs.TabLayoutMediator
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.activities.ChannelActivity
@@ -64,13 +63,6 @@ class GroupChannelMainActivity : AppCompatActivity(), IConversationListener {
                     }
 
                     2 -> {
-                        CustomTabView(this@GroupChannelMainActivity).apply {
-                            setBadgeVisibility(View.GONE)
-                            setTitle(getString(R.string.text_tab_groups))
-                            setIcon(com.jet.im.kit.R.drawable.icon_group)
-                        }
-                    }
-                    3 -> {
                         CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
                             setTitle(getString(R.string.text_tab_chatroom))
@@ -180,9 +172,6 @@ class GroupChannelMainActivity : AppCompatActivity(), IConversationListener {
             } else if (position == 1) {
                 fragment = FriendListFragment()
             } else if (position == 2) {
-                fragment = GroupListFragment()
-            }
-            else if (position == 3) {
                 fragment = ChatRoomListFragment()
             } else {
                 fragment = SampleSettingsFragment()
@@ -191,7 +180,7 @@ class GroupChannelMainActivity : AppCompatActivity(), IConversationListener {
         }
 
         companion object {
-            private const val PAGE_SIZE = 5
+            private const val PAGE_SIZE = 4
         }
     }
 
