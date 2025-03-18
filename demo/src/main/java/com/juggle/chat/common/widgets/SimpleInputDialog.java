@@ -16,7 +16,6 @@ import androidx.fragment.app.DialogFragment;
 
 import com.juggle.chat.R;
 
-
 public class SimpleInputDialog extends DialogFragment implements View.OnClickListener {
     private EditText inputEt;
     private TextView confirmTv;
