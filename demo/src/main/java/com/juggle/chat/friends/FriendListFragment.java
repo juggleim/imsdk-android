@@ -11,14 +11,14 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.modules.components.StateHeaderComponent;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.FriendBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
-import com.juggle.chat.common.adapter.CommonAdapter;
 import com.juggle.chat.common.adapter.MultiItemTypeAdapter;
-import com.juggle.chat.common.widgets.TitleBar;
+import com.juggle.chat.common.adapter.ViewHolder;
 import com.juggle.chat.databinding.FragmentFriendsGroupsBinding;
 import com.juggle.chat.friends.add.AddFriendListActivity;
 import com.juggle.chat.http.CustomCallback;
@@ -33,7 +33,7 @@ import com.juggle.im.model.Conversation;
 public class FriendListFragment extends Fragment {
     private FragmentFriendsGroupsBinding binding;
     private final StateHeaderComponent headerComponent = new StateHeaderComponent();
-    private final CommonAdapter<FriendBean> adapter = new FriendAdapter();
+    private final FriendAdapter adapter = new FriendAdapter();
 
     @Nullable
     @Override
@@ -45,17 +45,15 @@ public class FriendListFragment extends Fragment {
         headerComponent.setOnRightButtonClickListener(v -> startActivity(AddFriendListActivity.newIntent(getContext())));
         View header = headerComponent.onCreateView(requireContext(), inflater, binding.headerComponent, savedInstanceState);
         binding.headerComponent.addView(header);
-        adapter.setOnItemClickListener(new MultiItemTypeAdapter.OnItemClickListener<FriendBean>() {
+        adapter.setOnItemClickListener(new OnItemClickListener<FriendBean>() {
             @Override
-            public void onItemClick(View view, RecyclerView.ViewHolder holder, FriendBean friendBean, int position) {
-                startActivity(ChannelActivity.newIntent(requireContext(), Conversation.ConversationType.PRIVATE.getValue(), friendBean.getUser_id()));
-            }
-
-            @Override
-            public boolean onItemLongClick(View view, RecyclerView.ViewHolder holder, FriendBean friendBean, int position) {
-                return false;
+            public void onItemClick(@NonNull View view, int position, @NonNull FriendBean data) {
+                if (position > 2) {
+                    startActivity(ChannelActivity.newIntent(requireContext(), Conversation.ConversationType.PRIVATE.getValue(), data.getUser_id()));
+                }
             }
         });
+
         binding.rvList.setAdapter(adapter);
         binding.rvList.setLayoutManager(new LinearLayoutManager(getContext()));
         return binding.getRoot();
@@ -71,9 +69,8 @@ public class FriendListFragment extends Fragment {
             @Override
             public void onSuccess(ListResult<FriendBean> listResult) {
                 if (listResult.getItems() != null && !listResult.getItems().isEmpty()) {
-                    adapter.setData(listResult.getItems());
+                    adapter.setList(listResult.getItems());
                 }
-
             }
         });
     }

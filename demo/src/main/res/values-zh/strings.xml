@@ -137,4 +137,5 @@
     <string name="text_profile">个人信息</string>
     <string name="text_portrait">头像</string>
     <string name="text_update_nickname">修改昵称</string>
+    <string name="text_new_friend">新朋友</string>
 </resources>

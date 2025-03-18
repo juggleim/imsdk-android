@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
-    <androidx.recyclerview.widget.RecyclerView
+    <com.jet.im.kit.internal.ui.widgets.ThemeableRecyclerView
         android:id="@+id/rv_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

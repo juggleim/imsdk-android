@@ -22,8 +22,6 @@ import okhttp3.RequestBody;
 /**
  * 功能描述: 创建群组ViewModel
  *
- * @author rongcloud
- * @since 5.10.4
  */
 public class AddFriendListViewModel extends BaseViewModel {
     private final MutableLiveData<List<FriendBean>> userProfileLiveData = new MutableLiveData<>();

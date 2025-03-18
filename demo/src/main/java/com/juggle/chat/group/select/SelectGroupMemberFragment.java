@@ -36,8 +36,6 @@ import okhttp3.RequestBody;
 /**
  * 功能描述: 创建群组页面
  *
- * @author rongcloud
- * @since 5.10.4
  */
 public class SelectGroupMemberFragment
         extends BasePageFragment<AddFriendListViewModel> {

@@ -31,8 +31,6 @@ import java.util.List;
 /**
  * 功能描述: 创建群组页面
  *
- * @author rongcloud
- * @since 5.10.4
  */
 public class AddFriendListFragment
         extends BasePageFragment<AddFriendListViewModel> {
@@ -41,21 +39,21 @@ public class AddFriendListFragment
     protected SearchComponent searchComponent;
     protected HeadComponent headComponent;
     String mQuery;
-    protected CommonAdapter<FriendBean> adapter = new FriendAdapter();
-    EmptyWrapper emptyWrapper =
-            new EmptyWrapper(adapter, R.layout.rc_item_find_user_empty) {
-                @Override
-                public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-                    if (isEmpty()) {
-                        holder.itemView
-                                .findViewById(R.id.tv_hint)
-                                .setVisibility(
-                                        TextUtils.isEmpty(mQuery) ? View.GONE : View.VISIBLE);
-                        return;
-                    }
-                    mInnerAdapter.onBindViewHolder(holder, position);
-                }
-            };
+//    protected CommonAdapter<FriendBean> adapter = new FriendAdapter();
+//    EmptyWrapper emptyWrapper =
+//            new EmptyWrapper(adapter, R.layout.rc_item_find_user_empty) {
+//                @Override
+//                public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+//                    if (isEmpty()) {
+//                        holder.itemView
+//                                .findViewById(R.id.tv_hint)
+//                                .setVisibility(
+//                                        TextUtils.isEmpty(mQuery) ? View.GONE : View.VISIBLE);
+//                        return;
+//                    }
+//                    mInnerAdapter.onBindViewHolder(holder, position);
+//                }
+//            };
 
     @NonNull
     @Override
@@ -72,61 +70,61 @@ public class AddFriendListFragment
         listComponent = view.findViewById(R.id.rc_list_component);
         listComponent.setEnableLoadMore(false);
         listComponent.setEnableRefresh(false);
-        listComponent.setAdapter(emptyWrapper);
+//        listComponent.setAdapter(emptyWrapper);
         return view;
     }
 
 
     @Override
     protected void onViewReady(@NonNull AddFriendListViewModel viewModel) {
-        headComponent.setLeftClickListener(v -> getActivity().finish());
-        adapter.<FriendBean>setOnItemClickListener(
-                new MultiItemTypeAdapter.OnItemClickListener<FriendBean>() {
-                    @Override
-                    public void onItemClick(
-                            View view,
-                            RecyclerView.ViewHolder holder,
-                            FriendBean userProfile,
-                            int position) {
-                        addFriend(userProfile.getUser_id());
-
-//                        startActivity(
-//                                UserDetailActivity.newIntent(
-//                                        getActivity(), userProfile.getUserId(), false, false));
-                    }
-
-                    @Override
-                    public boolean onItemLongClick(
-                            View view,
-                            RecyclerView.ViewHolder holder,
-                            FriendBean userProfile,
-                            int position) {
-                        return false;
-                    }
-                });
-        searchComponent.setSearchQueryListener(
-                new SearchComponent.OnSearchQueryListener() {
-                    @Override
-                    public void onSearch(String query) {
-                    }
-
-                    @Override
-                    public void onClickSearch(String query) {
-                        mQuery = query;
-                        getViewModel().findUser(query);
-                    }
-                });
-        viewModel
-                .getUserProfileLiveData()
-                .observe(
-                        getViewLifecycleOwner(),
-                        new Observer<List<FriendBean>>() {
-                            @Override
-                            public void onChanged(List<FriendBean> userProfiles) {
-                                adapter.setData(userProfiles);
-                                emptyWrapper.notifyDataSetChanged();
-                            }
-                        });
+//        headComponent.setLeftClickListener(v -> getActivity().finish());
+//        adapter.<FriendBean>setOnItemClickListener(
+//                new MultiItemTypeAdapter.OnItemClickListener<FriendBean>() {
+//                    @Override
+//                    public void onItemClick(
+//                            View view,
+//                            RecyclerView.ViewHolder holder,
+//                            FriendBean userProfile,
+//                            int position) {
+//                        addFriend(userProfile.getUser_id());
+//
+////                        startActivity(
+////                                UserDetailActivity.newIntent(
+////                                        getActivity(), userProfile.getUserId(), false, false));
+//                    }
+//
+//                    @Override
+//                    public boolean onItemLongClick(
+//                            View view,
+//                            RecyclerView.ViewHolder holder,
+//                            FriendBean userProfile,
+//                            int position) {
+//                        return false;
+//                    }
+//                });
+//        searchComponent.setSearchQueryListener(
+//                new SearchComponent.OnSearchQueryListener() {
+//                    @Override
+//                    public void onSearch(String query) {
+//                    }
+//
+//                    @Override
+//                    public void onClickSearch(String query) {
+//                        mQuery = query;
+//                        getViewModel().findUser(query);
+//                    }
+//                });
+//        viewModel
+//                .getUserProfileLiveData()
+//                .observe(
+//                        getViewLifecycleOwner(),
+//                        new Observer<List<FriendBean>>() {
+//                            @Override
+//                            public void onChanged(List<FriendBean> userProfiles) {
+//                                adapter.setData(userProfiles);
+//                                emptyWrapper.notifyDataSetChanged();
+//                            }
+//                        });
     }
 
     /**

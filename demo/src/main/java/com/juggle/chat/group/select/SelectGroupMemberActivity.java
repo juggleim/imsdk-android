@@ -17,7 +17,6 @@ import com.juggle.chat.R;
 /**
  * 创建群组页面
  *
- * @author rongcloud
  */
 public class SelectGroupMemberActivity extends AppCompatActivity {
 
