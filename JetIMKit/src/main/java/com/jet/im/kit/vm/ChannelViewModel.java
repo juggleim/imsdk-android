@@ -155,7 +155,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                     return;
                 }
                 cachedMessages.add(message);
-                notifyDataSetChanged("onMessageReceive");
+                notifyDataSetChanged(StringSet.EVENT_MESSAGE_RECEIVED);
                 markAsRead();
                 sendReceipt(Collections.singletonList(message));
             }
@@ -523,7 +523,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     synchronized void notifyDataSetChanged(@NonNull String traceName) {
         Logger.d(">> ChannelViewModel::notifyDataSetChanged(), size = %s, action=%s, hasNext=%s", cachedMessages.size(), traceName, hasNext());
         final List<Message> finalMessageList = buildMessageList();
-        if (finalMessageList.size() == 0) {
+        if (finalMessageList.isEmpty()) {
             statusFrame.setValue(StatusFrameView.Status.EMPTY);
         } else {
             statusFrame.setValue(StatusFrameView.Status.NONE);
