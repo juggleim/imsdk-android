@@ -102,7 +102,7 @@
     <string name="sb_text_button_recall">撤回</string>
     <string name="sb_text_button_retry">Retry</string>
     <string name="sb_text_button_selected">Selected</string>
-    <string name="sb_text_button_add">Add</string>
+    <string name="sb_text_button_add">添加</string>
     <string name="sb_text_button_ok">OK</string>
     <string name="sb_text_button_submit">Submit</string>
     <string name="sb_text_ellipsis">&#8230;</string>

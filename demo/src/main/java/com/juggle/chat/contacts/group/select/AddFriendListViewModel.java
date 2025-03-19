@@ -8,6 +8,7 @@ import com.juggle.chat.base.BaseViewModel;
 import com.juggle.chat.bean.FriendBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
+import com.juggle.chat.bean.SearchUserBean;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
 import com.jet.im.kit.SendbirdUIKit;
@@ -24,13 +25,13 @@ import okhttp3.RequestBody;
  *
  */
 public class AddFriendListViewModel extends BaseViewModel {
-    private final MutableLiveData<List<FriendBean>> userProfileLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<SearchUserBean>> userProfileLiveData = new MutableLiveData<>();
 
     public AddFriendListViewModel() {
         super(null);
     }
 
-    public MutableLiveData<List<FriendBean>> getUserProfileLiveData() {
+    public MutableLiveData<List<SearchUserBean>> getUserProfileLiveData() {
         return userProfileLiveData;
     }
 
@@ -38,9 +39,9 @@ public class AddFriendListViewModel extends BaseViewModel {
         HashMap<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("phone", phone);
         RequestBody body = ServiceManager.createJsonRequest(paramsMap);
-        ServiceManager.friendsService().searchUsers(body).enqueue(new CustomCallback<HttpResult<ListResult<FriendBean>>, ListResult<FriendBean>>() {
+        ServiceManager.friendsService().searchUsers(body).enqueue(new CustomCallback<HttpResult<ListResult<SearchUserBean>>, ListResult<SearchUserBean>>() {
             @Override
-            public void onSuccess(ListResult<FriendBean> listResult) {
+            public void onSuccess(ListResult<SearchUserBean> listResult) {
                 if (listResult != null) {
                     userProfileLiveData.postValue(listResult.getItems());
                 } else {
