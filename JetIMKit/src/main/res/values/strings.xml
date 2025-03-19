@@ -307,8 +307,8 @@ Please turn it on in the application permission management page of \"Settings\"<
     <string name="rc_voip_video_refuse">Video call rejected</string>
     <string name="rc_dialog_cancel">Cancel</string>
     <string name="rc_dialog_ok">OK</string>
-    <string name="rc_voip_cancel">Cancel</string>
-    <string name="rc_voip_ok">Confirm</string>
+    <string name="j_cancel">Cancel</string>
+    <string name="j_confirm">Confirm</string>
 
     <string name="j_set_read">Mark as Read</string>
     <string name="j_set_unread">Mark as Unread</string>
