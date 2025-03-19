@@ -6,11 +6,17 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <FrameLayout
-        android:id="@+id/headerComponent"
+    <com.jet.im.kit.internal.ui.components.HeaderView
+        android:id="@+id/headerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
+        android:layout_height="@dimen/sb_size_56" />
+
+    <View
+        android:id="@+id/elevationView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_1"
+        android:background="@color/onlight_04"/>
+
     <com.jet.im.kit.internal.ui.widgets.ThemeableRecyclerView
         android:id="@+id/rv_list"
         android:layout_width="match_parent"
