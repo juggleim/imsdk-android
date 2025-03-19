@@ -139,4 +139,5 @@
     <string name="text_update_nickname">修改昵称</string>
     <string name="text_new_friend">新朋友</string>
     <string name="text_bots">智能体</string>
+    <string name="text_group_name">群名称</string>
 </resources>

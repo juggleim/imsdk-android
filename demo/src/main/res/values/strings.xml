@@ -139,4 +139,5 @@
     <string name="text_update_nickname">Update nickname</string>
     <string name="text_new_friend">New friend</string>
     <string name="text_bots">Bots</string>
+    <string name="text_group_name">Group name</string>
 </resources>

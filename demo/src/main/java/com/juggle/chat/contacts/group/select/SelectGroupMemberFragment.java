@@ -21,7 +21,6 @@ import com.juggle.chat.bean.ListResult;
 import com.juggle.chat.bean.SelectFriendBean;
 import com.juggle.chat.common.adapter.CommonAdapter;
 import com.juggle.chat.common.widgets.SimpleInputDialog;
-import com.juggle.chat.common.widgets.TitleBar;
 import com.juggle.chat.databinding.FragmentCreateGroupsBinding;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
@@ -98,8 +97,8 @@ public class SelectGroupMemberFragment
 
     protected void showAddFriendDialog() {
         SimpleInputDialog dialog = new SimpleInputDialog();
-        //        dialog.setInputHint(getString(R.string.profile_add_friend_hint));
-        dialog.setTitleText("Group Name");
+        dialog.setInputHint(getString(R.string.text_group_name));
+        dialog.setTitleText(getString(R.string.text_group_name));
         dialog.setInputDialogListener(
                 new SimpleInputDialog.InputDialogListener() {
                     @Override
@@ -107,7 +106,7 @@ public class SelectGroupMemberFragment
                         String inviteMsg = input.getText().toString();
 
                         if (TextUtils.isEmpty(inviteMsg)) {
-                            Toast.makeText(getContext(), "group name is not empty", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "group name is empty", Toast.LENGTH_SHORT).show();
                             return true;
                         }
                         List<String> users = new ArrayList<>();
@@ -117,7 +116,7 @@ public class SelectGroupMemberFragment
                             }
                         }
                         if (users.isEmpty()) {
-                            Toast.makeText(getContext(), "group member is not empty", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "group member is empty", Toast.LENGTH_SHORT).show();
                             return true;
                         }
                         createGroup(inviteMsg, users);
@@ -146,6 +145,9 @@ public class SelectGroupMemberFragment
             @Override
             public void onSuccess(CreateGroupResult o) {
                 Toast.makeText(getContext(), "create success", Toast.LENGTH_SHORT).show();
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
             }
         });
     }
