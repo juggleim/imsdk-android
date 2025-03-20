@@ -30,6 +30,7 @@ public class ServiceManager {
     private static final FriendsService friendsService;
     private static final GroupsService groupsService;
     private static final UserService userService;
+    private static final BotService botService;
 
     static {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
@@ -62,6 +63,7 @@ public class ServiceManager {
         friendsService = retrofit.create(FriendsService.class);
         groupsService = retrofit.create(GroupsService.class);
         userService = retrofit.create(UserService.class);
+        botService = retrofit.create(BotService.class);
     }
 
     /**
@@ -80,7 +82,7 @@ public class ServiceManager {
         return loginService;
     }
 
-    public static FriendsService friendsService() {
+    public static FriendsService getFriendsService() {
         return friendsService;
     }
 
@@ -90,5 +92,9 @@ public class ServiceManager {
 
     public static UserService getUserService() {
         return userService;
+    }
+
+    public static BotService getBotService() {
+        return botService;
     }
 }
