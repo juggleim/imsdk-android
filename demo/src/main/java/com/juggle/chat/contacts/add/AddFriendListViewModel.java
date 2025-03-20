@@ -5,13 +5,11 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.juggle.chat.base.Action;
 import com.juggle.chat.base.BaseViewModel;
-import com.juggle.chat.bean.FriendBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
 import com.juggle.chat.bean.SearchUserBean;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
-import com.jet.im.kit.SendbirdUIKit;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,7 +37,7 @@ public class AddFriendListViewModel extends BaseViewModel {
         HashMap<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("phone", phone);
         RequestBody body = ServiceManager.createJsonRequest(paramsMap);
-        ServiceManager.friendsService().searchUsers(body).enqueue(new CustomCallback<HttpResult<ListResult<SearchUserBean>>, ListResult<SearchUserBean>>() {
+        ServiceManager.getFriendsService().searchUsers(body).enqueue(new CustomCallback<HttpResult<ListResult<SearchUserBean>>, ListResult<SearchUserBean>>() {
             @Override
             public void onSuccess(ListResult<SearchUserBean> listResult) {
                 if (listResult != null) {
@@ -61,7 +59,7 @@ public class AddFriendListViewModel extends BaseViewModel {
         HashMap<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("friend_id", friendId);
         RequestBody body = ServiceManager.createJsonRequest(paramsMap);
-        ServiceManager.friendsService().applyFriend(body).enqueue(new CustomCallback<HttpResult<Object>, Object>() {
+        ServiceManager.getFriendsService().applyFriend(body).enqueue(new CustomCallback<HttpResult<Object>, Object>() {
             @Override
             public void onSuccess(Object o) {
                 callback.call(null);

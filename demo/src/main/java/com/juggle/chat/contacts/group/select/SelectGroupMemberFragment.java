@@ -81,7 +81,7 @@ public class SelectGroupMemberFragment
     }
 
     protected void refresh() {
-        ServiceManager.friendsService().getFriendList(SendbirdUIKit.userId, "0", 200).enqueue(new CustomCallback<HttpResult<ListResult<FriendBean>>, ListResult<FriendBean>>() {
+        ServiceManager.getFriendsService().getFriendList(SendbirdUIKit.userId, "0", 200).enqueue(new CustomCallback<HttpResult<ListResult<FriendBean>>, ListResult<FriendBean>>() {
             @Override
             public void onSuccess(ListResult<FriendBean> listResult) {
                 if (listResult.getItems() != null && !listResult.getItems().isEmpty()) {

@@ -89,13 +89,13 @@ public class AddFriendListFragment
                 } else {
                     viewHolder.<ImageView>getView(R.id.ivProfile).setImageDrawable(DrawableUtils.getDefaultDrawable(viewHolder.itemView.getContext()));
                 }
-                viewHolder.setText(R.id.tvNickname1, item.getNickname());
+                viewHolder.setText(R.id.tvNickname, item.getNickname());
                 if (item.isFriend()) {
-                    viewHolder.setText(R.id.tv_add_btn1, getString(R.string.text_added));
-                    viewHolder.setTextColor(R.id.tv_add_btn1, getResources().getColor(com.jet.im.kit.R.color.background_400));
+                    viewHolder.setText(R.id.tv_add_btn, getString(R.string.text_added));
+                    viewHolder.setTextColor(R.id.tv_add_btn, getResources().getColor(com.jet.im.kit.R.color.background_400));
                 } else {
-                    viewHolder.setText(R.id.tv_add_btn1, getString(com.jet.im.kit.R.string.sb_text_button_add));
-                    viewHolder.setTextColor(R.id.tv_add_btn1, getResources().getColor(com.jet.im.kit.R.color.primary_300));
+                    viewHolder.setText(R.id.tv_add_btn, getString(com.jet.im.kit.R.string.sb_text_button_add));
+                    viewHolder.setTextColor(R.id.tv_add_btn, getResources().getColor(com.jet.im.kit.R.color.primary_300));
                 }
             }
         };

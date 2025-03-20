@@ -1,5 +1,4 @@
-package com.juggle.chat.contacts.add;
-
+package com.juggle.chat.contacts;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,19 +12,9 @@ import androidx.fragment.app.FragmentManager;
 
 import com.juggle.chat.R;
 
-
-/**
- * 创建群组页面
- *
- */
-public class AddFriendListActivity extends AppCompatActivity {
-
-    @NonNull
+public class FriendApplicationListActivity extends AppCompatActivity {
     public static Intent newIntent(@NonNull Context context) {
-        Intent intent = new Intent(context, AddFriendListActivity.class);
-        Bundle bundle = new Bundle();
-        intent.putExtras(bundle);
-        return intent;
+        return new Intent(context, FriendApplicationListActivity.class);
     }
 
     @Override
@@ -39,8 +28,7 @@ public class AddFriendListActivity extends AppCompatActivity {
         manager.beginTransaction().replace(R.id.fl_fragment_container, fragment).commit();
     }
 
-    @NonNull
-    protected Fragment createFragment() {
-        return new AddFriendListFragment();
+    private Fragment createFragment() {
+        return new FriendApplicationListFragment();
     }
 }
