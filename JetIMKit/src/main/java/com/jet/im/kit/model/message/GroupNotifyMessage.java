@@ -35,7 +35,7 @@ public class GroupNotifyMessage extends MessageContent {
         JSONObject content = new JSONObject();
         try {
             content.put(MEMBERS, membersJson);
-            content.put(TYPE, mType);
+            content.put(TYPE, mType.getValue());
             content.put(NAME, mName);
             if (mOperator != null) {
                 JSONObject operatorJson = jsonFromUserInfo(mOperator);
