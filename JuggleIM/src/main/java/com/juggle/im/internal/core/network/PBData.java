@@ -649,11 +649,12 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, int index) {
+    byte[] deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, boolean forAllUsers, int index) {
+        int scope = forAllUsers ? 1 : 0;
         Appmessages.DelHisMsgsReq.Builder builder = Appmessages.DelHisMsgsReq.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
-                .setDelScope(0);
+                .setDelScope(scope);
         for (ConcreteMessage msg : msgList) {
             Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
                     .setMsgId(msg.getMessageId())

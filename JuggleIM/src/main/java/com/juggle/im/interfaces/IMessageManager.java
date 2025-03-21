@@ -255,11 +255,56 @@ public interface IMessageManager {
             JIMConst.PullDirection direction,
             List<String> contentTypes);
 
+    /**
+     * 在同一个会话里，根据消息 id 批量删除消息
+     * @param conversation 会话标识
+     * @param messageIds 消息 id 列表
+     * @param callback 结果回调
+     */
     void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, ISimpleCallback callback);
 
+    /**
+     * 在同一个会话里，根据本端消息唯一编号批量删除消息
+     * @param conversation 会话标识
+     * @param clientMsgNos 本端消息唯一编号列表
+     * @param callback 结果回调
+     */
     void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback);
 
+    /**
+     * 在同一个会话里，根据消息 id 批量删除消息
+     * @param conversation 会话标识
+     * @param messageIds 消息 id 列表
+     * @param forAllUsers 是否对会话里所有用户删除消息
+     * @param callback 结果回调
+     */
+    void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, boolean forAllUsers, ISimpleCallback callback);
+
+    /**
+     * 在同一个会话里，根据本端消息唯一编号批量删除消息
+     * @param conversation 会话标识
+     * @param clientMsgNos 本端消息唯一编号列表
+     * @param forAllUsers 是否对会话里所有用户删除消息
+     * @param callback 结果回调
+     */
+    void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, boolean forAllUsers, ISimpleCallback callback);
+
+    /**
+     * 清空会话中指定时间之前的所有消息，startTime 传 0 表示当前时间
+     * @param conversation 会话标识
+     * @param startTime 开始时间，传 0 表示当前时间
+     * @param callback 结果回调
+     */
     void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback);
+
+    /**
+     * 清空会话中指定时间之前的所有消息，startTime 传 0 表示当前时间
+     * @param conversation 会话标识
+     * @param startTime 开始时间，传 0 表示当前时间
+     * @param forAllUsers 是否对会话里所有用户清除消息
+     * @param callback 结果回调
+     */
+    void clearMessages(Conversation conversation, long startTime, boolean forAllUsers, ISimpleCallback callback);
 
     void recallMessage(String messageId, Map<String, String> extras, IRecallMessageCallback callback);
 

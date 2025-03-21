@@ -317,17 +317,18 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void clearHistoryMessage(Conversation conversation, long time, WebSocketTimestampCallback callback) {
+    public void clearHistoryMessage(Conversation conversation, long time, boolean forAllUsers, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.clearHistoryMessage(conversation, time, 0, mCmdIndex++);
+        int scope = forAllUsers ? 1 : 0;
+        byte[] bytes = mPbData.clearHistoryMessage(conversation, time, scope, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "clearHistoryMessage, conversation is " + conversation + ", time is " + time);
         sendWhenOpen(bytes);
     }
 
-    public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, WebSocketTimestampCallback callback) {
+    public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, boolean forAllUsers, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.deleteMessage(conversation, msgList, mCmdIndex++);
+        byte[] bytes = mPbData.deleteMessage(conversation, msgList, forAllUsers, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "deleteMessage, conversation is " + conversation);
         sendWhenOpen(bytes);

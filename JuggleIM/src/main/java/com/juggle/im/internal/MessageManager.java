@@ -736,7 +736,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, ISimpleCallback callback) {
+    public void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, boolean forAllUsers, ISimpleCallback callback) {
         //判空
         if (conversation == null || messageIds == null || messageIds.isEmpty()) {
             if (callback != null) {
@@ -775,7 +775,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return;
         }
         //调用接口
-        mCore.getWebSocket().deleteMessage(conversation, deleteList, new WebSocketTimestampCallback() {
+        mCore.getWebSocket().deleteMessage(conversation, deleteList, forAllUsers, new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Delete", "by messageId, success");
@@ -808,7 +808,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback) {
+    public void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, ISimpleCallback callback) {
+        deleteMessagesByMessageIdList(conversation, messageIds, false, callback);
+    }
+
+    @Override
+    public void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, boolean forAllUsers, ISimpleCallback callback) {
         //判空
         if (conversation == null || clientMsgNos == null || clientMsgNos.isEmpty()) {
             if (callback != null) {
@@ -873,7 +878,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return;
         }
         //调用接口
-        mCore.getWebSocket().deleteMessage(conversation, deleteRemoteList, new WebSocketTimestampCallback() {
+        mCore.getWebSocket().deleteMessage(conversation, deleteRemoteList, forAllUsers, new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Delete", "by clientMsgNo, success");
@@ -907,7 +912,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback) {
+    public void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback) {
+        deleteMessagesByClientMsgNoList(conversation, clientMsgNos, false, callback);
+    }
+
+    @Override
+    public void clearMessages(Conversation conversation, long startTime, boolean forAllUsers, ISimpleCallback callback) {
         //判空
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
@@ -924,7 +934,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         //调用接口
         long finalStartTime = startTime;
-        mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, new WebSocketTimestampCallback() {
+        mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, forAllUsers, new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Clear", "success");
@@ -954,6 +964,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 }
             }
         });
+    }
+
+    @Override
+    public void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback) {
+        clearMessages(conversation, startTime, false, callback);
     }
 
     @Override
