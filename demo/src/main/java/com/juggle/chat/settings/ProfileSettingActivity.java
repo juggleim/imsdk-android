@@ -244,6 +244,7 @@ public class ProfileSettingActivity extends AppCompatActivity {
                 UserInfoRequest userInfoRequest = new UserInfoRequest();
                 userInfoRequest.setUserId(SendbirdUIKit.userId);
                 userInfoRequest.setAvatar(data);
+                userInfoRequest.setNickname(SendbirdUIKit.nickname);
                 ServiceManager.getUserService().updateUserInfo(userInfoRequest).enqueue(new CustomCallback<HttpResult<Object>, Object>() {
                     @Override
                     public void onSuccess(Object o) {

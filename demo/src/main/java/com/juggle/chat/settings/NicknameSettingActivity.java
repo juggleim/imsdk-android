@@ -37,6 +37,7 @@ public class NicknameSettingActivity extends AppCompatActivity {
             user.setUserId(SendbirdUIKit.userId);
             String nickname = editText.getText().toString();
             user.setNickname(nickname);
+            user.setAvatar(SendbirdUIKit.avatar);
             ServiceManager.getUserService().updateUserInfo(user).enqueue(new CustomCallback<HttpResult<Object>, Object>() {
                 @Override
                 public void onSuccess(Object o) {
