@@ -50,8 +50,6 @@
             android:id="@+id/tvNotification"
             android:layout_width="@dimen/sb_size_0"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/sb_size_16"
-            android:layout_marginEnd="@dimen/sb_size_16"
             android:text="@string/text_message_notifications"
             android:textAppearance="@style/SendbirdSubtitle2OnLight01"
             app:layout_constraintTop_toTopOf="parent"
@@ -69,9 +67,9 @@
             app:layout_constraintStart_toEndOf="@id/tvNotification"
             app:layout_constraintTop_toTopOf="parent"/>
         <View
-            android:id="@+id/notificationDivider"
             android:layout_width="match_parent"
             android:layout_height="@dimen/sb_size_1"
+            android:background="@color/onlight_03"
             app:layout_constraintBottom_toBottomOf="parent"
             />
 
@@ -89,8 +87,6 @@
             android:id="@+id/tvSetTop"
             android:layout_width="@dimen/sb_size_0"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/sb_size_16"
-            android:layout_marginEnd="@dimen/sb_size_16"
             android:text="@string/text_set_top"
             android:textAppearance="@style/SendbirdSubtitle2OnLight01"
             app:layout_constraintTop_toTopOf="parent"
@@ -107,9 +103,9 @@
             app:layout_constraintStart_toEndOf="@id/tvSetTop"
             app:layout_constraintTop_toTopOf="parent"/>
         <View
-            android:id="@+id/setTopDivider"
             android:layout_width="match_parent"
             android:layout_height="@dimen/sb_size_1"
+            android:background="@color/onlight_03"
             app:layout_constraintBottom_toBottomOf="parent"
             />
 
@@ -119,19 +115,24 @@
         android:id="@+id/itemClearMessage"
         android:layout_width="match_parent"
         android:layout_height="@dimen/sb_size_56"
-        android:layout_marginStart="@dimen/sb_size_16"
         android:clickable="true"
         android:focusable="true"
         android:paddingStart="@dimen/sb_size_16"
         android:paddingEnd="@dimen/sb_size_16" >
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/sb_size_0"
             android:layout_height="wrap_content"
             android:text="@string/text_clear_message"
             android:textAppearance="@style/SendbirdSubtitle2OnLight01"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sb_size_1"
+            android:background="@color/onlight_03"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
