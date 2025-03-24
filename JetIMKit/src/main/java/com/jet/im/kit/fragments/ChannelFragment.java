@@ -1,6 +1,7 @@
 package com.jet.im.kit.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.Editable;
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.PersonInfoActivity;
 import com.jet.im.kit.activities.adapter.MessageListAdapter;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
@@ -229,10 +231,20 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         Logger.d(">> ChannelFragment::onBindChannelHeaderComponent()");
         headerComponent.setOnLeftButtonClickListener(headerLeftButtonClickListener != null ? headerLeftButtonClickListener : v -> shouldActivityFinish());
         headerComponent.setOnRightButtonClickListener(headerRightButtonClickListener != null ? headerRightButtonClickListener : v -> {
-            //todo 注释跳转
-//            if (channel == null) return;
-//            Intent intent = ChannelSettingsActivity.newIntent(requireContext(), channel.getUrl());
-//            startActivity(intent);
+            if (channel == null || getContext() == null) {
+                return;
+            }
+            Conversation c = channel.getConversation();
+            if (c == null) {
+                return;
+            }
+            if (c.getConversationType() == Conversation.ConversationType.PRIVATE) {
+                String userId = c.getConversationId();
+                Intent intent = PersonInfoActivity.newIntent(getContext(), userId);
+                startActivity(intent);
+            } else if (c.getConversationType() == Conversation.ConversationType.GROUP) {
+
+            }
         });
 
         if (channelConfig.getEnableTypingIndicator() && channelConfig.getTypingIndicatorTypes().contains(TypingIndicatorType.TEXT)) {

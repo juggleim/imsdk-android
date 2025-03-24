@@ -49,6 +49,7 @@
         <activity android:name=".contacts.group.GroupListActivity" />
         <activity android:name=".contacts.chatroom.ChatroomListActivity" />
         <activity android:name=".contacts.FriendApplicationListActivity" />
+        <activity android:name="com.jet.im.kit.activities.PersonInfoActivity" />
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"
