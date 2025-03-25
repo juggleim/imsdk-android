@@ -3,7 +3,6 @@ package com.juggle.chat.settings;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -22,6 +21,7 @@ import com.jet.im.kit.widgets.WrapHeightGridView;
 import com.juggle.chat.bean.GroupDetailBean;
 import com.juggle.chat.bean.GroupMemberBean;
 import com.juggle.chat.bean.HttpResult;
+import com.juggle.chat.contacts.group.GroupMemberListActivity;
 import com.juggle.chat.databinding.ActivityGroupInfoBinding;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
@@ -29,7 +29,6 @@ import com.juggle.im.JIM;
 import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
-import com.juggle.im.model.GroupInfo;
 
 public class GroupInfoActivity extends AppCompatActivity {
     private final static String GROUP_ID = "groupId";
@@ -73,6 +72,10 @@ public class GroupInfoActivity extends AppCompatActivity {
             public void onMemberClicked(GroupMemberBean groupMember) {
                 showMemberInfo(groupMember);
             }
+        });
+
+        mBinding.profileSivAllGroupMember.setOnClickListener(v -> {
+            showMemberList();
         });
 
         mBinding.profileSivMessageNotice.setSwitchClickable(false);
@@ -125,8 +128,6 @@ public class GroupInfoActivity extends AppCompatActivity {
         mBinding.profileSivGroupNickname.setValue(mGroupDetailBean.getGroupDisplayName());
         mBinding.profileSivMessageNotice.setChecked(mConversationInfo.isMute());
         mBinding.profileSivSetTop.setChecked(mConversationInfo.isTop());
-
-
     }
 
     private void mute(boolean isMute) {
@@ -167,6 +168,11 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     private void showMemberInfo(GroupMemberBean member) {
         Intent intent = UserDetailActivity.newIntent(this, member);
+        startActivity(intent);
+    }
+
+    private void showMemberList() {
+        Intent intent = GroupMemberListActivity.newIntent(this, mGroupId);
         startActivity(intent);
     }
 }

@@ -148,4 +148,5 @@
     <string name="text_start_chat">Start chat</string>
     <string name="text_add_friend">Add friend</string>
     <string name="text_friend_application_sent">Friend application sent</string>
+    <string name="text_group_member">Group member</string>
 </resources>

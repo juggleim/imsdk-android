@@ -3,6 +3,7 @@ package com.juggle.chat.http;
 import com.juggle.chat.bean.CreateGroupResult;
 import com.juggle.chat.bean.GroupBean;
 import com.juggle.chat.bean.GroupDetailBean;
+import com.juggle.chat.bean.GroupMemberBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
 
@@ -26,4 +27,7 @@ public interface GroupsService {
 
     @GET("/jim/groups/info")
     Call<HttpResult<GroupDetailBean>> getGroupDetail(@Query("group_id") String groupId);
+
+    @GET("/jim/groups/members/list")
+    Call<HttpResult<ListResult<GroupMemberBean>>> getGroupMembers(@Query("group_id") String groupId);
 }

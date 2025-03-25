@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,9 +31,9 @@ import java.util.HashMap;
 import okhttp3.RequestBody;
 
 public class UserDetailFragment extends PermissionFragment {
-    private String mUserId;
-    private String mName;
-    private String mPortrait;
+    private final String mUserId;
+    private final String mName;
+    private final String mPortrait;
     private UserInfoBean mUserInfoBean;
     private FragmentUserDetailBinding mBinding;
 
@@ -136,7 +135,6 @@ public class UserDetailFragment extends PermissionFragment {
                         .setIsOnlyConfirm(true)
                         .build();
                 dialog.show(getParentFragmentManager(), null);
-
             }
         });
     }

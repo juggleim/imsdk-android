@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
+import com.jet.im.kit.utils.TextUtils;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.SelectFriendBean;
 import com.juggle.chat.common.adapter.CommonAdapter;
@@ -24,10 +25,17 @@ public class SelectMemberAdapter extends CommonAdapter<SelectFriendBean> {
         if (item.getAvatar() == null) {
             viewHolder.<ImageView>getView(R.id.ivProfile).setImageDrawable(DrawableUtils.getDefaultDrawable(viewHolder.itemView.getContext()));
         } else {
-            Glide.with(viewHolder.itemView.getContext())
-                    .load(item.getAvatar())
-                    .apply(RequestOptions.bitmapTransform(new CircleCrop()))
-                    .into(viewHolder.<ImageView>getView(R.id.ivProfile));
+            if (TextUtils.isNotEmpty(item.getAvatar())) {
+                Glide.with(viewHolder.itemView.getContext())
+                        .load(item.getAvatar())
+                        .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                        .into(viewHolder.<ImageView>getView(R.id.ivProfile));
+            } else {
+                Glide.with(viewHolder.itemView.getContext())
+                        .load(R.drawable.icon_person)
+                        .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                        .into(viewHolder.<ImageView>getView(R.id.ivProfile));
+            }
         }
         viewHolder.setText(R.id.tvNickname, item.getNickname());
         viewHolder.<CheckBox>getView(R.id.cb_select).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
