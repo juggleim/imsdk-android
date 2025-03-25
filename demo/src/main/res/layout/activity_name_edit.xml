@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.juggle.chat.component.HeadComponent
+        android:id="@+id/head_component"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        app:head_title_text="@string/text_update_nickname"
+        app:head_right_text="@string/sb_text_channel_anchor_save"/>
+
+    <EditText
+        android:id="@+id/etName"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_56"
+        android:layout_marginTop="@dimen/sb_size_12"
+        android:layout_marginStart="@dimen/sb_size_16"
+        android:layout_marginEnd="@dimen/sb_size_16"
+        android:paddingStart="@dimen/sb_size_16"
+        android:paddingEnd="@dimen/sb_size_16"
+        android:inputType="text"
+        app:boxStrokeColor="@color/primary_300"
+        android:background="@drawable/selector_edittext_background_with_focusable"
+        app:hintTextColor="@color/primary_300"
+        app:boxBackgroundMode="outline" />
+
+</LinearLayout>

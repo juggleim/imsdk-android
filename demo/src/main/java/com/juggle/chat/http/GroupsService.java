@@ -18,7 +18,6 @@ public interface GroupsService {
     @GET("/jim/groups/mygroups")
     Call<HttpResult<ListResult<GroupBean>>> getGroupList(@Query("start_id") String startId, @Query("count") int count);
 
-
     @POST("/jim/groups/add")
     Call<HttpResult<CreateGroupResult>> createGroup(@Body RequestBody body);
 
@@ -30,4 +29,10 @@ public interface GroupsService {
 
     @GET("/jim/groups/members/list")
     Call<HttpResult<ListResult<GroupMemberBean>>> getGroupMembers(@Query("group_id") String groupId);
+
+    @POST("/jim/groups/update")
+    Call<HttpResult<Object>> updateGroupInfo(@Body GroupBean group);
+
+    @POST("/jim/groups/setdisplayname")
+    Call<HttpResult<Object>> updateGroupDisplayName(@Body RequestBody body);
 }

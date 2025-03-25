@@ -26,7 +26,7 @@ public class NicknameSettingActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_nickname_setting);
+        setContentView(R.layout.activity_name_edit);
 
         EditText editText = findViewById(R.id.etName);
         editText.setText(SendbirdUIKit.nickname);

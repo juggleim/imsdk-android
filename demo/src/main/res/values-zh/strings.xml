@@ -149,4 +149,7 @@
     <string name="text_add_friend">添加好友</string>
     <string name="text_friend_application_sent">已发送好友申请</string>
     <string name="text_group_member">群成员</string>
+    <string name="text_group_management">群管理</string>
+    <string name="text_update_group_name">修改群组名称</string>
+    <string name="text_update_group_nickname">修改群昵称</string>
 </resources>

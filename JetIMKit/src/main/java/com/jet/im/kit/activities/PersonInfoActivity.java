@@ -56,6 +56,7 @@ public class PersonInfoActivity extends AppCompatActivity {
                 finish();
             }
         });
+        mBinding.headerView.setUseRightButton(false);
 
         UserInfo userInfo = JIM.getInstance().getUserInfoManager().getUserInfo(mUserId);
         mBinding.tvNickname.setText(userInfo.getUserName());

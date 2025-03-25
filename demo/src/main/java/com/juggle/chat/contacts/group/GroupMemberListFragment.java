@@ -84,6 +84,7 @@ public class GroupMemberListFragment extends Fragment {
         mBinding.headerView.setLeftButtonImageResource(com.jet.im.kit.R.drawable.icon_arrow_left);
         mBinding.headerView.setLeftButtonTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(getContext()));
         mBinding.headerView.setOnLeftButtonClickListener(v -> getActivity().finish());
+        mBinding.headerView.setUseRightButton(false);
 
         mBinding.rvList.setAdapter(mAdapter);
         mBinding.rvList.setLayoutManager(new LinearLayoutManager(getContext()));

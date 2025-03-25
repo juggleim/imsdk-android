@@ -57,6 +57,7 @@ public class UserDetailFragment extends PermissionFragment {
             }
             getActivity().finish();
         });
+        mBinding.headerView.setUseRightButton(false);
 
         if (TextUtils.isNotEmpty(mPortrait)) {
             Glide.with(this).load(mPortrait)

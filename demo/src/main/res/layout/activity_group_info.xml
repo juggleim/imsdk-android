@@ -106,6 +106,16 @@
             </com.jet.im.kit.internal.ui.widgets.SettingItemView>
 
             <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_group_management"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_44"
+                app:item_content="@string/text_group_management"
+                app:item_value_text_size="15sp"
+                app:item_divider="true"
+                app:item_right_image="@drawable/ic_mine_go">
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
                 android:id="@+id/profile_siv_message_notice"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/sb_size_44"

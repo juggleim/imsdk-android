@@ -149,4 +149,7 @@
     <string name="text_add_friend">Add friend</string>
     <string name="text_friend_application_sent">Friend application sent</string>
     <string name="text_group_member">Group member</string>
+    <string name="text_group_management">Group management</string>
+    <string name="text_update_group_name">Update group name</string>
+    <string name="text_update_group_nickname">Update group nickname</string>
 </resources>

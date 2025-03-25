@@ -3,6 +3,7 @@ package com.juggle.chat.settings;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -16,17 +17,22 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.PersonInfoActivity;
+import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.jet.im.kit.widgets.WrapHeightGridView;
 import com.juggle.chat.bean.GroupDetailBean;
 import com.juggle.chat.bean.GroupMemberBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.contacts.group.GroupMemberListActivity;
+import com.juggle.chat.contacts.group.GroupNameActivity;
+import com.juggle.chat.contacts.group.GroupNicknameActivity;
 import com.juggle.chat.databinding.ActivityGroupInfoBinding;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
 import com.juggle.im.JIM;
 import com.juggle.im.interfaces.IConversationManager;
+import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 
@@ -56,6 +62,7 @@ public class GroupInfoActivity extends AppCompatActivity {
         mBinding.headerView.setLeftButtonImageResource(R.drawable.icon_arrow_left);
         mBinding.headerView.setLeftButtonTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(this));
         mBinding.headerView.setOnLeftButtonClickListener(v -> finish());
+        mBinding.headerView.setUseRightButton(false);
 
         WrapHeightGridView groupMemberGv = mBinding.profileGvGroupMember;
         mMemberAdapter = new GridGroupMemberAdapter(this, SHOW_GROUP_MEMBER_LIMIT);
@@ -64,8 +71,7 @@ public class GroupInfoActivity extends AppCompatActivity {
         mMemberAdapter.setOnItemClickedListener(new GridGroupMemberAdapter.OnItemClickedListener() {
             @Override
             public void onAddOrDeleteMemberClicked(boolean isAdd) {
-                //todo: GroupInfo
-//                memberManage(isAdd);
+                memberManage(isAdd);
             }
 
             @Override
@@ -77,6 +83,13 @@ public class GroupInfoActivity extends AppCompatActivity {
         mBinding.profileSivAllGroupMember.setOnClickListener(v -> {
             showMemberList();
         });
+        mBinding.profileSivGroupNameContainer.setOnClickListener(v -> {
+            updateGroupName();
+        });
+
+        mBinding.profileSivGroupNickname.setOnClickListener(v -> {
+            updateGroupNickname();
+        });
 
         mBinding.profileSivMessageNotice.setSwitchClickable(false);
         mBinding.profileSivMessageNotice.setOnClickListener(v -> {
@@ -85,6 +98,9 @@ public class GroupInfoActivity extends AppCompatActivity {
         mBinding.profileSivSetTop.setSwitchClickable(false);
         mBinding.profileSivSetTop.setOnClickListener(v -> {
             setTop(!mBinding.profileSivSetTop.isChecked());
+        });
+        mBinding.profileSivClearMessage.setOnClickListener(v -> {
+            clearMessage();
         });
 
         final FrameLayout innerContainer = new FrameLayout(this);
@@ -115,7 +131,15 @@ public class GroupInfoActivity extends AppCompatActivity {
     }
 
     private void updateView() {
+        if (mGroupDetailBean.getMyRole() == 1 || mGroupDetailBean.getMyRole() == 2) {
+            mMemberAdapter.setAllowDeleteMember(true);
+            mBinding.profileSivGroupManagement.setVisibility(View.VISIBLE);
+        } else {
+            mMemberAdapter.setAllowDeleteMember(false);
+            mBinding.profileSivGroupManagement.setVisibility(View.GONE);
+        }
         mMemberAdapter.updateListView(mGroupDetailBean.getMembers());
+
 
         mBinding.profileSivAllGroupMember.setValue(String.valueOf(mGroupDetailBean.getMemberCount()));
 
@@ -174,5 +198,46 @@ public class GroupInfoActivity extends AppCompatActivity {
     private void showMemberList() {
         Intent intent = GroupMemberListActivity.newIntent(this, mGroupId);
         startActivity(intent);
+    }
+
+    private void memberManage(boolean isAdd) {
+        //todo
+    }
+
+    private void updateGroupName() {
+        Intent intent = GroupNameActivity.newIntent(this, mGroupId, mGroupDetailBean.getGroupName(), mGroupDetailBean.getPortrait());
+        startActivity(intent);
+    }
+
+    private void updateGroupNickname() {
+        Intent intent = GroupNicknameActivity.newIntent(this, mGroupId, mGroupDetailBean.getGroupDisplayName());
+        startActivity(intent);
+    }
+
+    private void clearMessage() {
+        DialogUtils.showWarningDialog(
+                this,
+                getString(R.string.text_clear_message_confirm),
+                getString(R.string.j_confirm),
+                confirm -> {
+                    mStatusFrameView.setStatus(StatusFrameView.Status.LOADING);
+                    JIM.getInstance().getMessageManager().clearMessages(mConversationInfo.getConversation(), 0, new IMessageManager.ISimpleCallback() {
+                        @Override
+                        public void onSuccess() {
+                            mStatusFrameView.setStatus(StatusFrameView.Status.NONE);
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            mStatusFrameView.setStatus(StatusFrameView.Status.NONE);
+                            Toast.makeText(GroupInfoActivity.this, "Clear error", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                },
+                getString(R.string.j_cancel),
+                cancel -> {
+
+                }
+        );
     }
 }
