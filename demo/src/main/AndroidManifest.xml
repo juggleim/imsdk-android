@@ -53,6 +53,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name=".settings.UserDetailActivity" />
         <activity android:name=".contacts.group.GroupListActivity" />
         <activity android:name=".contacts.chatroom.ChatroomListActivity" />
         <activity android:name=".contacts.FriendApplicationListActivity" />

@@ -11,6 +11,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.jet.im.kit.R;
+import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.widgets.SelectableRoundedImageView;
 import com.juggle.chat.bean.GroupMemberBean;
 import com.juggle.im.model.UserInfo;
@@ -94,8 +95,15 @@ public class GridGroupMemberAdapter extends BaseAdapter {
 
             avatarView.setBackgroundResource(android.R.color.transparent);
             String portraitUri = groupMember.getAvatar();
-            if (portraitUri != null && !portraitUri.equals(viewHolder.avatarUrl)) {
-                Glide.with(context).load(groupMember.getAvatar())
+            if (TextUtils.isNotEmpty(portraitUri)) {
+                if (!portraitUri.equals(viewHolder.avatarUrl)) {
+                    Glide.with(context).load(groupMember.getAvatar())
+                            .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                            .into(avatarView);
+                    viewHolder.avatarUrl = portraitUri;
+                }
+            } else {
+                Glide.with(context).load(com.juggle.chat.R.drawable.icon_person)
                         .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                         .into(avatarView);
                 viewHolder.avatarUrl = portraitUri;

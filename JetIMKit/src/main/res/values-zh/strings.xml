@@ -239,8 +239,8 @@
 
     <string name="callkit_selected_contacts_count">%d contact(s) selected</string>
     <string name="callkit_voip_ok">OK</string>
-    <string name="rc_voip_video">Video Call</string>
-    <string name="rc_voip_audio">Voice Call</string>
+    <string name="rc_voip_video">视频通话</string>
+    <string name="rc_voip_audio">语音通话</string>
     <string name="rc_voip_call_waiting">Waiting for response...</string>
     <string name="rc_voip_call_connecting">Connecting</string>
     <string name="rc_voip_call_busy">Busy line</string>

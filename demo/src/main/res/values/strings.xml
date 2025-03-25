@@ -144,4 +144,8 @@
     <string name="text_add_friend_confirm">Add friend?</string>
     <string name="text_delete_and_quit">Delete and quit</string>
     <string name="text_operation_fail">Operation fail</string>
+    <string name="text_user_information">User Information</string>
+    <string name="text_start_chat">Start chat</string>
+    <string name="text_add_friend">Add friend</string>
+    <string name="text_friend_application_sent">Friend application sent</string>
 </resources>

@@ -144,4 +144,8 @@
     <string name="text_add_friend_confirm">是否添加好友？</string>
     <string name="text_delete_and_quit">删除并退出</string>
     <string name="text_operation_fail">操作失败</string>
+    <string name="text_user_information">用户信息</string>
+    <string name="text_start_chat">发起聊天</string>
+    <string name="text_add_friend">添加好友</string>
+    <string name="text_friend_application_sent">已发送好友申请</string>
 </resources>

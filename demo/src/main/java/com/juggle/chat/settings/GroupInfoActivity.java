@@ -71,8 +71,7 @@ public class GroupInfoActivity extends AppCompatActivity {
 
             @Override
             public void onMemberClicked(GroupMemberBean groupMember) {
-                //todo: GroupInfo
-//                showMemberInfo(groupMember);
+                showMemberInfo(groupMember);
             }
         });
 
@@ -114,6 +113,8 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     private void updateView() {
         mMemberAdapter.updateListView(mGroupDetailBean.getMembers());
+
+        mBinding.profileSivAllGroupMember.setValue(String.valueOf(mGroupDetailBean.getMemberCount()));
 
 //        Glide.with(this)
 //                .load(mGroupDetailBean.getPortrait())
@@ -162,5 +163,10 @@ public class GroupInfoActivity extends AppCompatActivity {
                 Toast.makeText(GroupInfoActivity.this, com.juggle.chat.R.string.text_operation_fail, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showMemberInfo(GroupMemberBean member) {
+        Intent intent = UserDetailActivity.newIntent(this, member);
+        startActivity(intent);
     }
 }

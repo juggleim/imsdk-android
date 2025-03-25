@@ -174,7 +174,7 @@ public class AddFriendListFragment
     private void addFriend(String friendId) {
         CommonDialog dialog =
                 new CommonDialog.Builder()
-                        .setContentMessage("Add Friend?")
+                        .setContentMessage(getString(R.string.text_add_friend_confirm))
                         .setDialogButtonClickListener(
                                 new CommonDialog.OnDialogButtonClickListener() {
                                     @Override
