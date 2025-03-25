@@ -5,10 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -83,7 +80,7 @@ public class PersonInfoActivity extends AppCompatActivity {
                     public void onSuccess() {
                         mStatusFrameView.setStatus(StatusFrameView.Status.NONE);
                         mConversationInfo.setMute(!isMute);
-                        mBinding.scNotification.setChecked(isMute);
+                        mBinding.scNotification.setChecked(!isMute);
                     }
 
                     @Override
@@ -160,7 +157,7 @@ public class PersonInfoActivity extends AppCompatActivity {
         super.onResume();
         Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, mUserId);
         mConversationInfo = JIM.getInstance().getConversationManager().getConversationInfo(conversation);
-        mBinding.scNotification.setChecked(!mConversationInfo.isMute());
+        mBinding.scNotification.setChecked(mConversationInfo.isMute());
         mBinding.scSetTop.setChecked(mConversationInfo.isTop());
     }
 }

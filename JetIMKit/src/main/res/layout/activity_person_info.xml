@@ -50,7 +50,7 @@
             android:id="@+id/tvNotification"
             android:layout_width="@dimen/sb_size_0"
             android:layout_height="wrap_content"
-            android:text="@string/text_message_notifications"
+            android:text="@string/j_mute_notifications"
             android:textAppearance="@style/SendbirdSubtitle2OnLight01"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"

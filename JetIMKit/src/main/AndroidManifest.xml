@@ -54,6 +54,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.PersonInfoActivity" />
         <provider
             android:name=".model.SendbirdUIKitFileProvider"
             android:authorities="${applicationId}.sendbird.uikit.provider"

@@ -321,4 +321,12 @@ Please turn it on in the application permission management page of \"Settings\"<
     <string name="text_clear_message">Clear chat history</string>
     <string name="text_chat_detail">Chat detail</string>
     <string name="text_clear_message_confirm">Clear chat history?</string>
+    <string name="text_group_detail">Group detail</string>
+    <string name="text_all_group_member">Group members</string>
+    <string name="text_group_portrait">Group portrait</string>
+    <string name="text_group_name">Group name</string>
+    <string name="text_group_broadcast">Group broadcast</string>
+    <string name="text_group_nickname">Group nickname</string>
+    <string name="text_group_qrcode">Group QR code</string>
+
 </resources>

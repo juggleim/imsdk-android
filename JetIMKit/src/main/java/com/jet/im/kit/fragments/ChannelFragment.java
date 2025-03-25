@@ -25,7 +25,6 @@ import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
 import com.jet.im.kit.consts.DialogEditTextParams;
 import com.jet.im.kit.consts.KeyboardDisplayType;
-import com.jet.im.kit.consts.ReplyType;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.consts.TypingIndicatorType;
 import com.jet.im.kit.interfaces.LoadingDialogHandler;
@@ -56,7 +55,6 @@ import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.utils.MessageUtils;
 import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.vm.ChannelViewModel;
-import com.jet.im.kit.widgets.MentionEditText;
 import com.jet.im.kit.widgets.MessageInputView;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
@@ -73,11 +71,7 @@ import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Feedback;
 import com.sendbird.android.message.FeedbackRating;
-import com.sendbird.android.message.SendingStatus;
 import com.sendbird.android.params.MessageListParams;
-import com.sendbird.android.params.UserMessageCreateParams;
-import com.sendbird.android.params.UserMessageUpdateParams;
-import com.sendbird.android.user.User;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -243,7 +237,10 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                 Intent intent = PersonInfoActivity.newIntent(getContext(), userId);
                 startActivity(intent);
             } else if (c.getConversationType() == Conversation.ConversationType.GROUP) {
-
+                String groupId = c.getConversationId();
+                Intent intent = new Intent("com.jet.im.action.group_info");
+                intent.putExtra("groupId", groupId);
+                startActivity(intent);
             }
         });
 

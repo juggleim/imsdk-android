@@ -30,6 +30,66 @@
         <attr name="sb_module_chat_notification_channel" format="reference"/>
     </declare-styleable>
 
+    <declare-styleable name="SwitchButton">
+        <attr name="kswThumbDrawable" format="reference" />
+        <attr name="kswThumbColor" format="color|reference" />
+        <attr name="kswThumbMargin" format="dimension|reference" />
+        <attr name="kswThumbMarginTop" format="dimension|reference" />
+        <attr name="kswThumbMarginBottom" format="dimension|reference" />
+        <attr name="kswThumbMarginLeft" format="dimension|reference" />
+        <attr name="kswThumbMarginRight" format="dimension|reference" />
+        <attr name="kswThumbWidth" format="dimension|reference" />
+        <attr name="kswThumbHeight" format="dimension|reference" />
+        <attr name="kswThumbRadius" format="dimension|reference" />
+        <attr name="kswBackRadius" format="dimension|reference" />
+        <attr name="kswBackDrawable" format="reference" />
+        <attr name="kswBackColor" format="color|reference" />
+        <attr name="kswFadeBack" format="boolean" />
+        <attr name="kswBackMeasureRatio" format="float" />
+        <attr name="kswAnimationDuration" format="integer" />
+        <attr name="kswTintColor" format="color|reference" />
+        <attr name="kswTextOn" format="string" />
+        <attr name="kswTextOff" format="string" />
+        <attr name="kswTextMarginH" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="SettingItemView">
+        <attr name="item_image" format="reference" />
+        <attr name="item_image_height" format="dimension" />
+        <attr name="item_image_width" format="dimension" />
+        <attr name="item_content" format="string" />
+        <attr name="item_content_text_size" format="dimension" />
+        <attr name="item_content_text_color" format="color" />
+        <attr name="item_value" format="string" />
+        <attr name="item_value_text_size" format="dimension" />
+        <attr name="item_value_text_color" format="color" />
+        <attr name="item_divider" format="boolean" />
+        <attr name="item_tag_image_height" format="dimension" />
+        <attr name="item_tag_image_width" format="dimension" />
+        <attr name="item_tag_image" format="reference" />
+        <attr name="item_switch" format="boolean" />
+        <attr name="item_background" format="reference" />
+        <attr name="item_null_background" format="boolean" />
+        <attr name="item_show_selected" format="boolean" />
+        <attr name="item_selected_image" format="reference" />
+        <attr name="item_right_image" format="reference" />
+        <attr name="item_right_image_width" format="dimension" />
+        <attr name="item_right_image_height" format="dimension" />
+
+    </declare-styleable>
+
+    <!--圆角头像-->
+    <declare-styleable name="SelectableRoundedImageView">
+        <attr name="sriv_left_top_corner_radius" format="dimension" />
+        <attr name="sriv_right_top_corner_radius" format="dimension" />
+        <attr name="sriv_left_bottom_corner_radius" format="dimension" />
+        <attr name="sriv_right_bottom_corner_radius" format="dimension" />
+        <attr name="sriv_border_width" format="dimension" />
+        <attr name="sriv_border_color" format="color" />
+        <attr name="sriv_oval" format="boolean" />
+        <attr name="android:scaleType" />
+    </declare-styleable>
+
     <declare-styleable name="Components">
         <attr name="sb_component_channel_message_input" format="reference"/>
         <attr name="sb_component_channel_settings_info" format="reference"/>

@@ -142,4 +142,6 @@
     <string name="text_group_name">Group name</string>
     <string name="text_added">Added</string>
     <string name="text_add_friend_confirm">Add friend?</string>
+    <string name="text_delete_and_quit">Delete and quit</string>
+    <string name="text_operation_fail">Operation fail</string>
 </resources>

@@ -142,4 +142,6 @@
     <string name="text_group_name">群名称</string>
     <string name="text_added">已添加</string>
     <string name="text_add_friend_confirm">是否添加好友？</string>
+    <string name="text_delete_and_quit">删除并退出</string>
+    <string name="text_operation_fail">操作失败</string>
 </resources>

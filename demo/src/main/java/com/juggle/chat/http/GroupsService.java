@@ -2,6 +2,7 @@ package com.juggle.chat.http;
 
 import com.juggle.chat.bean.CreateGroupResult;
 import com.juggle.chat.bean.GroupBean;
+import com.juggle.chat.bean.GroupDetailBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
 
@@ -22,4 +23,7 @@ public interface GroupsService {
 
     @POST("/jim/groups/members/add")
     Call<HttpResult<Object>> addMember(@Body RequestBody body);
+
+    @GET("/jim/groups/info")
+    Call<HttpResult<GroupDetailBean>> getGroupDetail(@Query("group_id") String groupId);
 }
