@@ -58,7 +58,7 @@ public class GroupListFragment extends Fragment {
         binding.headerView.setRightButtonImageResource(com.jet.im.kit.R.drawable.icon_create);
         binding.headerView.setRightButtonTint(SendbirdUIKit.getDefaultThemeMode().getPrimaryTintColorStateList(getContext()));
         binding.headerView.setOnRightButtonClickListener(v -> {
-            startActivity(SelectGroupMemberActivity.newIntent(getContext()));
+            startActivity(SelectGroupMemberActivity.newIntent(getContext(), null, 0));
         });
 
         adapter = new CommonAdapter<GroupBean>(R.layout.sb_view_member_list_item) {

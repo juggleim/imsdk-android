@@ -19,12 +19,14 @@ import com.juggle.chat.R;
  *
  */
 public class SelectGroupMemberActivity extends AppCompatActivity {
+    private static final String GROUP_ID = "groupId";
+    private static final String TYPE = "type";
 
     @NonNull
-    public static Intent newIntent(@NonNull Context context) {
+    public static Intent newIntent(@NonNull Context context, String groupId, int type) {
         Intent intent = new Intent(context, SelectGroupMemberActivity.class);
-        Bundle bundle = new Bundle();
-        intent.putExtras(bundle);
+        intent.putExtra(GROUP_ID, groupId);
+        intent.putExtra(TYPE, type);
         return intent;
     }
 
@@ -32,15 +34,12 @@ public class SelectGroupMemberActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.demo_activity);
+        String groupId = getIntent().getStringExtra(GROUP_ID);
+        int type = getIntent().getIntExtra(TYPE, 0);
 
-        Fragment fragment = createFragment();
+        Fragment fragment = new SelectGroupMemberFragment(groupId, type);
         FragmentManager manager = getSupportFragmentManager();
         manager.popBackStack();
         manager.beginTransaction().replace(R.id.fl_fragment_container, fragment).commit();
-    }
-
-    @NonNull
-    protected Fragment createFragment() {
-        return new SelectGroupMemberFragment();
     }
 }

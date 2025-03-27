@@ -22,8 +22,11 @@ public interface GroupsService {
     @POST("/jim/groups/add")
     Call<HttpResult<CreateGroupResult>> createGroup(@Body RequestBody body);
 
-    @POST("/jim/groups/members/add")
+    @POST("/jim/groups/invite")
     Call<HttpResult<Object>> addMember(@Body RequestBody body);
+
+    @POST("/jim/groups/members/del")
+    Call<HttpResult<Object>> removeMember(@Body RequestBody body);
 
     @GET("/jim/groups/info")
     Call<HttpResult<GroupDetailBean>> getGroupDetail(@Query("group_id") String groupId);
@@ -42,4 +45,7 @@ public interface GroupsService {
 
     @GET("/jim/groups/getgrpannouncement")
     Call<HttpResult<GroupAnnouncementBean>> getGroupAnnouncement(@Query("group_id") String groupId);
+
+    @POST("/jim/groups/quit")
+    Call<HttpResult<Object>> quitGroup(@Body RequestBody body);
 }

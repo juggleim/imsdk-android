@@ -328,4 +328,5 @@ Please turn it on in the application permission management page of \"Settings\"<
     <string name="text_group_announcement">群公告</string>
     <string name="text_group_nickname">我在本群的昵称</string>
     <string name="text_group_qrcode">群二维码</string>
+    <string name="text_quit_group_confirm">确认退出群组？</string>
 </resources>

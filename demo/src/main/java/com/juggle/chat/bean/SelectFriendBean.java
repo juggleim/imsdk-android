@@ -10,6 +10,12 @@ public class SelectFriendBean extends FriendBean {
         setUser_id(friendBean.getUser_id());
     }
 
+    public SelectFriendBean(GroupMemberBean groupMemberBean) {
+        setAvatar(groupMemberBean.getAvatar());
+        setNickname(groupMemberBean.getNickname());
+        setUser_id(groupMemberBean.getUserId());
+    }
+
     public boolean isSelected() {
         return selected;
     }

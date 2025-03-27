@@ -154,4 +154,5 @@
     <string name="text_update_group_nickname">Update group nickname</string>
     <string name="text_group_announcement_tips">After release, the group announcement will be sent as a system message, visible to all members.</string>
     <string name="text_edit_group_announcement">Please edit group announcement</string>
+    <string name="text_select_group_member">Select group member</string>
 </resources>

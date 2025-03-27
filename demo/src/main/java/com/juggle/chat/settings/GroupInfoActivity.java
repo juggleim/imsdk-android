@@ -3,6 +3,8 @@ package com.juggle.chat.settings;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -17,7 +19,6 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
-import com.jet.im.kit.activities.PersonInfoActivity;
 import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.jet.im.kit.widgets.WrapHeightGridView;
@@ -28,6 +29,7 @@ import com.juggle.chat.contacts.group.GroupAnnouncementActivity;
 import com.juggle.chat.contacts.group.GroupMemberListActivity;
 import com.juggle.chat.contacts.group.GroupNameActivity;
 import com.juggle.chat.contacts.group.GroupNicknameActivity;
+import com.juggle.chat.contacts.group.select.SelectGroupMemberActivity;
 import com.juggle.chat.databinding.ActivityGroupInfoBinding;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
@@ -36,6 +38,10 @@ import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+
+import java.util.HashMap;
+
+import okhttp3.RequestBody;
 
 public class GroupInfoActivity extends AppCompatActivity {
     private final static String GROUP_ID = "groupId";
@@ -105,6 +111,9 @@ public class GroupInfoActivity extends AppCompatActivity {
         });
         mBinding.profileSivClearMessage.setOnClickListener(v -> {
             clearMessage();
+        });
+        mBinding.profileBtnGroupQuit.setOnClickListener(v -> {
+            quitGroup();
         });
 
         final FrameLayout innerContainer = new FrameLayout(this);
@@ -205,7 +214,9 @@ public class GroupInfoActivity extends AppCompatActivity {
     }
 
     private void memberManage(boolean isAdd) {
-        //todo
+        int type = isAdd ? 1 : 2;
+        Intent intent = SelectGroupMemberActivity.newIntent(this, mGroupId, type);
+        startActivity(intent);
     }
 
     private void updateGroupName() {
@@ -245,7 +256,51 @@ public class GroupInfoActivity extends AppCompatActivity {
                 },
                 getString(R.string.j_cancel),
                 cancel -> {
+                }
+        );
+    }
 
+    private void quitGroup() {
+        DialogUtils.showWarningDialog(
+                this,
+                getString(R.string.text_quit_group_confirm),
+                getString(R.string.j_confirm),
+                confirm -> {
+                    mStatusFrameView.setStatus(StatusFrameView.Status.LOADING);
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("group_id", mGroupId);
+                    RequestBody body = ServiceManager.createJsonRequest(map);
+                    ServiceManager.getGroupsService().quitGroup(body).enqueue(new CustomCallback<HttpResult<Object>, Object>() {
+                        @Override
+                        public void onSuccess(Object o) {
+                            Conversation c = new Conversation(Conversation.ConversationType.GROUP, mGroupId);
+                            Handler handler = new Handler(Looper.getMainLooper());
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    JIM.getInstance().getConversationManager().deleteConversationInfo(c, new IConversationManager.ISimpleCallback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            mStatusFrameView.setStatus(StatusFrameView.Status.NONE);
+                                            Intent intent = new Intent();
+                                            setResult(RESULT_OK, intent);
+                                            finish();
+                                        }
+
+                                        @Override
+                                        public void onError(int errorCode) {
+                                            mStatusFrameView.setStatus(StatusFrameView.Status.NONE);
+                                            Toast.makeText(GroupInfoActivity.this, "操作失败", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
+                            }, 300);
+
+                        }
+                    });
+                },
+                getString(R.string.j_cancel),
+                cancel -> {
                 }
         );
     }

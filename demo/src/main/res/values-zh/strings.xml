@@ -154,5 +154,5 @@
     <string name="text_update_group_nickname">修改群昵称</string>
     <string name="text_group_announcement_tips">发布后将以系统消息发送群聊，全体成员可见。</string>
     <string name="text_edit_group_announcement">请编辑群公告</string>
-
+    <string name="text_select_group_member">选择群组成员</string>
 </resources>

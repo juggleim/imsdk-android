@@ -240,7 +240,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                 String groupId = c.getConversationId();
                 Intent intent = new Intent("com.jet.im.action.group_info");
                 intent.putExtra("groupId", groupId);
-                startActivity(intent);
+                startActivityForResult(intent, 444);
             }
         });
 
@@ -258,6 +258,14 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                 headerComponent.notifyChannelChanged(groupChannel);
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 444 && getActivity() != null) {
+            getActivity().finish();
+        }
     }
 
     @Override

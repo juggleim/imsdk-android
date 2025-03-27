@@ -328,5 +328,5 @@ Please turn it on in the application permission management page of \"Settings\"<
     <string name="text_group_announcement">Group announcement</string>
     <string name="text_group_nickname">Group nickname</string>
     <string name="text_group_qrcode">Group QR code</string>
-
+    <string name="text_quit_group_confirm">Confirm to quit the group?</string>
 </resources>
