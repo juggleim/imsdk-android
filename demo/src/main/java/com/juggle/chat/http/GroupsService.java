@@ -1,6 +1,7 @@
 package com.juggle.chat.http;
 
 import com.juggle.chat.bean.CreateGroupResult;
+import com.juggle.chat.bean.GroupAnnouncementBean;
 import com.juggle.chat.bean.GroupBean;
 import com.juggle.chat.bean.GroupDetailBean;
 import com.juggle.chat.bean.GroupMemberBean;
@@ -35,4 +36,10 @@ public interface GroupsService {
 
     @POST("/jim/groups/setdisplayname")
     Call<HttpResult<Object>> updateGroupDisplayName(@Body RequestBody body);
+
+    @POST("/jim/groups/setgrpannouncement")
+    Call<HttpResult<Object>> updateGroupAnnouncement(@Body RequestBody body);
+
+    @GET("/jim/groups/getgrpannouncement")
+    Call<HttpResult<GroupAnnouncementBean>> getGroupAnnouncement(@Query("group_id") String groupId);
 }

@@ -24,6 +24,7 @@ import com.jet.im.kit.widgets.WrapHeightGridView;
 import com.juggle.chat.bean.GroupDetailBean;
 import com.juggle.chat.bean.GroupMemberBean;
 import com.juggle.chat.bean.HttpResult;
+import com.juggle.chat.contacts.group.GroupAnnouncementActivity;
 import com.juggle.chat.contacts.group.GroupMemberListActivity;
 import com.juggle.chat.contacts.group.GroupNameActivity;
 import com.juggle.chat.contacts.group.GroupNicknameActivity;
@@ -86,10 +87,13 @@ public class GroupInfoActivity extends AppCompatActivity {
         mBinding.profileSivGroupNameContainer.setOnClickListener(v -> {
             updateGroupName();
         });
-
+        mBinding.profileSivGroupBroadcast.setOnClickListener(v -> {
+            updateGroupAnnouncement();
+        });
         mBinding.profileSivGroupNickname.setOnClickListener(v -> {
             updateGroupNickname();
         });
+
 
         mBinding.profileSivMessageNotice.setSwitchClickable(false);
         mBinding.profileSivMessageNotice.setOnClickListener(v -> {
@@ -206,6 +210,11 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     private void updateGroupName() {
         Intent intent = GroupNameActivity.newIntent(this, mGroupId, mGroupDetailBean.getGroupName(), mGroupDetailBean.getPortrait());
+        startActivity(intent);
+    }
+
+    private void updateGroupAnnouncement() {
+        Intent intent = GroupAnnouncementActivity.newIntent(this, mGroupId);
         startActivity(intent);
     }
 

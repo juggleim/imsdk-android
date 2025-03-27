@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.juggle.chat.R;
+import com.juggle.chat.bean.GroupAnnouncementBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.component.HeadComponent;
 import com.juggle.chat.http.CustomCallback;
@@ -19,14 +20,14 @@ import java.util.HashMap;
 
 import okhttp3.RequestBody;
 
-public class GroupNicknameActivity extends AppCompatActivity {
+public class GroupAnnouncementActivity extends AppCompatActivity {
     private static final String GROUP_ID = "groupId";
-    private static final String NICKNAME = "nickname";
+    private String mGroupId;
+    private EditText mEditText;
 
-    public static Intent newIntent(@NonNull Context context, String groupId, String nickname) {
-        Intent intent = new Intent(context, GroupNicknameActivity.class);
+    public static Intent newIntent(@NonNull Context context, String groupId) {
+        Intent intent = new Intent(context, GroupAnnouncementActivity.class);
         intent.putExtra(GROUP_ID, groupId);
-        intent.putExtra(NICKNAME, nickname);
         return intent;
     }
 
@@ -34,28 +35,34 @@ public class GroupNicknameActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        String groupId = getIntent().getStringExtra(GROUP_ID);
-        String nickname = getIntent().getStringExtra(NICKNAME);
-
-        setContentView(R.layout.activity_name_edit);
-
-        EditText editText = findViewById(R.id.etName);
-        editText.setText(nickname);
+        mGroupId = getIntent().getStringExtra(GROUP_ID);
+        setContentView(R.layout.activity_group_announcement);
+        mEditText = findViewById(R.id.profile_et_group_notice);
 
         HeadComponent headComponent = findViewById(R.id.head_component);
-        headComponent.setTitleText(getString(R.string.text_update_group_nickname));
         headComponent.setRightClickListener(v -> {
             HashMap<String, Object> paramsMap = new HashMap<>();
-            paramsMap.put("group_id", groupId);
-            paramsMap.put("grp_display_name", editText.getText().toString());
+            paramsMap.put("group_id", mGroupId);
+            paramsMap.put("content", mEditText.getText().toString());
             RequestBody body = ServiceManager.createJsonRequest(paramsMap);
 
-            ServiceManager.getGroupsService().updateGroupDisplayName(body).enqueue(new CustomCallback<HttpResult<Object>, Object>() {
+            ServiceManager.getGroupsService().updateGroupAnnouncement(body).enqueue(new CustomCallback<HttpResult<Object>, Object>() {
                 @Override
                 public void onSuccess(Object o) {
                     finish();
                 }
             });
+        });
+
+        loadData();
+    }
+
+    private void loadData() {
+        ServiceManager.getGroupsService().getGroupAnnouncement(mGroupId).enqueue(new CustomCallback<HttpResult<GroupAnnouncementBean>, GroupAnnouncementBean>() {
+            @Override
+            public void onSuccess(GroupAnnouncementBean groupAnnouncementBean) {
+                mEditText.setText(groupAnnouncementBean.getContent());
+            }
         });
     }
 }

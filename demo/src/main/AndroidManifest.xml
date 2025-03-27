@@ -60,6 +60,7 @@
         <activity android:name=".contacts.group.GroupMemberListActivity" />
         <activity android:name=".contacts.group.GroupNameActivity" />
         <activity android:name=".contacts.group.GroupNicknameActivity" />
+        <activity android:name=".contacts.group.GroupAnnouncementActivity" />
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"
