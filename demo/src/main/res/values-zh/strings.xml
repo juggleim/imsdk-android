@@ -155,4 +155,8 @@
     <string name="text_group_announcement_tips">发布后将以系统消息发送群聊，全体成员可见。</string>
     <string name="text_edit_group_announcement">请编辑群公告</string>
     <string name="text_select_group_member">选择群组成员</string>
+    <string name="text_change_group_owner">变更群主</string>
+    <string name="text_group_mute">群组全局禁言</string>
+    <string name="text_display_history_message_before_join_group">新人入群查看历史</string>
+
 </resources>

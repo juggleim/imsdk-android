@@ -155,4 +155,7 @@
     <string name="text_group_announcement_tips">After release, the group announcement will be sent as a system message, visible to all members.</string>
     <string name="text_edit_group_announcement">Please edit group announcement</string>
     <string name="text_select_group_member">Select group member</string>
+    <string name="text_change_group_owner">Change group owner</string>
+    <string name="text_group_mute">Group mute</string>
+    <string name="text_display_history_message_before_join_group">Display history messages before join group</string>
 </resources>

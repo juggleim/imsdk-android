@@ -26,6 +26,7 @@ import com.juggle.chat.bean.GroupDetailBean;
 import com.juggle.chat.bean.GroupMemberBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.contacts.group.GroupAnnouncementActivity;
+import com.juggle.chat.contacts.group.GroupManageActivity;
 import com.juggle.chat.contacts.group.GroupMemberListActivity;
 import com.juggle.chat.contacts.group.GroupNameActivity;
 import com.juggle.chat.contacts.group.GroupNicknameActivity;
@@ -98,6 +99,9 @@ public class GroupInfoActivity extends AppCompatActivity {
         });
         mBinding.profileSivGroupNickname.setOnClickListener(v -> {
             updateGroupNickname();
+        });
+        mBinding.profileSivGroupManagement.setOnClickListener(v -> {
+            groupManagement();
         });
 
 
@@ -231,6 +235,11 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     private void updateGroupNickname() {
         Intent intent = GroupNicknameActivity.newIntent(this, mGroupId, mGroupDetailBean.getGroupDisplayName());
+        startActivity(intent);
+    }
+
+    private void groupManagement() {
+        Intent intent = GroupManageActivity.newIntent(this, mGroupId);
         startActivity(intent);
     }
 
