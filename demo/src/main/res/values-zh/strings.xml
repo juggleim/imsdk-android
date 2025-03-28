@@ -158,5 +158,11 @@
     <string name="text_change_group_owner">变更群主</string>
     <string name="text_group_mute">群组全局禁言</string>
     <string name="text_display_history_message_before_join_group">新人入群查看历史</string>
+    <string name="text_group_need_verify">该群已开启进群认证，只能好友邀请进群</string>
+    <string name="text_qrcode_group_tips">扫一扫群二维码，立刻加入该群</string>
+    <string name="text_save_to_phone">保存到手机</string>
+    <string name="text_share_to_juggle">分享至 JuggleChat</string>
+    <string name="text_qrcode_private_tips">扫一扫二维码，加我为好友</string>
+    <string name="text_member_count">%d 人</string>
 
 </resources>

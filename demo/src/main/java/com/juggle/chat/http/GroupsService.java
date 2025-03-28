@@ -7,6 +7,7 @@ import com.juggle.chat.bean.GroupDetailBean;
 import com.juggle.chat.bean.GroupMemberBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
+import com.juggle.chat.bean.QRCodeBean;
 
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -57,4 +58,7 @@ public interface GroupsService {
 
     @POST("/jim/groups/management/chgowner")
     Call<HttpResult<Object>> changeOwner(@Body RequestBody body);
+
+    @GET("/jim/groups/qrcode")
+    Call<HttpResult<QRCodeBean>> getQRCode(@Query("group_id") String groupId);
 }

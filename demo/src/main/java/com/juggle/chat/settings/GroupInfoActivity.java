@@ -94,6 +94,9 @@ public class GroupInfoActivity extends AppCompatActivity {
         mBinding.profileSivGroupNameContainer.setOnClickListener(v -> {
             updateGroupName();
         });
+        mBinding.profileSivGroupQrcode.setOnClickListener(v -> {
+            qrcode();
+        });
         mBinding.profileSivGroupBroadcast.setOnClickListener(v -> {
             updateGroupAnnouncement();
         });
@@ -103,7 +106,6 @@ public class GroupInfoActivity extends AppCompatActivity {
         mBinding.profileSivGroupManagement.setOnClickListener(v -> {
             groupManagement();
         });
-
 
         mBinding.profileSivMessageNotice.setSwitchClickable(false);
         mBinding.profileSivMessageNotice.setOnClickListener(v -> {
@@ -225,6 +227,11 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     private void updateGroupName() {
         Intent intent = GroupNameActivity.newIntent(this, mGroupId, mGroupDetailBean.getGroupName(), mGroupDetailBean.getPortrait());
+        startActivity(intent);
+    }
+
+    private void qrcode() {
+        Intent intent = QRCodeDisplayActivity.newIntent(this, Conversation.ConversationType.GROUP, mGroupId, mGroupDetailBean.getGroupName(), mGroupDetailBean.getPortrait(), mGroupDetailBean.getMemberCount());
         startActivity(intent);
     }
 

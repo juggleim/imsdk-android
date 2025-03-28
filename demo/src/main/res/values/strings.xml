@@ -158,4 +158,10 @@
     <string name="text_change_group_owner">Change group owner</string>
     <string name="text_group_mute">Group mute</string>
     <string name="text_display_history_message_before_join_group">Display history messages before join group</string>
+    <string name="text_group_need_verify">The group enables verification, only friends invitation allowed</string>
+    <string name="text_qrcode_group_tips">Scan QR code to join the group immediately</string>
+    <string name="text_save_to_phone">Save to phone</string>
+    <string name="text_share_to_juggle">Share to JuggleChat</string>
+    <string name="text_qrcode_private_tips">Scan QR code to add me as friend</string>
+    <string name="text_member_count">%d Person(s)</string>
 </resources>

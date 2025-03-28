@@ -47,10 +47,12 @@ import com.jet.im.kit.utils.TextUtils
 import com.juggle.chat.settings.GlobalDisturbSettingActivity
 import com.juggle.chat.settings.ProfileSettingActivity
 import com.juggle.chat.settings.PushSettingActivity
+import com.juggle.chat.settings.QRCodeDisplayActivity
 import com.juggle.chat.settings.WebViewActivity
 import com.juggle.im.JIM
 import com.juggle.im.JIMConst
 import com.juggle.im.interfaces.IConnectionManager
+import com.juggle.im.model.Conversation
 import com.sendbird.android.exception.SendbirdException
 import com.sendbird.android.params.UserUpdateParams
 import java.io.File
@@ -304,7 +306,10 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
     }
 
     private fun qrcode() {
-
+        context?.let {
+            val intent = QRCodeDisplayActivity.newIntent(it, Conversation.ConversationType.PRIVATE, SendbirdUIKit.userId, SendbirdUIKit.nickname, SendbirdUIKit.avatar, 0)
+            startActivity(intent)
+        }
     }
 
     private fun pushSetting() {
