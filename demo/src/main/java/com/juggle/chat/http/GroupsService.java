@@ -48,4 +48,10 @@ public interface GroupsService {
 
     @POST("/jim/groups/quit")
     Call<HttpResult<Object>> quitGroup(@Body RequestBody body);
+
+    @POST("/jim/groups/management/setmute")
+    Call<HttpResult<Object>> setMute(@Body RequestBody body);
+
+    @POST("/jim/groups/management/sethismsgvisible")
+    Call<HttpResult<Object>> setHistoryMessageVisible(@Body RequestBody body);
 }

@@ -239,7 +239,9 @@ public class GroupInfoActivity extends AppCompatActivity {
     }
 
     private void groupManagement() {
-        Intent intent = GroupManageActivity.newIntent(this, mGroupId);
+        boolean groupMute = mGroupDetailBean.getGroupManagement().getGroupMute() != 0;
+        boolean displayHistory = mGroupDetailBean.getGroupManagement().getHistoryMessageVisible() != 0;
+        Intent intent = GroupManageActivity.newIntent(this, mGroupId, groupMute, displayHistory);
         startActivity(intent);
     }
 
