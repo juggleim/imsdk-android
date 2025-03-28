@@ -56,7 +56,7 @@ public class GroupManageActivity extends AppCompatActivity {
         mBinding.headerView.setUseRightButton(false);
 
         mBinding.sivChangeOwner.setOnClickListener(v -> {
-
+            changeOwner();
         });
         mBinding.sivGroupMute.setChecked(mGroupMute);
         mBinding.sivGroupMute.setSwitchClickable(false);
@@ -108,5 +108,18 @@ public class GroupManageActivity extends AppCompatActivity {
                 mBinding.sivDisplayHistory.setChecked(mDisplayHistory);
             }
         });
+    }
+
+    private void changeOwner() {
+        Intent intent = GroupMemberListActivity.newIntent(this, mGroupId, 1);
+        startActivityForResult(intent, 444);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 444) {
+            finish();
+        }
     }
 }

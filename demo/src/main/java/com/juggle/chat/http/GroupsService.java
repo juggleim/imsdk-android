@@ -54,4 +54,7 @@ public interface GroupsService {
 
     @POST("/jim/groups/management/sethismsgvisible")
     Call<HttpResult<Object>> setHistoryMessageVisible(@Body RequestBody body);
+
+    @POST("/jim/groups/management/chgowner")
+    Call<HttpResult<Object>> changeOwner(@Body RequestBody body);
 }

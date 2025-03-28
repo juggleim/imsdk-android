@@ -213,7 +213,7 @@ public class GroupInfoActivity extends AppCompatActivity {
     }
 
     private void showMemberList() {
-        Intent intent = GroupMemberListActivity.newIntent(this, mGroupId);
+        Intent intent = GroupMemberListActivity.newIntent(this, mGroupId, 0);
         startActivity(intent);
     }
 
