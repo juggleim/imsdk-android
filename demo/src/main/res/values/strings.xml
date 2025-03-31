@@ -164,4 +164,6 @@
     <string name="text_share_to_juggle">Share to JuggleChat</string>
     <string name="text_qrcode_private_tips">Scan QR code to add me as friend</string>
     <string name="text_member_count">%d Person(s)</string>
+    <string name="text_create_group">Create group</string>
+    <string name="text_scan_qrcode">Scan QR code</string>
 </resources>

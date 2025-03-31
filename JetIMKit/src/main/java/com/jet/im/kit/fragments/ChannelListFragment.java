@@ -153,6 +153,8 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
     }
 
     private void showChannelTypeSelectDialog() {
+
+
         //todo 创建群组忽略
 //        if (getContext() == null) return;
 //        if (Available.isSupportSuper() || Available.isSupportBroadcast()) {

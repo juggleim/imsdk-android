@@ -164,5 +164,7 @@
     <string name="text_share_to_juggle">分享至 JuggleChat</string>
     <string name="text_qrcode_private_tips">扫一扫二维码，加我为好友</string>
     <string name="text_member_count">%d 人</string>
+    <string name="text_create_group">创建群组</string>
+    <string name="text_scan_qrcode">扫一扫</string>
 
 </resources>

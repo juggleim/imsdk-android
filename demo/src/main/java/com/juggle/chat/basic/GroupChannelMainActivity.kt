@@ -8,25 +8,29 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
+import com.jet.im.kit.SendbirdUIKit
+import com.jet.im.kit.activities.ChannelActivity
+import com.jet.im.kit.fragments.ChannelListFragment
 import com.juggle.chat.R
+import com.juggle.chat.bots.BotListFragment
 import com.juggle.chat.common.SampleSettingsFragment
 import com.juggle.chat.common.consts.StringSet
 import com.juggle.chat.common.extensions.isUsingDarkTheme
 import com.juggle.chat.common.preferences.PreferenceUtils
 import com.juggle.chat.common.widgets.CustomTabView
-import com.juggle.chat.databinding.ActivityGroupChannelMainBinding
 import com.juggle.chat.contacts.FriendListFragment
-import com.google.android.material.tabs.TabLayoutMediator
-import com.jet.im.kit.SendbirdUIKit
-import com.jet.im.kit.activities.ChannelActivity
-import com.jet.im.kit.providers.FragmentProviders
-import com.juggle.chat.bots.BotListFragment
+import com.juggle.chat.contacts.add.AddFriendListActivity
+import com.juggle.chat.contacts.group.select.SelectGroupMemberActivity
+import com.juggle.chat.databinding.ActivityGroupChannelMainBinding
+import com.juggle.chat.settings.MorePopWindow
+import com.juggle.chat.settings.MorePopWindow.OnPopWindowItemClickListener
 import com.juggle.im.JIM
 import com.juggle.im.interfaces.IConversationManager.IConversationListener
 import com.juggle.im.model.Conversation
 import com.juggle.im.model.ConversationInfo
 
-class GroupChannelMainActivity : AppCompatActivity(), IConversationListener {
+class GroupChannelMainActivity : AppCompatActivity(), IConversationListener, OnPopWindowItemClickListener {
     private lateinit var binding: ActivityGroupChannelMainBinding
     private lateinit var conversationUnreadCountTab: CustomTabView
     private lateinit var friendUnreadCountTab: CustomTabView
@@ -164,11 +168,28 @@ class GroupChannelMainActivity : AppCompatActivity(), IConversationListener {
     }
 
     private class MainAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+        val activity = fa
+
         override fun getItemCount(): Int = PAGE_SIZE
         override fun createFragment(position: Int): Fragment {
             val fragment: Fragment
             if (position == 0) {
-                fragment = FragmentProviders.channelList.provide(Bundle())
+                fragment = ChannelListFragment.Builder().setOnHeaderRightButtonClickListener(object : View.OnClickListener {
+                    override fun onClick(v: View?) {
+                        if (activity is GroupChannelMainActivity) {
+                            val morePopWindow = MorePopWindow(activity, activity)
+
+                            val scale = activity.resources.displayMetrics.density
+                            val marginEnd = (12 * scale + 0.5f).toInt()
+                            val popSelfXOffset =
+                                activity.resources.getDimension(com.jet.im.kit.R.dimen.sb_size_160) - v!!.width
+
+                            morePopWindow.showPopupWindow(v, 0.8f, (-popSelfXOffset).toInt(), 0)
+                        }
+                    }
+                }).withArguments(Bundle()).setUseHeader(true).build()
+
+//                fragment = FragmentProviders.channelList.provide(Bundle())
             } else if (position == 1) {
                 fragment = FriendListFragment()
             } else if (position == 2) {
@@ -200,5 +221,17 @@ class GroupChannelMainActivity : AppCompatActivity(), IConversationListener {
 
     override fun onTotalUnreadMessageCountUpdate(count: Int) {
         loadUnreadCount()
+    }
+
+    override fun onCreateGroupClick() {
+        startActivity(SelectGroupMemberActivity.newIntent(this, null, 0))
+    }
+
+    override fun onAddFriendClick() {
+        startActivity(AddFriendListActivity.newIntent(this))
+    }
+
+    override fun onScanClick() {
+        TODO("Not yet implemented")
     }
 }

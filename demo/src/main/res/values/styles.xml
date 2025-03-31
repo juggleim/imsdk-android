@@ -20,6 +20,11 @@
         <item name="sb_module_channel">@style/Module.Channel.Custom</item>
     </style>
 
+    <style name="AnimationMainTitleMore">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
+    </style>
+
     <style name="Module.Channel.Custom">
         <item name="sb_component_list">@style/Component.List.Channel.Custom</item>
     </style>
