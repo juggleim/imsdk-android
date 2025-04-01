@@ -178,5 +178,7 @@
 
     <string name="text_check_network">Please check network settings</string>
     <string name="text_album">Album</string>
+    <string name="text_join_group">Join the group</string>
+    <string name="text_group_has_members">%1$d&#160;member(s) in group</string>
 
 </resources>

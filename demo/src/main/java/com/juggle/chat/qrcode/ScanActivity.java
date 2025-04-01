@@ -26,6 +26,7 @@ import com.juggle.chat.bean.GroupMemberBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.UserInfoBean;
 import com.juggle.chat.component.HeadComponent;
+import com.juggle.chat.contacts.group.JoinGroupActivity;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
 import com.juggle.chat.qrcode.barcodescanner.BarcodeResult;
@@ -211,7 +212,8 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
                     public void onSuccess(GroupDetailBean groupDetailBean) {
                         //Not member
                         if (groupDetailBean.getMyRole() == 3) {
-
+                            startActivity(JoinGroupActivity.newIntent(ScanActivity.this, groupId, groupDetailBean.getPortrait(), groupDetailBean.getGroupName(), groupDetailBean.getMemberCount()));
+                            finish();
                         } else {
                             startActivity(ChannelActivity.newIntent(ScanActivity.this, Conversation.ConversationType.GROUP.getValue(), groupId));
                             finish();

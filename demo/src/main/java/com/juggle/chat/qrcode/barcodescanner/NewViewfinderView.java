@@ -203,7 +203,7 @@ public class NewViewfinderView extends View {
             networkPaint.getTextBounds(text, 0, text.length(), textRect);
             networkPaint.setTextSize(50);
             networkPaint.setAntiAlias(true);
-            networkPaint.setColor(getResources().getColor(R.color.color_white));
+            networkPaint.setColor(getResources().getColor(R.color.white));
             canvas.drawText(
                     text,
                     width / 2 - textRect.width() * 2 - textRect.width() / 2 + 20,

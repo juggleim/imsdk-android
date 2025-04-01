@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F2F2F3">
+
+    <com.jet.im.kit.internal.ui.components.HeaderView
+        android:id="@+id/headerView"
+        android:layout_width="match_parent"
+        android:layout_height="44dp" />
+
+    <RelativeLayout
+        android:id="@+id/profile_rl_join_group_info_container"
+        android:layout_width="match_parent"
+        android:layout_height="211dp"
+        android:background="@color/white"
+        >
+
+        <com.jet.im.kit.widgets.SelectableRoundedImageView
+            android:id="@+id/profile_iv_join_group_portrait"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            tools:src="@drawable/rc_default_portrait"
+            android:layout_centerHorizontal="true"
+            android:scaleType="centerCrop"
+            android:layout_marginTop="60dp"
+            app:sriv_left_bottom_corner_radius="@dimen/sb_size_3"
+            app:sriv_left_top_corner_radius="@dimen/sb_size_3"
+            app:sriv_right_bottom_corner_radius="@dimen/sb_size_3"
+            app:sriv_right_top_corner_radius="@dimen/sb_size_3"
+            />
+
+        <TextView
+            android:id="@+id/profile_tv_join_group_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:textSize="20sp"
+            android:layout_below="@id/profile_iv_join_group_portrait"
+            android:textColor="#262626"
+            android:layout_marginTop="8dp"
+            tools:text="群名称"
+            />
+
+        <TextView
+            android:id="@+id/profile_tv_join_group_member"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/profile_tv_join_group_name"
+            android:textColor="#939393"
+            android:layout_marginTop="2dp"
+            tools:text="群内已有多少人"
+            />
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/profile_btn_join_group_confirm"
+        android:layout_width="310dp"
+        android:layout_height="44dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/common_btn_blue_selector"
+        android:text="@string/text_join_group"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        tools:visibility="visible"
+        />
+
+</LinearLayout>

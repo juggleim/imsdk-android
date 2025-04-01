@@ -61,4 +61,7 @@ public interface GroupsService {
 
     @GET("/jim/groups/qrcode")
     Call<HttpResult<QRCodeBean>> getQRCode(@Query("group_id") String groupId);
+
+    @POST("/jim/groups/apply")
+    Call<HttpResult<Void>> applyGroup(@Body RequestBody body);
 }
