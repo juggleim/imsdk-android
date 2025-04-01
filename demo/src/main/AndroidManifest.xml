@@ -63,6 +63,7 @@
         <activity android:name=".contacts.group.GroupAnnouncementActivity" />
         <activity android:name=".contacts.group.GroupManageActivity" />
         <activity android:name=".settings.QRCodeDisplayActivity" />
+        <activity android:name=".qrcode.ScanActivity" />
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"

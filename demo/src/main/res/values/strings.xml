@@ -166,4 +166,17 @@
     <string name="text_member_count">%d Person(s)</string>
     <string name="text_create_group">Create group</string>
     <string name="text_scan_qrcode">Scan QR code</string>
+
+    <string name="zxing_msg_camera_framework_bug">Sorry, the Android camera encountered a problem. You may need to restart the device.</string>
+    <string name="zxing_distinguish_picture">Identify the Qrcode from the image</string>
+    <string name="zxing_qr_can_not_recognized">The QR code can’t be recognized</string>
+    <string name="zxing_open_light">Open</string>
+    <string name="zxing_close_light">Close</string>
+    <string name="zxing_tips_qrcode_scan">Put the QR code into the frame that it can be scanned automatically.</string>
+    <string name="zxing_scan_from_picture">Select image</string>
+    <string name="zxing_msg_camera_permission_grant_needed">您需要在设置中打开相机权限</string>
+
+    <string name="text_check_network">Please check network settings</string>
+    <string name="text_album">Album</string>
+
 </resources>

@@ -167,4 +167,16 @@
     <string name="text_create_group">创建群组</string>
     <string name="text_scan_qrcode">扫一扫</string>
 
+    <string name="zxing_msg_camera_framework_bug">对不起，Android摄像头遇到问题，您需要重启设备</string>
+    <string name="zxing_distinguish_picture">识别图中二维码</string>
+    <string name="zxing_qr_can_not_recognized">该二维码无法识别</string>
+    <string name="zxing_open_light">打开</string>
+    <string name="zxing_close_light">关闭</string>
+    <string name="zxing_tips_qrcode_scan">将二维码放入框内，即可自动扫描</string>
+    <string name="zxing_scan_from_picture">选择图片</string>
+    <string name="zxing_msg_camera_permission_grant_needed">您需要在设置中打开相机权限</string>
+
+    <string name="text_check_network">请检查网络设置</string>
+    <string name="text_album">相册</string>
+
 </resources>

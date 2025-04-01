@@ -127,7 +127,7 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
 //        findViewById(R.id.profile_tv_qr_save_phone).setOnClickListener(v -> {
 //            saveQRCodeToLocal();
 //        });
-//        // 分享至 SealTalk
+//        // 分享
 //        findViewById(R.id.profile_tv_qr_share_to_juggle).setOnClickListener(v -> {
 //            shareToJuggle();
 //        });

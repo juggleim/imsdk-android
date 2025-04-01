@@ -23,6 +23,7 @@ import com.juggle.chat.contacts.FriendListFragment
 import com.juggle.chat.contacts.add.AddFriendListActivity
 import com.juggle.chat.contacts.group.select.SelectGroupMemberActivity
 import com.juggle.chat.databinding.ActivityGroupChannelMainBinding
+import com.juggle.chat.qrcode.ScanActivity
 import com.juggle.chat.settings.MorePopWindow
 import com.juggle.chat.settings.MorePopWindow.OnPopWindowItemClickListener
 import com.juggle.im.JIM
@@ -232,6 +233,7 @@ class GroupChannelMainActivity : AppCompatActivity(), IConversationListener, OnP
     }
 
     override fun onScanClick() {
-        TODO("Not yet implemented")
+        val intent = Intent(this, ScanActivity::class.java)
+        startActivity(intent)
     }
 }
