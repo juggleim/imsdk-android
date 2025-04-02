@@ -9,8 +9,10 @@ import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.interfaces.AuthenticateHandler;
+import com.jet.im.kit.interfaces.IGroupMemberProvider;
 import com.jet.im.kit.interfaces.OnCompleteHandler;
 import com.jet.im.kit.interfaces.OnPagedDataLoader;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitContract;
@@ -26,9 +28,10 @@ import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageReaction;
-import com.juggle.im.model.MessageReactionItem;
+import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
@@ -46,6 +49,8 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     ConversationInfo mConversationInfo;
     @NonNull
     protected final Conversation mConversation;
+    @Nullable
+    MemberFinder mMemberFinder;
     @NonNull
     final MessageList cachedMessages = new MessageList();
     @NonNull
@@ -91,8 +96,8 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      */
     @NonNull
     public LiveData<MentionSuggestion> getMentionSuggestion() {
-        //todo mention
-        return new MutableLiveData<>();
+        if (mMemberFinder == null) return new MutableLiveData<>();
+        return mMemberFinder.getMentionSuggestion();
     }
 
     @Override
@@ -105,6 +110,7 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     protected void onCleared() {
         super.onCleared();
         Logger.dev("-- onCleared ChannelViewModel");
+        if (mMemberFinder != null) mMemberFinder.dispose();
     }
 
     /**
@@ -122,12 +128,15 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 //        }
     }
 
-    public void sendTextMessage(String content, String parentMessageId) {
+    public void sendTextMessage(String content, String parentMessageId, MessageMentionInfo mentionInfo) {
         Logger.i("++ request send message : %s", content);
         TextMessage textMessage = new TextMessage(content);
         MessageOptions options = new MessageOptions();
         if (TextUtils.isNotEmpty(parentMessageId)) {
             options.setReferredMessageId(parentMessageId);
+        }
+        if (mentionInfo != null) {
+            options.setMentionInfo(mentionInfo);
         }
         if (mConversationInfo != null) {
             JIM.getInstance().getMessageManager().sendMessage(textMessage, mConversationInfo.getConversation(), options, new IMessageManager.ISendMessageCallback() {
@@ -454,6 +463,7 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
                     info.setConversation(mConversation);
                 }
                 this.mConversationInfo = info;
+                this.mMemberFinder = new MemberFinder(SendbirdUIKit.getUserMentionConfig(), mConversation.getConversationId());
                 if (mConversationInfo == null) {
                     handler.onAuthenticationFailed();
                 } else {
@@ -478,6 +488,7 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      *                        since 3.0.0
      */
     public synchronized void loadMemberList(@Nullable String startWithFilter) {
+        if (mMemberFinder != null) mMemberFinder.find(startWithFilter);
     }
 
     void onMessagesUpdated(@NonNull ConversationInfo channel, @NonNull Message message) {
@@ -529,6 +540,5 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     public List<Message> buildMessageList() {
         return Collections.emptyList();
     }
-
 }
 

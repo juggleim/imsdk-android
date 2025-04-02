@@ -55,6 +55,7 @@ import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.utils.MessageUtils;
 import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.vm.ChannelViewModel;
+import com.jet.im.kit.widgets.MentionEditText;
 import com.jet.im.kit.widgets.MessageInputView;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
@@ -63,6 +64,7 @@ import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.TextMessage;
@@ -584,21 +586,24 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         if (inputText != null && !TextUtils.isEmpty(inputText.getText())) {
             final Editable editableText = inputText.getText();
 
-//            if (channelConfig.getEnableMention()) {
-//                if (inputText instanceof MentionEditText) {
-//                    final List<User> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
-//                    final CharSequence mentionedTemplate = ((MentionEditText) inputText).getMentionedTemplate();
-//                    Logger.d("++ mentioned template text=%s", mentionedTemplate);
-//                    params.setMentionedMessageTemplate(mentionedTemplate.toString());
-//                    params.setMentionedUsers(mentionedUsers);
-//                }
-//            }
+            MessageMentionInfo mentionInfo = null;
+            if (channelConfig.getEnableMention()) {
+                if (inputText instanceof MentionEditText) {
+                    final List<UserInfo> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
+
+                    if (mentionedUsers != null && !mentionedUsers.isEmpty()) {
+                        mentionInfo = new MessageMentionInfo();
+                        mentionInfo.setType(MessageMentionInfo.MentionType.SOMEONE);
+                        mentionInfo.setTargetUsers(mentionedUsers);
+                    }
+                }
+            }
 
             String parentMessageId = "";
             if (targetMessage != null) {
                 parentMessageId = targetMessage.getMessageId();
             }
-            sendTextMessage(editableText.toString(), parentMessageId);
+            sendTextMessage(editableText.toString(), parentMessageId, mentionInfo);
         }
     }
 

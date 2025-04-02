@@ -24,6 +24,7 @@ import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.activities.PhotoViewActivity;
 import com.jet.im.kit.activities.adapter.BaseMessageListAdapter;
+import com.jet.im.kit.activities.adapter.SuggestedMentionListAdapter;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
 import com.jet.im.kit.call.CallCenter;
@@ -64,6 +65,7 @@ import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.UserInfo;
@@ -106,6 +108,8 @@ abstract public class BaseMessageListFragment<
     private LoadingDialogHandler loadingDialogHandler;
     @Nullable
     private LA adapter;
+    @Nullable
+    private SuggestedMentionListAdapter suggestedMentionListAdapter;
     @NonNull
     protected ChannelConfig channelConfig = UIKitConfig.getGroupChannelConfig();
     @Nullable
@@ -179,6 +183,7 @@ abstract public class BaseMessageListFragment<
         if (this.adapter != null) {
             module.getMessageListComponent().setAdapter(adapter);
         }
+        module.getMessageInputComponent().setSuggestedMentionListAdapter(suggestedMentionListAdapter == null ? new SuggestedMentionListAdapter() : suggestedMentionListAdapter);
     }
 
     /**
@@ -1011,8 +1016,8 @@ abstract public class BaseMessageListFragment<
     protected void onBeforeUpdateUserMessage(@NonNull UserMessageUpdateParams params) {
     }
 
-    protected void sendTextMessage(String content, String parentMessageId) {
-        getViewModel().sendTextMessage(content, parentMessageId);
+    protected void sendTextMessage(String content, String parentMessageId, MessageMentionInfo mentionInfo) {
+        getViewModel().sendTextMessage(content, parentMessageId, mentionInfo);
     }
 
     /**

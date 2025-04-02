@@ -12,7 +12,11 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.activities.ChannelActivity
 import com.jet.im.kit.fragments.ChannelListFragment
+import com.jet.im.kit.vm.MemberFinder
 import com.juggle.chat.R
+import com.juggle.chat.bean.GroupMemberBean
+import com.juggle.chat.bean.HttpResult
+import com.juggle.chat.bean.ListResult
 import com.juggle.chat.bots.BotListFragment
 import com.juggle.chat.common.SampleSettingsFragment
 import com.juggle.chat.common.consts.StringSet
@@ -23,6 +27,8 @@ import com.juggle.chat.contacts.FriendListFragment
 import com.juggle.chat.contacts.add.AddFriendListActivity
 import com.juggle.chat.contacts.group.select.SelectGroupMemberActivity
 import com.juggle.chat.databinding.ActivityGroupChannelMainBinding
+import com.juggle.chat.http.CustomCallback
+import com.juggle.chat.http.ServiceManager
 import com.juggle.chat.qrcode.ScanActivity
 import com.juggle.chat.settings.MorePopWindow
 import com.juggle.chat.settings.MorePopWindow.OnPopWindowItemClickListener
@@ -30,6 +36,7 @@ import com.juggle.im.JIM
 import com.juggle.im.interfaces.IConversationManager.IConversationListener
 import com.juggle.im.model.Conversation
 import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.UserInfo
 
 class GroupChannelMainActivity : AppCompatActivity(), IConversationListener, OnPopWindowItemClickListener {
     private lateinit var binding: ActivityGroupChannelMainBinding
@@ -95,6 +102,31 @@ class GroupChannelMainActivity : AppCompatActivity(), IConversationListener, OnP
             redirectChannelIfNeeded(intent)
         }
         JIM.getInstance().conversationManager.addListener(key, this)
+        MemberFinder.setGroupMemberProvider { groupId, callback ->
+            run {
+                ServiceManager.getGroupsService().getGroupMembers(groupId).enqueue(object :
+                    CustomCallback<HttpResult<ListResult<GroupMemberBean>>, ListResult<GroupMemberBean>>() {
+                    override fun onSuccess(groupMemberList: ListResult<GroupMemberBean>?) {
+                        val userInfoList: MutableList<UserInfo> = ArrayList()
+                        if (groupMemberList != null) {
+                            for (groupMember in groupMemberList.items) {
+                                val userInfo = UserInfo()
+                                userInfo.userId = groupMember.userId
+                                userInfo.userName = groupMember.nickname
+                                userInfo.portrait = groupMember.avatar
+                                userInfoList.add(userInfo)
+                            }
+                        }
+                        callback.onMembersFetch(userInfoList, 0)
+                    }
+
+                    override fun onError(t: Throwable?) {
+                        super.onError(t)
+                        callback.onMembersFetch(null, -1)
+                    }
+                })
+            }
+        }
     }
 
     override fun onResume() {

@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 
+import com.jet.im.kit.activities.adapter.SuggestedMentionListAdapter;
 import com.jet.im.kit.utils.TextUtils;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
@@ -199,6 +200,17 @@ public class MessageInputComponent {
         }
     }
 
+    /**
+     * Sets the adapter for suggested mention list.
+     *
+     * @param adapter The adapter to be used in suggested mention list.
+     * since 3.0.0
+     */
+    public void setSuggestedMentionListAdapter(@NonNull SuggestedMentionListAdapter adapter) {
+        if (getEditTextView() instanceof MentionEditText) {
+            ((MentionEditText) getEditTextView()).setSuggestedMentionListAdapter(adapter);
+        }
+    }
 
     /**
      * Sets whether to use divider in suggested mention list.
