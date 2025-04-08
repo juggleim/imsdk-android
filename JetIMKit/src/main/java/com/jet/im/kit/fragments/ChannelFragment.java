@@ -59,6 +59,7 @@ import com.jet.im.kit.widgets.MentionEditText;
 import com.jet.im.kit.widgets.MessageInputView;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
+import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.MediaMessageContent;
@@ -655,14 +656,22 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         DialogListItem[] actions = null;
         switch (type) {
             case VIEW_TYPE_USER_MESSAGE_ME:
-                if (status == Message.MessageState.SENT) {
-                    actions = new DialogListItem[]{copy, edit, delete, recall, forward, reply};
-                } else if (MessageUtils.isFailed(message)) {
-                    actions = new DialogListItem[]{retry, deleteFailed};
+                if (message.getContent() instanceof CallFinishNotifyMessage) {
+                    actions = new DialogListItem[]{delete};
+                } else {
+                    if (status == Message.MessageState.SENT) {
+                        actions = new DialogListItem[]{copy, edit, delete, recall, forward, reply};
+                    } else if (MessageUtils.isFailed(message)) {
+                        actions = new DialogListItem[]{retry, deleteFailed};
+                    }
                 }
                 break;
             case VIEW_TYPE_USER_MESSAGE_OTHER:
-                actions = new DialogListItem[]{copy, delete, forward, reply};
+                if (message.getContent() instanceof CallFinishNotifyMessage) {
+                    actions = new DialogListItem[]{delete};
+                } else {
+                    actions = new DialogListItem[]{copy, delete, forward, reply};
+                }
                 break;
             case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
             case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:

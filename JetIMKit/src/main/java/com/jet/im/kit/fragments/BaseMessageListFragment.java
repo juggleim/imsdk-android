@@ -62,6 +62,7 @@ import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
 import com.juggle.im.JIM;
+import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
@@ -278,6 +279,11 @@ abstract public class BaseMessageListFragment<
                         ((VoiceMessageView) view).callOnPlayerButtonClick();
                     }
                     break;
+                case VIEW_TYPE_USER_MESSAGE_ME:
+                case VIEW_TYPE_USER_MESSAGE_OTHER:
+                    if (message.getContent() instanceof CallFinishNotifyMessage) {
+                        voiceCall();
+                    }
                 default:
             }
         } else {
