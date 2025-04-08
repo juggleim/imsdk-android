@@ -79,7 +79,12 @@ public enum MessageType {
      *
      * since 3.9.0
      */
-    VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER(18);
+    VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER(18),
+
+    VIEW_TYPE_CONTACT_CARD_MESSAGE_ME(19),
+
+    VIEW_TYPE_CONTACT_CARD_MESSAGE_OTHER(20);
+
     final int value;
 
     MessageType(int value) {

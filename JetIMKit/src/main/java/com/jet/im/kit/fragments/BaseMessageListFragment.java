@@ -48,6 +48,7 @@ import com.jet.im.kit.model.ReadyStatus;
 import com.jet.im.kit.model.VoiceMessageInfo;
 import com.jet.im.kit.model.configurations.ChannelConfig;
 import com.jet.im.kit.model.configurations.UIKitConfig;
+import com.jet.im.kit.model.message.ContactCardMessage;
 import com.jet.im.kit.modules.BaseMessageListModule;
 import com.jet.im.kit.modules.components.BaseMessageListComponent;
 import com.jet.im.kit.utils.ContextUtils;
@@ -57,6 +58,7 @@ import com.jet.im.kit.utils.IntentUtils;
 import com.jet.im.kit.utils.MessageUtils;
 import com.jet.im.kit.utils.PermissionUtils;
 import com.jet.im.kit.utils.SoftInputUtils;
+import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
 import com.juggle.im.JIM;
@@ -650,8 +652,9 @@ abstract public class BaseMessageListFragment<
         ConversationInfo channel = getViewModel().getConversationInfo();
         assert channel != null;
         if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
-            items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_camera));
+            items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_voice_message_on));
         }
+        items.add(new DialogListItem(R.string.text_name_card, R.drawable.icon_user));
         if (items.isEmpty()) return;
         hideKeyboard();
         DialogUtils.showListBottomDialog(requireContext(), items.toArray(new DialogListItem[0]), (view, position, item) -> {
@@ -667,6 +670,8 @@ abstract public class BaseMessageListFragment<
                     takeFile();
                 } else if (key == R.string.sb_text_channel_input_voice_call) {
                     voiceCall();
+                } else if (key == R.string.text_name_card) {
+                    nameCard();
                 }
             } catch (Exception e) {
                 Logger.e(e);
@@ -709,6 +714,34 @@ abstract public class BaseMessageListFragment<
             assert getViewModel().getConversationInfo() != null;
             CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId());
         });
+    }
+
+    private void nameCard() {
+        Intent intent = new Intent("com.jet.im.action.user_list");
+        intent.putExtra("type", 0);
+        startActivityForResult(intent, 555);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 555 && getActivity() != null) {
+            String userId = data.getStringExtra("user_id");
+            String name = data.getStringExtra("name");
+            String portrait = data.getStringExtra("portrait");
+
+            ContactCardMessage contactCardMessage = new ContactCardMessage();
+            if (TextUtils.isNotEmpty(userId)) {
+                contactCardMessage.setUserId(userId);
+            }
+            if (TextUtils.isNotEmpty(name)) {
+                contactCardMessage.setName(name);
+            }
+            if (TextUtils.isNotEmpty(portrait)) {
+                contactCardMessage.setPortrait(portrait);
+            }
+            getViewModel().sendMessage(contactCardMessage);
+        }
     }
 
     /**

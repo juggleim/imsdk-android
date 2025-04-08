@@ -53,7 +53,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".settings.UserDetailActivity" />
+        <activity android:name=".settings.UserDetailActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="com.jet.im.action.user_detail" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name=".contacts.group.GroupListActivity" />
         <activity android:name=".contacts.chatroom.ChatroomListActivity" />
         <activity android:name=".contacts.FriendApplicationListActivity" />
@@ -65,6 +70,13 @@
         <activity android:name=".settings.QRCodeDisplayActivity" />
         <activity android:name=".qrcode.ScanActivity" />
         <activity android:name=".contacts.group.JoinGroupActivity" />
+        <activity android:name=".contacts.UserListActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.jet.im.action.user_list" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"

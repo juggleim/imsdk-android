@@ -282,7 +282,7 @@
         <attr name="sb_quoted_message_me_file_icon_tint" format="reference|color"/>
         <attr name="sb_quoted_message_other_file_icon_tint" format="reference|color"/>
     </declare-styleable>
-
+    
     <declare-styleable name="MessageView.User">
         <attr name="sb_message_me_text_appearance" />
         <attr name="sb_message_other_text_appearance" />

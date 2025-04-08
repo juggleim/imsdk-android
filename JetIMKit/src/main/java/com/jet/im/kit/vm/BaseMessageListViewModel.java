@@ -28,6 +28,7 @@ import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageReaction;
@@ -126,6 +127,24 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 //                channel.endTyping();
 //            }
 //        }
+    }
+
+    public void sendMessage(MessageContent content) {
+        if (mConversationInfo != null) {
+            JIM.getInstance().getMessageManager().sendMessage(content, mConversationInfo.getConversation(), new IMessageManager.ISendMessageCallback() {
+                @Override
+                public void onSuccess(Message message) {
+                    Logger.i("++ sent message : %s", message);
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onError(Message message, int errorCode) {
+                    Logger.e("send message error : %s", errorCode);
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+            });
+        }
     }
 
     public void sendTextMessage(String content, String parentMessageId, MessageMentionInfo mentionInfo) {

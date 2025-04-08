@@ -38,11 +38,11 @@
     <string name="sb_text_channel_input_reply_text_hint">Reply to message</string>
     <string name="sb_text_channel_input_reply_in_thread_hint">Reply in thread</string>
     <string name="sb_text_channel_input_reply_to_thread_hint">Reply to thread</string>
-    <string name="sb_text_channel_input_camera">Take photo</string>
-    <string name="sb_text_channel_input_take_video">Take video</string>
-    <string name="sb_text_channel_input_gallery">Gallery</string>
-    <string name="sb_text_channel_input_document">Document</string>
-    <string name="sb_text_channel_input_voice_call">Voice call</string>
+    <string name="sb_text_channel_input_camera">拍照</string>
+    <string name="sb_text_channel_input_take_video">视频</string>
+    <string name="sb_text_channel_input_gallery">相册</string>
+    <string name="sb_text_channel_input_document">文件</string>
+    <string name="sb_text_channel_input_voice_call">语音通话</string>
     <string name="sb_text_channel_typing_indicator_single">%s is typing&#8230;</string>
     <string name="sb_text_channel_typing_indicator_double">%s and %s are typing&#8230;</string>
     <string name="sb_text_channel_typing_indicator_multiple">Several people are typing&#8230;</string>
@@ -329,4 +329,6 @@ Please turn it on in the application permission management page of \"Settings\"<
     <string name="text_group_nickname">我在本群的昵称</string>
     <string name="text_group_qrcode">群二维码</string>
     <string name="text_quit_group_confirm">确认退出群组？</string>
+    <string name="text_name_card">个人名片</string>
+
 </resources>

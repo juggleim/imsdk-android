@@ -680,6 +680,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                 break;
             case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_ME:
             case VIEW_TYPE_VOICE_MESSAGE_ME:
+            case VIEW_TYPE_CONTACT_CARD_MESSAGE_ME:
                 if (MessageUtils.isFailed(message)) {
                     actions = new DialogListItem[]{retry, deleteFailed};
                 } else {
@@ -688,6 +689,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                 break;
             case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER:
             case VIEW_TYPE_VOICE_MESSAGE_OTHER:
+            case VIEW_TYPE_CONTACT_CARD_MESSAGE_OTHER:
                 actions = new DialogListItem[]{delete, forward};
                 break;
             case VIEW_TYPE_UNKNOWN_MESSAGE_ME:
