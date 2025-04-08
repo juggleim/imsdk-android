@@ -40,6 +40,7 @@ import com.jet.im.kit.model.message.ContactCardMessage;
 import com.jet.im.kit.model.message.FriendNotifyMessage;
 import com.jet.im.kit.model.message.GroupNotifyMessage;
 import com.jet.im.kit.utils.MessageUtils;
+import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.messages.FileMessage;
@@ -173,7 +174,8 @@ public class MessageViewHolderFactory {
     public static MessageType getMessageType(@NonNull Message message) {
         MessageType type;
         MessageContent content = message.getContent();
-        if (content instanceof TextMessage) {
+        if (content instanceof TextMessage
+        || content instanceof CallFinishNotifyMessage) {
             if (MessageUtils.isMine(message)) {
                 type = MessageType.VIEW_TYPE_USER_MESSAGE_ME;
             } else {

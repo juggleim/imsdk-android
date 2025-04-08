@@ -1,5 +1,6 @@
 package com.jet.im.kit.utils;
 
+import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
@@ -49,6 +51,7 @@ import com.jet.im.kit.model.TextUIConfig;
 import com.jet.im.kit.model.configurations.ChannelConfig;
 import com.jet.im.kit.vm.PendingMessageRepository;
 import com.juggle.im.JIM;
+import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.UserInfo;
@@ -124,6 +127,11 @@ public class ViewUtils {
             drawUnknownMessage(textView, MessageUtils.isMine(message));
             return;
         }
+        if (message.getContent() instanceof CallFinishNotifyMessage) {
+            Drawable drawable = ContextCompat.getDrawable(textView.getContext(), R.drawable.rc_voip_audio_right_cancel);
+            drawable.setBounds(0, 0, 70, 30);
+            textView.setCompoundDrawables(null, null, drawable, null);
+        }
         final boolean isMine = MessageUtils.isMine(message);
         final Context context = textView.getContext();
         final CharSequence text = getDisplayableText(
@@ -160,7 +168,23 @@ public class ViewUtils {
             boolean enabledMention
     ) {
         String displayedMessage = "";
-        if (message.getContent() instanceof  TextMessage) {
+        if (message.getContent() instanceof CallFinishNotifyMessage) {
+            CallFinishNotifyMessage callMessage = ((CallFinishNotifyMessage) message.getContent());
+            switch (callMessage.getFinishNotifyType()) {
+                case CANCEL:
+                    displayedMessage = "已取消  ";
+                    break;
+                case REJECT:
+                    displayedMessage = "已拒绝  ";
+                    break;
+                case NO_RESPONSE:
+                    displayedMessage = "未接听  ";
+                    break;
+                case COMPLETE:
+                    displayedMessage = "通话时长 " + getStringForTime(callMessage.getDuration()) + "  ";
+                    break;
+            }
+        } else if (message.getContent() instanceof  TextMessage) {
             TextMessage textMessage = ((TextMessage) message.getContent());
             if (textMessage.getContent() != null) {
                 displayedMessage = textMessage.getContent();
@@ -172,8 +196,21 @@ public class ViewUtils {
             messageTextUIConfig.bind(context, text, 0, text.length());
         }
 
-        CharSequence displayText = text;
-        return displayText;
+        return text;
+    }
+
+    @SuppressLint("DefaultLocale")
+    private static String getStringForTime(long time) {
+        long seconds = time / 1000;
+        long hours = seconds / 3600;
+        long remainingSeconds = seconds % 3600;
+        long minutes = remainingSeconds / 60;
+        long secs = remainingSeconds % 60;
+        if (hours > 0) {
+            return String.format("%02d:%02d:%02d", hours, minutes, secs);
+        } else {
+            return String.format("%02d:%02d", minutes, secs);
+        }
     }
 
     @Nullable

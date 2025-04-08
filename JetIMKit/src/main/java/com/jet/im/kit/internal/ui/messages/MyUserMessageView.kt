@@ -1,6 +1,7 @@
 package com.jet.im.kit.internal.ui.messages
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +21,7 @@ import com.jet.im.kit.model.TextUIConfig
 import com.jet.im.kit.model.configurations.ChannelConfig
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
+import com.juggle.im.call.model.CallFinishNotifyMessage
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
 import com.juggle.im.model.MessageReactionItem
@@ -153,7 +155,7 @@ internal class MyUserMessageView @JvmOverloads internal constructor(
             message,
             messageUIConfig,
             enableMention,
-            mentionedCurrentUserUIConfig,
+            mentionedCurrentUserUIConfig
         ) { view, position, user ->
             mentionClickListener?.onItemClick(view, position, user)
         }
