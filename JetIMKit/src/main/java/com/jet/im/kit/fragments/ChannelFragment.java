@@ -735,6 +735,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             } else {
                 showRecallWarningDialog(message);
             }
+            return true;
         } else if (key == R.string.sb_text_channel_anchor_delete) {
             if (MessageUtils.isFailed(message)) {
                 Logger.dev("delete");
@@ -754,6 +755,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             return true;
         } else if (key == R.string.sb_text_channel_anchor_retry) {
             resendMessage(message);
+            return true;
+        } else if (key == R.string.sb_text_channel_anchor_forward) {
+            forwardMessage(message);
             return true;
         }
         return false;

@@ -180,5 +180,7 @@
     <string name="text_album">相册</string>
     <string name="text_join_group">加入该群</string>
     <string name="text_group_has_members">群内已有&#160;%1$d&#160;人</string>
+    <string name="text_select_conversation">选择一个聊天</string>
+
 
 </resources>

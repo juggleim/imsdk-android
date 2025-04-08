@@ -59,6 +59,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name=".contacts.ConversationSelectActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="com.jet.im.action.conversation_select" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name=".contacts.group.GroupListActivity" />
         <activity android:name=".contacts.chatroom.ChatroomListActivity" />
         <activity android:name=".contacts.FriendApplicationListActivity" />

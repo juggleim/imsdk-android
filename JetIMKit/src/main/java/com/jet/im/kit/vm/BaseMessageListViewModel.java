@@ -147,6 +147,26 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
         }
     }
 
+    public void sendMessage(MessageContent content, @NonNull Conversation conversation) {
+        JIM.getInstance().getMessageManager().sendMessage(content, conversation, new IMessageManager.ISendMessageCallback() {
+            @Override
+            public void onSuccess(Message message) {
+                Logger.i("++ sent message : %s", message);
+                if (conversation.equals(mConversation)) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+            }
+
+            @Override
+            public void onError(Message message, int errorCode) {
+                Logger.e("send message error : %s", errorCode);
+                if (conversation.equals(mConversation)) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+            }
+        });
+    }
+
     public void sendTextMessage(String content, String parentMessageId, MessageMentionInfo mentionInfo) {
         Logger.i("++ request send message : %s", content);
         TextMessage textMessage = new TextMessage(content);

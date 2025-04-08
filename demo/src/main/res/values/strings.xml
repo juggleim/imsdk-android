@@ -180,5 +180,6 @@
     <string name="text_album">Album</string>
     <string name="text_join_group">Join the group</string>
     <string name="text_group_has_members">%1$d&#160;member(s) in group</string>
+    <string name="text_select_conversation">Select a conversation</string>
 
 </resources>

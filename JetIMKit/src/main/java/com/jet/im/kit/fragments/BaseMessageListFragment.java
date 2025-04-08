@@ -119,6 +119,7 @@ abstract public class BaseMessageListFragment<
     Message targetMessage;
     @Nullable
     private Uri mediaUri;
+    private Message forwardMessage;
 
     private final ActivityResultLauncher<Intent> getContentLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 //        SendbirdChat.setAutoBackgroundDetection(true);
@@ -731,7 +732,14 @@ abstract public class BaseMessageListFragment<
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 555 && getActivity() != null) {
+
+        if (getActivity() == null) {
+            return;
+        }
+        if (requestCode == 555) {
+            if (data == null) {
+                return;
+            }
             String userId = data.getStringExtra("user_id");
             String name = data.getStringExtra("name");
             String portrait = data.getStringExtra("portrait");
@@ -747,6 +755,14 @@ abstract public class BaseMessageListFragment<
                 contactCardMessage.setPortrait(portrait);
             }
             getViewModel().sendMessage(contactCardMessage);
+        } else if (requestCode == 666) {
+            if (data == null || forwardMessage == null) {
+                return;
+            }
+            int typeValue = data.getIntExtra("type", 1);
+            String conversationId = data.getStringExtra("id");
+            Conversation.ConversationType conversationType = Conversation.ConversationType.setValue(typeValue);
+            getViewModel().sendMessage(forwardMessage.getContent(), new Conversation(conversationType, conversationId));
         }
     }
 
@@ -1196,6 +1212,12 @@ abstract public class BaseMessageListFragment<
         getViewModel().resendMessage(message, e -> {
             if (e != null) toastError(R.string.sb_text_error_resend_message);
         });
+    }
+
+    protected void forwardMessage(Message message) {
+        forwardMessage = message;
+        Intent intent = new Intent("com.jet.im.action.conversation_select");
+        startActivityForResult(intent, 666);
     }
 
     /**
