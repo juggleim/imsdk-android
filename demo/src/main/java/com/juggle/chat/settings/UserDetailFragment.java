@@ -112,7 +112,8 @@ public class UserDetailFragment extends PermissionFragment {
             mBinding.profileBtnDetailAddFriend.setVisibility(View.GONE);
         } else if (isFriend) {
             mBinding.profileBtnDetailStartChat.setVisibility(View.VISIBLE);
-            mBinding.profileBtnDetailStartVideo.setVisibility(View.VISIBLE);
+            mBinding.profileBtnDetailStartVideo.setVisibility(View.GONE);
+//            mBinding.profileBtnDetailStartVideo.setVisibility(View.VISIBLE);
             mBinding.profileBtnDetailStartVoice.setVisibility(View.VISIBLE);
             mBinding.profileBtnDetailAddFriend.setVisibility(View.GONE);
         } else {
