@@ -1,5 +1,6 @@
 package com.juggle.chat.contacts.group;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.utils.DrawableUtils;
+import com.jet.im.kit.utils.PortraitGenerator;
 import com.jet.im.kit.utils.TextUtils;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.GroupBean;
@@ -70,7 +72,12 @@ public class GroupListFragment extends Fragment {
                             .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                             .into(viewHolder.<ImageView>getView(R.id.ivProfile));
                 } else {
-                    viewHolder.<ImageView>getView(R.id.ivProfile).setImageDrawable(DrawableUtils.getDefaultDrawable(viewHolder.itemView.getContext()));
+                    String path = PortraitGenerator.generateDefaultAvatar(viewHolder.itemView.getContext(), item.getGroup_id(), item.getGroup_name());
+                    Uri uri = Uri.parse(path);
+                    Glide.with(viewHolder.itemView.getContext())
+                            .load(uri)
+                            .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                            .into(viewHolder.<ImageView>getView(R.id.ivProfile));
                 }
                 viewHolder.setText(R.id.tvNickname, item.getGroup_name());
             }

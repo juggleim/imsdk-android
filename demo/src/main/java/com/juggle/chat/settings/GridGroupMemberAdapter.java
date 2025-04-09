@@ -1,6 +1,7 @@
 package com.juggle.chat.settings;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.jet.im.kit.R;
+import com.jet.im.kit.utils.PortraitGenerator;
 import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.widgets.SelectableRoundedImageView;
 import com.juggle.chat.bean.GroupMemberBean;
@@ -103,7 +105,9 @@ public class GridGroupMemberAdapter extends BaseAdapter {
                     viewHolder.avatarUrl = portraitUri;
                 }
             } else {
-                Glide.with(context).load(com.juggle.chat.R.drawable.icon_person)
+                String path = PortraitGenerator.generateDefaultAvatar(context, groupMember.getUserId(), groupMember.getNickname());
+                Uri uri = Uri.parse(path);
+                Glide.with(context).load(uri)
                         .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                         .into(avatarView);
                 viewHolder.avatarUrl = portraitUri;

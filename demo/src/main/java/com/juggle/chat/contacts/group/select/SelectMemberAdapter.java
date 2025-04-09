@@ -1,5 +1,6 @@
 package com.juggle.chat.contacts.group.select;
 
+import android.net.Uri;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -7,6 +8,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
+import com.jet.im.kit.utils.PortraitGenerator;
 import com.jet.im.kit.utils.TextUtils;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.SelectFriendBean;
@@ -31,8 +33,10 @@ public class SelectMemberAdapter extends CommonAdapter<SelectFriendBean> {
                         .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                         .into(viewHolder.<ImageView>getView(R.id.ivProfile));
             } else {
+                String path = PortraitGenerator.generateDefaultAvatar(viewHolder.itemView.getContext(), item.getUser_id(), item.getNickname());
+                Uri uri = Uri.parse(path);
                 Glide.with(viewHolder.itemView.getContext())
-                        .load(R.drawable.icon_person)
+                        .load(uri)
                         .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                         .into(viewHolder.<ImageView>getView(R.id.ivProfile));
             }

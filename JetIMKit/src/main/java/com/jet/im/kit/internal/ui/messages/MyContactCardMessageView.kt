@@ -2,6 +2,7 @@ package com.jet.im.kit.internal.ui.messages
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -14,12 +15,14 @@ import com.jet.im.kit.internal.extensions.setAppearance
 import com.jet.im.kit.model.MessageListUIParams
 import com.jet.im.kit.model.message.ContactCardMessage
 import com.jet.im.kit.utils.DrawableUtils
+import com.jet.im.kit.utils.PortraitGenerator
 import com.jet.im.kit.utils.TextUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
 import com.juggle.im.model.MessageReactionItem
 import com.juggle.im.model.messages.TextMessage
+import java.io.File
 
 internal class MyContactCardMessageView @JvmOverloads internal constructor(
     context: Context,
@@ -96,7 +99,8 @@ internal class MyContactCardMessageView @JvmOverloads internal constructor(
         if (TextUtils.isNotEmpty(contactCardMessage.portrait)) {
             Glide.with(context).load(contactCardMessage.portrait).circleCrop().into(binding.ivPortrait)
         } else {
-            Glide.with(context).load(R.drawable.rc_default_portrait).circleCrop().into(binding.ivPortrait)
+            val uri = Uri.parse(PortraitGenerator.generateDefaultAvatar(context, contactCardMessage.userId, contactCardMessage.name))
+            Glide.with(context).load(uri).circleCrop().into(binding.ivPortrait)
         }
         binding.tvName.text = contactCardMessage.name
         binding.contentPanel.setOnClickListener {

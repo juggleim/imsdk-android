@@ -1,5 +1,7 @@
 package com.jet.im.kit.fragments;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -266,7 +268,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 444 && getActivity() != null) {
+        if (requestCode == 444 && getActivity() != null && resultCode == RESULT_OK) {
             getActivity().finish();
         }
     }

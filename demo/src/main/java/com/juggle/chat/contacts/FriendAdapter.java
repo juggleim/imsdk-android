@@ -1,6 +1,7 @@
 package com.juggle.chat.contacts;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -14,6 +15,8 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.interfaces.OnItemClickListener;
+import com.jet.im.kit.utils.PortraitGenerator;
+import com.jet.im.kit.utils.TextUtils;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.FriendBean;
 import com.juggle.chat.common.adapter.ViewHolder;
@@ -59,8 +62,13 @@ public class FriendAdapter extends RecyclerView.Adapter<ViewHolder> {
         } else {
             item = mList.get(position-3);
             holder.setText(R.id.tvNickname, item.getNickname());
-            if (item.getAvatar() == null) {
-                holder.<ImageView>getView(R.id.ivProfile).setImageDrawable(DrawableUtils.getDefaultDrawable(holder.itemView.getContext()));
+            if (TextUtils.isEmpty(item.getAvatar())) {
+                String path = PortraitGenerator.generateDefaultAvatar(holder.itemView.getContext(), item.getUser_id(), item.getNickname());
+                Uri uri = Uri.parse(path);
+                Glide.with(holder.itemView.getContext())
+                        .load(uri)
+                        .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                        .into(holder.<ImageView>getView(R.id.ivProfile));
             } else {
                 Glide.with(holder.itemView.getContext())
                         .load(item.getAvatar())

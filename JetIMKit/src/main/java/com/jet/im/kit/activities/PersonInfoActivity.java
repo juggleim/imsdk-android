@@ -2,6 +2,7 @@ package com.jet.im.kit.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,8 @@ import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.databinding.ActivityPersonInfoBinding;
 import com.jet.im.kit.utils.DialogUtils;
+import com.jet.im.kit.utils.PortraitGenerator;
+import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
 import com.juggle.im.interfaces.IConversationManager;
@@ -59,10 +62,19 @@ public class PersonInfoActivity extends BaseActivity {
 
         UserInfo userInfo = JIM.getInstance().getUserInfoManager().getUserInfo(mUserId);
         mBinding.tvNickname.setText(userInfo.getUserName());
-        Glide.with(this)
-                .load(userInfo.getPortrait())
-                .apply(RequestOptions.bitmapTransform(new CircleCrop()))
-                .into(mBinding.ivProfileView);
+        if (TextUtils.isEmpty(userInfo.getPortrait())) {
+            String path = PortraitGenerator.generateDefaultAvatar(this, mUserId, userInfo.getUserName());
+            Uri uri = Uri.parse(path);
+            Glide.with(this)
+                    .load(uri)
+                    .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                    .into(mBinding.ivProfileView);
+        } else {
+            Glide.with(this)
+                    .load(userInfo.getPortrait())
+                    .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                    .into(mBinding.ivProfileView);
+        }
 
         mBinding.scNotification.setTrackTintList(AppCompatResources.getColorStateList(this, R.color.sb_switch_track_light));
         mBinding.scNotification.setThumbTintList(AppCompatResources.getColorStateList(this, R.color.sb_switch_thumb_light));

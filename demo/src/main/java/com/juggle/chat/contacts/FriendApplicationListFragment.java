@@ -1,5 +1,6 @@
 package com.juggle.chat.contacts;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.utils.DrawableUtils;
+import com.jet.im.kit.utils.PortraitGenerator;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.FriendApplicationBean;
 import com.juggle.chat.bean.HttpResult;
@@ -65,7 +67,12 @@ public class FriendApplicationListFragment extends Fragment {
                             .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                             .into(holder.<ImageView>getView(R.id.ivProfile));
                 } else {
-                    holder.<ImageView>getView(R.id.ivProfile).setImageDrawable(DrawableUtils.getDefaultDrawable(holder.itemView.getContext()));
+                    String path = PortraitGenerator.generateDefaultAvatar(holder.itemView.getContext(), friendApplicationBean.getUserInfo().getUser_id(), friendApplicationBean.getUserInfo().getNickname());
+                    Uri uri = Uri.parse(path);
+                    Glide.with(holder.itemView.getContext())
+                            .load(uri)
+                            .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                            .into(holder.<ImageView>getView(R.id.ivProfile));
                 }
                 holder.setText(R.id.tvNickname, friendApplicationBean.getUserInfo().getNickname());
                 if (friendApplicationBean.isSponsor()) {

@@ -2,6 +2,7 @@ package com.jet.im.kit.internal.ui.channels
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.util.AttributeSet
 import android.widget.ImageView
 import androidx.annotation.ColorRes
@@ -14,6 +15,7 @@ import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.internal.ui.widgets.ImageWaffleView
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.TextUtils
+import java.io.File
 
 internal class ChannelCoverView @JvmOverloads constructor(
     context: Context,
@@ -49,6 +51,16 @@ internal class ChannelCoverView @JvmOverloads constructor(
         }
         val overrideSize = resources
             .getDimensionPixelSize(R.dimen.sb_size_64)
+        if (url.startsWith("file")) {
+            val uri = Uri.parse(url)
+            Glide.with(imageView.context)
+                .load(uri)
+                .override(overrideSize, overrideSize)
+                .centerCrop()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .error(getDefaultDrawable())
+                .into(imageView)
+        }
         Glide.with(imageView.context)
             .load(url)
             .override(overrideSize, overrideSize)

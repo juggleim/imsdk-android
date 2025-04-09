@@ -1,5 +1,6 @@
 package com.juggle.chat.settings;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ import com.jet.im.kit.activities.ChannelActivity;
 import com.jet.im.kit.call.CallCenter;
 import com.jet.im.kit.fragments.PermissionFragment;
 import com.jet.im.kit.utils.PermissionUtils;
+import com.jet.im.kit.utils.PortraitGenerator;
 import com.jet.im.kit.utils.TextUtils;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.HttpResult;
@@ -64,7 +66,9 @@ public class UserDetailFragment extends PermissionFragment {
                     .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                     .into(mBinding.profileIvDetailUserPortrait);
         } else {
-            Glide.with(this).load(R.drawable.icon_person)
+            String path = PortraitGenerator.generateDefaultAvatar(getContext(), mUserId, mName);
+            Uri uri = Uri.parse(path);
+            Glide.with(this).load(uri)
                     .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                     .into(mBinding.profileIvDetailUserPortrait);
         }

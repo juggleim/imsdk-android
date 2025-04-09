@@ -32,6 +32,8 @@ import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.utils.FileUtils;
 import com.jet.im.kit.utils.IntentUtils;
 import com.jet.im.kit.utils.PermissionUtils;
+import com.jet.im.kit.utils.PortraitGenerator;
+import com.jet.im.kit.utils.TextUtils;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.UserInfoRequest;
@@ -129,11 +131,21 @@ public class ProfileSettingActivity extends BaseActivity {
 
     private void updateAvatar() {
         ImageView ivProfileView = findViewById(R.id.ivProfileView);
-        Glide.with(this)
-                .load(SendbirdUIKit.avatar)
-                .circleCrop()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(ivProfileView);
+        if (TextUtils.isEmpty(SendbirdUIKit.avatar)) {
+            String path = PortraitGenerator.generateDefaultAvatar(this, SendbirdUIKit.userId, SendbirdUIKit.nickname);
+            Uri uri = Uri.parse(path);
+            Glide.with(this)
+                    .load(uri)
+                    .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(ivProfileView);
+        } else {
+            Glide.with(this)
+                    .load(SendbirdUIKit.avatar)
+                    .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(ivProfileView);
+        }
     }
 
     private void editNickname() {

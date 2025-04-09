@@ -312,9 +312,15 @@ public class ViewUtils {
 
         String url = "";
         String plainUrl = "";
-        if (sender != null && !TextUtils.isEmpty(sender.getPortrait())) {
+        if (sender != null) {
             url = sender.getPortrait();
-            plainUrl = sender.getPortrait();
+            if (TextUtils.isEmpty(url)) {
+                url = PortraitGenerator.generateDefaultAvatar(ivProfile.getContext(), message.getSenderUserId(), sender.getUserName());
+            }
+            plainUrl = url;
+        } else {
+            url = PortraitGenerator.generateDefaultAvatar(ivProfile.getContext(), message.getSenderUserId(), message.getSenderUserId());
+            plainUrl = url;
         }
 
         drawProfile(ivProfile, url, plainUrl);
@@ -326,7 +332,12 @@ public class ViewUtils {
         Drawable errorDrawable = DrawableUtils.createOvalIcon(ivProfile.getContext(), backgroundTint, R.drawable.icon_user, iconTint);
 
         if (url == null || plainUrl == null) return;
-        GlideCachedUrlLoader.load(Glide.with(ivProfile.getContext()), url, String.valueOf(plainUrl.hashCode())).diskCacheStrategy(DiskCacheStrategy.ALL).error(errorDrawable).apply(RequestOptions.circleCropTransform()).into(ivProfile);
+        if (url.startsWith("file")) {
+            Uri uri = Uri.parse(url);
+            Glide.with(ivProfile.getContext()).load(uri).diskCacheStrategy(DiskCacheStrategy.ALL).error(errorDrawable).circleCrop().into(ivProfile);
+        } else {
+            GlideCachedUrlLoader.load(Glide.with(ivProfile.getContext()), url, String.valueOf(plainUrl.hashCode())).diskCacheStrategy(DiskCacheStrategy.ALL).error(errorDrawable).apply(RequestOptions.circleCropTransform()).into(ivProfile);
+        }
     }
 
     public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull FileMessage message) {

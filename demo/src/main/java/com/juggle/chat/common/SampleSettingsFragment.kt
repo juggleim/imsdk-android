@@ -43,6 +43,7 @@ import com.jet.im.kit.utils.DialogUtils
 import com.jet.im.kit.utils.FileUtils
 import com.jet.im.kit.utils.IntentUtils
 import com.jet.im.kit.utils.PermissionUtils
+import com.jet.im.kit.utils.PortraitGenerator
 import com.jet.im.kit.utils.TextUtils
 import com.juggle.chat.settings.GlobalDisturbSettingActivity
 import com.juggle.chat.settings.ProfileSettingActivity
@@ -479,17 +480,33 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
 
     private fun loadUserProfileUrl(url: String) {
         if (isActive) {
-            Glide.with(requireContext())
-                .load(url)
-                .circleCrop()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .error(
-                    requireContext().getDrawable(
-                        com.jet.im.kit.R.drawable.icon_user,
-                        SendbirdUIKit.getDefaultThemeMode().monoTintResId
+            if (TextUtils.isEmpty(url)) {
+                val path = PortraitGenerator.generateDefaultAvatar(context, SendbirdUIKit.userId, SendbirdUIKit.nickname)
+                val uri = Uri.parse(path)
+                Glide.with(requireContext())
+                    .load(uri)
+                    .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .error(
+                        requireContext().getDrawable(
+                            com.jet.im.kit.R.drawable.icon_user,
+                            SendbirdUIKit.getDefaultThemeMode().monoTintResId
+                        )
                     )
-                )
-                .into(binding.ivProfileView)
+                    .into(binding.ivProfileView)
+            } else {
+                Glide.with(requireContext())
+                    .load(url)
+                    .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .error(
+                        requireContext().getDrawable(
+                            com.jet.im.kit.R.drawable.icon_user,
+                            SendbirdUIKit.getDefaultThemeMode().monoTintResId
+                        )
+                    )
+                    .into(binding.ivProfileView)
+            }
         }
     }
 

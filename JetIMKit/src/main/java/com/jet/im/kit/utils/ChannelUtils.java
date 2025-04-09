@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
 import com.juggle.im.JIM;
 import com.jet.im.kit.R;
 import com.jet.im.kit.consts.StringSet;
@@ -130,17 +131,34 @@ public class ChannelUtils {
     }
 
     public static void loadChannelCover(@NonNull ChannelCoverView coverView, @NonNull ConversationInfo channel) {
+        String portrait = "";
         if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.PRIVATE)) {
-            UserInfo info = JIM.getInstance().getUserInfoManager().getUserInfo(channel.getConversation().getConversationId());
-            coverView.loadImage(info == null ? "" : info.getPortrait());
+            String userId = channel.getConversation().getConversationId();
+            UserInfo info = JIM.getInstance().getUserInfoManager().getUserInfo(userId);
+            if (info == null) {
+                portrait = PortraitGenerator.generateDefaultAvatar(coverView.getContext(), userId, userId);
+            } else {
+                portrait = info.getPortrait();
+                if (TextUtils.isEmpty(portrait)) {
+                    portrait = PortraitGenerator.generateDefaultAvatar(coverView.getContext(), userId, info.getUserName());
+                }
+            }
         } else if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.GROUP)) {
+            String groupId = channel.getConversation().getConversationId();
             GroupInfo info = JIM.getInstance().getUserInfoManager().getGroupInfo(channel.getConversation().getConversationId());
-            coverView.loadImage(info == null ? "" :info.getPortrait());
-        } else {
-            //todo 头像
-            coverView.loadImage("");
+            if (info == null) {
+                portrait = PortraitGenerator.generateDefaultAvatar(coverView.getContext(), groupId, groupId);
+            } else {
+                portrait = info.getPortrait();
+                if (TextUtils.isEmpty(portrait)) {
+                    portrait = PortraitGenerator.generateDefaultAvatar(coverView.getContext(), groupId, info.getGroupName());
+                }
+            }
+        } else if (channel.getConversation().getConversationType().equals(Conversation.ConversationType.CHATROOM)) {
+            String chatroomId = channel.getConversation().getConversationId();
+            portrait = PortraitGenerator.generateDefaultAvatar(coverView.getContext(), chatroomId, chatroomId);
         }
-
+        coverView.loadImage(portrait);
     }
 
     @NonNull
