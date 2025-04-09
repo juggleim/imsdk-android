@@ -49,6 +49,7 @@ import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.model.MessageUIConfig;
 import com.jet.im.kit.model.TextUIConfig;
 import com.jet.im.kit.model.configurations.ChannelConfig;
+import com.jet.im.kit.model.message.StreamTextMessage;
 import com.jet.im.kit.vm.PendingMessageRepository;
 import com.juggle.im.JIM;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
@@ -168,7 +169,10 @@ public class ViewUtils {
             boolean enabledMention
     ) {
         String displayedMessage = "";
-        if (message.getContent() instanceof CallFinishNotifyMessage) {
+        if (message.getContent() instanceof StreamTextMessage) {
+            StreamTextMessage streamTextMessage = ((StreamTextMessage) message.getContent());
+            displayedMessage = streamTextMessage.getContent();
+        } else if (message.getContent() instanceof CallFinishNotifyMessage) {
             CallFinishNotifyMessage callMessage = ((CallFinishNotifyMessage) message.getContent());
             switch (callMessage.getFinishNotifyType()) {
                 case CANCEL:

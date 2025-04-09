@@ -153,7 +153,9 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
             public void onSuccess(Message message) {
                 Logger.i("++ sent message : %s", message);
                 if (conversation.equals(mConversation)) {
-                    onMessagesUpdated(mConversationInfo, message);
+                    if (mConversationInfo != null) {
+                        onMessagesUpdated(mConversationInfo, message);
+                    }
                 }
             }
 
@@ -161,7 +163,9 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
             public void onError(Message message, int errorCode) {
                 Logger.e("send message error : %s", errorCode);
                 if (conversation.equals(mConversation)) {
-                    onMessagesUpdated(mConversationInfo, message);
+                    if (mConversationInfo != null) {
+                        onMessagesUpdated(mConversationInfo, message);
+                    }
                 }
             }
         });

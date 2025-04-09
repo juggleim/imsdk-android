@@ -1,6 +1,7 @@
 package com.jet.im.kit.model
 
 import com.jet.im.kit.log.Logger
+import com.jet.im.kit.model.message.StreamTextMessage
 import com.jet.im.kit.utils.DateUtils
 import com.juggle.im.model.Message
 import java.util.TreeSet
@@ -125,6 +126,13 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
     @Synchronized
     fun deleteByMessageId(msgId: Long): Message? {
         return messages.find { it.clientMsgNo == msgId }?.also { delete(it) }
+    }
+
+    @Synchronized
+    fun deleteStreamMessage(streamId: String): Message? {
+        return messages.find {
+            it.content is StreamTextMessage && (it.content as StreamTextMessage).streamId.equals(streamId)
+        }?.also { delete(it) }
     }
 
     @Synchronized

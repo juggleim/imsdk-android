@@ -39,6 +39,7 @@ import com.jet.im.kit.model.configurations.UIKitConfig;
 import com.jet.im.kit.model.message.ContactCardMessage;
 import com.jet.im.kit.model.message.FriendNotifyMessage;
 import com.jet.im.kit.model.message.GroupNotifyMessage;
+import com.jet.im.kit.model.message.StreamTextMessage;
 import com.jet.im.kit.utils.FileUtils;
 import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.utils.UIKitPrefs;
@@ -664,6 +665,7 @@ public class SendbirdUIKit {
         JIM.getInstance().getMessageManager().registerContentType(GroupNotifyMessage.class);
         JIM.getInstance().getMessageManager().registerContentType(FriendNotifyMessage.class);
         JIM.getInstance().getMessageManager().registerContentType(ContactCardMessage.class);
+        JIM.getInstance().getMessageManager().registerContentType(StreamTextMessage.class);
     }
 
     /**

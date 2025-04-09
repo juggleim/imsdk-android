@@ -1,5 +1,6 @@
 package com.jet.im.kit.vm;
 
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -21,13 +22,16 @@ import com.jet.im.kit.internal.contracts.SendbirdUIKitContract;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitImpl;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.configurations.ChannelConfig;
+import com.jet.im.kit.model.message.StreamTextMessage;
 import com.jet.im.kit.utils.Available;
 import com.jet.im.kit.utils.MessageUtils;
+import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.GetMessageOptions;
@@ -35,6 +39,7 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.messages.TextMessage;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Feedback;
@@ -43,6 +48,8 @@ import com.sendbird.android.params.MessageListParams;
 import com.sendbird.android.params.common.MessagePayloadFilter;
 
 import org.jetbrains.annotations.TestOnly;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -153,6 +160,31 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             public void onMessageReceive(Message message) {
                 if (!message.getConversation().equals(conversation)) {
                     return;
+                }
+                if (message.getContent() instanceof TextMessage) {
+                    String streamId = "";
+                    TextMessage textMessage = (TextMessage) message.getContent();
+                    if (TextUtils.isNotEmpty(textMessage.getExtra())) {
+                        try {
+                            JSONObject json = new JSONObject(textMessage.getExtra());
+                            streamId = json.optString("stream_msg_id");
+                        } catch (JSONException e) {
+                            Log.e("ChannelViewModel", "TextMessage extra JSONException " + e.getMessage());
+                        }
+                    }
+                    if (TextUtils.isNotEmpty(streamId)) {
+                        cachedMessages.deleteStreamMessage(streamId);
+                    }
+                } else if (message.getContent() instanceof StreamTextMessage) {
+                    StreamTextMessage streamTextMessage = (StreamTextMessage) message.getContent();
+                    String streamId = streamTextMessage.getStreamId();
+                    if (TextUtils.isNotEmpty(streamId)) {
+                        Message m = cachedMessages.deleteStreamMessage(streamId);
+                        if (m != null) {
+                            StreamTextMessage oldStream = (StreamTextMessage) m.getContent();
+                            streamTextMessage.setContent(oldStream.getContent() + streamTextMessage.getContent());
+                        }
+                    }
                 }
                 cachedMessages.add(message);
                 notifyDataSetChanged(StringSet.EVENT_MESSAGE_RECEIVED);
