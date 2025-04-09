@@ -10,7 +10,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.bumptech.glide.Glide;
@@ -28,7 +27,7 @@ import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.UserInfo;
 
-public class PersonInfoActivity extends AppCompatActivity {
+public class PersonInfoActivity extends BaseActivity {
     private final static String USER_ID = "userId";
     private String mUserId;
     private ConversationInfo mConversationInfo;

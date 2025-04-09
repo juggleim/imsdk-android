@@ -7,10 +7,10 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.jet.im.kit.activities.BaseActivity;
 import com.juggle.chat.R;
 
 
@@ -18,7 +18,7 @@ import com.juggle.chat.R;
  * 创建群组页面
  *
  */
-public class AddFriendListActivity extends AppCompatActivity {
+public class AddFriendListActivity extends BaseActivity {
 
     @NonNull
     public static Intent newIntent(@NonNull Context context) {

@@ -3,13 +3,13 @@ package com.juggle.chat.basic
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.jet.im.kit.SendbirdUIKit
+import com.jet.im.kit.activities.BaseActivity
 import com.jet.im.kit.activities.ChannelActivity
 import com.jet.im.kit.fragments.ChannelListFragment
 import com.jet.im.kit.vm.MemberFinder
@@ -38,7 +38,7 @@ import com.juggle.im.model.Conversation
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.UserInfo
 
-class GroupChannelMainActivity : AppCompatActivity(), IConversationListener, OnPopWindowItemClickListener {
+class GroupChannelMainActivity : BaseActivity(), IConversationListener, OnPopWindowItemClickListener {
     private lateinit var binding: ActivityGroupChannelMainBinding
     private lateinit var conversationUnreadCountTab: CustomTabView
     private lateinit var friendUnreadCountTab: CustomTabView

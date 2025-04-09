@@ -7,8 +7,8 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
+import com.jet.im.kit.activities.BaseActivity;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.component.HeadComponent;
@@ -19,7 +19,7 @@ import java.util.HashMap;
 
 import okhttp3.RequestBody;
 
-public class GroupNicknameActivity extends AppCompatActivity {
+public class GroupNicknameActivity extends BaseActivity {
     private static final String GROUP_ID = "groupId";
     private static final String NICKNAME = "nickname";
 

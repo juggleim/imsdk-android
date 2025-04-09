@@ -17,13 +17,13 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.BaseActivity;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.DialogListItem;
@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class ProfileSettingActivity extends AppCompatActivity {
+public class ProfileSettingActivity extends BaseActivity {
     private Uri mMediaUri = null;
     private ActivityResultLauncher<Intent> mTakeCameraLauncher;
     private ActivityResultLauncher<Intent> mGetContentLauncher;

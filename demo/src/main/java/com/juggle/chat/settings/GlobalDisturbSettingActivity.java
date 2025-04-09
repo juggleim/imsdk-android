@@ -10,9 +10,9 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.jet.im.kit.activities.BaseActivity;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.chat.R;
 import com.juggle.im.JIM;
@@ -22,7 +22,7 @@ import com.juggle.im.model.TimePeriod;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GlobalDisturbSettingActivity extends AppCompatActivity {
+public class GlobalDisturbSettingActivity extends BaseActivity {
 
     private CheckBox mCbAllow;
     private CheckBox mCb08_12;

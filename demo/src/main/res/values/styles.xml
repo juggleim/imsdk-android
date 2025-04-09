@@ -9,6 +9,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
+        <item name="android:statusBarColor">#ffffff</item>
         <item name="colorPrimary">@color/primary_300</item>
         <item name="colorPrimaryDark">@color/primary_300</item>
         <item name="colorAccent">@color/secondary_300</item>

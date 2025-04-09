@@ -6,12 +6,12 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.jet.im.kit.activities.BaseActivity;
 import com.juggle.chat.R;
 
-public class PushSettingActivity extends AppCompatActivity {
+public class PushSettingActivity extends BaseActivity {
     public static Intent newIntent(@NonNull Context context) {
         return new Intent(context, PushSettingActivity.class);
     }

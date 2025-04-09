@@ -2,13 +2,13 @@ package com.juggle.chat
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import com.juggle.chat.basic.GroupChannelMainActivity
 import com.juggle.chat.databinding.ActivitySelectServiceBinding
 import com.jet.im.kit.SendbirdUIKit
+import com.jet.im.kit.activities.BaseActivity
 
 
-class SelectServiceActivity : AppCompatActivity() {
+class SelectServiceActivity : BaseActivity() {
 
     private val TOKEN1 = "CgZhcHBrZXkaIDAr072n8uOcw5YBeKCcQ+QCw4m6YWhgt99U787/dEJS"
     private val TOKEN2 = "CgZhcHBrZXkaINodQgLnbhTbt0SzC8b/JFwjgUAdIfUZTEFK8DvDLgM1"

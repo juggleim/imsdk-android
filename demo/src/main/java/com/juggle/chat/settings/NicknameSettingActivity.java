@@ -7,9 +7,9 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.BaseActivity;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.UserInfoRequest;
@@ -17,7 +17,7 @@ import com.juggle.chat.component.HeadComponent;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
 
-public class NicknameSettingActivity extends AppCompatActivity {
+public class NicknameSettingActivity extends BaseActivity {
     public static Intent newIntent(@NonNull Context context) {
         return new Intent(context, NicknameSettingActivity.class);
     }

@@ -6,13 +6,13 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.jet.im.kit.activities.BaseActivity;
 import com.juggle.chat.R;
 
-public class GroupMemberListActivity extends AppCompatActivity {
+public class GroupMemberListActivity extends BaseActivity {
     private static final String GROUP_ID = "groupId";
     private static final String TYPE = "type";
     public static Intent newIntent(@NonNull Context context, String groupId, int type) {

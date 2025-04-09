@@ -7,7 +7,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -21,7 +20,7 @@ import com.juggle.im.interfaces.IConnectionManager;
 /**
  * Activity displays a list of messages from a channel.
  */
-public class ChannelActivity extends AppCompatActivity implements IConnectionManager.IConnectionStatusListener {
+public class ChannelActivity extends BaseActivity implements IConnectionManager.IConnectionStatusListener {
 
     /**
      * Create an intent for a {@link ChannelActivity}.

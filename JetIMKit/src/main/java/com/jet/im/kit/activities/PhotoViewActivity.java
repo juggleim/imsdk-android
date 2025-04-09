@@ -7,30 +7,23 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.juggle.im.JIM;
-import com.juggle.im.model.Conversation;
-import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.ImageMessage;
 import com.sendbird.android.channel.ChannelType;
-import com.sendbird.android.message.FileMessage;
-import com.sendbird.android.message.MultipleFilesMessage;
-import com.sendbird.android.message.UploadedFileInfo;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.fragments.PhotoViewFragment;
-import com.jet.im.kit.internal.extensions.MessageExtensionsKt;
 import com.jet.im.kit.utils.MessageUtils;
 
 /**
  * Activity displays a image file.
  */
-public class PhotoViewActivity extends AppCompatActivity {
+public class PhotoViewActivity extends BaseActivity {
     @NonNull
     public static Intent newIntent(@NonNull Context context, @NonNull ImageMessage imageMessage, @NonNull Message message) {
         UserInfo sender = JIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId());

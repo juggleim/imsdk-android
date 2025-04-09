@@ -12,13 +12,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.CircleCrop;
-import com.bumptech.glide.request.RequestOptions;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.BaseActivity;
 import com.jet.im.kit.utils.DialogUtils;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.jet.im.kit.widgets.WrapHeightGridView;
@@ -44,7 +41,7 @@ import java.util.HashMap;
 
 import okhttp3.RequestBody;
 
-public class GroupInfoActivity extends AppCompatActivity {
+public class GroupInfoActivity extends BaseActivity {
     private final static String GROUP_ID = "groupId";
     private final int SHOW_GROUP_MEMBER_LIMIT = 30;
     private String mGroupId;

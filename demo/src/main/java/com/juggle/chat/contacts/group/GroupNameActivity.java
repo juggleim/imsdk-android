@@ -7,8 +7,8 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
+import com.jet.im.kit.activities.BaseActivity;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.GroupBean;
 import com.juggle.chat.bean.HttpResult;
@@ -16,7 +16,7 @@ import com.juggle.chat.component.HeadComponent;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
 
-public class GroupNameActivity extends AppCompatActivity {
+public class GroupNameActivity extends BaseActivity {
     private static final String GROUP_ID = "groupId";
     private static final String NAME = "name";
     private static final String PORTRAIT = "portrait";

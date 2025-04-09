@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import com.juggle.chat.basic.GroupChannelMainActivity
 import com.juggle.chat.bean.CodeRequest
 import com.juggle.chat.bean.HttpResult
@@ -15,6 +15,7 @@ import com.juggle.chat.databinding.ActivityLoginBinding
 import com.juggle.chat.http.CustomCallback
 import com.juggle.chat.http.ServiceManager
 import com.jet.im.kit.SendbirdUIKit
+import com.jet.im.kit.activities.BaseActivity
 import com.juggle.chat.common.preferences.PreferenceUtils
 import com.juggle.im.JErrorCode
 import com.juggle.im.JIM
@@ -28,7 +29,7 @@ import kotlinx.coroutines.launch
 /**
  * Displays a login screen.
  */
-open class LoginActivity : AppCompatActivity(), IConnectionStatusListener {
+open class LoginActivity : BaseActivity(), IConnectionStatusListener {
     private val key = "LoginActivity"
     protected val binding by lazy { ActivityLoginBinding.inflate(layoutInflater) }
     override fun onCreate(savedInstanceState: Bundle?) {

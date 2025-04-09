@@ -8,12 +8,12 @@ import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
+import com.jet.im.kit.activities.BaseActivity;
 import com.juggle.chat.R;
 import com.juggle.chat.component.HeadComponent;
 
-public class WebViewActivity extends AppCompatActivity {
+public class WebViewActivity extends BaseActivity {
 
     public static Intent newIntent(@NonNull Context context, String title, String url) {
         Intent intent = new Intent(context, WebViewActivity.class);

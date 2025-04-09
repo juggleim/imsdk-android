@@ -6,13 +6,13 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.jet.im.kit.activities.BaseActivity;
 import com.juggle.chat.R;
 
-public class FriendApplicationListActivity extends AppCompatActivity {
+public class FriendApplicationListActivity extends BaseActivity {
     public static Intent newIntent(@NonNull Context context) {
         return new Intent(context, FriendApplicationListActivity.class);
     }

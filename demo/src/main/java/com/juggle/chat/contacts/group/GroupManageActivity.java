@@ -8,9 +8,9 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.BaseActivity;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.HttpResult;
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import okhttp3.RequestBody;
 
 
-public class GroupManageActivity extends AppCompatActivity {
+public class GroupManageActivity extends BaseActivity {
     private final static String GROUP_ID = "groupId";
     private final static String GROUP_MUTE = "groupMute";
     private final static String DISPLAY_HISTORY = "displayHistory";
