@@ -20,6 +20,10 @@ import com.juggle.im.JErrorCode
 import com.juggle.im.JIM
 import com.juggle.im.JIMConst
 import com.juggle.im.interfaces.IConnectionManager.IConnectionStatusListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Displays a login screen.
@@ -28,6 +32,7 @@ open class LoginActivity : AppCompatActivity(), IConnectionStatusListener {
     private val key = "LoginActivity"
     protected val binding by lazy { ActivityLoginBinding.inflate(layoutInflater) }
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         binding.apply {
             val context = this@LoginActivity
@@ -57,11 +62,12 @@ open class LoginActivity : AppCompatActivity(), IConnectionStatusListener {
                 onSignUp(phone, code)
             }
         }
-        setContentView(binding.root)
         JIM.getInstance().connectionManager.addConnectionStatusListener(key, this)
         val isAutoLogin = PreferenceUtils.isAutoLogin
         if (isAutoLogin) {
             onSignUp(PreferenceUtils.phoneNumber, PreferenceUtils.verifyCode)
+        } else {
+            setContentView(binding.root)
         }
     }
 
@@ -100,6 +106,7 @@ open class LoginActivity : AppCompatActivity(), IConnectionStatusListener {
             }
 
             override fun onError(t: Throwable?) {
+                setContentView(binding.root)
                 WaitingDialog.dismiss()
                 super.onError(t)
             }
@@ -120,6 +127,10 @@ open class LoginActivity : AppCompatActivity(), IConnectionStatusListener {
                 GroupChannelMainActivity::class.java
             )
         )
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(5000)
+            setContentView(binding.root)
+        }
     }
 
     override fun onDbClose() {

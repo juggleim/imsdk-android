@@ -31,6 +31,7 @@
             android:name=".LoginActivity"
             android:exported="true"
             android:launchMode="singleTop"
+            android:theme="@style/Theme.Splash"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
