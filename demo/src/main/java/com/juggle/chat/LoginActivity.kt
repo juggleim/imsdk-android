@@ -16,6 +16,7 @@ import com.juggle.chat.http.CustomCallback
 import com.juggle.chat.http.ServiceManager
 import com.jet.im.kit.SendbirdUIKit
 import com.juggle.chat.common.preferences.PreferenceUtils
+import com.juggle.im.JErrorCode
 import com.juggle.im.JIM
 import com.juggle.im.JIMConst
 import com.juggle.im.interfaces.IConnectionManager.IConnectionStatusListener
@@ -58,6 +59,10 @@ open class LoginActivity : AppCompatActivity(), IConnectionStatusListener {
         }
         setContentView(binding.root)
         JIM.getInstance().connectionManager.addConnectionStatusListener(key, this)
+        val isAutoLogin = PreferenceUtils.isAutoLogin
+        if (isAutoLogin) {
+            onSignUp(PreferenceUtils.phoneNumber, PreferenceUtils.verifyCode)
+        }
     }
 
     override fun onDestroy() {
@@ -83,6 +88,7 @@ open class LoginActivity : AppCompatActivity(), IConnectionStatusListener {
                 WaitingDialog.dismiss()
                 PreferenceUtils.phoneNumber = phone
                 PreferenceUtils.verifyCode = code
+                PreferenceUtils.isAutoLogin = true
                 SendbirdUIKit.token = k?.im_token
                 SendbirdUIKit.authorization = k?.authorization ?: ""
                 SendbirdUIKit.userId = k?.user_id ?: ""
@@ -102,6 +108,9 @@ open class LoginActivity : AppCompatActivity(), IConnectionStatusListener {
     }
 
     override fun onStatusChange(status: JIMConst.ConnectionStatus?, code: Int, extra: String?) {
+        if (status == JIMConst.ConnectionStatus.DISCONNECTED && code == JErrorCode.USER_KICKED_BY_OTHER_CLIENT) {
+            PreferenceUtils.isAutoLogin = false
+        }
     }
 
     override fun onDbOpen() {

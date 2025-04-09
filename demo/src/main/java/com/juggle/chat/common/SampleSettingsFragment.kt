@@ -296,6 +296,7 @@ class SampleSettingsFragment : Fragment(), IConnectionManager.IConnectionStatusL
                 requireContext().getDrawable(R.drawable.shape_oval, homeBackgroundTint)
             binding.itemHome.setOnClickListener {
                 Logger.d("++ home clicked")
+                PreferenceUtils.isAutoLogin = false
                 if (JIM.getInstance().connectionManager.connectionStatus == JIMConst.ConnectionStatus.DISCONNECTED) {
                     activity?.finish()
                 } else {
