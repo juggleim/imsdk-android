@@ -25,7 +25,7 @@ public class PortraitGenerator {
 
         String s = null;
         if (!TextUtils.isEmpty(userName)) {
-            s = String.valueOf(userName.charAt(0));
+            s = String.valueOf(userName.charAt(0)).toUpperCase();
         }
         if (s == null) {
             s = "A";
@@ -92,11 +92,11 @@ public class PortraitGenerator {
     }
 
     private static String getColorRGB(String userId) {
-        String[] portraitColors = {"#e97ffb", "#00b8d4", "#82b2ff", "#f3db73", "#f0857c"};
+        String[] portraitColors = {"#D45246", "#F68136", "#6C61DF", "#46BA43", "#5CAFFA", "#408ACF", "#D95574"};
         if (TextUtils.isEmpty(userId)) {
             return portraitColors[0];
         }
-        int i = getAscii(userId.charAt(0)) % 5;
+        int i = getAscii(userId.charAt(0)) % 7;
 
         return portraitColors[i];
     }
