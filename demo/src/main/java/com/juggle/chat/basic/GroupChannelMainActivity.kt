@@ -2,6 +2,7 @@ package com.juggle.chat.basic
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -140,6 +141,13 @@ class GroupChannelMainActivity : BaseActivity(), IConversationListener, OnPopWin
     override fun onDestroy() {
         super.onDestroy()
         JIM.getInstance().conversationManager.removeListener(key)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return false
+        }
+        return super.onKeyDown(keyCode, event)
     }
 
     private fun redirectChannelIfNeeded(intent: Intent?) {
