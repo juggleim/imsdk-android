@@ -112,7 +112,7 @@
             app:layout_goneMarginTop="@dimen/sb_size_32"
             android:layout_marginTop="@dimen/sb_size_24"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/sb_text_size_48"
+            android:layout_height="@dimen/sb_size_56"
             android:textSize="@dimen/sb_text_size_14"
             android:fontFamily="sans-serif"
             android:textStyle="bold"
