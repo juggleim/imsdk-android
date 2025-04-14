@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.utils.PortraitGenerator;
 import com.jet.im.kit.utils.TextUtils;
 import com.juggle.chat.R;
 import com.juggle.chat.bean.HttpResult;
@@ -106,8 +108,10 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
                     .load(mPortrait)
                     .into(portraitIv);
         } else {
+            String path = PortraitGenerator.generateDefaultAvatar(this, mConversationId, mName);
+            Uri uri = Uri.parse(path);
             Glide.with(this)
-                    .load(R.drawable.icon_default_group)
+                    .load(uri)
                     .into(portraitIv);
         }
         // 二维码信息所属名称
