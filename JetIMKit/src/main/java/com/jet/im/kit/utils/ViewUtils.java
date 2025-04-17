@@ -69,6 +69,7 @@ import com.sendbird.android.message.Thumbnail;
 import com.sendbird.android.user.Sender;
 import com.sendbird.android.user.User;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -353,18 +354,24 @@ public class ViewUtils {
     }
 
     public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull ImageMessage image, @NonNull Message message) {
-        if (TextUtils.isEmpty(image.getThumbnailUrl())) {
-            return;
+        if (TextUtils.isNotEmpty(image.getLocalPath())) {
+            File file = new File(image.getLocalPath());
+            Glide.with(view.getContext()).load(file).centerCrop().into(view.getContent());
+        } else {
+            JIM.getInstance().getMessageManager().downloadMediaMessage(message.getMessageId(), null);
+            if (TextUtils.isEmpty(image.getThumbnailUrl())) {
+                return;
+            }
+            drawThumbnail(
+                    view,
+                    message.getMessageId(),
+                    image.getThumbnailUrl(),
+                    image.getUrl(),
+                    StringSet.image,
+                    null,
+                    R.dimen.sb_size_48
+            );
         }
-        drawThumbnail(
-                view,
-                message.getMessageId(),
-                image.getThumbnailUrl(),
-                image.getUrl(),
-                StringSet.image,
-                null,
-                R.dimen.sb_size_48
-        );
     }
 
     public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull VideoMessage videoMessage, @NonNull Message message) {

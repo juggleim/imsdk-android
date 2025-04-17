@@ -655,16 +655,22 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         mCore.getSendHandler().post(() -> {
             ConcreteMessage message = mCore.getDbManager().getMessageWithMessageId(messageId);
             if(message==null){
-                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
+                }
                 return;
             }
             if (!(message.getContent() instanceof MediaMessageContent)) {
-                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE));
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE));
+                }
                 return;
             }
             MediaMessageContent content = (MediaMessageContent) message.getContent();
             if (TextUtils.isEmpty(content.getUrl())) {
-                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_URL_EMPTY));
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_URL_EMPTY));
+                }
                 return;
             }
             String media = "file";
@@ -681,19 +687,25 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             String appKey = mCore.getAppKey();
             Context context = mCore.getContext();
             if (TextUtils.isEmpty(appKey) || TextUtils.isEmpty(userId)) {
-                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_APP_KEY_OR_USERID_EMPTY));
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_APP_KEY_OR_USERID_EMPTY));
+                }
                 return;
             }
             String dir = appKey + "/" + userId + "/" + media;
             String savePath = FileUtils.getMediaDownloadDir(context, dir, name);
             if (TextUtils.isEmpty(savePath)) {
-                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY));
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY));
+                }
                 return;
             }
             MediaDownloadEngine.getInstance().download(message.getMessageId(), content.getUrl(), savePath, new MediaDownloadEngine.DownloadEngineCallback() {
                 @Override
                 public void onError(int errorCode) {
-                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                    if (callback != null) {
+                        mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                    }
                 }
 
                 @Override
@@ -703,17 +715,23 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     if (mSendReceiveListener != null) {
                         mSendReceiveListener.onMessageUpdate(message);
                     }
-                    mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
+                    if (callback != null) {
+                        mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
+                    }
                 }
 
                 @Override
                 public void onProgress(int progress) {
-                    mCore.getCallbackHandler().post(() -> callback.onProgress(progress, message));
+                    if (callback != null) {
+                        mCore.getCallbackHandler().post(() -> callback.onProgress(progress, message));
+                    }
                 }
 
                 @Override
                 public void onCanceled(String tag) {
-                    mCore.getCallbackHandler().post(() -> callback.onCancel(message));
+                    if (callback != null) {
+                        mCore.getCallbackHandler().post(() -> callback.onCancel(message));
+                    }
                 }
             });
         });
@@ -1607,7 +1625,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         || conversation == null || conversation.getConversationId().isEmpty()
         || reactionId == null || reactionId.isEmpty()) {
             JLogger.e("MSG-ReactionAdd", "invalid parameter");
-            mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
             return;
         }
         if (mCore.getWebSocket() == null) {
@@ -1680,7 +1700,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 || conversation == null || conversation.getConversationId().isEmpty()
                 || reactionId == null || reactionId.isEmpty()) {
             JLogger.e("MSG-ReactionRemove", "invalid parameter");
-            mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
             return;
         }
         if (mCore.getWebSocket() == null) {
@@ -1755,7 +1777,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         if (messageIdList == null || messageIdList.isEmpty()
         || conversation == null || conversation.getConversationId().isEmpty()) {
             JLogger.e("MSG-ReactionGet", "invalid parameter");
-            mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
             return;
         }
         if (mCore.getWebSocket() == null) {
