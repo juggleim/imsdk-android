@@ -1652,6 +1652,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                         currentUser.setUserId(mCore.getUserId());
                     }
 
+                    //callback delegate
+                    //callback 只有新增的，不用本地做合并，因为本地不全（特别是收到别的用户的 reaction 时，不能返回不全的数据）
+                    MessageReaction reaction = new MessageReaction();
+                    reaction.setMessageId(messageId);
+                    MessageReactionItem it = new MessageReactionItem();
+                    it.setReactionId(reactionId);
+                    it.setUserInfoList(Collections.singletonList(currentUser));
+                    reaction.setItemList(Collections.singletonList(it));
+
                     //update reaction db
                     List<MessageReaction> dbReactions = mCore.getDbManager().getMessageReactions(Collections.singletonList(messageId));
                     if (!dbReactions.isEmpty()) {
@@ -1665,17 +1674,10 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                             }
                         }
                         mCore.getDbManager().setMessageReactions(Collections.singletonList(dbReaction));
+                    } else {
+                        mCore.getDbManager().setMessageReactions(Collections.singletonList(reaction));
                     }
 
-                    //callback delegate
-                    //callback 只有新增的，不用本地做合并，因为本地不全（特别是收到别的用户的 reaction 时，不能返回不全的数据）
-                    MessageReaction reaction = new MessageReaction();
-                    reaction.setMessageId(messageId);
-                    MessageReactionItem item = new MessageReactionItem();
-                    item.setReactionId(reactionId);
-
-                    item.setUserInfoList(Collections.singletonList(currentUser));
-                    reaction.setItemList(Collections.singletonList(item));
                     if (mListenerMap != null) {
                         for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
                             entry.getValue().onMessageReactionAdd(conversation, reaction);
@@ -1734,7 +1736,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                                         userInfoList.add(userInfo);
                                     }
                                 }
-                                item.setUserInfoList(userInfoList);
+                                if (userInfoList.isEmpty()) {
+                                    dbReaction.getItemList().remove(item);
+                                } else {
+                                    item.setUserInfoList(userInfoList);
+                                }
                                 break;
                             }
                         }

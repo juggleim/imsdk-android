@@ -24,6 +24,7 @@ public class ReactionSql {
         return "SELECT * FROM reaction WHERE messageId IN " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
     static final String SQL_SET_REACTION = "INSERT OR REPLACE INTO reaction (messageId, reactions) VALUES (?, ?)";
+    static final String SQL_DELETE_REACTION = "DELETE FROM reaction WHERE messageId = ?";
 
     static MessageReaction reactionWithCursor(Cursor cursor) {
         MessageReaction reaction = new MessageReaction();

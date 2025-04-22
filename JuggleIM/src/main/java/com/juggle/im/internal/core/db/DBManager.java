@@ -825,11 +825,14 @@ public class DBManager {
         performTransaction(() -> {
             for (MessageReaction reaction : reactions) {
                 if (!TextUtils.isEmpty(reaction.getMessageId())
-                && reaction.getItemList() != null
-                && !reaction.getItemList().isEmpty()) {
-                    String itemListJson = ReactionSql.jsonWithReactionItemList(reaction.getItemList());
-                    String[] args = new String[]{reaction.getMessageId(), itemListJson};
-                    execSQL(ReactionSql.SQL_SET_REACTION, args);
+                && reaction.getItemList() != null) {
+                    if (!reaction.getItemList().isEmpty()) {
+                        String itemListJson = ReactionSql.jsonWithReactionItemList(reaction.getItemList());
+                        String[] args = new String[]{reaction.getMessageId(), itemListJson};
+                        execSQL(ReactionSql.SQL_SET_REACTION, args);
+                    } else {
+                        execSQL(ReactionSql.SQL_DELETE_REACTION, new String[]{reaction.getMessageId()});
+                    }
                 }
             }
         });

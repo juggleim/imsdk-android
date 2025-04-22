@@ -636,9 +636,6 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             @Override
             public void onSuccess(List<MessageReaction> reactionList) {
                 for (MessageReaction newReaction : reactionList) {
-                    if (newReaction == null || newReaction.getItemList().isEmpty()) {
-                        continue;
-                    }
                     Iterator<MessageReaction> iterator = mMessageReactions.iterator();
                     while (iterator.hasNext()) {
                         MessageReaction oldReaction = iterator.next();
@@ -647,7 +644,9 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                             break;
                         }
                     }
-                    mMessageReactions.add(newReaction);
+                    if (!newReaction.getItemList().isEmpty()) {
+                        mMessageReactions.add(newReaction);
+                    }
                 }
                 notifyDataSetChanged(StringSet.ACTION_GET_REACTIONS);
             }
@@ -728,6 +727,13 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
                 cachedMessages.clear();
                 cachedMessages.addAll(messages);
+                List<String> messageIdList = new ArrayList<>();
+                for (Message m : messages) {
+                    messageIdList.add(m.getMessageId());
+                }
+                List<MessageReaction> reactionList = JIM.getInstance().getMessageManager().getCachedMessagesReaction(messageIdList);
+                mMessageReactions.clear();
+                mMessageReactions.addAll(reactionList);
                 notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
                 messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
                 sendReceipt(messages);
