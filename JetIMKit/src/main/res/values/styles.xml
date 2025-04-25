@@ -188,7 +188,7 @@
         <item name="sb_recycler_view_background">@color/background_50</item>
         <item name="sb_recycler_view_divide_line_color">@color/onlight_04</item>
         <item name="sb_recycler_view_divide_line_height">@dimen/sb_size_1</item>
-        <item name="sb_recycler_view_divide_margin_left">0dp</item>
+        <item name="sb_recycler_view_divide_margin_left">@dimen/sb_size_84</item>
         <item name="sb_recycler_view_divide_margin_right">0dp</item>
     </style>
     <style name="Component.Header">
