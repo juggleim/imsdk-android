@@ -1,5 +1,7 @@
 package com.jet.im.kit.vm;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -192,7 +194,13 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
                 @Override
                 public void onSuccess(Message message) {
                     Logger.i("++ sent message : %s", message);
-                    onMessagesUpdated(mConversationInfo, message);
+                    Handler mH = new Handler(Looper.getMainLooper());
+                    mH.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            onMessagesUpdated(mConversationInfo, message);
+                        }
+                    }, 200);
                 }
 
                 @Override
