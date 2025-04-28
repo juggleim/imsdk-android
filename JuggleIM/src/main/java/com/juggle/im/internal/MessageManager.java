@@ -192,7 +192,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         return message;
     }
 
-    private void sendWebSocketMessage(ConcreteMessage message, boolean isBroadcast, ISendMessageCallback callback) {
+    private void sendWebSocketMessage(ConcreteMessage m, boolean isBroadcast, ISendMessageCallback callback) {
+        ConcreteMessage message = new ConcreteMessage(m);
         MergeInfo mergeInfo = null;
         if (message.getContent() instanceof MergeMessage) {
             MergeMessage mergeMessage = (MergeMessage) message.getContent();
@@ -299,12 +300,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         return sendMediaMessage(message, callback);
     }
 
-    private Message sendMediaMessage(Message message, ISendMediaMessageCallback callback) {
+    private Message sendMediaMessage(ConcreteMessage message, ISendMediaMessageCallback callback) {
         IMessageUploadProvider.UploadCallback uploadCallback = new IMessageUploadProvider.UploadCallback() {
             @Override
             public void onProgress(int progress) {
                 if (callback != null) {
-                    mCore.getCallbackHandler().post(() -> callback.onProgress(progress, message));
+                    mCore.getCallbackHandler().post(() -> callback.onProgress(progress, new ConcreteMessage(message)));
                 }
             }
 
@@ -314,7 +315,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     uploadMessage.setState(Message.MessageState.FAIL);
                     setMessageState(uploadMessage.getClientMsgNo(), Message.MessageState.FAIL);
                     if (callback != null) {
-                        mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
+                        mCore.getCallbackHandler().post(() -> callback.onError(new Message(message), JErrorCode.MESSAGE_UPLOAD_ERROR));
                     }
                     return;
                 }
@@ -341,19 +342,21 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
             @Override
             public void onError() {
-                message.setState(Message.MessageState.FAIL);
-                setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                ConcreteMessage callbackMessage = new ConcreteMessage(message);
+                callbackMessage.setState(Message.MessageState.FAIL);
+                setMessageState(callbackMessage.getClientMsgNo(), Message.MessageState.FAIL);
                 if (callback != null) {
-                    mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.MESSAGE_UPLOAD_ERROR));
+                    mCore.getCallbackHandler().post(() -> callback.onError(callbackMessage, JErrorCode.MESSAGE_UPLOAD_ERROR));
                 }
             }
 
             @Override
             public void onCancel() {
-                message.setState(Message.MessageState.FAIL);
-                setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                ConcreteMessage callbackMessage = new ConcreteMessage(message);
+                callbackMessage.setState(Message.MessageState.FAIL);
+                setMessageState(callbackMessage.getClientMsgNo(), Message.MessageState.FAIL);
                 if (callback != null) {
-                    mCore.getCallbackHandler().post(() -> callback.onCancel(message));
+                    mCore.getCallbackHandler().post(() -> callback.onCancel(callbackMessage));
                 }
             }
         };
@@ -405,31 +408,32 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public Message resendMediaMessage(Message message,
+    public Message resendMediaMessage(Message m,
                                       ISendMediaMessageCallback callback) {
-        if (message.getClientMsgNo() <= 0
-                || !TextUtils.isEmpty(message.getMessageId())//已发送的消息不允许重发
-                || message.getContent() == null
-                || !(message.getContent() instanceof MediaMessageContent)
-                || message.getConversation() == null
-                || message.getConversation().getConversationId() == null
-                || !(message instanceof ConcreteMessage)) {
+        if (m.getClientMsgNo() <= 0
+                || !TextUtils.isEmpty(m.getMessageId())//已发送的消息不允许重发
+                || m.getContent() == null
+                || !(m.getContent() instanceof MediaMessageContent)
+                || m.getConversation() == null
+                || m.getConversation().getConversationId() == null
+                || !(m instanceof ConcreteMessage)) {
             if (callback != null) {
-                mCore.getCallbackHandler().post(() -> callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM));
+                mCore.getCallbackHandler().post(() -> callback.onError(m, ConstInternal.ErrorCode.INVALID_PARAM));
             }
-            return message;
+            return m;
         }
-        if (message.getState() == Message.MessageState.SENT) {
+        if (m.getState() == Message.MessageState.SENT) {
             if (callback != null) {
-                mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
+                mCore.getCallbackHandler().post(() -> callback.onSuccess(m));
             }
-            return message;
+            return m;
         }
+        ConcreteMessage message = new ConcreteMessage((ConcreteMessage) m);
         if (message.getState() != Message.MessageState.SENDING) {
             message.setState(Message.MessageState.SENDING);
             setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
         }
-        updateMessageWithContent((ConcreteMessage) message);
+        updateMessageWithContent(message);
         return sendMediaMessage(message, callback);
     }
 

@@ -729,7 +729,9 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                 cachedMessages.addAll(messages);
                 List<String> messageIdList = new ArrayList<>();
                 for (Message m : messages) {
-                    messageIdList.add(m.getMessageId());
+                    if (m.getMessageId() != null) {
+                        messageIdList.add(m.getMessageId());
+                    }
                 }
                 List<MessageReaction> reactionList = JIM.getInstance().getMessageManager().getCachedMessagesReaction(messageIdList);
                 mMessageReactions.clear();

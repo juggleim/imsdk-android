@@ -54,6 +54,28 @@ public class Message {
         private final int mValue;
     }
 
+    public Message() {
+    }
+
+    public Message(Message other) {
+        mConversation = other.getConversation();
+        mContentType = other.getContentType();
+        mClientMsgNo = other.getClientMsgNo();
+        mMessageId = other.getMessageId();
+        mDirection = other.getDirection();
+        mState = MessageState.setValue(other.getState().getValue());
+        mHasRead = other.isHasRead();
+        mTimestamp = other.getTimestamp();
+        mSenderUserId = other.getSenderUserId();
+        mContent = other.getContent();
+        mGroupMessageReadInfo = other.getGroupMessageReadInfo();
+        mReferredMessage = other.getReferredMessage();
+        mMentionInfo = other.getMentionInfo();
+        mLocalAttribute = other.getLocalAttribute();
+        mIsDelete = other.isDelete();
+        mIsEdit = other.isEdit();
+    }
+
     public Conversation getConversation() {
         return mConversation;
     }
@@ -127,11 +149,11 @@ public class Message {
     }
 
     public MessageContent getContent() {
-        return content;
+        return mContent;
     }
 
     public void setContent(MessageContent content) {
-        this.content = content;
+        this.mContent = content;
     }
 
     public GroupMessageReadInfo getGroupMessageReadInfo() {
@@ -208,7 +230,7 @@ public class Message {
     /// 发送者 userId
     private String mSenderUserId;
     /// 消息内容
-    private MessageContent content;
+    private MessageContent mContent;
     private GroupMessageReadInfo mGroupMessageReadInfo;
     private Message mReferredMessage;
     private MessageMentionInfo mMentionInfo;

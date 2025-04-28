@@ -7,6 +7,23 @@ import com.juggle.im.model.PushData;
 import com.juggle.im.model.UserInfo;
 
 public class ConcreteMessage extends Message {
+    public ConcreteMessage() {
+    }
+
+    public ConcreteMessage(ConcreteMessage other) {
+        super(other);
+        mSeqNo = other.getSeqNo();
+        mMsgIndex = other.getMsgIndex();
+        mClientUid = other.getClientUid();
+        mFlags = other.getFlags();
+        mExisted = other.isExisted();
+        mGroupInfo = other.getGroupInfo();
+        mTargetUserInfo = other.getTargetUserInfo();
+        mGroupMemberInfo = other.getGroupMemberInfo();
+        mReferMsgId = other.getReferMsgId();
+        mPushData = other.getPushData();
+    }
+
     public long getSeqNo() {
         return mSeqNo;
     }

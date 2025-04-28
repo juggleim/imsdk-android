@@ -1100,7 +1100,12 @@ abstract public class BaseMessageListFragment<
                             videoMessage.setDuration(info.getDuration());
                             getViewModel().sendVideoMessage(videoMessage);
                         } else {
-                            getViewModel().sendImageMessage(info.getPath());
+                            ImageMessage imageMessage = new ImageMessage();
+                            imageMessage.setLocalPath(info.getPath());
+                            imageMessage.setThumbnailLocalPath(info.getThumbnailPath());
+                            imageMessage.setHeight(info.getThumbnailHeight());
+                            imageMessage.setWidth(info.getThumbnailWidth());
+                            getViewModel().sendImageMessage(imageMessage);
                         }
                     }
                 }

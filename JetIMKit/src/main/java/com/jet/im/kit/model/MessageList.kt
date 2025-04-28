@@ -138,9 +138,8 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
     @Synchronized
     fun update(message: Message) {
         Logger.d(">> MessageList::updateMessage()")
-        if (messages.remove(message)) {
-            message?.let { messages.add(it) }
-        }
+        messages.find { it.clientMsgNo == message.clientMsgNo }?.also { delete(it) }
+        messages.add(message)
     }
 
     fun updateAll(messages: List<Message>) {

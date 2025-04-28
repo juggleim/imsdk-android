@@ -972,7 +972,9 @@ class PBData {
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue());
         for (String messageId : messageIdList) {
-            builder.addMsgIds(messageId);
+            if (messageId != null) {
+                builder.addMsgIds(messageId);
+            }
         }
         Appmessages.QryMsgExtReq req = builder.build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
