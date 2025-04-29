@@ -13,6 +13,7 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
 import android.util.Pair;
+import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -22,6 +23,7 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.constraintlayout.solver.state.Dimension;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
@@ -354,6 +356,12 @@ public class ViewUtils {
     }
 
     public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull ImageMessage image, @NonNull Message message) {
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        Size size = getSize(view.getContext(), image);
+        params.width = size.getWidth();
+        params.height = size.getHeight();
+        view.setLayoutParams(params);
+
         if (TextUtils.isNotEmpty(image.getLocalPath())) {
             File file = new File(image.getLocalPath());
             Glide.with(view.getContext()).load(file).centerCrop().into(view.getContent());
@@ -408,6 +416,28 @@ public class ViewUtils {
         }
 
         return url;
+    }
+
+    private static Size getSize(Context context, ImageMessage imageMessage) {
+        int width = imageMessage.getWidth();
+        int height = imageMessage.getHeight();
+        int maxWidth = MetricsUtils.dipToPixel(context, 240);
+        int maxHeight = MetricsUtils.dipToPixel(context, 160);
+
+        if (width > maxWidth || height > maxHeight) {
+            float widthRatio = (float) width / maxWidth;
+            float heightRatio = (float) height / maxHeight;
+
+            if (widthRatio > heightRatio) {
+                width = maxWidth;
+                height = (int) (height / widthRatio);
+            } else {
+                height = maxHeight;
+                width = (int) (width / heightRatio);
+            }
+
+        }
+        return new Size(width, height);
     }
 
     public static void drawThumbnail(

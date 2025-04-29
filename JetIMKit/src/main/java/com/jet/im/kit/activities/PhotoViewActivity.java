@@ -27,6 +27,12 @@ public class PhotoViewActivity extends BaseActivity {
     @NonNull
     public static Intent newIntent(@NonNull Context context, @NonNull ImageMessage imageMessage, @NonNull Message message) {
         UserInfo sender = JIM.getInstance().getUserInfoManager().getUserInfo(message.getSenderUserId());
+        if (sender == null) {
+            sender = new UserInfo();
+            sender.setUserId(message.getSenderUserId());
+            sender.setUserName("");
+            sender.setPortrait("");
+        }
         return newIntent(context,
                 message.getClientMsgNo(),
                 message.getConversation().getConversationId(),
