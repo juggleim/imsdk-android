@@ -564,25 +564,25 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      */
     @Override
     public void authenticate(@NonNull AuthenticateHandler handler) {
-        connect((e) -> {
-            if (e == null) {
+
+        Handler mh = new Handler(Looper.getMainLooper());
+        mh.postDelayed(new Runnable() {
+            @Override
+            public void run() {
                 ConversationInfo info = getChannel(mConversation);
                 if (info == null) {
                     info = new ConversationInfo();
                     info.setConversation(mConversation);
                 }
-                this.mConversationInfo = info;
-                this.mMemberFinder = new MemberFinder(SendbirdUIKit.getUserMentionConfig(), mConversation.getConversationId());
+                BaseMessageListViewModel.this.mConversationInfo = info;
+                BaseMessageListViewModel.this.mMemberFinder = new MemberFinder(SendbirdUIKit.getUserMentionConfig(), mConversation.getConversationId());
                 if (mConversationInfo == null) {
                     handler.onAuthenticationFailed();
                 } else {
                     handler.onAuthenticated();
                 }
-
-            } else {
-                handler.onAuthenticationFailed();
             }
-        });
+        }, 50);
     }
 
     @VisibleForTesting
