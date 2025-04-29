@@ -15,6 +15,9 @@ import androidx.annotation.StyleRes;
 import com.jet.im.kit.model.DialogListItem;
 import com.jet.im.kit.utils.ChannelUtils;
 import com.jet.im.kit.utils.DialogUtils;
+import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.interfaces.IConversationManager;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
@@ -95,6 +98,26 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
         onBindHeaderComponent(module.getHeaderComponent(), viewModel);
         onBindChannelListComponent(module.getChannelListComponent(), viewModel);
         onBindStatusComponent(module.getStatusComponent(), viewModel);
+        onBindIM(module);
+    }
+
+    private static void onBindIM(@NonNull ChannelListModule module) {
+        JIM.getInstance().getConnectionManager().addConnectionStatusListener("ChannelListFragment", new IConnectionManager.IConnectionStatusListener() {
+            @Override
+            public void onStatusChange(JIMConst.ConnectionStatus status, int code, String extra) {
+                if (status == JIMConst.ConnectionStatus.CONNECTED && module.getChannelListComponent().getAdapter() != null) {
+                    module.getChannelListComponent().getAdapter().notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onDbOpen() {
+            }
+
+            @Override
+            public void onDbClose() {
+            }
+        });
     }
 
     @Override
@@ -106,6 +129,12 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
             return;
         }
         viewModel.loadInitial();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        JIM.getInstance().getConnectionManager().removeConnectionStatusListener("ChannelListFragment");
     }
 
     /**
