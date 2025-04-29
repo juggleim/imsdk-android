@@ -61,7 +61,9 @@ import com.jet.im.kit.widgets.MentionEditText;
 import com.jet.im.kit.widgets.MessageInputView;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
+import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.MediaMessageContent;
@@ -166,6 +168,26 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         onBindMessageListComponent(module.getMessageListComponent(), viewModel, channel);
         onBindMessageInputComponent(module.getMessageInputComponent(), viewModel, channel);
         onBindStatusComponent(module.getStatusComponent(), viewModel, channel);
+        onBindIM(module);
+    }
+
+    private static void onBindIM(@NonNull ChannelModule module) {
+        JIM.getInstance().getConnectionManager().addConnectionStatusListener("ChannelFragment", new IConnectionManager.IConnectionStatusListener() {
+            @Override
+            public void onStatusChange(JIMConst.ConnectionStatus status, int code, String extra) {
+                if (status == JIMConst.ConnectionStatus.CONNECTED && module.getMessageListComponent().getAdapter() != null) {
+                    module.getMessageListComponent().getAdapter().notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onDbOpen() {
+            }
+
+            @Override
+            public void onDbClose() {
+            }
+        });
     }
 
     @Override
@@ -216,6 +238,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             //todo 清理数据
 //            MessageExtensionsKt.clearLastValidations(channelMessageData.getMessages());
         }
+        JIM.getInstance().getConnectionManager().removeConnectionStatusListener("ChannelFragment");
     }
 
     /**
