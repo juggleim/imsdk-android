@@ -209,8 +209,7 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
     }
 
     synchronized private void changeStatus(String chatroomId, CachedChatroom.ChatroomStatus status) {
-        if (status == CachedChatroom.ChatroomStatus.QUIT
-        || status == CachedChatroom.ChatroomStatus.FAILED) {
+        if (status == CachedChatroom.ChatroomStatus.QUIT) {
             mCachedChatroomMap.remove(chatroomId);
             return;
         }
