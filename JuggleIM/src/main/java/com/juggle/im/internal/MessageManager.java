@@ -2799,8 +2799,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
         mUserInfoManager.insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
-        //todo cache
-        mCore.getDbManager().insertGroupMembers(new ArrayList<>(groupMemberMap.values()));
+        mUserInfoManager.insertGroupMemberList(new ArrayList<>(groupMemberMap.values()));
     }
 
     private void insertRemoteMessages(List<ConcreteMessage> messages) {
