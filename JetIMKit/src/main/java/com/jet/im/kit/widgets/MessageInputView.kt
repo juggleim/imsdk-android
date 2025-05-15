@@ -5,35 +5,32 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.InputType
+import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
-import com.jet.im.kit.consts.StringSet
 import com.jet.im.kit.databinding.SbViewMessageInputBinding
 import com.jet.im.kit.interfaces.OnInputModeChangedListener
 import com.jet.im.kit.interfaces.OnInputTextChangedListener
-import com.jet.im.kit.internal.extensions.getCacheKey
 import com.jet.im.kit.internal.extensions.setAppearance
 import com.jet.im.kit.internal.extensions.setCursorDrawable
-import com.jet.im.kit.internal.extensions.toDisplayText
+import com.jet.im.kit.internal.ui.reactions.EmojiListView
+import com.jet.im.kit.model.EmojiManager2
 import com.jet.im.kit.model.TextUIConfig
-import com.jet.im.kit.utils.MessageUtils
+import com.jet.im.kit.utils.ContextUtils
 import com.jet.im.kit.utils.SoftInputUtils
 import com.jet.im.kit.utils.TextUtils
-import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.JIM
 import com.juggle.im.model.Message
 import com.juggle.im.model.messages.TextMessage
-import com.sendbird.android.message.BaseMessage
-import com.sendbird.android.message.FileMessage
-import com.sendbird.android.message.MultipleFilesMessage
 
 class MessageInputView @JvmOverloads constructor(
     context: Context,
@@ -48,6 +45,16 @@ class MessageInputView @JvmOverloads constructor(
         set(value) {
             field = value
             binding.ibtnSend.setOnClickListener(value)
+        }
+    var onEmojiClickListener: OnClickListener? = null
+        set(value) {
+            field = value
+            binding.ibtnEmoji.setOnClickListener(value)
+        }
+    var onKeyboardClickListener: OnClickListener? = null
+        set(value) {
+            field = value
+            binding.ibtnKeyboard.setOnClickListener(value)
         }
     var onVoiceRecorderButtonClickListener: OnClickListener? = null
         set(value) {
@@ -147,6 +154,19 @@ class MessageInputView @JvmOverloads constructor(
         SoftInputUtils.showSoftKeyboard(
             binding.etInputText
         )
+        binding.rvEmojis.visibility = GONE
+    }
+
+    fun showEmoji() {
+        binding.rvEmojis.visibility = VISIBLE
+        binding.ibtnKeyboard.visibility = VISIBLE
+        binding.ibtnEmoji.visibility = GONE
+    }
+
+    fun hideEmoji() {
+        binding.rvEmojis.visibility = GONE
+        binding.ibtnKeyboard.visibility = GONE
+        binding.ibtnEmoji.visibility = VISIBLE
     }
 
     fun drawMessageToReply(message: Message) {
@@ -376,6 +396,10 @@ class MessageInputView @JvmOverloads constructor(
             binding.ibtnSend.setBackgroundResource(rightButtonBackground)
             setSendImageResource(rightButtonIcon)
             binding.ibtnSend.imageTintList = rightButtonTint
+            binding.ibtnEmoji.setBackgroundResource(rightButtonBackground)
+            binding.ibtnEmoji.imageTintList = rightButtonTint
+            binding.ibtnKeyboard.setBackgroundResource(rightButtonBackground)
+            binding.ibtnKeyboard.imageTintList = rightButtonTint
             binding.ibtnVoiceRecorder.setBackgroundResource(micButtonBackground)
             binding.ibtnVoiceRecorder.setImageResource(micButtonIcon)
             binding.ibtnVoiceRecorder.imageTintList = micButtonTint
@@ -458,6 +482,53 @@ class MessageInputView @JvmOverloads constructor(
                             or InputType.TYPE_TEXT_FLAG_MULTI_LINE
                             or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
                     )
+            val emojiList = EmojiManager2.emojiList
+            val contextThemeWrapper = ContextUtils.extractModuleThemeContext(context, SendbirdUIKit.getDefaultThemeMode().resId, R.attr.sb_component_list)
+            val emojiListView = EmojiListView.create(contextThemeWrapper, emojiList, null, false)
+            emojiListView.setEmojiClickListener { _, _, emojiKey ->
+                val cursorPosition = inputEditText.selectionStart
+                val spannableString = SpannableStringBuilder(inputEditText.text)
+                spannableString.insert(cursorPosition, emojiKey)
+                inputEditText.text = spannableString
+                inputEditText.setSelection(cursorPosition+emojiKey.length)
+            }
+            binding.rvEmojis.addView(
+                emojiListView,
+                android.widget.LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+            binding.ibtnDelete.setOnClickListener {
+                val text = inputEditText.text
+                val selectionStart = inputEditText.selectionStart
+
+                if (selectionStart <= 0) return@setOnClickListener
+
+                val spannable = SpannableStringBuilder(text)
+                var start = selectionStart
+
+                // 找到前一个完整字符的起始位置
+                if (start > 1) {
+                    // 处理 surrogate pair
+                    val charBefore = text[start - 1]
+                    if (Character.isLowSurrogate(charBefore)) {
+                        val charBeforeBefore = text[start - 2]
+                        if (Character.isHighSurrogate(charBeforeBefore)) {
+                            start -= 2
+                            spannable.delete(start, selectionStart)
+                            inputEditText.text = spannable
+                            inputEditText.setSelection(start)
+                            return@setOnClickListener
+                        }
+                    }
+                }
+
+                // 处理普通字符（1 个 code unit）
+                spannable.delete(start - 1, selectionStart)
+                inputEditText.text = spannable
+                inputEditText.setSelection(start - 1)
+            }
         } finally {
             a.recycle()
         }

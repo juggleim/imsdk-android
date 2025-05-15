@@ -137,12 +137,43 @@
                 android:imeOptions="flagNoExtractUi"
                 android:inputType="textCapSentences|textMultiLine"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/ibtnSend"
+                app:layout_constraintEnd_toStartOf="@id/ibtnEmoji"
                 app:layout_constraintStart_toEndOf="@id/ibtnAdd"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <requestFocus />
             </com.jet.im.kit.widgets.MentionEditText>
+
+            <ImageButton
+                android:id="@+id/ibtnEmoji"
+                android:src="@drawable/icon_emoji"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                android:layout_marginEnd="@dimen/sb_size_0"
+                android:layout_marginStart="@dimen/sb_size_12"
+                android:scaleType="centerCrop"
+                android:padding="@dimen/sb_size_0"
+                android:contentDescription="@string/sb_emoji_default_description"
+                app:layout_constraintStart_toEndOf="@id/etInputText"
+                app:layout_constraintEnd_toStartOf="@id/ibtnKeyboard"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <ImageButton
+                android:id="@+id/ibtnKeyboard"
+                android:src="@drawable/icon_keyboard"
+                android:layout_width="@dimen/sb_size_24"
+                android:layout_height="@dimen/sb_size_24"
+                android:layout_marginEnd="@dimen/sb_size_0"
+                android:layout_marginStart="@dimen/sb_size_12"
+                android:scaleType="centerCrop"
+                android:padding="@dimen/sb_size_0"
+                android:contentDescription="@string/sb_emoji_default_description"
+                android:visibility="gone"
+                app:layout_constraintStart_toEndOf="@id/ibtnEmoji"
+                app:layout_constraintEnd_toStartOf="@id/ibtnSend"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
 
             <ImageButton
                 android:id="@+id/ibtnSend"
@@ -155,7 +186,7 @@
                 android:padding="@dimen/sb_size_0"
                 android:scaleType="centerCrop"
                 android:contentDescription="@string/sb_view_message_input_send_button_description"
-                app:layout_constraintStart_toEndOf="@id/etInputText"
+                app:layout_constraintStart_toEndOf="@id/ibtnKeyboard"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/ibtnVoiceRecorder" />
@@ -204,6 +235,26 @@
                 android:text="@string/sb_text_button_save"/>
 
         </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/rvEmojis"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:background="@color/background_50"
+            android:visibility="gone">
+
+            <ImageButton
+                android:id="@+id/ibtnDelete"
+                android:layout_width="@dimen/sb_size_40"
+                android:layout_height="@dimen/sb_size_40"
+                android:layout_margin="@dimen/sb_size_30"
+                android:alpha="1.0"
+                android:contentDescription="@string/j_delete"
+                android:elevation="10dp"
+                android:background="@drawable/icon_emoji_delete"
+                android:layout_gravity="bottom|end"/>
+        </FrameLayout>
+
 
     </LinearLayout>
 </LinearLayout>

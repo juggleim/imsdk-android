@@ -323,6 +323,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     protected void onBindMessageListComponent(@NonNull MessageListComponent messageListComponent, @NonNull ChannelViewModel viewModel, @Nullable ConversationInfo channel) {
         Logger.d(">> ChannelFragment::onBindMessageListComponent()");
         if (channel == null) return;
+        messageListComponent.setOnMessageListTouchListener(this::onMessageListTouched);
         messageListComponent.setOnMessageClickListener(this::onMessageClicked);
         messageListComponent.setOnMessageProfileLongClickListener(this::onMessageProfileLongClicked);
         messageListComponent.setOnMessageProfileClickListener(this::onMessageProfileClicked);

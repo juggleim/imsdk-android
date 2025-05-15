@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import com.juggle.im.JIM;
 import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.UserInfo;
-import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.message.Emoji;
 import com.sendbird.android.message.Reaction;
 import com.jet.im.kit.activities.viewholder.BaseViewHolder;

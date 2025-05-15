@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -90,6 +91,8 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
     OnPagedDataLoader<List<Message>> pagedDataLoader;
     @Nullable
     private View.OnClickListener tooltipClickListener;
+    @Nullable
+    private View.OnTouchListener messageListTouchListener;
     @Nullable
     @Deprecated
     private View.OnClickListener scrollBottomButtonClickListener;
@@ -211,6 +214,7 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
         recyclerView.setItemAnimator(new ItemAnimator());
         recyclerView.useReverseData();
         messageRecyclerView.setOnScrollFirstButtonClickListener(this::onScrollFirstButtonClicked);
+        messageRecyclerView.setOnMessageListTouchListener(this::onMessageListTouched);
         recyclerView.setOnScrollEndDetectListener(direction -> onScrollEndReaches(direction, messageRecyclerView));
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -319,6 +323,10 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
      */
     public void setOnMessageClickListener(@Nullable OnItemClickListener<Message> messageClickListener) {
         this.messageClickListener = messageClickListener;
+    }
+
+    public void setOnMessageListTouchListener(@Nullable View.OnTouchListener listener) {
+        this.messageListTouchListener = listener;
     }
 
     /**
@@ -677,6 +685,13 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
         onScrollBottomButtonClicked(view);
         if (scrollFirstButtonClickListener != null)
             return scrollFirstButtonClickListener.onClick(view);
+        return false;
+    }
+
+    protected boolean onMessageListTouched(View v, MotionEvent e) {
+        if (messageListTouchListener != null) {
+            return messageListTouchListener.onTouch(v, e);
+        }
         return false;
     }
 

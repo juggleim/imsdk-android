@@ -3,8 +3,6 @@ package com.jet.im.kit.internal.ui.reactions
 import android.content.Context
 import android.view.LayoutInflater
 import android.widget.FrameLayout
-import com.sendbird.android.message.Emoji
-import com.sendbird.android.message.Reaction
 import com.jet.im.kit.R
 import com.jet.im.kit.activities.adapter.EmojiListAdapter
 import com.jet.im.kit.databinding.SbViewEmojiListBinding
@@ -33,7 +31,12 @@ internal class EmojiListView private constructor(context: Context) : FrameLayout
             showMoreButton: Boolean = false
         ): EmojiListView {
             val emojiListView = EmojiListView(context)
-            val adapter = EmojiListAdapter(emojiList, reactionList, showMoreButton)
+            val adapter =
+                EmojiListAdapter(
+                    emojiList,
+                    reactionList,
+                    showMoreButton
+                )
             emojiListView.adapter = adapter
             emojiListView.binding.rvEmojiList.adapter = adapter
             return emojiListView

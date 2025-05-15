@@ -6,10 +6,15 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
@@ -119,6 +124,7 @@ abstract public class BaseMessageListFragment<
     Message targetMessage;
     @Nullable
     private Uri mediaUri;
+    @Nullable
     private Message forwardMessage;
 
     private final ActivityResultLauncher<Intent> getContentLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -169,6 +175,32 @@ abstract public class BaseMessageListFragment<
         }
     }
 
+    private void setupKeyboardHeightObserver() {
+        final View rootView = getModule().getMessageInputComponent().getRootView();
+        if (rootView == null) {
+            return;
+        }
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                // 键盘可见性判断（排除状态栏等系统UI）
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                mainHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Rect rect = new Rect();
+                        rootView.getWindowVisibleDisplayFrame(rect);
+                        int screenHeight = rootView.getRootView().getHeight();
+                        int keypadHeight = screenHeight - rect.bottom;
+                        if (keypadHeight > screenHeight * 0.15) {
+                            getModule().getMessageInputComponent().hideEmoji();
+                        }
+                    }
+                }, 200);
+            }
+        });
+    }
+
     @Override
     protected void onConfigureParams(@NonNull MT module, @NonNull Bundle args) {
         if (loadingDialogHandler != null) module.setOnLoadingDialogHandler(loadingDialogHandler);
@@ -188,6 +220,7 @@ abstract public class BaseMessageListFragment<
             module.getMessageListComponent().setAdapter(adapter);
         }
         module.getMessageInputComponent().setSuggestedMentionListAdapter(suggestedMentionListAdapter == null ? new SuggestedMentionListAdapter() : suggestedMentionListAdapter);
+        setupKeyboardHeightObserver();
     }
 
     /**
@@ -217,6 +250,11 @@ abstract public class BaseMessageListFragment<
      */
     protected boolean onMessageContextMenuItemClicked(@NonNull Message message, @NonNull View view, int position, @NonNull DialogListItem item) {
         return false;
+    }
+
+    protected boolean onMessageListTouched(View v, MotionEvent e) {
+        getModule().getMessageInputComponent().hideEmoji();
+        return true;
     }
 
     /**
@@ -541,6 +579,7 @@ abstract public class BaseMessageListFragment<
         if (getView() != null) {
             SoftInputUtils.hideSoftKeyboard(getView());
         }
+        getModule().getMessageInputComponent().hideEmoji();
     }
 
     void toggleReaction(@NonNull View view, @NonNull Message message, @NonNull String reactionKey) {
