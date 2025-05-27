@@ -16,3 +16,27 @@ _备注：由于微信群二维码有时间限制，加入微信讨论可优先�
 JuggleIM 官方开源的 Android IM SDK 源码，提供 IM 即时通讯功能，包含 IM 基础连接、重连、单聊、群聊、直播聊天室等功能模块，支持发送文本、图片、文件或自定义等多种消息类型。
 
 通常情况下，开发者可根据官方文档集成使用：[https://www.juggle.im/](https://www.juggle.im/)
+
+### 运行
+
+在 demo 项目的 BaseApplication.kt 里，找到下面代码
+```
+server.add("xxx")
+```
+将 "xxx" 修改成部署好的 IM 服务地址（以 wss:// 打头）。
+
+同样在 BaseApplication.kt 里，找到下面代码
+
+```
+val appKey = "xxx"
+```
+将 "xxx" 修改成您的 appKey
+
+在 ServiceManager 里，找到下面代码
+
+```
+Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("xxx")
+```
+
+将 "xxx" 修改成部署好的 demo server 地址（以 https:// 打头）
