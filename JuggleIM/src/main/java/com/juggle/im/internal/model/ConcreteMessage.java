@@ -1,11 +1,29 @@
 package com.juggle.im.internal.model;
 
+import com.juggle.im.interfaces.GroupMember;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.UserInfo;
 
 public class ConcreteMessage extends Message {
+    public ConcreteMessage() {
+    }
+
+    public ConcreteMessage(ConcreteMessage other) {
+        super(other);
+        mSeqNo = other.getSeqNo();
+        mMsgIndex = other.getMsgIndex();
+        mClientUid = other.getClientUid();
+        mFlags = other.getFlags();
+        mExisted = other.isExisted();
+        mGroupInfo = other.getGroupInfo();
+        mTargetUserInfo = other.getTargetUserInfo();
+        mGroupMemberInfo = other.getGroupMemberInfo();
+        mReferMsgId = other.getReferMsgId();
+        mPushData = other.getPushData();
+    }
+
     public long getSeqNo() {
         return mSeqNo;
     }
@@ -62,6 +80,14 @@ public class ConcreteMessage extends Message {
         mTargetUserInfo = targetUserInfo;
     }
 
+    public GroupMember getGroupMemberInfo() {
+        return mGroupMemberInfo;
+    }
+
+    public void setGroupMemberInfo(GroupMember groupMemberInfo) {
+        mGroupMemberInfo = groupMemberInfo;
+    }
+
     public String getReferMsgId() {
         return mReferMsgId;
     }
@@ -86,6 +112,7 @@ public class ConcreteMessage extends Message {
     private boolean mExisted;
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;
+    private GroupMember mGroupMemberInfo;
     private String mReferMsgId;
     private PushData mPushData;
 }

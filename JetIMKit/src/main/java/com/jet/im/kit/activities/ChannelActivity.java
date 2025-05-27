@@ -7,18 +7,20 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.consts.StringSet;
+import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.IConnectionManager;
 
 /**
  * Activity displays a list of messages from a channel.
  */
-public class ChannelActivity extends AppCompatActivity {
+public class ChannelActivity extends BaseActivity implements IConnectionManager.IConnectionStatusListener {
 
     /**
      * Create an intent for a {@link ChannelActivity}.
@@ -58,12 +60,20 @@ public class ChannelActivity extends AppCompatActivity {
         setTheme(themeResId);
         setContentView(R.layout.sb_activity);
 
+        JIM.getInstance().getConnectionManager().addConnectionStatusListener("ChannelActivity", this);
+
         Fragment fragment = createFragment();
         FragmentManager manager = getSupportFragmentManager();
         manager.popBackStack();
         manager.beginTransaction()
                 .replace(R.id.sb_fragment_container, fragment)
                 .commit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        JIM.getInstance().getConnectionManager().removeConnectionStatusListener("ChannelActivity");
     }
 
     /**
@@ -94,6 +104,21 @@ public class ChannelActivity extends AppCompatActivity {
         }
         final Bundle args = intent != null && intent.getExtras() != null ? intent.getExtras() : new Bundle();
         return SendbirdUIKit.getFragmentFactory().newChannelFragment(args.getInt(StringSet.KEY_CONVERSATION_TYPE, 1), args.getString(StringSet.KEY_CONVERSATION_ID, ""), args);
+    }
+
+    @Override
+    public void onStatusChange(JIMConst.ConnectionStatus status, int code, String extra) {
+        if (status == JIMConst.ConnectionStatus.DISCONNECTED) {
+            finish();
+        }
+    }
+
+    @Override
+    public void onDbOpen() {
+    }
+
+    @Override
+    public void onDbClose() {
     }
 
     /**

@@ -15,6 +15,7 @@ import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
 import com.juggle.im.model.messages.VoiceMessage
 import com.sendbird.android.channel.GroupChannel
 import com.sendbird.android.message.BaseMessage
@@ -75,6 +76,7 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
             binding.tvSentAt.setAppearance(context, sentAtAppearance)
             binding.contentPanelWithReactions.background =
                 DrawableUtils.setTintList(context, messageBackground, messageBackgroundTint)
+            binding.emojiReactionListBackground.setBackgroundResource(emojiReactionListBackground)
             binding.voiceMessage.setProgressCornerRadius(context.resources.getDimension(R.dimen.sb_size_16))
             binding.voiceMessage.setProgressTrackColor(
                 AppCompatResources.getColorStateList(
@@ -124,47 +126,19 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
     }
 
     override fun drawMessage(
-        channel: GroupChannel,
-        message: BaseMessage,
-        params: MessageListUIParams
-    ) {
-        val fileMessage = message as FileMessage
-        val isSent = message.sendingStatus == SendingStatus.SUCCEEDED
-        val messageGroupType = params.messageGroupType
-        binding.tvSentAt.visibility =
-            if (isSent && (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_SINGLE)) VISIBLE else GONE
-        binding.ivStatus.drawStatus(message, channel, params.shouldUseMessageReceipt())
-
-        messageUIConfig?.let {
-            it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
-            it.myMessageBackground?.let { background ->
-                binding.contentPanel.background = background
-            }
-        }
-
-        ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
-
-        val paddingTop =
-            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        val paddingBottom =
-            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        binding.root.setPadding(
-            binding.root.paddingLeft,
-            paddingTop,
-            binding.root.paddingRight,
-            paddingBottom
-        )
-        ViewUtils.drawVoiceMessage(binding.voiceMessage, fileMessage)
-    }
-
-    override fun drawMessage(
         channel: ConversationInfo,
         message: Message,
+        reactionItemList: List<MessageReactionItem>,
         params: MessageListUIParams
     ) {
         val fileMessage = message.content as VoiceMessage
         val isSent = message.state == Message.MessageState.SENT
+        val enableReactions =
+            reactionItemList.isNotEmpty()
         val messageGroupType = params.messageGroupType
+
+        binding.emojiReactionListBackground.visibility = if (enableReactions) VISIBLE else GONE
+        binding.rvEmojiReactionList.visibility = if (enableReactions) VISIBLE else GONE
         binding.tvSentAt.visibility =
             if (isSent && (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_SINGLE)) VISIBLE else GONE
         binding.ivStatus.drawStatus(message, channel, params.shouldUseMessageReceipt())
@@ -174,9 +148,13 @@ internal class MyVoiceMessageView @JvmOverloads internal constructor(
             it.myMessageBackground?.let { background ->
                 binding.contentPanel.background = background
             }
+            it.myReactionListBackground?.let { reactionListBackground ->
+                binding.emojiReactionListBackground.background = reactionListBackground
+            }
         }
 
         ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
+        ViewUtils.drawReactionEnabled(binding.rvEmojiReactionList)
 
         val paddingTop =
             resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)

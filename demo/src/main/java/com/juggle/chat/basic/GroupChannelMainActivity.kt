@@ -2,35 +2,55 @@ package com.juggle.chat.basic
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
+import com.jet.im.kit.SendbirdUIKit
+import com.jet.im.kit.activities.BaseActivity
+import com.jet.im.kit.activities.ChannelActivity
+import com.jet.im.kit.fragments.ChannelListFragment
+import com.jet.im.kit.vm.MemberFinder
 import com.juggle.chat.R
+import com.juggle.chat.bean.GroupMemberBean
+import com.juggle.chat.bean.HttpResult
+import com.juggle.chat.bean.ListResult
+import com.juggle.chat.bots.BotListFragment
 import com.juggle.chat.common.SampleSettingsFragment
 import com.juggle.chat.common.consts.StringSet
 import com.juggle.chat.common.extensions.isUsingDarkTheme
 import com.juggle.chat.common.preferences.PreferenceUtils
 import com.juggle.chat.common.widgets.CustomTabView
+import com.juggle.chat.contacts.FriendListFragment
+import com.juggle.chat.contacts.add.AddFriendListActivity
+import com.juggle.chat.contacts.group.select.SelectGroupMemberActivity
 import com.juggle.chat.databinding.ActivityGroupChannelMainBinding
-import com.juggle.chat.friends.FriendListFragment
-import com.juggle.chat.group.GroupListFragment
-import com.google.android.material.tabs.TabLayoutMediator
-import com.jet.im.kit.SendbirdUIKit
-import com.jet.im.kit.activities.ChannelActivity
-import com.jet.im.kit.providers.FragmentProviders
-import com.juggle.chat.chatroom.ChatRoomListFragment
+import com.juggle.chat.http.CustomCallback
+import com.juggle.chat.http.ServiceManager
+import com.juggle.chat.qrcode.ScanActivity
+import com.juggle.chat.settings.MorePopWindow
+import com.juggle.chat.settings.MorePopWindow.OnPopWindowItemClickListener
+import com.juggle.im.JIM
+import com.juggle.im.interfaces.IConversationManager.IConversationListener
+import com.juggle.im.model.Conversation
+import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.UserInfo
 
-class GroupChannelMainActivity : AppCompatActivity() {
+class GroupChannelMainActivity : BaseActivity(), IConversationListener, OnPopWindowItemClickListener {
     private lateinit var binding: ActivityGroupChannelMainBinding
-    private lateinit var unreadCountTab: CustomTabView
+    private lateinit var conversationUnreadCountTab: CustomTabView
+    private lateinit var friendUnreadCountTab: CustomTabView
+    private val key = "GroupChannelMainActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(SendbirdUIKit.getDefaultThemeMode().resId)
         binding = ActivityGroupChannelMainBinding.inflate(layoutInflater).apply {
             setContentView(root)
             viewPager.adapter = MainAdapter(this@GroupChannelMainActivity)
+            viewPager.offscreenPageLimit = 5
             val isDarkMode = PreferenceUtils.themeMode.isUsingDarkTheme()
             val backgroundRedId =
                 if (isDarkMode) com.jet.im.kit.R.color.background_600 else com.jet.im.kit.R.color.background_50
@@ -38,34 +58,28 @@ class GroupChannelMainActivity : AppCompatActivity() {
             TabLayoutMediator(tabLayout, viewPager) { tab, position ->
                 tab.customView = when (position) {
                     0 -> {
-                        unreadCountTab = CustomTabView(this@GroupChannelMainActivity).apply {
+                        conversationUnreadCountTab = CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
                             setTitle(getString(R.string.text_tab_conversations))
                             setIcon(R.drawable.icon_chat_filled)
                         }
-                        unreadCountTab
+                        conversationUnreadCountTab
                     }
 
                     1 -> {
-                        CustomTabView(this@GroupChannelMainActivity).apply {
+                        friendUnreadCountTab = CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
                             setTitle(getString(R.string.text_tab_friends))
                             setIcon(com.jet.im.kit.R.drawable.icon_members)
                         }
+                        friendUnreadCountTab
                     }
 
                     2 -> {
                         CustomTabView(this@GroupChannelMainActivity).apply {
                             setBadgeVisibility(View.GONE)
-                            setTitle(getString(R.string.text_tab_groups))
-                            setIcon(com.jet.im.kit.R.drawable.icon_group)
-                        }
-                    }
-                    3 -> {
-                        CustomTabView(this@GroupChannelMainActivity).apply {
-                            setBadgeVisibility(View.GONE)
-                            setTitle(getString(R.string.text_tab_chatroom))
-                            setIcon(com.jet.im.kit.R.drawable.icon_chatroom)
+                            setTitle(getString(R.string.text_bots))
+                            setIcon(R.drawable.icon_bots)
                         }
                     }
 
@@ -78,41 +92,62 @@ class GroupChannelMainActivity : AppCompatActivity() {
                     }
                 }
             }.attach()
+            tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab) {
+                    // 去掉切换动画
+                    viewPager.setCurrentItem(tab.position, false)
+                }
+                override fun onTabUnselected(tab: TabLayout.Tab) {}
+                override fun onTabReselected(tab: TabLayout.Tab) {}
+            })
             redirectChannelIfNeeded(intent)
+        }
+        JIM.getInstance().conversationManager.addListener(key, this)
+        MemberFinder.setGroupMemberProvider { groupId, callback ->
+            run {
+                ServiceManager.getGroupsService().getGroupMembers(groupId).enqueue(object :
+                    CustomCallback<HttpResult<ListResult<GroupMemberBean>>, ListResult<GroupMemberBean>>() {
+                    override fun onSuccess(groupMemberList: ListResult<GroupMemberBean>?) {
+                        val userInfoList: MutableList<UserInfo> = ArrayList()
+                        if (groupMemberList != null) {
+                            for (groupMember in groupMemberList.items) {
+                                val userInfo = UserInfo()
+                                userInfo.userId = groupMember.userId
+                                userInfo.userName = groupMember.nickname
+                                userInfo.portrait = groupMember.avatar
+                                userInfoList.add(userInfo)
+                            }
+                        }
+                        callback.onMembersFetch(userInfoList, 0)
+                    }
+
+                    override fun onError(t: Throwable?) {
+                        super.onError(t)
+                        callback.onMembersFetch(null, -1)
+                    }
+                })
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-//        SendbirdChat.getTotalUnreadMessageCount(
-//            GroupChannelTotalUnreadMessageCountParams(),
-//            UnreadMessageCountHandler { totalCount: Int, _: Int, e: SendbirdException? ->
-//                if (e != null) {
-//                    return@UnreadMessageCountHandler
-//                }
-//                if (totalCount > 0) {
-//                    unreadCountTab.setBadgeVisibility(View.VISIBLE)
-//                    unreadCountTab.setBadgeCount(if (totalCount > 99) getString(R.string.text_tab_badge_max_count) else totalCount.toString())
-//                } else {
-//                    unreadCountTab.setBadgeVisibility(View.GONE)
-//                }
-//            })
-//        SendbirdChat.addUserEventHandler(USER_EVENT_HANDLER_KEY, object : UserEventHandler() {
-//            override fun onFriendsDiscovered(users: List<User>) {}
-//            override fun onTotalUnreadMessageCountChanged(unreadMessageCount: UnreadMessageCount) {
-//                val totalCount = unreadMessageCount.groupChannelCount
-//                if (totalCount > 0) {
-//                    unreadCountTab.setBadgeVisibility(View.VISIBLE)
-//                    unreadCountTab.setBadgeCount(if (totalCount > 99) getString(R.string.text_tab_badge_max_count) else totalCount.toString())
-//                } else {
-//                    unreadCountTab.setBadgeVisibility(View.GONE)
-//                }
-//            }
-//        })
+        val conversationTypes = intArrayOf(Conversation.ConversationType.PRIVATE.value, Conversation.ConversationType.GROUP.value)
+        JIM.getInstance().conversationManager.getUnreadCountWithTypes(conversationTypes)
+
+        loadUnreadCount()
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onDestroy() {
+        super.onDestroy()
+        JIM.getInstance().conversationManager.removeListener(key)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return false
+        }
+        return super.onKeyDown(keyCode, event)
     }
 
     private fun redirectChannelIfNeeded(intent: Intent?) {
@@ -149,31 +184,96 @@ class GroupChannelMainActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadUnreadCount() {
+        val friendConversation = Conversation(Conversation.ConversationType.SYSTEM, SendbirdUIKit.FRIEND_CONVERSATION_ID)
+        val friendConversationInfo = JIM.getInstance().conversationManager.getConversationInfo(friendConversation)
+        var friendUnreadCount = 0
+        if (friendConversationInfo != null) {
+            friendUnreadCount = friendConversationInfo.unreadCount
+        }
+        val totalUnreadCount = JIM.getInstance().conversationManager.totalUnreadCount
+        val conversationUnreadCount = totalUnreadCount - friendUnreadCount
+
+        if (friendUnreadCount > 0) {
+            friendUnreadCountTab.setBadgeVisibility(View.VISIBLE)
+            friendUnreadCountTab.setBadgeCount(if (friendUnreadCount > 99) getString(R.string.text_tab_badge_max_count) else friendUnreadCount.toString())
+        } else {
+            friendUnreadCountTab.setBadgeVisibility(View.GONE)
+        }
+        if (conversationUnreadCount > 0) {
+            conversationUnreadCountTab.setBadgeVisibility(View.VISIBLE)
+            conversationUnreadCountTab.setBadgeCount(if (conversationUnreadCount > 99) getString(R.string.text_tab_badge_max_count) else conversationUnreadCount.toString())
+        } else {
+            conversationUnreadCountTab.setBadgeVisibility(View.GONE)
+        }
+    }
+
     private class MainAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+        val activity = fa
+
         override fun getItemCount(): Int = PAGE_SIZE
         override fun createFragment(position: Int): Fragment {
-            var fragment: Fragment
+            val fragment: Fragment
             if (position == 0) {
-                fragment = FragmentProviders.channelList.provide(Bundle())
+                fragment = ChannelListFragment.Builder().setOnHeaderRightButtonClickListener(object : View.OnClickListener {
+                    override fun onClick(v: View?) {
+                        if (activity is GroupChannelMainActivity) {
+                            val morePopWindow = MorePopWindow(activity, activity)
+
+                            val scale = activity.resources.displayMetrics.density
+                            val marginEnd = (12 * scale + 0.5f).toInt()
+                            val popSelfXOffset =
+                                activity.resources.getDimension(com.jet.im.kit.R.dimen.sb_size_160) - v!!.width
+
+                            morePopWindow.showPopupWindow(v, 0.8f, (-popSelfXOffset).toInt(), 0)
+                        }
+                    }
+                }).withArguments(Bundle()).setUseHeader(true).build()
+
+//                fragment = FragmentProviders.channelList.provide(Bundle())
             } else if (position == 1) {
                 fragment = FriendListFragment()
             } else if (position == 2) {
-                fragment = GroupListFragment()
-            }
-            else if (position == 3) {
-                fragment = ChatRoomListFragment()
-            }else {
+                fragment =
+                    BotListFragment()
+            } else {
                 fragment = SampleSettingsFragment()
             }
             return fragment
         }
 
         companion object {
-            private const val PAGE_SIZE = 5
+            private const val PAGE_SIZE = 4
         }
     }
 
     companion object {
         private val USER_EVENT_HANDLER_KEY = "USER_EVENT_HANDLER_KEY" + System.currentTimeMillis()
+    }
+
+    override fun onConversationInfoAdd(conversationInfoList: MutableList<ConversationInfo>?) {
+    }
+
+    override fun onConversationInfoUpdate(conversationInfoList: MutableList<ConversationInfo>?) {
+    }
+
+    override fun onConversationInfoDelete(conversationInfoList: MutableList<ConversationInfo>?) {
+    }
+
+    override fun onTotalUnreadMessageCountUpdate(count: Int) {
+        loadUnreadCount()
+    }
+
+    override fun onCreateGroupClick() {
+        startActivity(SelectGroupMemberActivity.newIntent(this, null, 0))
+    }
+
+    override fun onAddFriendClick() {
+        startActivity(AddFriendListActivity.newIntent(this))
+    }
+
+    override fun onScanClick() {
+        val intent = Intent(this, ScanActivity::class.java)
+        startActivity(intent)
     }
 }

@@ -4,5 +4,5 @@
         android:state_checked="false"
         android:color="@color/background_200"/>
 
-    <item android:color="@color/primary_400"/>
+    <item android:color="@color/primary_300"/>
 </selector>

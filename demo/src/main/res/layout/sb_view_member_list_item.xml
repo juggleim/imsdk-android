@@ -48,25 +48,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toEndOf="@id/tvNickname"
-        app:layout_constraintEnd_toStartOf="@+id/ivAction"
+        app:layout_constraintEnd_toStartOf="@+id/tvUnreadCount"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <ImageButton
-        android:id="@+id/ivAction"
-        android:layout_width="@dimen/sb_size_24"
-        android:layout_height="@dimen/sb_size_24"
-        android:layout_gravity="center"
-        android:src="@drawable/icon_more"
+    <TextView
+        android:id="@+id/tvUnreadCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/sb_size_5"
+        android:gravity="center"
         android:visibility="gone"
-        android:layout_marginStart="@dimen/sb_size_8"
-        android:padding="@dimen/sb_size_0"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/sb_view_member_item_action_button_description"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/tvDescription"/>
-
+        app:layout_constraintRight_toRightOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

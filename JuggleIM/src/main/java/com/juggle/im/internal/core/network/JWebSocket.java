@@ -171,8 +171,11 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public void syncMessages(long receiveTime,
                              long sendTime,
-                             String userId) {
+                             String userId,
+                             QryHisMsgCallback callback) {
+        Integer key = mCmdIndex;
         byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "syncMessages, receiveTime is " + receiveTime + ", sendTime is " + sendTime);
         sendWhenOpen(bytes);
     }
@@ -314,17 +317,18 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void clearHistoryMessage(Conversation conversation, long time, WebSocketTimestampCallback callback) {
+    public void clearHistoryMessage(Conversation conversation, long time, boolean forAllUsers, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.clearHistoryMessage(conversation, time, 0, mCmdIndex++);
+        int scope = forAllUsers ? 1 : 0;
+        byte[] bytes = mPbData.clearHistoryMessage(conversation, time, scope, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "clearHistoryMessage, conversation is " + conversation + ", time is " + time);
         sendWhenOpen(bytes);
     }
 
-    public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, WebSocketTimestampCallback callback) {
+    public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, boolean forAllUsers, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.deleteMessage(conversation, msgList, mCmdIndex++);
+        byte[] bytes = mPbData.deleteMessage(conversation, msgList, forAllUsers, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "deleteMessage, conversation is " + conversation);
         sendWhenOpen(bytes);
@@ -406,8 +410,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void syncChatroomMessages(String chatroomId, String userId, long syncTime, int prevMessageCount) {
+    public void syncChatroomMessages(String chatroomId, String userId, long syncTime, int prevMessageCount, QryHisMsgCallback callback) {
+        Integer key = mCmdIndex;
         byte[] bytes = mPbData.syncChatroomMessages(chatroomId, userId, syncTime, prevMessageCount, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "syncChatroomMessages, id is " + chatroomId + ", time is " + syncTime + ", count is " + prevMessageCount);
         sendWhenOpen(bytes);
     }
@@ -426,6 +432,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.setLanguage(language, userId, mCmdIndex++);
         JLogger.i("WS-Send", "set language: " + language);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getLanguage(String userId, WebSocketDataCallback<String> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getLanguage(userId, mCmdIndex++);
+        JLogger.i("WS-Send", "get language");
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }
@@ -450,6 +464,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.queryMsgExSet(messageIdList, conversation, mCmdIndex++);
         JLogger.i("WS-Send", "get messages reaction, count is " + messageIdList.size());
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void addConversationsToTag(List<Conversation> conversations, String tagId, String userId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.addConversationsToTag(conversations, tagId, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "add conversations to tag, tagId is " + tagId + ", count is " + conversations.size());
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void removeConversationsFromTag(List<Conversation> conversations, String tagId, String userId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.removeConversationsFromTag(conversations, tagId, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "remove conversations from tag, tagId is " + tagId + ", count is " + conversations.size());
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }
@@ -581,6 +611,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof MessageReactionListCallback) {
             MessageReactionListCallback sCallback = (MessageReactionListCallback) callback;
             sCallback.onError(errorCode);
+        } else if (callback instanceof WebSocketDataCallback) {
+            WebSocketDataCallback sCallback = (WebSocketDataCallback) callback;
+            sCallback.onError(errorCode);
         }
     }
 
@@ -598,10 +631,6 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public interface IWebSocketMessageListener {
         boolean onMessageReceive(ConcreteMessage message);
-
-        void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished);
-
-        void onChatroomMessageReceive(List<ConcreteMessage> messages);
         void onSyncNotify(long syncTime);
         void onChatroomSyncNotify(String chatroomId, long syncTime);
         void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content);
@@ -736,7 +765,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 handleRtcInviteEventNtf(obj.mRtcInviteEventNtf);
                 break;
             case PBRcvObj.PBRcvType.callAuthAck:
-                handleRtcInviteAck(obj.mCallInviteAck);
+                handleRtcInviteAck(obj.mStringAck);
                 break;
             case PBRcvObj.PBRcvType.qryCallRoomsAck:
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
@@ -744,6 +773,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.qryCallRoomAck:
                 //复用 mRtcQryCallRoomsAck
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
+                break;
+            case PBRcvObj.PBRcvType.getUserInfoAck:
+                handleGetUserInfoAck(obj.mStringAck);
                 break;
             case PBRcvObj.PBRcvType.qryMsgExtAck:
                 handleQryMsgExtAck(obj.mQryMsgExtAck);
@@ -899,15 +931,29 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     private void handleSyncMsgAck(PBRcvObj.QryHisMsgAck ack) {
         JLogger.i("WS-Receive", "handleSyncMsgAck");
-        if (mMessageListener != null) {
-            mMessageListener.onMessageReceive(ack.msgList, ack.isFinished);
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof QryHisMsgCallback) {
+            QryHisMsgCallback callback = (QryHisMsgCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.msgList, ack.isFinished);
+            }
         }
     }
 
     private void handleSyncChatroomMsgAck(PBRcvObj.QryHisMsgAck ack) {
         JLogger.i("WS-Receive", "handleSyncChatroomMsgAck");
-        if (mMessageListener != null) {
-            mMessageListener.onChatroomMessageReceive(ack.msgList);
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof QryHisMsgCallback) {
+            QryHisMsgCallback callback = (QryHisMsgCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.msgList, ack.isFinished);
+            }
         }
     }
 
@@ -1010,7 +1056,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
-    private void handleRtcInviteAck(PBRcvObj.CallAuthAck ack) {
+    private void handleRtcInviteAck(PBRcvObj.StringAck ack) {
         JLogger.i("WS-Receive", "handleRtcInviteAck");
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) {
@@ -1021,7 +1067,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {
-                callback.onSuccess(ack.zegoToken);
+                callback.onSuccess(ack.str);
             }
         }
     }
@@ -1038,6 +1084,23 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.rooms);
+            }
+        }
+    }
+
+    private void handleGetUserInfoAck(PBRcvObj.StringAck ack) {
+        JLogger.i("WS-Receive", "handleGetUserInfoAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof WebSocketDataCallback) {
+            @SuppressWarnings("unchecked")
+            WebSocketDataCallback<String> callback = (WebSocketDataCallback<String>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.str);
             }
         }
     }

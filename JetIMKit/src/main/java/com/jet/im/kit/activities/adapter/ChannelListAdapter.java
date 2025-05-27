@@ -247,7 +247,7 @@ public class ChannelListAdapter extends BaseAdapter<ConversationInfo, BaseViewHo
             this.binding = binding;
             this.binding.channelPreview.setUseTypingIndicator(false);
             this.binding.channelPreview.setUseMessageReceiptStatus(false);
-            this.binding.channelPreview.setUseUnreadMentionCount(false);
+            this.binding.channelPreview.setUseUnreadMentionCount(true);
         }
 
         @Override
@@ -273,7 +273,11 @@ public class ChannelListAdapter extends BaseAdapter<ConversationInfo, BaseViewHo
             this.params = params;
             conversationType = channel.getConversation().getConversationType();
             conversationId = channel.getConversation().getConversationId();
-            unreadCount = channel.getUnreadCount();
+            int c = channel.getUnreadCount();
+            if (c == 0 && channel.hasUnread()) {
+                c = 1;
+            }
+            unreadCount = c;
             updateTime = channel.getSortTime();
             lastMessage = channel.getLastMessage();
             isTop = channel.isTop();

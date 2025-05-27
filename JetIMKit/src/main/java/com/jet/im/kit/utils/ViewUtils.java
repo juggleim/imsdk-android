@@ -1,16 +1,20 @@
 package com.jet.im.kit.utils;
 
+import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
 import android.util.Pair;
+import android.util.Size;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,6 +23,8 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.constraintlayout.solver.state.Dimension;
+import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
@@ -33,21 +39,31 @@ import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.internal.model.GlideCachedUrlLoader;
+import com.jet.im.kit.internal.ui.messages.BaseQuotedMessageView;
 import com.jet.im.kit.internal.ui.messages.OgtagView;
 import com.jet.im.kit.internal.ui.messages.VoiceMessageView;
+import com.jet.im.kit.internal.ui.reactions.EmojiReactionListView;
 import com.jet.im.kit.internal.ui.widgets.RoundCornerView;
 import com.jet.im.kit.internal.ui.widgets.VoiceProgressView;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.FileInfo;
+import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.model.MessageUIConfig;
 import com.jet.im.kit.model.TextUIConfig;
+import com.jet.im.kit.model.configurations.ChannelConfig;
+import com.jet.im.kit.model.message.StreamTextMessage;
 import com.jet.im.kit.vm.PendingMessageRepository;
 import com.juggle.im.JIM;
+import com.juggle.im.call.model.CallFinishNotifyMessage;
+import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
+import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
+import com.sendbird.android.channel.BaseChannel;
+import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FileMessage;
 import com.sendbird.android.message.OGMetaData;
@@ -55,11 +71,15 @@ import com.sendbird.android.message.Thumbnail;
 import com.sendbird.android.user.Sender;
 import com.sendbird.android.user.User;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+
+import kotlin.Unit;
 
 /**
  * The helper class for the drawing views in the UIKit.
@@ -91,7 +111,7 @@ public class ViewUtils {
             @Nullable MessageUIConfig uiConfig,
             boolean enableMention,
             @Nullable TextUIConfig mentionedCurrentUserUIConfig,
-            @Nullable OnItemClickListener<User> mentionClickListener) {
+            @Nullable OnItemClickListener<UserInfo> mentionClickListener) {
 
     }
 
@@ -101,7 +121,7 @@ public class ViewUtils {
             @Nullable MessageUIConfig uiConfig,
             boolean enableMention,
             @Nullable TextUIConfig mentionedCurrentUserUIConfig,
-            @Nullable OnItemClickListener<User> mentionClickListener
+            @Nullable OnItemClickListener<UserInfo> mentionClickListener
     ) {
         if (message == null) {
             return;
@@ -111,6 +131,12 @@ public class ViewUtils {
             drawUnknownMessage(textView, MessageUtils.isMine(message));
             return;
         }
+        if (message.getContent() instanceof CallFinishNotifyMessage) {
+            Drawable drawable = ContextCompat.getDrawable(textView.getContext(), R.drawable.rc_voip_audio_right_cancel);
+            drawable.setBounds(0, 0, 70, 30);
+            textView.setCompoundDrawables(null, null, drawable, null);
+        }
+        final boolean isMine = MessageUtils.isMine(message);
         final Context context = textView.getContext();
         final CharSequence text = getDisplayableText(
                 context,
@@ -121,7 +147,18 @@ public class ViewUtils {
                 mentionClickListener,
                 enableMention
         );
-        textView.setText(text);
+
+        final SpannableStringBuilder builder = new SpannableStringBuilder(text);
+        if (message.isEdit()) {
+            final String edited = textView.getResources().getString(R.string.sb_text_channel_message_badge_edited);
+            final Spannable editedString = new SpannableString(edited);
+            if (uiConfig != null) {
+                final TextUIConfig editedTextMarkUIConfig = isMine ? uiConfig.getMyEditedTextMarkUIConfig() : uiConfig.getOtherEditedTextMarkUIConfig();
+                editedTextMarkUIConfig.bind(context, editedString, 0, editedString.length());
+            }
+            builder.append(editedString);
+        }
+        textView.setText(builder);
     }
 
     @NonNull
@@ -131,11 +168,30 @@ public class ViewUtils {
             @Nullable MessageUIConfig uiConfig,
             @Nullable TextUIConfig mentionedCurrentUserUIConfig,
             boolean mentionClickable,
-            @Nullable OnItemClickListener<User> mentionClickListener,
+            @Nullable OnItemClickListener<UserInfo> mentionClickListener,
             boolean enabledMention
     ) {
         String displayedMessage = "";
-        if (message.getContent() instanceof  TextMessage) {
+        if (message.getContent() instanceof StreamTextMessage) {
+            StreamTextMessage streamTextMessage = ((StreamTextMessage) message.getContent());
+            displayedMessage = streamTextMessage.getContent();
+        } else if (message.getContent() instanceof CallFinishNotifyMessage) {
+            CallFinishNotifyMessage callMessage = ((CallFinishNotifyMessage) message.getContent());
+            switch (callMessage.getFinishNotifyType()) {
+                case CANCEL:
+                    displayedMessage = "已取消  ";
+                    break;
+                case REJECT:
+                    displayedMessage = "已拒绝  ";
+                    break;
+                case NO_RESPONSE:
+                    displayedMessage = "未接听  ";
+                    break;
+                case COMPLETE:
+                    displayedMessage = "通话时长 " + getStringForTime(callMessage.getDuration()) + "  ";
+                    break;
+            }
+        } else if (message.getContent() instanceof  TextMessage) {
             TextMessage textMessage = ((TextMessage) message.getContent());
             if (textMessage.getContent() != null) {
                 displayedMessage = textMessage.getContent();
@@ -147,8 +203,21 @@ public class ViewUtils {
             messageTextUIConfig.bind(context, text, 0, text.length());
         }
 
-        CharSequence displayText = text;
-        return displayText;
+        return text;
+    }
+
+    @SuppressLint("DefaultLocale")
+    private static String getStringForTime(long time) {
+        long seconds = time / 1000;
+        long hours = seconds / 3600;
+        long remainingSeconds = seconds % 3600;
+        long minutes = remainingSeconds / 60;
+        long secs = remainingSeconds % 60;
+        if (hours > 0) {
+            return String.format("%02d:%02d:%02d", hours, minutes, secs);
+        } else {
+            return String.format("%02d:%02d", minutes, secs);
+        }
     }
 
     @Nullable
@@ -184,25 +253,13 @@ public class ViewUtils {
         });
     }
 
-    public static void drawNickname(
-            @NonNull TextView tvNickname,
-            @Nullable BaseMessage message,
-            @Nullable MessageUIConfig uiConfig,
-            boolean isOperator
-    ) {
-        if (message == null) {
-            return;
+    public static void drawReactionEnabled(@NonNull EmojiReactionListView view) {
+        boolean canSendReaction = true;
+        view.setClickable(canSendReaction);
+        if (view.useMoreButton() != canSendReaction) {
+            view.setUseMoreButton(canSendReaction);
+            view.refresh();
         }
-
-        final Sender sender = message.getSender();
-        final Spannable nickname = new SpannableString(UserUtils.getDisplayName(tvNickname.getContext(), sender));
-        if (uiConfig != null) {
-            final boolean isMine = MessageUtils.isMine(message);
-            final TextUIConfig textUIConfig = isOperator ? uiConfig.getOperatorNicknameTextUIConfig() : (isMine ? uiConfig.getMyNicknameTextUIConfig() : uiConfig.getOtherNicknameTextUIConfig());
-            textUIConfig.bind(tvNickname.getContext(), nickname, 0, nickname.length());
-        }
-
-        tvNickname.setText(nickname);
     }
 
     public static void drawNickname(
@@ -258,9 +315,15 @@ public class ViewUtils {
 
         String url = "";
         String plainUrl = "";
-        if (sender != null && !TextUtils.isEmpty(sender.getPortrait())) {
+        if (sender != null) {
             url = sender.getPortrait();
-            plainUrl = sender.getPortrait();
+            if (TextUtils.isEmpty(url)) {
+                url = PortraitGenerator.generateDefaultAvatar(ivProfile.getContext(), message.getSenderUserId(), sender.getUserName());
+            }
+            plainUrl = url;
+        } else {
+            url = PortraitGenerator.generateDefaultAvatar(ivProfile.getContext(), message.getSenderUserId(), message.getSenderUserId());
+            plainUrl = url;
         }
 
         drawProfile(ivProfile, url, plainUrl);
@@ -272,7 +335,12 @@ public class ViewUtils {
         Drawable errorDrawable = DrawableUtils.createOvalIcon(ivProfile.getContext(), backgroundTint, R.drawable.icon_user, iconTint);
 
         if (url == null || plainUrl == null) return;
-        GlideCachedUrlLoader.load(Glide.with(ivProfile.getContext()), url, String.valueOf(plainUrl.hashCode())).diskCacheStrategy(DiskCacheStrategy.ALL).error(errorDrawable).apply(RequestOptions.circleCropTransform()).into(ivProfile);
+        if (url.startsWith("file")) {
+            Uri uri = Uri.parse(url);
+            Glide.with(ivProfile.getContext()).load(uri).diskCacheStrategy(DiskCacheStrategy.ALL).error(errorDrawable).circleCrop().into(ivProfile);
+        } else {
+            GlideCachedUrlLoader.load(Glide.with(ivProfile.getContext()), url, String.valueOf(plainUrl.hashCode())).diskCacheStrategy(DiskCacheStrategy.ALL).error(errorDrawable).apply(RequestOptions.circleCropTransform()).into(ivProfile);
+        }
     }
 
     public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull FileMessage message) {
@@ -288,14 +356,41 @@ public class ViewUtils {
     }
 
     public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull ImageMessage image, @NonNull Message message) {
-        if (TextUtils.isEmpty(image.getThumbnailUrl())) {
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        Size size = getSize(view.getContext(), image);
+        params.width = size.getWidth();
+        params.height = size.getHeight();
+        view.setLayoutParams(params);
+
+        if (TextUtils.isNotEmpty(image.getLocalPath())) {
+            File file = new File(image.getLocalPath());
+            Glide.with(view.getContext()).load(file).centerCrop().into(view.getContent());
+        } else {
+            JIM.getInstance().getMessageManager().downloadMediaMessage(message.getMessageId(), null);
+            if (TextUtils.isEmpty(image.getThumbnailUrl())) {
+                return;
+            }
+            drawThumbnail(
+                    view,
+                    message.getMessageId(),
+                    image.getThumbnailUrl(),
+                    image.getUrl(),
+                    StringSet.image,
+                    null,
+                    R.dimen.sb_size_48
+            );
+        }
+    }
+
+    public static void drawThumbnail(@NonNull RoundCornerView view, @NonNull VideoMessage videoMessage, @NonNull Message message) {
+        if (TextUtils.isEmpty(videoMessage.getSnapshotUrl())) {
             return;
         }
         drawThumbnail(
                 view,
                 message.getMessageId(),
-                image.getThumbnailUrl(),
-                image.getUrl(),
+                videoMessage.getSnapshotUrl(),
+                videoMessage.getUrl(),
                 StringSet.image,
                 null,
                 R.dimen.sb_size_48
@@ -321,6 +416,28 @@ public class ViewUtils {
         }
 
         return url;
+    }
+
+    private static Size getSize(Context context, ImageMessage imageMessage) {
+        int width = imageMessage.getWidth();
+        int height = imageMessage.getHeight();
+        int maxWidth = MetricsUtils.dipToPixel(context, 240);
+        int maxHeight = MetricsUtils.dipToPixel(context, 160);
+
+        if (width > maxWidth || height > maxHeight) {
+            float widthRatio = (float) width / maxWidth;
+            float heightRatio = (float) height / maxHeight;
+
+            if (widthRatio > heightRatio) {
+                width = maxWidth;
+                height = (int) (height / widthRatio);
+            } else {
+                height = maxHeight;
+                width = (int) (width / heightRatio);
+            }
+
+        }
+        return new Size(width, height);
     }
 
     public static void drawThumbnail(
@@ -447,6 +564,16 @@ public class ViewUtils {
         }
     }
 
+    public static void drawQuotedMessage(
+            @NonNull BaseQuotedMessageView replyPanel,
+            @NonNull ConversationInfo channel,
+            @NonNull Message message,
+            @Nullable TextUIConfig uiConfig,
+            @NonNull MessageListUIParams params) {
+        final boolean hasParentMessage = MessageUtils.hasParentMessage(message);
+        replyPanel.setVisibility(hasParentMessage ? View.VISIBLE : View.GONE);
+        replyPanel.drawQuotedMessage(channel, message, uiConfig, params);
+    }
 
     public static void drawSentAt(@NonNull TextView tvSentAt, @Nullable BaseMessage message, @Nullable MessageUIConfig uiConfig) {
         if (message == null) {

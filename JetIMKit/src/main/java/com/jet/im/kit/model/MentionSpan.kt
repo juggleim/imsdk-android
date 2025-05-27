@@ -5,6 +5,7 @@ import android.content.res.Resources.NotFoundException
 import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
 import androidx.core.content.res.ResourcesCompat
+import com.juggle.im.model.UserInfo
 import com.sendbird.android.message.MentionType
 import com.sendbird.android.user.User
 
@@ -50,7 +51,7 @@ class MentionSpan
      * @return The User data relevant to this markup object
      * @since 3.0.0
      */
-    val mentionedUser: User,
+    val mentionedUser: UserInfo,
     private val uiConfig: TextUIConfig,
     private val mentionedCurrentUserUIConfig: TextUIConfig? = null
 ) : MetricAffectingSpan() {
@@ -70,7 +71,7 @@ class MentionSpan
         context: Context,
         trigger: String,
         value: String,
-        mentionedUser: User,
+        mentionedUser: UserInfo,
         uiConfig: TextUIConfig,
         mentionedCurrentUserUIConfig: TextUIConfig?
     ) : this(context, MentionType.USERS, trigger, value, mentionedUser, uiConfig, mentionedCurrentUserUIConfig)

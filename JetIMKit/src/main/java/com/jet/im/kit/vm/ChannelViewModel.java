@@ -1,5 +1,6 @@
 package com.jet.im.kit.vm;
 
+import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -21,30 +22,38 @@ import com.jet.im.kit.internal.contracts.SendbirdUIKitContract;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitImpl;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.configurations.ChannelConfig;
+import com.jet.im.kit.model.message.StreamTextMessage;
 import com.jet.im.kit.utils.Available;
 import com.jet.im.kit.utils.MessageUtils;
+import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageReaction;
-import com.sendbird.android.collection.CollectionEventSource;
-import com.sendbird.android.collection.MessageContext;
+import com.juggle.im.model.MessageReactionItem;
+import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.messages.TextMessage;
 import com.sendbird.android.exception.SendbirdException;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Feedback;
 import com.sendbird.android.message.FeedbackRating;
-import com.sendbird.android.message.SendingStatus;
 import com.sendbird.android.params.MessageListParams;
 import com.sendbird.android.params.common.MessagePayloadFilter;
-import com.sendbird.android.user.User;
 
 import org.jetbrains.annotations.TestOnly;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.CountDownLatch;
@@ -61,7 +70,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @NonNull
     private final String CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHAT" + System.currentTimeMillis();
     @NonNull
-    private final MutableLiveData<List<User>> typingMembers = new MutableLiveData<>();
+    private final MutableLiveData<List<UserInfo>> typingMembers = new MutableLiveData<>();
     @NonNull
     private final MutableLiveData<ConversationInfo> channelUpdated = new MutableLiveData<>();
     @NonNull
@@ -98,10 +107,12 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     public static class ChannelMessageData {
         final List<Message> messages;
         final String traceName;
+        final List<MessageReaction> reactions;
 
-        ChannelMessageData(@Nullable String traceName, @NonNull List<Message> messages) {
+        ChannelMessageData(@Nullable String traceName, @NonNull List<Message> messages, @NonNull List<MessageReaction> reactions) {
             this.traceName = traceName;
             this.messages = messages;
+            this.reactions = reactions;
         }
 
         /**
@@ -125,6 +136,11 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         public String getTraceName() {
             return traceName;
         }
+
+        @NonNull
+        public List<MessageReaction> getReactions() {
+            return reactions;
+        }
     }
 
 
@@ -142,39 +158,180 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         this.sendbirdChatContract.addChannelHandler(ID_CHANNEL_EVENT_HANDLER, new IMessageManager.IMessageListener() {
             @Override
             public void onMessageReceive(Message message) {
-                loadInitial(0);
+                if (!message.getConversation().equals(conversation)) {
+                    return;
+                }
+                if (message.getContent() instanceof TextMessage) {
+                    String streamId = "";
+                    TextMessage textMessage = (TextMessage) message.getContent();
+                    if (TextUtils.isNotEmpty(textMessage.getExtra())) {
+                        try {
+                            JSONObject json = new JSONObject(textMessage.getExtra());
+                            streamId = json.optString("stream_msg_id");
+                        } catch (JSONException e) {
+                            Log.e("ChannelViewModel", "TextMessage extra JSONException " + e.getMessage());
+                        }
+                    }
+                    if (TextUtils.isNotEmpty(streamId)) {
+                        cachedMessages.deleteStreamMessage(streamId);
+                    }
+                } else if (message.getContent() instanceof StreamTextMessage) {
+                    StreamTextMessage streamTextMessage = (StreamTextMessage) message.getContent();
+                    String streamId = streamTextMessage.getStreamId();
+                    if (TextUtils.isNotEmpty(streamId)) {
+                        Message m = cachedMessages.deleteStreamMessage(streamId);
+                        if (m != null) {
+                            StreamTextMessage oldStream = (StreamTextMessage) m.getContent();
+                            streamTextMessage.setContent(oldStream.getContent() + streamTextMessage.getContent());
+                        }
+                    }
+                }
+                cachedMessages.add(message);
+                notifyDataSetChanged(StringSet.EVENT_MESSAGE_RECEIVED);
+                markAsRead();
+                sendReceipt(Collections.singletonList(message));
             }
 
             @Override
             public void onMessageRecall(Message message) {
-                loadInitial(0);
+                if (!message.getConversation().equals(conversation)) {
+                    return;
+                }
+                cachedMessages.add(message);
+                notifyDataSetChanged("onMessageRecall");
             }
 
             @Override
-            public void onMessageDelete(Conversation conversation, List<Long> clientMsgNos) {
-                loadInitial(0);
+            public void onMessageDelete(Conversation conversation2, List<Long> clientMsgNos) {
+                if (!conversation2.equals(conversation)) {
+                    return;
+                }
+                for (Long a : clientMsgNos) {
+                    cachedMessages.deleteByMessageId(a);
+                }
+                notifyDataSetChanged("onMessageDelete");
             }
 
             @Override
-            public void onMessageClear(Conversation conversation, long timestamp, String senderId) {
-                loadInitial(0);
+            public void onMessageClear(Conversation conversation2, long timestamp, String senderId) {
+                if (!conversation2.equals(conversation)) {
+                    return;
+                }
+                cachedMessages.clear();
+                notifyDataSetChanged("onMessageClear");
             }
 
             @Override
             public void onMessageUpdate(Message message) {
-
+                if (!message.getConversation().equals(conversation)) {
+                    return;
+                }
+                cachedMessages.add(message);
+                notifyDataSetChanged("onMessageUpdate");
             }
 
             @Override
-            public void onMessageReactionAdd(Conversation conversation, MessageReaction reaction) {
-
+            public void onMessageReactionAdd(Conversation conversation2, MessageReaction reaction) {
+                if (!conversation.equals(conversation2)) {
+                    return;
+                }
+                MessageReaction oldReaction = null;
+                for (MessageReaction r : mMessageReactions) {
+                    if (reaction.getMessageId().equals(r.getMessageId())) {
+                        oldReaction = r;
+                        break;
+                    }
+                }
+                if (oldReaction != null) {
+                    oldReaction.setItemList(mergeReaction(oldReaction.getItemList(), reaction.getItemList()));
+                } else {
+                    mMessageReactions.add(reaction);
+                }
+                notifyDataSetChanged(StringSet.ACTION_GET_REACTIONS);
             }
 
             @Override
-            public void onMessageReactionRemove(Conversation conversation, MessageReaction reaction) {
-
+            public void onMessageReactionRemove(Conversation conversation2, MessageReaction reaction) {
+                if (!conversation.equals(conversation2)) {
+                    return;
+                }
+                MessageReaction oldReaction = null;
+                for (MessageReaction r : mMessageReactions) {
+                    if (reaction.getMessageId().equals(r.getMessageId())) {
+                        oldReaction = r;
+                        break;
+                    }
+                }
+                if (oldReaction != null) {
+                    oldReaction.setItemList(removeReaction(oldReaction.getItemList(), reaction.getItemList()));
+                }
+                notifyDataSetChanged(StringSet.ACTION_GET_REACTIONS);
             }
         });
+    }
+
+    private List<MessageReactionItem> mergeReaction(List<MessageReactionItem> oldItemList, List<MessageReactionItem> newItemList) {
+        boolean needMerge = false;
+        List<MessageReactionItem> result = new ArrayList<>(oldItemList);
+        for (MessageReactionItem newItem : newItemList) {
+            needMerge = false;
+            for (MessageReactionItem oldItem : result) {
+                if (oldItem.getReactionId().equals(newItem.getReactionId())) {
+                    needMerge = true;
+                    List<UserInfo> userInfoList = new ArrayList<>(oldItem.getUserInfoList());
+                    for (UserInfo newUserInfo : newItem.getUserInfoList()) {
+                        if (findUser(userInfoList, newUserInfo)) {
+                            continue;
+                        }
+                        userInfoList.add(newUserInfo);
+                    }
+                    oldItem.setUserInfoList(userInfoList);
+                    break;
+                }
+            }
+            if (!needMerge) {
+                result.add(newItem);
+            }
+        }
+        return result;
+    }
+
+    private List<MessageReactionItem> removeReaction(List<MessageReactionItem> oldItemList, List<MessageReactionItem> newItemList) {
+        List<MessageReactionItem> result = new ArrayList<>(oldItemList);
+        for (MessageReactionItem newItem : newItemList) {
+            for (MessageReactionItem oldItem : result) {
+                if (oldItem.getReactionId().equals(newItem.getReactionId())) {
+                    ArrayList<UserInfo> userInfoList = new ArrayList<>(oldItem.getUserInfoList());
+                    for (UserInfo newUserInfo : newItem.getUserInfoList()) {
+                        removeUser(userInfoList, newUserInfo);
+                    }
+                    oldItem.setUserInfoList(userInfoList);
+                    break;
+                }
+            }
+        }
+        result.removeIf(item -> item.getUserInfoList().isEmpty());
+        return result;
+    }
+
+    private boolean findUser(List<UserInfo> list, UserInfo userInfo) {
+        for (UserInfo u : list) {
+            if (userInfo.getUserId().equals(u.getUserId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void removeUser(ArrayList<UserInfo> list, UserInfo userInfo) {
+        Iterator<UserInfo> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            UserInfo u = iterator.next();
+            if (u.getUserId().equals(userInfo.getUserId())) {
+                iterator.remove();
+                break;
+            }
+        }
     }
 
     /**
@@ -185,7 +342,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     public boolean hasMessageById(long messageId) {
-        return cachedMessages.getById(messageId) != null;
+        return cachedMessages.getByClientNo(messageId) != null;
     }
 
     /**
@@ -197,7 +354,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      */
     @Nullable
     public Message getMessageById(long messageId) {
-        return cachedMessages.getById(messageId);
+        return cachedMessages.getByClientNo(messageId);
     }
 
     /**
@@ -215,7 +372,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     // Do not call loadInitial inside this function.
     private synchronized void initMessageCollection(final long startingPoint) {
         Logger.i(">> ChannelViewModel::initMessageCollection()");
-        final ConversationInfo channel = getChannel();
+        final ConversationInfo channel = getConversationInfo();
         if (channel == null) return;
         if (this.collection != null) {
             disposeMessageCollection();
@@ -304,7 +461,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
      * since 3.0.0
      */
     @NonNull
-    public LiveData<List<User>> getTypingMembers() {
+    public LiveData<List<UserInfo>> getTypingMembers() {
         return typingMembers;
     }
 
@@ -389,7 +546,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @UiThread
     private synchronized void notifyChannelDataChanged() {
         Logger.d(">> ChannelViewModel::notifyChannelDataChanged()");
-        final ConversationInfo groupChannel = getChannel();
+        final ConversationInfo groupChannel = getConversationInfo();
         if (groupChannel == null) return;
         channelUpdated.setValue(groupChannel);
     }
@@ -398,13 +555,13 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     synchronized void notifyDataSetChanged(@NonNull String traceName) {
         Logger.d(">> ChannelViewModel::notifyDataSetChanged(), size = %s, action=%s, hasNext=%s", cachedMessages.size(), traceName, hasNext());
         final List<Message> finalMessageList = buildMessageList();
-        if (finalMessageList.size() == 0) {
+        if (finalMessageList.isEmpty()) {
             statusFrame.setValue(StatusFrameView.Status.EMPTY);
         } else {
             statusFrame.setValue(StatusFrameView.Status.NONE);
         }
 
-        messageList.setValue(new ChannelMessageData(traceName, finalMessageList));
+        messageList.setValue(new ChannelMessageData(traceName, finalMessageList, mMessageReactions));
     }
 
 
@@ -412,14 +569,11 @@ public class ChannelViewModel extends BaseMessageListViewModel {
     @NonNull
     @Override
     public List<Message> buildMessageList() {
-        MessageCollectionContract collection = this.collection;
-        if (collection == null) return Collections.emptyList();
-
         return cachedMessages.toList();
     }
 
-    private void removeThreadMessages(@NonNull List<BaseMessage> src) {
-        final ListIterator<BaseMessage> iterator = src.listIterator();
+    private void removeThreadMessages(@NonNull List<Message> src) {
+        final ListIterator<Message> iterator = src.listIterator();
         while (iterator.hasNext()) {
             if (MessageUtils.hasParentMessage(iterator.next())) {
                 iterator.remove();
@@ -430,7 +584,78 @@ public class ChannelViewModel extends BaseMessageListViewModel {
 
     private void markAsRead() {
         Logger.dev("markAsRead");
-//        if (channel != null) channel.markAsRead(null);
+        if (mConversationInfo == null || mConversationInfo.getConversation() == null) {
+            return;
+        }
+        JIM.getInstance().getConversationManager().clearUnreadCount(mConversationInfo.getConversation(), new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
+    private void sendReceipt(List<Message> messages) {
+        if (mConversationInfo == null
+        || mConversationInfo.getConversation() == null
+        || mConversationInfo.getConversation().getConversationType() != Conversation.ConversationType.PRIVATE) {
+            return;
+        }
+        List<String> messageIds = new ArrayList<>();
+        for (Message message : messages) {
+            if (message.getDirection() == Message.MessageDirection.RECEIVE && !message.isHasRead()) {
+                messageIds.add(message.getMessageId());
+            }
+        }
+        if (messageIds.size() == 0) {
+            return;
+        }
+        JIM.getInstance().getMessageManager().sendReadReceipt(mConversationInfo.getConversation(), messageIds, new IMessageManager.ISendReadReceiptCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
+    private void getMessageReaction(List<Message> messageList) {
+        if (messageList == null || messageList.isEmpty()) {
+            return;
+        }
+        List<String> messageIdList = new ArrayList<>();
+        for (Message message : messageList) {
+            messageIdList.add(message.getMessageId());
+        }
+        JIM.getInstance().getMessageManager().getMessagesReaction(messageIdList, mConversation, new IMessageManager.IMessageReactionListCallback() {
+            @Override
+            public void onSuccess(List<MessageReaction> reactionList) {
+                for (MessageReaction newReaction : reactionList) {
+                    Iterator<MessageReaction> iterator = mMessageReactions.iterator();
+                    while (iterator.hasNext()) {
+                        MessageReaction oldReaction = iterator.next();
+                        if (oldReaction.getMessageId().equals(newReaction.getMessageId())) {
+                            iterator.remove();
+                            break;
+                        }
+                    }
+                    if (!newReaction.getItemList().isEmpty()) {
+                        mMessageReactions.add(newReaction);
+                    }
+                }
+                notifyDataSetChanged(StringSet.ACTION_GET_REACTIONS);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+
+            }
+        });
     }
 
     @UiThread
@@ -491,39 +716,32 @@ public class ChannelViewModel extends BaseMessageListViewModel {
             return false;
         }
 
+        markAsRead();
         messageLoadState.postValue(MessageLoadState.LOAD_STARTED);
         cachedMessages.clear();
-        JIM.getInstance().getMessageManager().getLocalAndRemoteMessages(conversation,
-                20, startingPoint, JIMConst.PullDirection.OLDER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
-                    @Override
-                    public void onGetLocalList(List<Message> messages, boolean hasRemote) {
-                        if (!hasRemote) {
-                            cachedMessages.clear();
-                            cachedMessages.addAll(messages);
-                            notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
-                            if (!messages.isEmpty()) {
-                                markAsRead();
-                            }
-                            messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-                        }
+        GetMessageOptions options = new GetMessageOptions();
+        options.setStartTime(startingPoint);
+        options.setCount(20);
+        JIM.getInstance().getMessageManager().getMessages(mConversation, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
+            @Override
+            public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
+                cachedMessages.clear();
+                cachedMessages.addAll(messages);
+                List<String> messageIdList = new ArrayList<>();
+                for (Message m : messages) {
+                    if (m.getMessageId() != null) {
+                        messageIdList.add(m.getMessageId());
                     }
-
-                    @Override
-                    public void onGetRemoteList(List<Message> messages) {
-                        cachedMessages.clear();
-                        cachedMessages.addAll(messages);
-                        notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
-                        if (!messages.isEmpty()) {
-                            markAsRead();
-                        }
-                        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-                    }
-
-                    @Override
-                    public void onGetRemoteListError(int errorCode) {
-                        messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
-                    }
-                });
+                }
+                List<MessageReaction> reactionList = JIM.getInstance().getMessageManager().getCachedMessagesReaction(messageIdList);
+                mMessageReactions.clear();
+                mMessageReactions.addAll(reactionList);
+                notifyDataSetChanged(StringSet.ACTION_INIT_FROM_REMOTE);
+                messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
+                sendReceipt(messages);
+                getMessageReaction(messages);
+            }
+        });
 
         return true;
     }
@@ -552,39 +770,22 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         if (oldestMessage != null) {
             startingPoint = oldestMessage.getTimestamp();
         }
-        JIM.getInstance().getMessageManager().getLocalAndRemoteMessages(conversation,
-                20, startingPoint, JIMConst.PullDirection.OLDER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
-                    @Override
-                    public void onGetLocalList(List<Message> messages, boolean hasRemote) {
-                        if (!hasRemote) {
-                            if(messages.size()<20){
-                                hasPrevious=false;
-                            }
-                            cachedMessages.addAll(messages);
-                            result.set(messages);
-                            notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
-                            lock.countDown();
-                        }
-                    }
+        GetMessageOptions options = new GetMessageOptions();
+        options.setStartTime(startingPoint);
+        options.setCount(20);
+        JIM.getInstance().getMessageManager().getMessages(mConversation, JIMConst.PullDirection.OLDER, options, new IMessageManager.IGetMessagesCallbackV3() {
+            @Override
+            public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
+                hasPrevious = hasMore;
+                cachedMessages.addAll(messages);
+                result.set(messages);
+                notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
+                lock.countDown();
+                sendReceipt(messages);
+                getMessageReaction(messages);
+            }
+        });
 
-                    @Override
-                    public void onGetRemoteList(List<Message> messages) {
-                        if(messages.size()<20){
-                            hasPrevious=false;
-                        }
-                        cachedMessages.addAll(messages);
-                        result.set(messages);
-                        notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
-                        lock.countDown();
-                    }
-
-                    @Override
-                    public void onGetRemoteListError(int errorCode) {
-                        result.set(Collections.emptyList());
-                        notifyDataSetChanged(StringSet.ACTION_PREVIOUS);
-                        lock.countDown();
-                    }
-                });
         lock.await();
         messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
         return result.get();
@@ -614,39 +815,22 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         if (oldestMessage != null) {
             startingPoint = oldestMessage.getTimestamp();
         }
-        JIM.getInstance().getMessageManager().getLocalAndRemoteMessages(conversation,
-                20, startingPoint, JIMConst.PullDirection.NEWER, new IMessageManager.IGetLocalAndRemoteMessagesCallback() {
-                    @Override
-                    public void onGetLocalList(List<Message> messages, boolean hasRemote) {
-                        if (!hasRemote) {
-                            if(messages.size()<20){
-                                hasNext=false;
-                            }
-                            cachedMessages.addAll(messages);
-                            result.set(messages);
-                            notifyDataSetChanged(StringSet.ACTION_NEXT);
-                            lock.countDown();
-                        }
-                    }
-
-                    @Override
-                    public void onGetRemoteList(List<Message> messages) {
-                        if(messages.size()<20){
-                            hasNext=false;
-                        }
-                        cachedMessages.addAll(messages);
-                        result.set(messages);
-                        notifyDataSetChanged(StringSet.ACTION_NEXT);
-                        lock.countDown();
-                    }
-
-                    @Override
-                    public void onGetRemoteListError(int errorCode) {
-                        result.set(Collections.emptyList());
-                        notifyDataSetChanged(StringSet.ACTION_NEXT);
-                        lock.countDown();
-                    }
-                });
+        GetMessageOptions options = new GetMessageOptions();
+        options.setStartTime(startingPoint);
+        options.setCount(20);
+        JIM.getInstance().getMessageManager().getMessages(mConversation, JIMConst.PullDirection.NEWER, options, new IMessageManager.IGetMessagesCallbackV3() {
+            @Override
+            public void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code) {
+                hasNext = hasMore;
+                cachedMessages.addAll(messages);
+                result.set(messages);
+                notifyDataSetChanged(StringSet.ACTION_NEXT);
+                lock.countDown();
+                sendReceipt(messages);
+                getMessageReaction(messages);
+            }
+        });
+        
         lock.await();
         messageLoadState.postValue(MessageLoadState.LOAD_ENDED);
         return result.get();

@@ -8,6 +8,7 @@ import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.AddConversationCallback;
 import com.juggle.im.internal.core.network.SyncConversationsCallback;
+import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
 import com.juggle.im.internal.core.network.WebSocketTimestampCallback;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
@@ -19,6 +20,7 @@ import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.ConversationMentionInfo;
+import com.juggle.im.model.GetConversationOptions;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
@@ -82,7 +84,17 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public List<ConversationInfo> getConversationInfoList(int[] conversationTypes, int count, long timestamp, JIMConst.PullDirection direction) {
-        return mCore.getDbManager().getConversationInfoList(conversationTypes, count, timestamp, direction);
+        GetConversationOptions options = new GetConversationOptions();
+        options.setConversationTypes(conversationTypes);
+        options.setCount(count);
+        options.setTimestamp(timestamp);
+        options.setPullDirection(direction);
+        return getConversationInfoList(options);
+    }
+
+    @Override
+    public List<ConversationInfo> getConversationInfoList(GetConversationOptions options) {
+        return mCore.getDbManager().getConversationInfoList(options);
     }
 
     @Override
@@ -249,7 +261,21 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public int getUnreadCountWithTag(String tagId) {
+        if (TextUtils.isEmpty(tagId)) {
+            return 0;
+        }
+        return mCore.getDbManager().getUnreadCountWithTag(tagId);
+    }
+
+    @Override
     public void clearUnreadCount(Conversation conversation, ISimpleCallback callback) {
+        if (conversation == null || conversation.getConversationId() == null) {
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("CONV-ClearUnread", "fail, code is " + errorCode);
@@ -374,6 +400,98 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void addConversationsToTag(List<Conversation> conversations, String tagId, ISimpleCallback callback) {
+        if (conversations == null
+        || conversations.isEmpty()
+        || TextUtils.isEmpty(tagId)) {
+            JLogger.e("CONV-TagAdd", "invalid param");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-TagAdd", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        mCore.getWebSocket().addConversationsToTag(conversations, tagId, mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                JLogger.i("CONV-TagAdd", "success");
+                mCore.getDbManager().addConversationsToTag(conversations, tagId);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+                if (mTagListenerMap != null) {
+                    for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onConversationsAddToTag(tagId, conversations));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-TagAdd", "error code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(errorCode);
+                    });
+                }
+            }
+        });
+    }
+
+    @Override
+    public void removeConversationsFromTag(List<Conversation> conversations, String tagId, ISimpleCallback callback) {
+        if (conversations == null
+                || conversations.isEmpty()
+                || TextUtils.isEmpty(tagId)) {
+            JLogger.e("CONV-TagRemove", "invalid param");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-TagRemove", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        mCore.getWebSocket().removeConversationsFromTag(conversations, tagId, mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                JLogger.i("CONV-TagRemove", "success");
+                mCore.getDbManager().removeConversationsFromTag(conversations, tagId);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+                if (mTagListenerMap != null) {
+                    for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onConversationsRemoveFromTag(tagId, conversations));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-TagRemove", "error code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(errorCode);
+                    });
+                }
+            }
+        });
+    }
+
+    @Override
     public void setTopConversationsOrderType(JIMConst.TopConversationsOrderType type) {
         mCore.getDbManager().setTopConversationsOrderType(type);
     }
@@ -411,6 +529,24 @@ public class ConversationManager implements IConversationManager, MessageManager
     public void removeSyncListener(String key) {
         if (!TextUtils.isEmpty(key) && mSyncListenerMap != null) {
             mSyncListenerMap.remove(key);
+        }
+    }
+
+    @Override
+    public void addTagListener(String key, IConversationTagListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mTagListenerMap == null) {
+            mTagListenerMap = new ConcurrentHashMap<>();
+        }
+        mTagListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeTagListener(String key) {
+        if (!TextUtils.isEmpty(key) && mTagListenerMap != null) {
+            mTagListenerMap.remove(key);
         }
     }
 
@@ -605,6 +741,24 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
     }
 
+    @Override
+    public void onConversationsAddToTag(String tagId, List<Conversation> conversations) {
+        if (mTagListenerMap != null) {
+            for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationsAddToTag(tagId, conversations));
+            }
+        }
+    }
+
+    @Override
+    public void onConversationsRemoveFromTag(String tagId, List<Conversation> conversations) {
+        if (mTagListenerMap != null) {
+            for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationsRemoveFromTag(tagId, conversations));
+            }
+        }
+    }
+
     public interface ICompleteCallback {
         void onComplete();
     }
@@ -627,6 +781,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 long syncTime = 0;
                 if (conversationInfoList != null && !conversationInfoList.isEmpty()) {
                     updateUserInfo(conversationInfoList);
+                    updateConversationTag(conversationInfoList);
                     ConcreteConversationInfo last = conversationInfoList.get(conversationInfoList.size() - 1);
                     if (last.getSyncTime() > syncTime) {
                         syncTime = last.getSyncTime();
@@ -654,6 +809,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
                 if (deleteConversationInfoList != null && !deleteConversationInfoList.isEmpty()) {
                     updateUserInfo(deleteConversationInfoList);
+                    updateConversationTag(deleteConversationInfoList);
                     ConcreteConversationInfo last = deleteConversationInfoList.get(deleteConversationInfoList.size() - 1);
                     if (last.getSyncTime() > syncTime) {
                         syncTime = last.getSyncTime();
@@ -1055,6 +1211,7 @@ public class ConversationManager implements IConversationManager, MessageManager
 
         updateSyncTime(conversationInfo.getSyncTime());
         updateUserInfo(convList);
+        updateConversationTag(convList);
         ConcreteConversationInfo old = mCore.getDbManager().getConversationInfo(conversationInfo.getConversation());
         if (old == null) {
             mCore.getDbManager().insertConversations(convList, (insertList, updateList) -> {
@@ -1084,11 +1241,16 @@ public class ConversationManager implements IConversationManager, MessageManager
         return old;
     }
 
+    private void updateConversationTag(List<ConcreteConversationInfo> conversationInfos) {
+        mCore.getDbManager().updateConversationTag(conversationInfos);
+    }
+
     private final JIMCore mCore;
     private final UserInfoManager mUserInfoManager;
     private final MessageManager mMessageManager;
     private ConcurrentHashMap<String, IConversationListener> mListenerMap;
     private ConcurrentHashMap<String, IConversationSyncListener> mSyncListenerMap;
+    private ConcurrentHashMap<String, IConversationTagListener> mTagListenerMap;
     private boolean mSyncProcessing = true;
     private long mCachedSyncTime;
     private static final int CONVERSATION_SYNC_COUNT = 100;

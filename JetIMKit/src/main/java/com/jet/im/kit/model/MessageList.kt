@@ -1,7 +1,7 @@
 package com.jet.im.kit.model
 
-import com.sendbird.android.message.BaseMessage
 import com.jet.im.kit.log.Logger
+import com.jet.im.kit.model.message.StreamTextMessage
 import com.jet.im.kit.utils.DateUtils
 import com.juggle.im.model.Message
 import java.util.TreeSet
@@ -57,7 +57,7 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
 
     @Synchronized
     fun add(message: Message) {
-        Logger.d(">> MessageList::addAll()")
+        Logger.d(">> MessageList::add()")
         val createdAt = message.timestamp
         val dateStr = DateUtils.getDateString(createdAt)
         var timeline = timelineMap[dateStr]
@@ -129,11 +129,17 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
     }
 
     @Synchronized
+    fun deleteStreamMessage(streamId: String): Message? {
+        return messages.find {
+            it.content is StreamTextMessage && (it.content as StreamTextMessage).streamId.equals(streamId)
+        }?.also { delete(it) }
+    }
+
+    @Synchronized
     fun update(message: Message) {
         Logger.d(">> MessageList::updateMessage()")
-        if (messages.remove(message)) {
-            message?.let { messages.add(it) }
-        }
+        messages.find { it.clientMsgNo == message.clientMsgNo }?.also { delete(it) }
+        messages.add(message)
     }
 
     fun updateAll(messages: List<Message>) {
@@ -142,8 +148,13 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
     }
 
     @Synchronized
-    fun getById(messageId: Long): Message? {
-        return messages.find { it.clientMsgNo == messageId }
+    fun getByClientNo(clientNo: Long): Message? {
+        return messages.find { it.clientMsgNo == clientNo }
+    }
+
+    @Synchronized
+    fun getById(messageId: String): Message? {
+        return messages.find { it.messageId.equals(messageId) }
     }
 
     @Synchronized
@@ -156,7 +167,7 @@ internal class MessageList @JvmOverloads constructor(private val order: Order = 
         private fun createTimelineMessage(anchorMessage: Message): Message {
             var timelineMessage = Message()
             timelineMessage.content = TimelineMessage(anchorMessage.timestamp)
-            timelineMessage.timestamp=anchorMessage.timestamp
+            timelineMessage.timestamp=anchorMessage.timestamp-1
             return timelineMessage
         }
     }

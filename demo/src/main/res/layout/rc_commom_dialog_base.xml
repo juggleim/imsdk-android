@@ -69,7 +69,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/common_dialog_negative_seletor"
-                android:text="cancel"
+                android:text="@string/j_cancel"
                 android:textColor="#333333"
                 android:textSize="14dp" />
 
@@ -85,7 +85,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/common_dialog_positive_seletor"
-                android:text="confirm"
+                android:text="@string/j_confirm"
                 android:textColor="#368ae8"
                 android:textSize="14dp"
 

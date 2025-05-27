@@ -14,8 +14,6 @@ import com.jet.im.kit.fragments.BaseFragment;
 /**
  * Fragment 页面基类
  *
- * @author rongcloud
- * @since 5.10.4
  */
 public abstract class BasePageFragment<VM extends ViewModel>
         extends BaseFragment {

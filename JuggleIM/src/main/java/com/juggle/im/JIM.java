@@ -126,7 +126,7 @@ public class JIM {
         mMessageManager = new MessageManager(core, mUserInfoManager, mChatroomManager);
         mConversationManager = new ConversationManager(core, mUserInfoManager, mMessageManager);
         mMessageManager.setSendReceiveListener(mConversationManager);
-        mCallManager = new CallManager(core);
+        mCallManager = new CallManager(core, mUserInfoManager);
         mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager, mUserInfoManager, mChatroomManager, mCallManager);
         UploadManager uploadManager = new UploadManager(core);
         mMessageManager.setDefaultMessageUploadProvider(uploadManager);

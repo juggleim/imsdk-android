@@ -10,6 +10,7 @@ import com.jet.im.kit.R
 import com.jet.im.kit.databinding.SbViewUserProfileBinding
 import com.jet.im.kit.interfaces.OnItemClickListener
 import com.jet.im.kit.internal.extensions.setAppearance
+import com.juggle.im.model.UserInfo
 
 internal class UserProfile @JvmOverloads constructor(
     context: Context,
@@ -17,11 +18,11 @@ internal class UserProfile @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
     private val binding: SbViewUserProfileBinding
-    var onItemClickListener: OnItemClickListener<User>? = null
+    var onItemClickListener: OnItemClickListener<UserInfo>? = null
 
-    fun drawUserProfile(user: User) {
-        binding.profileView.loadImage(user.profileUrl)
-        binding.tvName.text = user.nickname
+    fun drawUserProfile(user: UserInfo) {
+        binding.profileView.loadImage(user.portrait)
+        binding.tvName.text = user.userName
         binding.tvUserId.text = user.userId
         setUseChannelCreateButton(isMe(user.userId))
         binding.btCreateChannel.setOnClickListener {

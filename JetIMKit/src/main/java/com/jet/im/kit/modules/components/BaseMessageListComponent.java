@@ -5,6 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -22,6 +23,9 @@ import com.jet.im.kit.activities.adapter.BaseMessageListAdapter;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.fragments.ItemAnimator;
 import com.jet.im.kit.interfaces.OnConsumableClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionLongClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionMoreClickListener;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.interfaces.OnItemLongClickListener;
 import com.jet.im.kit.interfaces.OnMessageListUpdateHandler;
@@ -37,6 +41,8 @@ import com.jet.im.kit.model.configurations.ChannelConfig;
 import com.jet.im.kit.model.configurations.UIKitConfig;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.FeedbackRating;
 import com.sendbird.android.user.User;
@@ -66,7 +72,7 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
     @Nullable
     private OnItemClickListener<Message> messageProfileClickListener;
     @Nullable
-    private OnItemClickListener<User> messageMentionClickListener;
+    private OnItemClickListener<UserInfo> messageMentionClickListener;
 
     @Nullable
     private OnFeedbackRatingClickListener feedbackRatingClickListener;
@@ -76,9 +82,17 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
     @Nullable
     private OnItemLongClickListener<Message> messageProfileLongClickListener;
     @Nullable
+    private OnEmojiReactionClickListener emojiReactionClickListener;
+    @Nullable
+    private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
+    @Nullable
+    private OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener;
+    @Nullable
     OnPagedDataLoader<List<Message>> pagedDataLoader;
     @Nullable
     private View.OnClickListener tooltipClickListener;
+    @Nullable
+    private View.OnTouchListener messageListTouchListener;
     @Nullable
     @Deprecated
     private View.OnClickListener scrollBottomButtonClickListener;
@@ -143,6 +157,15 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
         if (this.adapter.getOnListItemLongClickListener() == null) {
             this.adapter.setOnListItemLongClickListener(this::onListItemLongClicked);
         }
+        if (this.adapter.getEmojiReactionClickListener() == null) {
+            this.adapter.setEmojiReactionClickListener(this::onEmojiReactionClicked);
+        }
+        if (this.adapter.getEmojiReactionLongClickListener() == null) {
+            this.adapter.setEmojiReactionLongClickListener(this::onEmojiReactionLongClicked);
+        }
+        if (this.adapter.getEmojiReactionMoreButtonClickListener() == null) {
+            this.adapter.setEmojiReactionMoreButtonClickListener(this::onEmojiReactionMoreButtonClicked);
+        }
         if (this.adapter.getMentionClickListener() == null) {
             this.adapter.setMentionClickListener(this::onMessageMentionClicked);
         }
@@ -191,6 +214,7 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
         recyclerView.setItemAnimator(new ItemAnimator());
         recyclerView.useReverseData();
         messageRecyclerView.setOnScrollFirstButtonClickListener(this::onScrollFirstButtonClicked);
+        messageRecyclerView.setOnMessageListTouchListener(this::onMessageListTouched);
         recyclerView.setOnScrollEndDetectListener(direction -> onScrollEndReaches(direction, messageRecyclerView));
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -301,6 +325,10 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
         this.messageClickListener = messageClickListener;
     }
 
+    public void setOnMessageListTouchListener(@Nullable View.OnTouchListener listener) {
+        this.messageListTouchListener = listener;
+    }
+
     /**
      * Register a callback to be invoked when the profile view of the message is clicked.
      *
@@ -317,7 +345,7 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
      * @param messageMentionClickListener The callback that will run
      *                                    since 3.5.3
      */
-    public void setOnMessageMentionClickListener(@Nullable OnItemClickListener<User> messageMentionClickListener) {
+    public void setOnMessageMentionClickListener(@Nullable OnItemClickListener<UserInfo> messageMentionClickListener) {
         this.messageMentionClickListener = messageMentionClickListener;
     }
 
@@ -351,7 +379,35 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
         this.messageProfileLongClickListener = messageProfileLongClickListener;
     }
 
+    /**
+     * Register a callback to be invoked when the emoji reaction of the message is clicked.
+     *
+     * @param emojiReactionClickListener The callback that will run
+     * since 3.0.0
+     */
+    public void setOnEmojiReactionClickListener(@Nullable OnEmojiReactionClickListener emojiReactionClickListener) {
+        this.emojiReactionClickListener = emojiReactionClickListener;
+    }
 
+    /**
+     * Register a callback to be invoked when the emoji reaction of the message is long-clicked.
+     *
+     * @param emojiReactionLongClickListener The callback that will run
+     * since 3.0.0
+     */
+    public void setOnEmojiReactionLongClickListener(@Nullable OnEmojiReactionLongClickListener emojiReactionLongClickListener) {
+        this.emojiReactionLongClickListener = emojiReactionLongClickListener;
+    }
+
+    /**
+     * Register a callback to be invoked when the button to see more emojis on the message is clicked.
+     *
+     * @param emojiReactionMoreButtonClickListener The callback that will run
+     * since 3.0.0
+     */
+    public void setOnEmojiReactionMoreButtonClickListener(@Nullable OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener) {
+        this.emojiReactionMoreButtonClickListener = emojiReactionMoreButtonClickListener;
+    }
 
     /**
      * Register a callback to be invoked when the button to scroll to the bottom is clicked.
@@ -417,11 +473,11 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
      * @param callback    Callback when the message list is updated
      *                    since 3.0.0
      */
-    public void notifyDataSetChanged(@NonNull List<Message> messageList, @NonNull ConversationInfo channel, @Nullable OnMessageListUpdateHandler callback) {
+    public void notifyDataSetChanged(@NonNull List<Message> messageList, @NonNull ConversationInfo channel, @NonNull List<MessageReaction> reactionList, @Nullable OnMessageListUpdateHandler callback) {
         if (messageRecyclerView == null) return;
         final LA adapter = this.adapter;
         if (adapter != null) {
-            adapter.setItems(channel, messageList, callback);
+            adapter.setItems(channel, messageList, reactionList, callback);
         }
     }
 
@@ -512,7 +568,7 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
      * @param user     The mentioned user that the clicked item displays
      *                 since 3.5.3
      */
-    protected void onMessageMentionClicked(@NonNull View view, int position, @NonNull User user) {
+    protected void onMessageMentionClicked(@NonNull View view, int position, @NonNull UserInfo user) {
         if (messageMentionClickListener != null)
             messageMentionClickListener.onItemClick(view, position, user);
     }
@@ -555,6 +611,47 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
     }
 
     /**
+     * Called when the emoji reaction of the message is clicked.
+     *
+     * @param view        The view that was clicked
+     * @param position    The position that was clicked
+     * @param message     The message that was clicked
+     * @param reactionKey The reaction key that was clicked
+     * since 3.0.0
+     */
+    protected void onEmojiReactionClicked(@NonNull View view, int position, @NonNull Message message, @NonNull String reactionKey) {
+        if (emojiReactionClickListener != null)
+            emojiReactionClickListener.onEmojiReactionClick(view, position, message, reactionKey);
+    }
+
+    /**
+     * Called when the emoji reaction of the message is long-clicked.
+     *
+     * @param view        The view that was long-clicked
+     * @param position    The position that was long-clicked
+     * @param message     The message that was long-clicked
+     * @param reactionKey The reaction key that was long-clicked
+     * since 3.0.0
+     */
+    protected void onEmojiReactionLongClicked(@NonNull View view, int position, @NonNull Message message, @NonNull String reactionKey) {
+        if (emojiReactionLongClickListener != null)
+            emojiReactionLongClickListener.onEmojiReactionLongClick(view, position, message, reactionKey);
+    }
+
+    /**
+     * Called when the button to see more emojis on the message is clicked.
+     *
+     * @param view     The view that was clicked
+     * @param position The position that was clicked
+     * @param message  The message that was clicked
+     * since 3.0.0
+     */
+    protected void onEmojiReactionMoreButtonClicked(@NonNull View view, int position, @NonNull Message message, MessageReaction reaction) {
+        if (emojiReactionMoreButtonClickListener != null)
+            emojiReactionMoreButtonClickListener.onEmojiReactionMoreClick(view, position, message, reaction);
+    }
+
+    /**
      * Called when the tooltip view is clicked.
      *
      * @param view The view that was clicked
@@ -588,6 +685,13 @@ abstract public class BaseMessageListComponent<LA extends BaseMessageListAdapter
         onScrollBottomButtonClicked(view);
         if (scrollFirstButtonClickListener != null)
             return scrollFirstButtonClickListener.onClick(view);
+        return false;
+    }
+
+    protected boolean onMessageListTouched(View v, MotionEvent e) {
+        if (messageListTouchListener != null) {
+            return messageListTouchListener.onTouch(v, e);
+        }
         return false;
     }
 

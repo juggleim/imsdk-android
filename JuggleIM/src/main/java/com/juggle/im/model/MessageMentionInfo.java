@@ -61,7 +61,7 @@ public class MessageMentionInfo {
     }
 
     public MessageMentionInfo(String json) {
-        if (json == null || json.length() == 0) {
+        if (json == null || json.isEmpty()) {
             return;
         }
         try {

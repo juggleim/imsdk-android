@@ -19,10 +19,16 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CLIENT_UID_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_CONVERSATION_INDEX);
+        sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_CONVERSATION_TS_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_TABLE);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_INDEX);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_INDEX);
+        sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_TABLE);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX);
     }
 
     @Override
@@ -51,7 +57,37 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 6) {
+            try {
+                sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
+            } catch (SQLiteConstraintException e) {
+                e.printStackTrace();
+            }
+        }
+        if (oldVersion < 7) {
+            try {
+                sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_TABLE);
+                sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_INDEX);
+            } catch (SQLiteConstraintException e) {
+                e.printStackTrace();
+            }
+        }
+        if (oldVersion < 8) {
+            try {
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_TABLE);
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX);
+            } catch (SQLiteConstraintException e) {
+                e.printStackTrace();
+            }
+        }
+        if (oldVersion < 9) {
+            try {
+                sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_CONVERSATION_TS_INDEX);
+            } catch (SQLiteConstraintException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 5;
+    private final static int version = 9;
 }

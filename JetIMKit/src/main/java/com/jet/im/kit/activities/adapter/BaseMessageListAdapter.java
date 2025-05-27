@@ -15,11 +15,17 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.recyclerview.widget.DiffUtil;
 
+import com.jet.im.kit.interfaces.EmojiReactionHandler;
+import com.jet.im.kit.interfaces.OnEmojiReactionClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionLongClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionMoreClickListener;
+import com.jet.im.kit.model.EmojiManager2;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.message.BaseMessage;
-import com.sendbird.android.user.User;
 import com.jet.im.kit.R;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolder;
@@ -43,20 +49,29 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message, MessageViewHolder> {
     @NonNull
     private List<Message> messageList = new ArrayList<>();
+    @NonNull
+    private List<MessageReaction> mMessageReactionList = new ArrayList<>();
     @Nullable
     private ConversationInfo channel;
+    @Nullable
+    private OnEmojiReactionClickListener emojiReactionClickListener;
+    @Nullable
+    private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
+    @Nullable
+    private OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener;
     @Nullable
     private OnIdentifiableItemClickListener<Message> listItemClickListener;
     @Nullable
     private OnIdentifiableItemLongClickListener<Message> listItemLongClickListener;
     @Nullable
-    protected OnItemClickListener<User> mentionClickListener;
+    protected OnItemClickListener<UserInfo> mentionClickListener;
 
     @Nullable
     protected OnFeedbackRatingClickListener feedbackRatingClickListener;
@@ -220,6 +235,54 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
         if (position > 0) {
             next = getItem(position - 1);
         }
+
+        MessageReaction reaction = null;
+        if (holder instanceof EmojiReactionHandler) {
+            EmojiReactionHandler emojiReactionHandler = (EmojiReactionHandler) holder;
+
+            for (MessageReaction r : mMessageReactionList) {
+                if (r.getMessageId().equals(current.getMessageId())) {
+                    reaction = r;
+                    break;
+                }
+            }
+
+            if (reaction != null) {
+                final MessageReaction mr = reaction;
+                emojiReactionHandler.setEmojiReaction(reaction.getItemList(), EmojiManager2.INSTANCE.getEmojiList(), (view, reactionPosition, reactionKey) -> {
+                    int messagePosition = holder.getBindingAdapterPosition();
+                    if (messagePosition != NO_POSITION && emojiReactionClickListener != null) {
+                        emojiReactionClickListener.onEmojiReactionClick(
+                                view,
+                                reactionPosition,
+                                getItem(messagePosition),
+                                reactionKey
+                        );
+                    }
+                }, (view, reactionPosition, reactionKey) -> {
+                    int messagePosition = holder.getBindingAdapterPosition();
+                    if (messagePosition != NO_POSITION && emojiReactionLongClickListener != null) {
+                        emojiReactionLongClickListener.onEmojiReactionLongClick(
+                                view,
+                                reactionPosition,
+                                getItem(messagePosition),
+                                reactionKey
+                        );
+                    }
+                }, v -> {
+                    int messagePosition = holder.getBindingAdapterPosition();
+                    if (messagePosition != NO_POSITION && emojiReactionMoreButtonClickListener != null) {
+                        emojiReactionMoreButtonClickListener.onEmojiReactionMoreClick(
+                                v,
+                                messagePosition,
+                                getItem(messagePosition),
+                                mr
+                        );
+                    }
+                });
+            }
+        }
+
         if (holder instanceof MyUserMessageViewHolder) {
             MyUserMessageViewHolder myUserMessageViewHolder = (MyUserMessageViewHolder) holder;
             myUserMessageViewHolder.setOnMentionClickListener((view, pos, mentionedUser) -> {
@@ -247,7 +310,11 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
         }
 
         if (channel != null) {
-            holder.onBindViewHolder(channel, prev, current, next);
+            if (reaction != null) {
+                holder.onBindViewHolder(channel, prev, current, next, reaction.getItemList());
+            } else {
+                holder.onBindViewHolder(channel, prev, current, next, new ArrayList<>());
+            }
         }
     }
 
@@ -302,17 +369,33 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
      * @param messageList list to be displayed
      *                    since 2.2.0
      */
-    public void setItems(@NonNull final ConversationInfo channel, @NonNull final List<Message> messageList, @Nullable OnMessageListUpdateHandler callback) {
-        notifyMessageListChanged(channel, messageList, callback);
+    public void setItems(@NonNull final ConversationInfo channel, @NonNull final List<Message> messageList, @NonNull List<MessageReaction> reactionList, @Nullable OnMessageListUpdateHandler callback) {
+        notifyMessageListChanged(channel, messageList, reactionList, callback);
     }
 
-    private void notifyMessageListChanged(@NonNull ConversationInfo channel, @NonNull List<Message> messageList, @Nullable OnMessageListUpdateHandler callback) {
-        BaseMessageListAdapter.this.messageList = messageList;
-        BaseMessageListAdapter.this.channel = channel;
-        notifyDataSetChanged();
-        if (callback != null) {
-            callback.onListUpdated(messageList);
-        }
+    private void notifyMessageListChanged(@NonNull ConversationInfo channel, @NonNull List<Message> messageList, @NonNull List<MessageReaction> reactionList, @Nullable OnMessageListUpdateHandler callback) {
+        final List<Message> copiedMessages = Collections.unmodifiableList(messageList);
+        final List<MessageReaction> copiedReactions = Collections.unmodifiableList(reactionList);
+        differWorker.submit(() -> {
+            final CountDownLatch lock = new CountDownLatch(1);
+            final MessageDiffCallback diffCallback = new MessageDiffCallback(BaseMessageListAdapter.this.messageList, messageList, BaseMessageListAdapter.this.mMessageReactionList, reactionList);
+            final DiffUtil.DiffResult diffResult = calculateDiff(diffCallback);
+
+            sendbirdUIKit.runOnUIThread(() -> {
+                try {
+                    BaseMessageListAdapter.this.messageList = copiedMessages;
+                    BaseMessageListAdapter.this.mMessageReactionList = copiedReactions;
+                    diffResult.dispatchUpdatesTo(BaseMessageListAdapter.this);
+                    if (callback != null) {
+                        callback.onListUpdated(messageList);
+                    }
+                } finally {
+                    lock.countDown();
+                }
+            });
+            lock.await();
+            return true;
+        });
     }
 
     /**
@@ -402,12 +485,75 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
     }
 
     /**
+     * Register a callback to be invoked when the emoji reaction is clicked.
+     *
+     * @param listener The callback that will run
+     * since 1.1.0
+     */
+    public void setEmojiReactionClickListener(@Nullable OnEmojiReactionClickListener listener) {
+        this.emojiReactionClickListener = listener;
+    }
+
+    /**
+     * Returns a callback to be invoked when the emoji reaction is clicked.
+     *
+     * @return {@code OnEmojiReactionClickListener} to be invoked when the emoji reaction is clicked.
+     * since 3.0.0
+     */
+    @Nullable
+    public OnEmojiReactionClickListener getEmojiReactionClickListener() {
+        return emojiReactionClickListener;
+    }
+
+    /**
+     * Register a callback to be invoked when the emoji reaction is long clicked and held.
+     *
+     * @param listener The callback that will run
+     * since 1.1.0
+     */
+    public void setEmojiReactionLongClickListener(@Nullable OnEmojiReactionLongClickListener listener) {
+        this.emojiReactionLongClickListener = listener;
+    }
+
+    /**
+     * Returns a callback to be invoked when the emoji reaction is long clicked and held.
+     *
+     * @return {@code OnEmojiReactionLongClickListener} to be invoked when the emoji reaction is long clicked and held.
+     * since 3.0.0
+     */
+    @Nullable
+    public OnEmojiReactionLongClickListener getEmojiReactionLongClickListener() {
+        return emojiReactionLongClickListener;
+    }
+
+    /**
+     * Register a callback to be invoked when the emoji reaction more button is clicked.
+     *
+     * @param listener The callback that will run
+     * since 1.1.0
+     */
+    public void setEmojiReactionMoreButtonClickListener(@Nullable OnEmojiReactionMoreClickListener listener) {
+        this.emojiReactionMoreButtonClickListener = listener;
+    }
+
+    /**
+     * Returns a callback to be invoked when the emoji reaction more button is clicked.
+     *
+     * @return {OnItemClickListener<BaseMessage>} to be invoked when the emoji reaction more button is clicked.
+     * since 3.0.0
+     */
+    @Nullable
+    public OnEmojiReactionMoreClickListener getEmojiReactionMoreButtonClickListener() {
+        return emojiReactionMoreButtonClickListener;
+    }
+
+    /**
      * Register a callback to be invoked when the mentioned user is clicked.
      *
      * @param listener The callback that will run
      *                 since 3.5.3
      */
-    public void setMentionClickListener(@Nullable OnItemClickListener<User> listener) {
+    public void setMentionClickListener(@Nullable OnItemClickListener<UserInfo> listener) {
         this.mentionClickListener = listener;
     }
 
@@ -418,7 +564,7 @@ abstract public class BaseMessageListAdapter extends BaseMessageAdapter<Message,
      * since 3.5.3
      */
     @Nullable
-    public OnItemClickListener<User> getMentionClickListener() {
+    public OnItemClickListener<UserInfo> getMentionClickListener() {
         return mentionClickListener;
     }
 

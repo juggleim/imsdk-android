@@ -8,13 +8,14 @@ import com.jet.im.kit.databinding.SbViewTimeLineMessageBinding
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
 
 internal class TimelineViewHolder internal constructor(
     val binding: SbViewTimeLineMessageBinding,
     messageListUIParams: MessageListUIParams
 ) : MessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, reactionList: List<MessageReactionItem>, params: MessageListUIParams) {
         binding.timelineMessageView.messageUIConfig = messageUIConfig
         binding.timelineMessageView.drawTimeline(message)
     }

@@ -13,8 +13,6 @@ import androidx.annotation.Nullable;
 /**
  * Component 的基类
  *
- * @author rongcloud
- * @since 5.10.4
  */
 public abstract class BaseComponent extends FrameLayout {
     public BaseComponent(@NonNull Context context) {

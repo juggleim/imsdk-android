@@ -61,7 +61,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:text="@string/rc_voip_cancel"
+            android:text="@string/j_cancel"
             android:textColor="@color/rc_voip_color_normal_text"
             android:textSize="16sp" />
 
@@ -77,7 +77,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:text="@string/rc_voip_ok"
+            android:text="@string/j_confirm"
             android:textColor="@color/rc_voip_color_primary"
             android:textSize="16sp" />
     </LinearLayout>

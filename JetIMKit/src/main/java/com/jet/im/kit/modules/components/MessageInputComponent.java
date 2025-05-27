@@ -15,8 +15,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 
+import com.jet.im.kit.activities.adapter.SuggestedMentionListAdapter;
+import com.jet.im.kit.utils.SoftInputUtils;
+import com.jet.im.kit.utils.TextUtils;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.user.User;
 import com.jet.im.kit.R;
 import com.jet.im.kit.consts.KeyboardDisplayType;
@@ -170,6 +174,8 @@ public class MessageInputComponent {
         this.messageInputView.setOnReplyCloseClickListener(this::onQuoteReplyModeCloseButtonClicked);
         this.messageInputView.setOnInputModeChangedListener(this::onInputModeChanged);
         this.messageInputView.setOnVoiceRecorderButtonClickListener(this::onVoiceRecorderButtonClicked);
+        this.messageInputView.setOnEmojiClickListener(this::onEmojiButtonClicked);
+        this.messageInputView.setOnKeyboardClickListener(this::onKeyboardClicked);
         this.messageInputView.setUseVoiceButton(params.getChannelConfig().getEnableVoiceMessage());
         this.setUseSuggestedMentionListDivider(params.useSuggestedMentionListDivider);
         if (params.keyboardDisplayType == KeyboardDisplayType.Dialog) {
@@ -197,6 +203,17 @@ public class MessageInputComponent {
         }
     }
 
+    /**
+     * Sets the adapter for suggested mention list.
+     *
+     * @param adapter The adapter to be used in suggested mention list.
+     * since 3.0.0
+     */
+    public void setSuggestedMentionListAdapter(@NonNull SuggestedMentionListAdapter adapter) {
+        if (getEditTextView() instanceof MentionEditText) {
+            ((MentionEditText) getEditTextView()).setSuggestedMentionListAdapter(adapter);
+        }
+    }
 
     /**
      * Sets whether to use divider in suggested mention list.
@@ -409,6 +426,25 @@ public class MessageInputComponent {
         if (voiceRecorderButtonClickListener != null) voiceRecorderButtonClickListener.onClick(view);
     }
 
+    protected void onEmojiButtonClicked(@NonNull View view) {
+        if (messageInputView == null) return;
+        SoftInputUtils.hideSoftKeyboard(
+                messageInputView.getInputEditText()
+        );
+        messageInputView.showEmoji();
+    }
+
+    protected void onKeyboardClicked(@NonNull View view) {
+        if (messageInputView == null) return;
+        messageInputView.hideEmoji();
+        SoftInputUtils.showSoftKeyboard(messageInputView.getInputEditText());
+    }
+
+    public void hideEmoji() {
+        if (messageInputView == null) return;
+        messageInputView.hideEmoji();
+    }
+
     /**
      * Notifies this component that the channel data has changed.
      *
@@ -419,6 +455,9 @@ public class MessageInputComponent {
         if (messageInputView == null) return;
         final MessageInputView inputView = this.messageInputView;
         setHintMessageTextInternal(inputView, channel);
+        if (TextUtils.isNotEmpty(channel.getDraft())) {
+            inputView.setInputText(channel.getDraft());
+        }
     }
 
     /**
@@ -463,7 +502,10 @@ public class MessageInputComponent {
                 inputView.setInputText(text);
             }
             inputView.showKeyboard();
-        }  else {
+        }  else if (MessageInputView.Mode.QUOTE_REPLY == mode) {
+            if (message != null) inputView.drawMessageToReply(message);
+            inputView.showKeyboard();
+        } else {
             inputView.setInputText(defaultText);
             final CharSequence text = inputView.getInputText();
             if (text != null) {
@@ -480,7 +522,7 @@ public class MessageInputComponent {
      * @param suggestedMentionList The updated suggested mention list.
      * since 3.0.0
      */
-    public void notifySuggestedMentionDataChanged(@NonNull List<User> suggestedMentionList) {
+    public void notifySuggestedMentionDataChanged(@NonNull List<UserInfo> suggestedMentionList) {
         Logger.d(">> MessageInputComponent::notifySuggestedMentionDataChanged()");
         if (getEditTextView() instanceof MentionEditText) {
             ((MentionEditText) getEditTextView()).notifySuggestedMentionDataChanged(suggestedMentionList);

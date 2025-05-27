@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.jet.im.kit.internal.ui.components.HeaderView
+        android:id="@+id/headerView"
+        android:layout_width="match_parent"
+        android:layout_height="44dp" />
+
+    <com.jet.im.kit.internal.ui.widgets.SettingItemView
+        android:id="@+id/siv_change_owner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:item_divider="true"
+        app:item_content="@string/text_change_group_owner"
+        app:item_right_image="@drawable/ic_mine_go">
+
+    </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+    <com.jet.im.kit.internal.ui.widgets.SettingItemView
+        android:id="@+id/siv_group_mute"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_44"
+        app:item_content="@string/text_group_mute"
+        app:item_divider="true"
+        app:item_switch="true">
+    </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+    <com.jet.im.kit.internal.ui.widgets.SettingItemView
+        android:id="@+id/siv_display_history"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_44"
+        app:item_content="@string/text_display_history_message_before_join_group"
+        app:item_divider="true"
+        app:item_switch="true">
+    </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+</LinearLayout>

@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.juggle.chat"
-        minSdk 21
+        minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
@@ -46,6 +46,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    api "com.google.zxing:core:3.3.2"
 
     api project (':GooglePlugin')
     api project (":JZegoCall")

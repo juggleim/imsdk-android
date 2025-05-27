@@ -18,6 +18,9 @@ internal object PreferenceUtils {
     private const val PREFERENCE_KEY_LATEST_USED_SAMPLE = "PREFERENCE_KEY_LATEST_USED_SAMPLE"
     private const val PREFERENCE_KEY_NOTIFICATION_USE_AUTHENTICATE = "PREFERENCE_KEY_NOTIFICATION_USE_AUTHENTICATE"
     private const val PREFERENCE_KEY_NOTIFICATION_USE_FEED_CHANNEL_ONLY = "PREFERENCE_KEY_NOTIFICATION_USE_FEED_CHANNEL_ONLY"
+    private const val PREFERENCE_KEY_PHONE_NUMBER = "PREFERENCE_KEY_PHONE_NUMBER"
+    private const val PREFERENCE_KEY_VERIFY_CODE = "PREFERENCE_KEY_VERIFY_CODE"
+    private const val PREFERENCE_KEY_IS_AUTO_LOGIN = "PREFERENCE_KEY_IS_AUTO_LOGIN"
 
     private lateinit var pref: Preference
     fun init(context: Context) {
@@ -49,6 +52,18 @@ internal object PreferenceUtils {
     var doNotDisturb: Boolean
         get() = pref.getBoolean(PREFERENCE_KEY_DO_NOT_DISTURB, false)
         set(doNotDisturb) = pref.putBoolean(PREFERENCE_KEY_DO_NOT_DISTURB, doNotDisturb)
+
+    var phoneNumber: String
+        get() = pref.getString(PREFERENCE_KEY_PHONE_NUMBER) ?: ""
+        set(value) = pref.putString(PREFERENCE_KEY_PHONE_NUMBER, value)
+
+    var verifyCode: String
+        get() = pref.getString(PREFERENCE_KEY_VERIFY_CODE) ?: ""
+        set(value) = pref.putString(PREFERENCE_KEY_VERIFY_CODE, value)
+
+    var isAutoLogin: Boolean
+        get() = pref.getBoolean(PREFERENCE_KEY_IS_AUTO_LOGIN, false)
+        set(isAutoLogin) = pref.putBoolean(PREFERENCE_KEY_IS_AUTO_LOGIN, isAutoLogin)
 
 //    var isUsingAuthenticate: Boolean
 //        get() = pref.getBoolean(PREFERENCE_KEY_NOTIFICATION_USE_AUTHENTICATE, false)

@@ -115,6 +115,8 @@ public class PhotoViewFragment extends PermissionFragment implements PermissionF
 
         if (TextUtils.isEmpty(channelUrl)) return;
 
+        onDrawPage();
+
 //        if (channelType == ChannelType.GROUP) {
 //            GroupChannel.getChannel(channelUrl, (channel, e) -> {
 //                PhotoViewFragment.this.channel = channel;

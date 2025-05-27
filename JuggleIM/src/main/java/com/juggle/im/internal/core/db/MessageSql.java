@@ -176,6 +176,7 @@ class MessageSql {
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
     static final String SQL_CREATE_CLIENT_UID_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message_client_uid ON message(client_uid)";
     static final String SQL_CREATE_MESSAGE_CONVERSATION_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation ON message(conversation_type, conversation_id)";
+    static final String SQL_CREATE_MESSAGE_CONVERSATION_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_ts ON message(conversation_type, conversation_id, timestamp)";
     static final String SQL_ALTER_ADD_FLAGS = "ALTER TABLE message ADD COLUMN flags INTEGER";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
     static final String SQL_GET_MESSAGE_WITH_CLIENT_UID = "SELECT * FROM message WHERE client_uid = ?";

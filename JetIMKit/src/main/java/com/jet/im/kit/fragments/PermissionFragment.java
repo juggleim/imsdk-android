@@ -31,7 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public abstract class PermissionFragment extends BaseFragment {
-    interface PermissionHandler {
+    public interface PermissionHandler {
         void onPermissionGranted();
     }
 
@@ -66,7 +66,7 @@ public abstract class PermissionFragment extends BaseFragment {
         }
     }
 
-    void requestPermission(@NonNull String[] permissions, @NonNull PermissionHandler handler) {
+    public void requestPermission(@NonNull String[] permissions, @NonNull PermissionHandler handler) {
         if (getContext() == null || getActivity() == null) return;
         this.handler = handler;
         // 1. check permission

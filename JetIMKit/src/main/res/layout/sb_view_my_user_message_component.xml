@@ -51,6 +51,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/contentPanel"/>
 
+    <com.jet.im.kit.internal.ui.messages.MyQuotedMessageView
+        android:id="@+id/quoteReplyPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:translationY="@dimen/sb_size_10"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/contentPanel"
+        android:visibility="gone"/>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/contentPanel"
         android:layout_width="wrap_content"
@@ -59,7 +69,7 @@
         app:layout_constraintHorizontal_bias="1"
         app:layout_constraintStart_toEndOf="@+id/contentLeftView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/quoteReplyPanel"
         app:layout_constraintBottom_toTopOf="@+id/brBottom"
         >
 
@@ -70,8 +80,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/ovOgtag"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/rvEmojiReactionList"
             />
+
+        <View
+            android:id="@+id/emojiReactionListBackground"
+            android:layout_width="@dimen/sb_size_0"
+            android:layout_height="@dimen/sb_size_0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/rvEmojiReactionList"
+            app:layout_constraintBottom_toBottomOf="@+id/rvEmojiReactionList"/>
+
         <com.jet.im.kit.internal.ui.widgets.AutoLinkTextView
             android:id="@+id/tvMessage"
             android:layout_width="wrap_content"
@@ -99,6 +119,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvMessage"
+            app:layout_constraintBottom_toTopOf="@+id/rvEmojiReactionList"
+            />
+
+        <com.jet.im.kit.internal.ui.reactions.EmojiReactionListView
+            android:id="@+id/rvEmojiReactionList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/sb_size_7"
+            android:paddingEnd="@dimen/sb_size_7"
+            android:paddingBottom="@dimen/sb_size_7"
+            android:paddingTop="@dimen/sb_size_7"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ovOgtag"
             app:layout_constraintBottom_toBottomOf="parent"
             />
 

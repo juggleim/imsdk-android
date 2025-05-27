@@ -123,6 +123,14 @@ message DownMsg{
   repeated MsgExtItem msgExSet = 25;
   repeated MsgExtItem msgExts = 26;
   repeated ConverTag converTags = 27;
+  string searchText = 29;
+  GrpMemberInfo grpMemberInfo = 30;
+}
+
+message GrpMemberInfo{
+  string grpDisplayName = 1;
+  repeated KvItem extFields = 2;
+  int64 updatedTime = 3;
 }
 
 message MsgAck{

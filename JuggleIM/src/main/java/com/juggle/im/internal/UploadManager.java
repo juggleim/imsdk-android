@@ -2,6 +2,8 @@ package com.juggle.im.internal;
 
 import android.text.TextUtils;
 
+import com.juggle.im.JErrorCode;
+import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IMessageUploadProvider;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.QryUploadFileCredCallback;
@@ -33,6 +35,57 @@ public class UploadManager implements IMessageUploadProvider {
     }
 
     private final JIMCore mCore;
+
+    public void uploadImage(String localPath, JIMConst.IResultCallback<String> callback) {
+        if (TextUtils.isEmpty(localPath)) {
+            JLogger.e("J-Uploader", "upload image fail, localPath is empty");
+            callback.onError(JErrorCode.INVALID_PARAM);
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            JLogger.e("J-Uploader", "upload image fail, webSocket is null");
+            if (callback != null) {
+                callback.onError(JErrorCode.CONNECTION_UNAVAILABLE);
+            }
+            return;
+        }
+        UploadFileType uploadFileType = UploadFileType.IMAGE;
+        requestUploadFileCred(uploadFileType, localPath, new QryUploadFileCredCallback() {
+            @Override
+            public void onSuccess(UploadOssType ossType, UploadQiNiuCred qiNiuCred, UploadPreSignCred preSignCred) {
+                uploadFile(localPath, ossType, qiNiuCred, preSignCred, new IUploader.UploaderCallback() {
+                    @Override
+                    public void onProgress(int progress) {
+                    }
+
+                    @Override
+                    public void onSuccess(String url) {
+                        if (callback != null) {
+                            callback.onSuccess(url);
+                        }
+                    }
+
+                    @Override
+                    public void onError() {
+                        if (callback != null) {
+                            callback.onError(JErrorCode.MESSAGE_UPLOAD_ERROR);
+                        }
+                    }
+
+                    @Override
+                    public void onCancel() {
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (callback != null) {
+                    callback.onError(errorCode);
+                }
+            }
+        });
+    }
 
     public void uploadLog(String filePath, String messageId, IJLog.Callback callback) {
         if (mCore.getWebSocket() == null) {

@@ -133,9 +133,9 @@ class PBRcvObj {
         }
     }
 
-    static class CallAuthAck extends QryAck {
-        String zegoToken;
-        CallAuthAck(Connect.QueryAckMsgBody body) {
+    static class StringAck extends QryAck {
+        String str;
+        StringAck(Connect.QueryAckMsgBody body) {
             super(body);
         }
     }
@@ -214,6 +214,7 @@ class PBRcvObj {
         static final int qryCallRoomsAck = 31;
         static final int qryCallRoomAck = 32;
         static final int qryMsgExtAck = 33;
+        static final int getUserInfoAck = 34;
     }
 
     public enum PBChatroomEventType {
@@ -307,7 +308,7 @@ class PBRcvObj {
     ChatroomAttrsAck mChatroomAttrsAck;
     RtcRoomEventNtf mRtcRoomEventNtf;
     RtcInviteEventNtf mRtcInviteEventNtf;
-    CallAuthAck mCallInviteAck;
+    StringAck mStringAck;
     RtcQryCallRoomsAck mRtcQryCallRoomsAck;
     QryMsgExtAck mQryMsgExtAck;
 

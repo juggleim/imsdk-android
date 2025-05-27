@@ -5,45 +5,90 @@
     <uses-permission
         android:name="android.permission.VIBRATE"
         android:maxSdkVersion="18" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".BaseApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:resizeableActivity="false"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="false"
-        android:resizeableActivity="false"
         android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning"
         android:usesCleartextTraffic="true"
+        tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="n">
-<!--        <activity android:name=".common.SplashActivity"-->
-<!--            android:exported="true">-->
-<!--&lt;!&ndash;            <intent-filter>&ndash;&gt;-->
-<!--&lt;!&ndash;                <action android:name="android.intent.action.MAIN" />&ndash;&gt;-->
-<!--&lt;!&ndash;                <category android:name="android.intent.category.LAUNCHER" />&ndash;&gt;-->
-<!--&lt;!&ndash;            </intent-filter>&ndash;&gt;-->
-<!--        </activity>-->
-
+        <!-- <activity android:name=".common.SplashActivity" -->
+        <!-- android:exported="true"> -->
+        <!-- &lt;!&ndash;            <intent-filter>&ndash;&gt; -->
+        <!-- &lt;!&ndash;                <action android:name="android.intent.action.MAIN" />&ndash;&gt; -->
+        <!-- &lt;!&ndash;                <category android:name="android.intent.category.LAUNCHER" />&ndash;&gt; -->
+        <!-- &lt;!&ndash;            </intent-filter>&ndash;&gt; -->
+        <!-- </activity> -->
         <!-- Basic activities -->
         <activity
             android:name=".LoginActivity"
+            android:exported="true"
             android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustResize|stateHidden"
-            android:exported="true">
+            android:theme="@style/Theme.Splash"
+            android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.juggle.chat.group.select.SelectGroupMemberActivity"/>
-        <activity android:name="com.juggle.chat.friends.add.AddFriendListActivity"/>
+        <activity android:name=".contacts.group.select.SelectGroupMemberActivity" />
+        <activity android:name=".contacts.add.AddFriendListActivity" />
+        <activity android:name=".settings.WebViewActivity" />
+        <activity android:name=".settings.PushSettingActivity" />
+        <activity android:name=".settings.PushLanguageSettingActivity" />
+        <activity android:name=".settings.GlobalDisturbSettingActivity" />
+        <activity android:name=".settings.ProfileSettingActivity" />
+        <activity android:name=".settings.NicknameSettingActivity" />
+        <activity android:name=".settings.GroupInfoActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.jet.im.action.group_info" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".settings.UserDetailActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="com.jet.im.action.user_detail" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".contacts.ConversationSelectActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="com.jet.im.action.conversation_select" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".contacts.group.GroupListActivity" />
+        <activity android:name=".contacts.chatroom.ChatroomListActivity" />
+        <activity android:name=".contacts.FriendApplicationListActivity" />
+        <activity android:name=".contacts.group.GroupMemberListActivity" />
+        <activity android:name=".contacts.group.GroupNameActivity" />
+        <activity android:name=".contacts.group.GroupNicknameActivity" />
+        <activity android:name=".contacts.group.GroupAnnouncementActivity" />
+        <activity android:name=".contacts.group.GroupManageActivity" />
+        <activity android:name=".settings.QRCodeDisplayActivity" />
+        <activity android:name=".qrcode.ScanActivity" />
+        <activity android:name=".contacts.group.JoinGroupActivity" />
+        <activity android:name=".contacts.UserListActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.jet.im.action.user_list" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".basic.GroupChannelMainActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask" />
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/icon_push_lollipop" />

@@ -2,7 +2,9 @@ package com.jet.im.kit.fragments;
 
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -10,6 +12,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.StyleRes;
 
+import com.jet.im.kit.model.DialogListItem;
+import com.jet.im.kit.utils.ChannelUtils;
+import com.jet.im.kit.utils.DialogUtils;
+import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.interfaces.IConversationManager;
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
@@ -67,9 +75,17 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
         return ViewModelProviders.getChannelList().provide(this, query);
     }
 
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return getModule().onCreateView(requireActivity(), inflater, getArguments());
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         getModule().getStatusComponent().notifyStatusChanged(StatusFrameView.Status.LOADING);
+        onBeforeReady(ReadyStatus.READY, getModule(), getViewModel());
+        onReady(ReadyStatus.READY, getModule(), getViewModel());
     }
 
     @Override
@@ -82,6 +98,26 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
         onBindHeaderComponent(module.getHeaderComponent(), viewModel);
         onBindChannelListComponent(module.getChannelListComponent(), viewModel);
         onBindStatusComponent(module.getStatusComponent(), viewModel);
+        onBindIM(module);
+    }
+
+    private static void onBindIM(@NonNull ChannelListModule module) {
+        JIM.getInstance().getConnectionManager().addConnectionStatusListener("ChannelListFragment", new IConnectionManager.IConnectionStatusListener() {
+            @Override
+            public void onStatusChange(JIMConst.ConnectionStatus status, int code, String extra) {
+                if (status == JIMConst.ConnectionStatus.CONNECTED && module.getChannelListComponent().getAdapter() != null) {
+                    module.getChannelListComponent().getAdapter().notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onDbOpen() {
+            }
+
+            @Override
+            public void onDbClose() {
+            }
+        });
     }
 
     @Override
@@ -93,6 +129,12 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
             return;
         }
         viewModel.loadInitial();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        JIM.getInstance().getConnectionManager().removeConnectionStatusListener("ChannelListFragment");
     }
 
     /**
@@ -140,6 +182,8 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
     }
 
     private void showChannelTypeSelectDialog() {
+
+
         //todo 创建群组忽略
 //        if (getContext() == null) return;
 //        if (Available.isSupportSuper() || Available.isSupportBroadcast()) {
@@ -168,33 +212,41 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
         }
     }
 
-    private void showListContextMenu(@NonNull ConversationInfo channel) {
-        //todo 创建群组
-//        if (channel.isChatNotification()) return;
-//        DialogListItem pushOnOff = new DialogListItem(ChannelUtils.isChannelPushOff(channel) ? R.string.sb_text_channel_list_push_on : R.string.sb_text_channel_list_push_off);
-//        DialogListItem leaveChannel = new DialogListItem(R.string.sb_text_channel_list_leave);
-//        DialogListItem[] items = {pushOnOff, leaveChannel};
-//
-//        if (isFragmentAlive()) {
-//            DialogUtils.showListDialog(requireContext(),
-//                ChannelUtils.makeTitleText(requireContext(), channel),
-//                items, (v, p, item) -> {
-//                    final int key = item.getKey();
-//                    if (key == R.string.sb_text_channel_list_leave) {
-//                        Logger.dev("leave channel");
-//                        leaveChannel(channel);
-//                    } else {
-//                        Logger.dev("change push notifications");
-//                        final boolean enable = ChannelUtils.isChannelPushOff(channel);
-//                        getViewModel().setPushNotification(channel, ChannelUtils.isChannelPushOff(channel), e -> {
-//                            if (e != null) {
-//                                int message = enable ? R.string.sb_text_error_push_notification_on : R.string.sb_text_error_push_notification_off;
-//                                toastError(message);
-//                            }
-//                        });
-//                    }
-//                });
-//        }
+    private void showListContextMenu(@NonNull ConversationInfo conversationInfo) {
+        DialogListItem setRead = new DialogListItem(R.string.j_set_read);
+        DialogListItem setUnread = new DialogListItem(R.string.j_set_unread);
+        DialogListItem mute = new DialogListItem(R.string.j_mute_notifications);
+        DialogListItem unmute = new DialogListItem(R.string.j_unmute_notifications);
+        DialogListItem delete = new DialogListItem(R.string.j_delete);
+        DialogListItem[] items = new DialogListItem[3];
+
+        if (conversationInfo.getUnreadCount() > 0 || conversationInfo.hasUnread()) {
+            items[0] = setRead;
+        } else {
+            items[0] = setUnread;
+        }
+        if (conversationInfo.isMute()) {
+            items[1] = unmute;
+        } else {
+            items[1] = mute;
+        }
+        items[2] = delete;
+        if (isFragmentAlive()) {
+            DialogUtils.showListDialog(requireContext(), ChannelUtils.makeTitleText(requireContext(), conversationInfo), items, (v, p, item) -> {
+                final int key = item.getKey();
+                if (key == R.string.j_set_read) {
+                    getViewModel().setRead(conversationInfo);
+                } else if (key == R.string.j_set_unread) {
+                    getViewModel().setUnread(conversationInfo);
+                } else if (key == R.string.j_mute_notifications) {
+                    getViewModel().mute(conversationInfo, true);
+                } else if (key == R.string.j_unmute_notifications) {
+                    getViewModel().mute(conversationInfo, false);
+                } else if (key == R.string.j_delete) {
+                    getViewModel().delete(conversationInfo);
+                }
+            });
+        }
     }
 
 
@@ -606,9 +658,9 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        getViewModel().loadInitial();
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        getViewModel().loadInitial();
+//    }
 }

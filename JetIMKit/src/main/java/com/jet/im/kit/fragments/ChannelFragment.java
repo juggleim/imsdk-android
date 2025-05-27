@@ -1,6 +1,9 @@
 package com.jet.im.kit.fragments;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.Editable;
@@ -18,7 +21,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
+import com.jet.im.kit.activities.PersonInfoActivity;
 import com.jet.im.kit.activities.adapter.MessageListAdapter;
+import com.jet.im.kit.activities.viewholder.MessageType;
+import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
 import com.jet.im.kit.consts.DialogEditTextParams;
 import com.jet.im.kit.consts.KeyboardDisplayType;
 import com.jet.im.kit.consts.StringSet;
@@ -26,6 +32,9 @@ import com.jet.im.kit.consts.TypingIndicatorType;
 import com.jet.im.kit.interfaces.LoadingDialogHandler;
 import com.jet.im.kit.interfaces.OnConsumableClickListener;
 import com.jet.im.kit.interfaces.OnEditTextResultListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionLongClickListener;
+import com.jet.im.kit.interfaces.OnEmojiReactionMoreClickListener;
 import com.jet.im.kit.interfaces.OnInputModeChangedListener;
 import com.jet.im.kit.interfaces.OnInputTextChangedListener;
 import com.jet.im.kit.interfaces.OnItemClickListener;
@@ -52,10 +61,17 @@ import com.jet.im.kit.widgets.MentionEditText;
 import com.jet.im.kit.widgets.MessageInputView;
 import com.jet.im.kit.widgets.StatusFrameView;
 import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
+import com.juggle.im.call.model.CallFinishNotifyMessage;
+import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.MessageMentionInfo;
+import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.exception.SendbirdException;
@@ -63,9 +79,9 @@ import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.Feedback;
 import com.sendbird.android.message.FeedbackRating;
 import com.sendbird.android.params.MessageListParams;
-import com.sendbird.android.params.UserMessageCreateParams;
-import com.sendbird.android.user.User;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -87,6 +103,12 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     private OnConsumableClickListener scrollFirstButtonClickListener;
     @Nullable
     private View.OnClickListener inputLeftButtonClickListener;
+    @Nullable
+    private OnEmojiReactionClickListener emojiReactionClickListener;
+    @Nullable
+    private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
+    @Nullable
+    private OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener;
     @Nullable
     private OnInputTextChangedListener inputTextChangedListener;
     @Nullable
@@ -141,17 +163,37 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     protected void onBeforeReady(@NonNull ReadyStatus status, @NonNull ChannelModule module, @NonNull ChannelViewModel viewModel) {
         Logger.d(">> ChannelFragment::onBeforeReady()");
         super.onBeforeReady(status, module, viewModel);
-        final ConversationInfo channel = viewModel.getChannel();
+        final ConversationInfo channel = viewModel.getConversationInfo();
         onBindChannelHeaderComponent(module.getHeaderComponent(), viewModel, channel);
         onBindMessageListComponent(module.getMessageListComponent(), viewModel, channel);
         onBindMessageInputComponent(module.getMessageInputComponent(), viewModel, channel);
         onBindStatusComponent(module.getStatusComponent(), viewModel, channel);
+        onBindIM(module);
+    }
+
+    private static void onBindIM(@NonNull ChannelModule module) {
+        JIM.getInstance().getConnectionManager().addConnectionStatusListener("ChannelFragment", new IConnectionManager.IConnectionStatusListener() {
+            @Override
+            public void onStatusChange(JIMConst.ConnectionStatus status, int code, String extra) {
+                if (status == JIMConst.ConnectionStatus.CONNECTED && module.getMessageListComponent().getAdapter() != null) {
+                    module.getMessageListComponent().getAdapter().notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onDbOpen() {
+            }
+
+            @Override
+            public void onDbClose() {
+            }
+        });
     }
 
     @Override
     protected void onReady(@NonNull ReadyStatus status, @NonNull ChannelModule module, @NonNull ChannelViewModel viewModel) {
         shouldDismissLoadingDialog();
-        final ConversationInfo channel = viewModel.getChannel();
+        final ConversationInfo channel = viewModel.getConversationInfo();
         if (status == ReadyStatus.ERROR || channel == null) {
             if (isFragmentAlive()) {
                 toastError(R.string.sb_text_error_get_channel);
@@ -179,7 +221,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     @Override
     public void onDestroy() {
         super.onDestroy();
-        final ConversationInfo channel = getViewModel().getChannel();
+        final ConversationInfo channel = getViewModel().getConversationInfo();
         if (channel == null) {
             return;
         }
@@ -196,6 +238,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             //todo 清理数据
 //            MessageExtensionsKt.clearLastValidations(channelMessageData.getMessages());
         }
+        JIM.getInstance().getConnectionManager().removeConnectionStatusListener("ChannelFragment");
     }
 
     /**
@@ -210,10 +253,23 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         Logger.d(">> ChannelFragment::onBindChannelHeaderComponent()");
         headerComponent.setOnLeftButtonClickListener(headerLeftButtonClickListener != null ? headerLeftButtonClickListener : v -> shouldActivityFinish());
         headerComponent.setOnRightButtonClickListener(headerRightButtonClickListener != null ? headerRightButtonClickListener : v -> {
-            //todo 注释跳转
-//            if (channel == null) return;
-//            Intent intent = ChannelSettingsActivity.newIntent(requireContext(), channel.getUrl());
-//            startActivity(intent);
+            if (channel == null || getContext() == null) {
+                return;
+            }
+            Conversation c = channel.getConversation();
+            if (c == null) {
+                return;
+            }
+            if (c.getConversationType() == Conversation.ConversationType.PRIVATE) {
+                String userId = c.getConversationId();
+                Intent intent = PersonInfoActivity.newIntent(getContext(), userId);
+                startActivity(intent);
+            } else if (c.getConversationType() == Conversation.ConversationType.GROUP) {
+                String groupId = c.getConversationId();
+                Intent intent = new Intent("com.jet.im.action.group_info");
+                intent.putExtra("groupId", groupId);
+                startActivityForResult(intent, 444);
+            }
         });
 
         if (channelConfig.getEnableTypingIndicator() && channelConfig.getTypingIndicatorTypes().contains(TypingIndicatorType.TEXT)) {
@@ -232,6 +288,29 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         });
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 444 && getActivity() != null && resultCode == RESULT_OK) {
+            getActivity().finish();
+        }
+    }
+
+    @Override
+    protected void shouldActivityFinish() {
+        String draft = "";
+        EditText editText = getModule().getMessageInputComponent().getEditTextView();
+        if (editText != null) {
+            draft = editText.getText().toString();
+        }
+        if (TextUtils.isNotEmpty(draft)) {
+            JIM.getInstance().getConversationManager().setDraft(getViewModel().getConversationInfo().getConversation(), getModule().getMessageInputComponent().getEditTextView().getText().toString());
+        } else {
+            JIM.getInstance().getConversationManager().clearDraft(getViewModel().getConversationInfo().getConversation());
+        }
+        super.shouldActivityFinish();
+    }
+
     /**
      * Called to bind events to the MessageListComponent and also bind ChannelViewModel.
      * This is called from {@link #onBeforeReady(ReadyStatus, ChannelModule, ChannelViewModel)} regardless of the value of {@link ReadyStatus}.
@@ -244,11 +323,15 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     protected void onBindMessageListComponent(@NonNull MessageListComponent messageListComponent, @NonNull ChannelViewModel viewModel, @Nullable ConversationInfo channel) {
         Logger.d(">> ChannelFragment::onBindMessageListComponent()");
         if (channel == null) return;
+        messageListComponent.setOnMessageListTouchListener(this::onMessageListTouched);
         messageListComponent.setOnMessageClickListener(this::onMessageClicked);
         messageListComponent.setOnMessageProfileLongClickListener(this::onMessageProfileLongClicked);
         messageListComponent.setOnMessageProfileClickListener(this::onMessageProfileClicked);
         messageListComponent.setOnMessageLongClickListener(this::onMessageLongClicked);
         messageListComponent.setOnMessageMentionClickListener(this::onMessageMentionClicked);
+        messageListComponent.setOnEmojiReactionClickListener(emojiReactionClickListener != null ? emojiReactionClickListener : (view, position, message, reactionKey) -> toggleReaction(view, message, reactionKey));
+        messageListComponent.setOnEmojiReactionLongClickListener(emojiReactionLongClickListener != null ? emojiReactionLongClickListener : (view, position, message, reactionKey) -> showEmojiReactionDialog(message, position));
+        messageListComponent.setOnEmojiReactionMoreButtonClickListener(emojiReactionMoreButtonClickListener != null ? emojiReactionMoreButtonClickListener : (view, position, message, reaction) -> showEmojiListDialog(message, reaction));
         messageListComponent.setOnFeedbackRatingClickListener(this::onFeedbackRatingClicked);
         messageListComponent.setOnTooltipClickListener(tooltipClickListener != null ? tooltipClickListener : this::onMessageTooltipClicked);
         messageListComponent.setOnScrollBottomButtonClickListener(scrollBottomButtonClickListener);
@@ -267,11 +350,12 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
                 shouldDismissLoadingDialog();
             }
             final List<Message> messageList = receivedMessageData.getMessages();
+            final List<MessageReaction> reactionList = receivedMessageData.getReactions();
             Logger.d("++ result messageList size : %s, source = %s", messageList.size(), receivedMessageData.getTraceName());
 
             final String eventSource = receivedMessageData.getTraceName();
             // The callback coming from setItems is worked asynchronously. So `isInitCallFinished` flag has to mark in advance.
-            messageListComponent.notifyDataSetChanged(messageList, channel, messages -> {
+            messageListComponent.notifyDataSetChanged(messageList, channel, reactionList, messages -> {
                 if (!isFragmentAlive()) return;
 
                 if (eventSource != null) {
@@ -409,7 +493,19 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         inputComponent.setOnEditModeSaveButtonClickListener(editModeSaveButtonClickListener != null ? editModeSaveButtonClickListener : v -> {
             final EditText inputText = inputComponent.getEditTextView();
             if (inputText != null && !TextUtils.isEmpty(inputText.getText())) {
-                //todo
+                if (null != targetMessage) {
+//                    UserMessageUpdateParams params = new UserMessageUpdateParams(inputText.getText().toString());
+//                    if (inputText instanceof MentionEditText) {
+//                        final List<User> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
+//                        final CharSequence mentionedTemplate = ((MentionEditText) inputText).getMentionedTemplate();
+//                        Logger.d("++ mentioned template text=%s", mentionedTemplate);
+//                        params.setMentionedMessageTemplate(mentionedTemplate.toString());
+//                        params.setMentionedUsers(mentionedUsers);
+//                    }
+                    updateUserMessage(targetMessage.getMessageId(), inputText.getText().toString(), targetMessage.getConversation());
+                } else {
+                    Logger.d("Target message for update is missing");
+                }
             }
             inputComponent.requestInputMode(MessageInputView.Mode.DEFAULT);
         });
@@ -516,26 +612,131 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         final EditText inputText = inputComponent.getEditTextView();
         if (inputText != null && !TextUtils.isEmpty(inputText.getText())) {
             final Editable editableText = inputText.getText();
-            UserMessageCreateParams params = new UserMessageCreateParams(editableText.toString());
+
+            MessageMentionInfo mentionInfo = null;
             if (channelConfig.getEnableMention()) {
                 if (inputText instanceof MentionEditText) {
-                    final List<User> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
-                    final CharSequence mentionedTemplate = ((MentionEditText) inputText).getMentionedTemplate();
-                    Logger.d("++ mentioned template text=%s", mentionedTemplate);
-                    params.setMentionedMessageTemplate(mentionedTemplate.toString());
-                    params.setMentionedUsers(mentionedUsers);
+                    final List<UserInfo> mentionedUsers = ((MentionEditText) inputText).getMentionedUsers();
+
+                    if (mentionedUsers != null && !mentionedUsers.isEmpty()) {
+                        mentionInfo = new MessageMentionInfo();
+                        mentionInfo.setType(MessageMentionInfo.MentionType.SOMEONE);
+                        mentionInfo.setTargetUsers(mentionedUsers);
+                    }
                 }
             }
 
-            sendUserMessage(params);
+            String parentMessageId = "";
+            if (targetMessage != null) {
+                parentMessageId = targetMessage.getMessageId();
+            }
+            sendTextMessage(editableText.toString(), parentMessageId, mentionInfo);
         }
     }
 
     private void onInputModeChanged(@NonNull MessageInputView.Mode before, @NonNull MessageInputView.Mode current) {
-        final ConversationInfo channel = getViewModel().getChannel();
+        final ConversationInfo channel = getViewModel().getConversationInfo();
         final MessageInputComponent inputComponent = getModule().getMessageInputComponent();
         if (channel == null) return;
+
+        switch (current) {
+            case QUOTE_REPLY:
+            case EDIT:
+                inputComponent.notifyDataChanged(targetMessage, channel);
+                break;
+            default:
+                if (before == MessageInputView.Mode.QUOTE_REPLY && targetMessage == null) {
+                    final EditText input = inputComponent.getEditTextView();
+                    final String defaultText = input != null && !TextUtils.isEmpty(input.getText())
+                            ? inputComponent.getEditTextView().getText().toString() : "";
+                    inputComponent.notifyDataChanged(null, channel, defaultText);
+                } else
+                {
+                    inputComponent.notifyDataChanged(null, channel);
+                }
+                targetMessage = null;
+        }
+
         inputComponent.notifyDataChanged(null, channel);
+    }
+
+    @NonNull
+    @Override
+    protected List<DialogListItem> makeMessageContextMenu(@NonNull Message message) {
+        final List<DialogListItem> items = new ArrayList<>();
+        final Message.MessageState status = message.getState();
+
+        MessageType type = MessageViewHolderFactory.getMessageType(message);
+        DialogListItem copy = new DialogListItem(R.string.sb_text_channel_anchor_copy, R.drawable.icon_copy);
+        DialogListItem edit = new DialogListItem(R.string.sb_text_channel_anchor_edit, R.drawable.icon_edit);
+        DialogListItem save = new DialogListItem(R.string.sb_text_channel_anchor_save, R.drawable.icon_download);
+        DialogListItem delete = new DialogListItem(R.string.sb_text_channel_anchor_delete, R.drawable.icon_delete, false, false);
+        DialogListItem recall = new DialogListItem(R.string.sb_text_channel_anchor_recall, R.drawable.icon_delete, false, false);
+        DialogListItem forward = new DialogListItem(R.string.sb_text_channel_anchor_forward, R.drawable.icon_thread, false, false);
+        int replyStringRes = R.string.sb_text_channel_anchor_reply;
+        int replyDrawableRes = R.drawable.icon_reply;
+        DialogListItem reply = new DialogListItem(replyStringRes, replyDrawableRes, false, false);
+        DialogListItem retry = new DialogListItem(R.string.sb_text_channel_anchor_retry, 0);
+        DialogListItem deleteFailed = new DialogListItem(R.string.sb_text_channel_anchor_delete, 0);
+
+        DialogListItem[] actions = null;
+        switch (type) {
+            case VIEW_TYPE_USER_MESSAGE_ME:
+                if (message.getContent() instanceof CallFinishNotifyMessage) {
+                    actions = new DialogListItem[]{delete};
+                } else {
+                    if (status == Message.MessageState.SENT) {
+                        actions = new DialogListItem[]{copy, edit, delete, recall, forward, reply};
+                    } else if (MessageUtils.isFailed(message)) {
+                        actions = new DialogListItem[]{retry, deleteFailed};
+                    }
+                }
+                break;
+            case VIEW_TYPE_USER_MESSAGE_OTHER:
+                if (message.getContent() instanceof CallFinishNotifyMessage) {
+                    actions = new DialogListItem[]{delete};
+                } else {
+                    actions = new DialogListItem[]{copy, delete, forward, reply};
+                }
+                break;
+            case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
+            case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
+            case VIEW_TYPE_FILE_MESSAGE_ME:
+                if (MessageUtils.isFailed(message)) {
+                    actions = new DialogListItem[]{retry, deleteFailed};
+                } else {
+                    actions = new DialogListItem[]{save, delete, recall, forward};
+                }
+                break;
+            case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
+            case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
+            case VIEW_TYPE_FILE_MESSAGE_OTHER:
+                actions = new DialogListItem[]{save, delete, forward};
+                break;
+            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_ME:
+            case VIEW_TYPE_VOICE_MESSAGE_ME:
+            case VIEW_TYPE_CONTACT_CARD_MESSAGE_ME:
+                if (MessageUtils.isFailed(message)) {
+                    actions = new DialogListItem[]{retry, deleteFailed};
+                } else {
+                    actions = new DialogListItem[]{delete, recall, forward};
+                }
+                break;
+            case VIEW_TYPE_MULTIPLE_FILES_MESSAGE_OTHER:
+            case VIEW_TYPE_VOICE_MESSAGE_OTHER:
+            case VIEW_TYPE_CONTACT_CARD_MESSAGE_OTHER:
+                actions = new DialogListItem[]{delete, forward};
+                break;
+            case VIEW_TYPE_UNKNOWN_MESSAGE_ME:
+                actions = new DialogListItem[]{delete};
+            default:
+                break;
+        }
+
+        if (actions != null) {
+            items.addAll(Arrays.asList(actions));
+        }
+        return items;
     }
 
     @Override
@@ -549,6 +750,18 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             }
             copyTextToClipboard(copy);
             return true;
+        } else if (key == R.string.sb_text_channel_anchor_edit) {
+            targetMessage = message;
+            inputComponent.requestInputMode(MessageInputView.Mode.EDIT);
+            return true;
+        } else if (key == R.string.sb_text_channel_anchor_recall) {
+            if (MessageUtils.isFailed(message)) {
+                Logger.dev("recall");
+                recallMessage(message);
+            } else {
+                showRecallWarningDialog(message);
+            }
+            return true;
         } else if (key == R.string.sb_text_channel_anchor_delete) {
             if (MessageUtils.isFailed(message)) {
                 Logger.dev("delete");
@@ -558,12 +771,19 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             }
             return true;
         } else if (key == R.string.sb_text_channel_anchor_save) {
-            if (message.getContent() instanceof com.juggle.im.model.messages.FileMessage) {
-                saveFileMessage((com.juggle.im.model.messages.FileMessage) message.getContent());
+            if (message.getContent() instanceof MediaMessageContent) {
+                saveFileMessage((MediaMessageContent) message.getContent());
             }
+            return true;
+        } else if (key == R.string.sb_text_channel_anchor_reply) {
+            this.targetMessage = message;
+            inputComponent.requestInputMode(MessageInputView.Mode.QUOTE_REPLY);
             return true;
         } else if (key == R.string.sb_text_channel_anchor_retry) {
             resendMessage(message);
+            return true;
+        } else if (key == R.string.sb_text_channel_anchor_forward) {
+            forwardMessage(message);
             return true;
         }
         return false;
@@ -573,10 +793,32 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
     void showMessageContextMenu(@NonNull View anchorView, @NonNull Message message, @NonNull List<DialogListItem> items) {
         int size = items.size();
         final DialogListItem[] actions = items.toArray(new DialogListItem[size]);
+        final RecyclerView messageListView = getModule().getMessageListComponent().getRecyclerView();
+        if (getContext() == null || messageListView == null || size == 0) return;
+//        MessageAnchorDialog messageAnchorDialog = new MessageAnchorDialog.Builder(anchorView, messageListView, actions)
+//                .setOnItemClickListener(createMessageActionListener(message))
+//                .setOnDismissListener(() -> anchorDialogShowing.set(false))
+//                .build();
+//        messageAnchorDialog.show();
+//        anchorDialogShowing.set(true);
+
+
+//        if (getViewModel().getChannel() != null && !(ChannelConfig.canSendReactions(channelConfig, getViewModel().getChannel()))) {
+//            final RecyclerView messageListView = getModule().getMessageListComponent().getRecyclerView();
+//            if (getContext() == null || messageListView == null || size == 0) return;
+//            MessageAnchorDialog messageAnchorDialog = new MessageAnchorDialog.Builder(anchorView, messageListView, actions)
+//                    .setOnItemClickListener(createMessageActionListener(message))
+//                    .setOnDismissListener(() -> anchorDialogShowing.set(false))
+//                    .build();
+//            messageAnchorDialog.show();
+//            anchorDialogShowing.set(true);
+//        } else
         if (MessageUtils.isUnknownType(message) || !MessageUtils.isSucceed(message)) {
             if (getContext() == null || size == 0) return;
             hideKeyboard();
             DialogUtils.showListBottomDialog(requireContext(), actions, createMessageActionListener(message));
+        } else {
+            showEmojiActionsDialog(message, actions);
         }
     }
 
@@ -636,13 +878,19 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         @Nullable
         private OnItemClickListener<Message> messageProfileClickListener;
         @Nullable
-        private OnItemClickListener<User> emojiReactionUserListProfileClickListener;
+        private OnItemClickListener<UserInfo> emojiReactionUserListProfileClickListener;
         @Nullable
         private OnItemLongClickListener<Message> messageLongClickListener;
         @Nullable
         private OnItemLongClickListener<Message> messageProfileLongClickListener;
         @Nullable
         private View.OnClickListener inputLeftButtonListener;
+        @Nullable
+        private OnEmojiReactionClickListener emojiReactionClickListener;
+        @Nullable
+        private OnEmojiReactionLongClickListener emojiReactionLongClickListener;
+        @Nullable
+        private OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener;
         @Nullable
         private MessageListParams params;
         @Nullable
@@ -671,7 +919,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         @Nullable
         private View.OnClickListener voiceRecorderButtonClickListener;
         @Nullable
-        private OnItemClickListener<User> messageMentionClickListener;
+        private OnItemClickListener<UserInfo> messageMentionClickListener;
         @Nullable
         private ChannelFragment customFragment;
 
@@ -1021,6 +1269,45 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
         }
 
         /**
+         * Sets the click listener on the emoji reaction of the message.
+         *
+         * @param emojiReactionClickListener The callback that will run.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         * since 1.1.0
+         */
+        @NonNull
+        public Builder setEmojiReactionClickListener(@NonNull OnEmojiReactionClickListener emojiReactionClickListener) {
+            this.emojiReactionClickListener = emojiReactionClickListener;
+            return this;
+        }
+
+        /**
+         * Sets the long click listener on the emoji reaction of the message.
+         *
+         * @param emojiReactionLongClickListener The callback that will run.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         * since 1.1.0
+         */
+        @NonNull
+        public Builder setEmojiReactionLongClickListener(@NonNull OnEmojiReactionLongClickListener emojiReactionLongClickListener) {
+            this.emojiReactionLongClickListener = emojiReactionLongClickListener;
+            return this;
+        }
+
+        /**
+         * Sets the click listener on the emoji reaction more button.
+         *
+         * @param emojiReactionMoreButtonClickListener The callback that will run.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         * since 1.1.0
+         */
+        @NonNull
+        public Builder setEmojiReactionMoreButtonClickListener(@NonNull OnEmojiReactionMoreClickListener emojiReactionMoreButtonClickListener) {
+            this.emojiReactionMoreButtonClickListener = emojiReactionMoreButtonClickListener;
+            return this;
+        }
+
+        /**
          * Sets whether the message group UI is used.
          *
          * @param useMessageGroupUI <code>true</code> if the message group UI is used, <code>false</code> otherwise.
@@ -1054,7 +1341,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
          * since 3.9.2
          */
         @NonNull
-        public Builder setOnEmojiReactionUserListProfileClickListener(@NonNull OnItemClickListener<User> emojiReactionUserListProfileClickListener) {
+        public Builder setOnEmojiReactionUserListProfileClickListener(@NonNull OnItemClickListener<UserInfo> emojiReactionUserListProfileClickListener) {
             this.emojiReactionUserListProfileClickListener = emojiReactionUserListProfileClickListener;
             return this;
         }
@@ -1549,7 +1836,7 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
          * since 3.5.3
          */
         @NonNull
-        public Builder setOnMessageMentionClickListener(@NonNull OnItemClickListener<User> mentionClickListener) {
+        public Builder setOnMessageMentionClickListener(@NonNull OnItemClickListener<UserInfo> mentionClickListener) {
             this.messageMentionClickListener = mentionClickListener;
             return this;
         }
@@ -1594,6 +1881,9 @@ public class ChannelFragment extends BaseMessageListFragment<MessageListAdapter,
             fragment.setOnMessageClickListener(messageClickListener);
             fragment.setOnMessageLongClickListener(messageLongClickListener);
             fragment.inputLeftButtonClickListener = inputLeftButtonListener;
+            fragment.emojiReactionClickListener = emojiReactionClickListener;
+            fragment.emojiReactionLongClickListener = emojiReactionLongClickListener;
+            fragment.emojiReactionMoreButtonClickListener = emojiReactionMoreButtonClickListener;
             fragment.setOnMessageProfileClickListener(messageProfileClickListener);
             fragment.setOnEmojiReactionUserListProfileClickListener(emojiReactionUserListProfileClickListener);
             fragment.setOnMessageProfileLongClickListener(messageProfileLongClickListener);

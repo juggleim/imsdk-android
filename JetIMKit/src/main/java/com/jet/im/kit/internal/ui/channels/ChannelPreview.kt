@@ -1,7 +1,12 @@
 package com.jet.im.kit.internal.ui.channels
 
 import android.content.Context
+import android.graphics.Color
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.TextUtils
+import android.text.style.ForegroundColorSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -12,16 +17,19 @@ import android.widget.TextView
 import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.internal.extensions.setAppearance
+import com.jet.im.kit.model.TextUIConfig
 import com.jet.im.kit.utils.ChannelUtils
 import com.jet.im.kit.utils.DateUtils
 import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.MessageUtils
+import com.juggle.im.JIM
 import com.juggle.im.model.Conversation
 import com.juggle.im.model.ConversationInfo
+import com.juggle.im.model.Message
 import com.juggle.im.model.messages.ImageMessage
+import com.juggle.im.model.messages.RecallInfoMessage
 import com.juggle.im.model.messages.TextMessage
 import com.juggle.im.model.messages.VoiceMessage
-import org.w3c.dom.Text
 
 internal class ChannelPreview @JvmOverloads constructor(
     context: Context,
@@ -95,6 +103,7 @@ internal class ChannelPreview @JvmOverloads constructor(
                 R.style.SendbirdBody3OnLight03
             )
             layout.findViewById<View>(R.id.root).setBackgroundResource(background)
+
             tvTitle.setAppearance(context, titleAppearance)
             tvMemberCount.setAppearance(context, memberCountAppearance)
             tvUpdatedAt.setAppearance(context, updatedAtAppearance)
@@ -109,10 +118,13 @@ internal class ChannelPreview @JvmOverloads constructor(
     fun drawChannel(channel: ConversationInfo) {
         val context = context
         val lastMessage = channel.lastMessage
-        val unreadMessageCount = channel.unreadCount
+        var unreadMessageCount = channel.unreadCount
+        if (unreadMessageCount == 0 && channel.hasUnread()) {
+            unreadMessageCount = 1
+        }
         //todo @未读数
         val unreadMentionCount = 0
-        ivPushEnabled.visibility = if (ChannelUtils.isChannelPushOff(channel)) VISIBLE else GONE
+        ivPushEnabled.visibility = if (channel.isMute) VISIBLE else GONE
         val pushEnabledTint = SendbirdUIKit.getDefaultThemeMode().monoTintResId
         ivPushEnabled.setImageDrawable(
             DrawableUtils.setTintList(
@@ -126,7 +138,20 @@ internal class ChannelPreview @JvmOverloads constructor(
         tvUnreadCount.text =
             if (unreadMessageCount > 99) context.getString(R.string.sb_text_channel_list_unread_count_max) else unreadMessageCount.toString()
         tvUnreadCount.visibility = if (unreadMessageCount > 0) VISIBLE else GONE
-        tvUnreadCount.setBackgroundResource(if (SendbirdUIKit.isDarkMode()) R.drawable.sb_shape_unread_message_count_dark else R.drawable.sb_shape_unread_message_count)
+        if (channel.isMute) {
+            tvUnreadCount.text = ""
+            tvUnreadCount.layoutParams = tvUnreadCount.layoutParams.apply {
+                width = 8.dpToPx(tvUnreadCount.context)
+                height = 8.dpToPx(tvUnreadCount.context)
+            }
+            tvUnreadCount.setBackgroundResource(R.drawable.sb_shape_unread_message_count_mute)
+        } else {
+            tvUnreadCount.layoutParams = tvUnreadCount.layoutParams.apply {
+                width = ViewGroup.LayoutParams.WRAP_CONTENT
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+            }
+            tvUnreadCount.setBackgroundResource(if (SendbirdUIKit.isDarkMode()) R.drawable.sb_shape_unread_message_count_dark else R.drawable.sb_shape_unread_message_count)
+        }
         //todo ivFrozen
         ivFrozen.visibility = GONE
 //        if (channel.isFrozen) {
@@ -214,11 +239,18 @@ internal class ChannelPreview @JvmOverloads constructor(
         }
         if (useUnreadMentionCount) {
             tvUnreadMentionCount.text = SendbirdUIKit.getUserMentionConfig().trigger
-            tvUnreadMentionCount.visibility = if (unreadMentionCount > 0) VISIBLE else GONE
+            tvUnreadMentionCount.visibility = if (channel.mentionInfo != null) VISIBLE else GONE
         } else {
             tvUnreadMentionCount.visibility = GONE
         }
+        if (channel.isTop) {
+            layout.findViewById<View>(R.id.root).setBackgroundResource(R.color.conversation_top)
+        } else {
+            layout.findViewById<View>(R.id.root).setBackgroundResource(R.color.background_50)
+        }
     }
+
+    fun Int.dpToPx(context: Context): Int = (this * context.resources.displayMetrics.density).toInt()
 
     companion object {
         private fun setLastMessage(
@@ -238,32 +270,69 @@ internal class ChannelPreview @JvmOverloads constructor(
 //                }
             }
             // todo 最后一条消息内容
-            channel.lastMessage?.content?.let {
-                when (it) {
-                    is TextMessage -> {
-                        textView.maxLines = 2
-                        textView.ellipsize = TextUtils.TruncateAt.END
-                        message = it.content
-                    }
+            val spannableString: SpannableString
+            val draft = channel.draft
+            if (!draft.isNullOrEmpty()) {
+                spannableString = SpannableString("[草稿] $draft")
+                spannableString.setSpan(
+                    ForegroundColorSpan(Color.RED),
+                    0,
+                    4,
+                    Spannable.SPAN_INCLUSIVE_INCLUSIVE
+                )
+            } else {
+                message = channel.lastMessage?.content?.conversationDigest().toString()
+                channel.lastMessage?.content?.let {
+                    message = it.conversationDigest()
+                    when (it) {
+                        is RecallInfoMessage -> {
+                            val tip: String
+                            if (channel.lastMessage.direction == Message.MessageDirection.RECEIVE) {
+                                var userName = ""
+                                val senderId = channel.lastMessage.senderUserId
+                                if (senderId != null) {
+                                    userName = senderId
+                                    val user =
+                                        JIM.getInstance().userInfoManager.getUserInfo(senderId)
+                                    if (user != null) {
+                                        userName = user.userName
+                                    }
+                                }
+                                tip = "$userName 撤回了一条消息"
+                            } else {
+                                tip = "你 撤回了一条消息"
+                            }
+                            message = tip
+                        }
 
-                    is VoiceMessage -> {
-                        textView.maxLines = 1
-                        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
-                        message = "[语音]"
-                    }
+                        is TextMessage -> {
+                            textView.maxLines = 2
+                            textView.ellipsize = TextUtils.TruncateAt.END
+//                        message = it.content
+                        }
 
-                    is ImageMessage -> {
-                        textView.maxLines = 1
-                        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
-                        message = "[图片]"
-                    }
-                    else ->{
-                        message="暂不支持此消息"
-                    }
+                        is VoiceMessage -> {
+                            textView.maxLines = 1
+                            textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+//                        message = "[语音]"
+                        }
 
+                        is ImageMessage -> {
+                            textView.maxLines = 1
+                            textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+//                        message = "[图片]"
+                        }
+
+                        else -> {
+//                        message="暂不支持此消息"
+                        }
+
+                    }
                 }
+                spannableString = SpannableString(message)
             }
-            textView.text = message
+
+            textView.text = spannableString
         }
     }
 }

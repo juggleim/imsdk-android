@@ -1,14 +1,15 @@
 package com.jet.im.kit.model
 
+import com.juggle.im.model.UserInfo
 import com.sendbird.android.user.User
 
 data class MentionSuggestion(val keyword: String) {
-    private val suggestionList: MutableList<User> = ArrayList()
-    fun getSuggestionList(): List<User> {
+    private val suggestionList: MutableList<UserInfo> = ArrayList()
+    fun getSuggestionList(): List<UserInfo> {
         return suggestionList.toList()
     }
 
-    fun append(suggestionList: List<User>) {
+    fun append(suggestionList: List<UserInfo>) {
         this.suggestionList.addAll(suggestionList)
     }
 

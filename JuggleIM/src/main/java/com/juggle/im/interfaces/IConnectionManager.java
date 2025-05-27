@@ -17,6 +17,12 @@ public interface IConnectionManager {
      */
     void setLanguage(String language, ISimpleCallback callback);
 
+    /**
+     * 获取语言（主要影响内置消息的推送语言，目前支持中/英文）
+     * @param callback 结果回调
+     */
+    void getLanguage(JIMConst.IResultCallback<String> callback);
+
     JIMConst.ConnectionStatus getConnectionStatus();
 
     void addConnectionStatusListener(String key, IConnectionStatusListener listener);

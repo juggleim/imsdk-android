@@ -3,23 +3,27 @@ package com.juggle.im.internal.core.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
 import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.GroupMember;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.JSortTimeCounter;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GetConversationOptions;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageQueryOptions;
+import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.UserInfo;
 
@@ -28,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DBManager {
 
@@ -155,12 +160,14 @@ public class DBManager {
         return list;
     }
 
-    public List<ConversationInfo> getConversationInfoList(int[] conversationTypes, int count, long timestamp, JIMConst.PullDirection direction) {
-        if (timestamp == 0) {
-            timestamp = Long.MAX_VALUE;
+    public List<ConversationInfo> getConversationInfoList(GetConversationOptions options) {
+        if (options == null) {
+            return new ArrayList<>();
         }
-        String sql = ConversationSql.sqlGetConversationsBy(conversationTypes, count, timestamp, direction, mTopConversationsOrderType);
-        Cursor cursor = rawQuery(sql, null);
+        List<String> argList = new ArrayList<>();
+        String sql = ConversationSql.sqlGetConversationsWithOptions(options, argList, mTopConversationsOrderType);
+        String[] args = argList.toArray(new String[0]);
+        Cursor cursor = rawQuery(sql, args);
         if (cursor == null) {
             return new ArrayList<>();
         }
@@ -271,6 +278,67 @@ public class DBManager {
             cursor.close();
         }
         return count;
+    }
+
+    public int getUnreadCountWithTag(String tagId) {
+        Cursor cursor = rawQuery(ConversationSql.SQL_GET_UNREAD_COUNT_WITH_TAG, new String[]{tagId});
+        int count = 0;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+            }
+            cursor.close();
+        }
+        return count;
+    }
+
+    public void updateConversationTag(List<ConcreteConversationInfo> conversationInfos) {
+        StringBuilder sql = new StringBuilder(ConversationSql.SQL_INSERT_CONVERSATION_TAG);
+        List<String> argList = new ArrayList<>();
+        performTransaction(() -> {
+            for (ConcreteConversationInfo info : conversationInfos) {
+                if (info.getTagIdList() != null && !info.getTagIdList().isEmpty()) {
+                    execSQL(ConversationSql.SQL_CLEAR_TAG_BY_CONVERSATION, new String[]{String.valueOf(info.getConversation().getConversationType().getValue()), info.getConversation().getConversationId()});
+                    for (String tagId : info.getTagIdList()) {
+                        sql.append(CursorHelper.getQuestionMarkPlaceholder(3)).append(", ");
+                        argList.add(tagId);
+                        argList.add(String.valueOf(info.getConversation().getConversationType().getValue()));
+                        argList.add(info.getConversation().getConversationId());
+                    }
+                }
+            }
+            String[] args = argList.toArray(new String[0]);
+            String last2 = sql.substring(sql.length()-2);
+            if (last2.equals(", ")) {
+                sql.delete(sql.length()-2, sql.length());
+                execSQL(sql.toString(), args);
+            }
+        });
+    }
+
+    public void addConversationsToTag(List<Conversation> conversations, String tagId) {
+        if (conversations == null || conversations.isEmpty() || TextUtils.isEmpty(tagId)) {
+            return;
+        }
+        List<String> argList = new ArrayList<>();
+        String sql = ConversationSql.sqlAddConversationsToTag(conversations, tagId, argList);
+        String[] args = argList.toArray(new String[0]);
+        try {
+            execSQL(sql, args);
+        } catch (SQLiteConstraintException e) {
+            JLogger.w("DB-Exception", "addConversationsToTag " + e.getMessage());
+        }
+    }
+
+    public void removeConversationsFromTag(List<Conversation> conversations, String tagId) {
+        if (conversations == null || conversations.isEmpty() || TextUtils.isEmpty(tagId)) {
+            return;
+        }
+        performTransaction(() -> {
+            for (Conversation conversation : conversations) {
+                execSQL(ConversationSql.SQL_REMOVE_CONVERSATION_FROM_TAG, new String[]{String.valueOf(conversation.getConversationType().getValue()), conversation.getConversationId(), tagId});
+            }
+        });
     }
 
     public void updateSortTime(Conversation conversation, long sortTime) {
@@ -713,32 +781,115 @@ public class DBManager {
         });
     }
 
+    public GroupMember getGroupMember(String groupId, String userId) {
+        if (TextUtils.isEmpty(groupId) || TextUtils.isEmpty(userId)) {
+            return null;
+        }
+        GroupMember member = null;
+        String[] args = new String[]{groupId, userId};
+        Cursor cursor = rawQuery(UserInfoSql.SQL_GET_GROUP_MEMBER, args);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                member = UserInfoSql.groupMemberWithCursor(cursor);
+            }
+            cursor.close();
+        }
+        return member;
+    }
+
+    public void insertGroupMembers(List<GroupMember> members) {
+        if (members == null || members.isEmpty()) {
+            return;
+        }
+        List<String> whereArgs = new ArrayList<>();
+        String sql = UserInfoSql.sqlInsertGroupMembers(members, whereArgs);
+        execSQL(sql, whereArgs.toArray(new String[0]));
+    }
+
+    public List<MessageReaction> getMessageReactions(List<String> messageIds) {
+        List<MessageReaction> result = new ArrayList<>();
+        if (messageIds == null || messageIds.isEmpty()) {
+            return result;
+        }
+        String sql = ReactionSql.sqlGetReaction(messageIds.size());
+        String[] args = messageIds.toArray(new String[0]);
+        Cursor cursor = rawQuery(sql, args);
+        if (cursor != null) {
+            addReactionsFromCursor(result, cursor);
+            cursor.close();
+        }
+        return result;
+    }
+
+    public void setMessageReactions(List<MessageReaction> reactions) {
+        performTransaction(() -> {
+            for (MessageReaction reaction : reactions) {
+                if (!TextUtils.isEmpty(reaction.getMessageId())
+                && reaction.getItemList() != null) {
+                    if (!reaction.getItemList().isEmpty()) {
+                        String itemListJson = ReactionSql.jsonWithReactionItemList(reaction.getItemList());
+                        String[] args = new String[]{reaction.getMessageId(), itemListJson};
+                        execSQL(ReactionSql.SQL_SET_REACTION, args);
+                    } else {
+                        execSQL(ReactionSql.SQL_DELETE_REACTION, new String[]{reaction.getMessageId()});
+                    }
+                }
+            }
+        });
+    }
+
     private synchronized Cursor rawQuery(String sql, String[] selectionArgs) {
         if (mDb == null) {
             return null;
         }
-        return mDb.rawQuery(sql, selectionArgs);
+        long start = System.currentTimeMillis();
+        Cursor c = mDb.rawQuery(sql, selectionArgs);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "rawQuery lasts for " + duration + "ms, sql is " + sql);
+        }
+        return c;
     }
 
     private synchronized void execSQL(String sql) {
         if (mDb == null) {
             return;
         }
+        long start = System.currentTimeMillis();
         mDb.execSQL(sql);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "execSQL lasts for " + duration + "ms, sql is " + sql);
+        }
     }
 
     private synchronized void execSQL(String sql, Object[] bindArgs) {
         if (mDb == null) {
             return;
         }
+        long start = System.currentTimeMillis();
         mDb.execSQL(sql, bindArgs);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "execSQL lasts for " + duration + "ms, sql is " + sql);
+        }
     }
 
     private synchronized long insert(String table, ContentValues cv) {
         if (mDb == null) {
             return -1;
         }
-        return mDb.insertWithOnConflict(table, "", cv, SQLiteDatabase.CONFLICT_IGNORE);
+        long start = System.currentTimeMillis();
+        long result = mDb.insertWithOnConflict(table, "", cv, SQLiteDatabase.CONFLICT_IGNORE);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "insert lasts for " + duration + "ms, table is " + table);
+        }
+        return result;
     }
 
     //执行事务
@@ -747,10 +898,16 @@ public class DBManager {
 
         boolean success = false;
         try {
+            long start = System.currentTimeMillis();
             mDb.beginTransaction();
             operation.execute();
             mDb.setTransactionSuccessful();
             success = true;
+            long end = System.currentTimeMillis();
+            long duration = end - start;
+            if (duration > DB_DURATION) {
+                JLogger.w("DB-Duration", "performTransaction lasts for " + duration + "ms");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -765,7 +922,15 @@ public class DBManager {
         }
         String whereCase = MessageSql.COL_MESSAGE_ID + " = ?";
         String[] whereArgs = {String.valueOf(msgClientNo)};
-        return mDb.updateWithOnConflict(table, cv, whereCase, whereArgs, SQLiteDatabase.CONFLICT_IGNORE);
+        long start = System.currentTimeMillis();
+        long result = mDb.updateWithOnConflict(table, cv, whereCase, whereArgs, SQLiteDatabase.CONFLICT_IGNORE);
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        if (duration > DB_DURATION) {
+            JLogger.w("DB-Duration", "update lasts for " + duration + "ms, table is " + table);
+        }
+
+        return result;
     }
 
     private String getOrCreateDbPath(Context context, String appKey, String userId) {
@@ -786,6 +951,13 @@ public class DBManager {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             ConcreteMessage message = getMessageWithCursor(cursor);
             list.add(message);
+        }
+    }
+
+    private void addReactionsFromCursor(List<MessageReaction> list, Cursor cursor) {
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            MessageReaction reaction = ReactionSql.reactionWithCursor(cursor);
+            list.add(reaction);
         }
     }
 
@@ -820,6 +992,7 @@ public class DBManager {
     private JSortTimeCounter mSortTimeCounter;
     private static final String PATH_JET_IM = "jet_im";
     private static final String DB_NAME = "jetimdb";
+    private static final long DB_DURATION = 500;
 
     private interface TransactionOperation {
         void execute() throws Exception;

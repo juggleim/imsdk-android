@@ -6,10 +6,15 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
@@ -24,6 +29,7 @@ import com.jet.im.kit.R;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.activities.PhotoViewActivity;
 import com.jet.im.kit.activities.adapter.BaseMessageListAdapter;
+import com.jet.im.kit.activities.adapter.SuggestedMentionListAdapter;
 import com.jet.im.kit.activities.viewholder.MessageType;
 import com.jet.im.kit.activities.viewholder.MessageViewHolderFactory;
 import com.jet.im.kit.call.CallCenter;
@@ -33,17 +39,21 @@ import com.jet.im.kit.interfaces.LoadingDialogHandler;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.interfaces.OnItemLongClickListener;
 import com.jet.im.kit.interfaces.OnResultHandler;
+import com.jet.im.kit.internal.extensions.EmojiExtensionsKt;
 import com.jet.im.kit.internal.tasks.JobResultTask;
 import com.jet.im.kit.internal.tasks.TaskQueue;
 import com.jet.im.kit.internal.ui.messages.VoiceMessageView;
+import com.jet.im.kit.internal.ui.reactions.EmojiReactionUserListView;
 import com.jet.im.kit.internal.ui.widgets.VoiceMessageInputView;
 import com.jet.im.kit.log.Logger;
 import com.jet.im.kit.model.DialogListItem;
+import com.jet.im.kit.model.EmojiManager2;
 import com.jet.im.kit.model.FileInfo;
 import com.jet.im.kit.model.ReadyStatus;
 import com.jet.im.kit.model.VoiceMessageInfo;
 import com.jet.im.kit.model.configurations.ChannelConfig;
 import com.jet.im.kit.model.configurations.UIKitConfig;
+import com.jet.im.kit.model.message.ContactCardMessage;
 import com.jet.im.kit.modules.BaseMessageListModule;
 import com.jet.im.kit.modules.components.BaseMessageListComponent;
 import com.jet.im.kit.utils.ContextUtils;
@@ -53,22 +63,31 @@ import com.jet.im.kit.utils.IntentUtils;
 import com.jet.im.kit.utils.MessageUtils;
 import com.jet.im.kit.utils.PermissionUtils;
 import com.jet.im.kit.utils.SoftInputUtils;
+import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
-import com.juggle.im.call.ICallSession;
+import com.juggle.im.JIM;
+import com.juggle.im.call.model.CallFinishNotifyMessage;
+import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageMentionInfo;
+import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.MessageReactionItem;
+import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
+import com.juggle.im.model.messages.VideoMessage;
+import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.exception.SendbirdException;
-import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.params.FileMessageCreateParams;
 import com.sendbird.android.params.MultipleFilesMessageCreateParams;
 import com.sendbird.android.params.UserMessageCreateParams;
 import com.sendbird.android.params.UserMessageUpdateParams;
-import com.sendbird.android.user.User;
+import com.jet.im.kit.internal.ui.reactions.EmojiListView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -86,24 +105,30 @@ abstract public class BaseMessageListFragment<
     @Nullable
     private OnItemClickListener<Message> messageProfileClickListener;
     @Nullable
-    private OnItemClickListener<User> emojiReactionUserListProfileClickListener;
+    private OnItemClickListener<UserInfo> emojiReactionUserListProfileClickListener;
     @Nullable
     private OnItemLongClickListener<Message> messageLongClickListener;
     @Nullable
     private OnItemLongClickListener<Message> messageProfileLongClickListener;
     @Nullable
-    private OnItemClickListener<User> messageMentionClickListener;
+    private OnItemClickListener<UserInfo> messageMentionClickListener;
     @Nullable
     private LoadingDialogHandler loadingDialogHandler;
     @Nullable
     private LA adapter;
+    @Nullable
+    private SuggestedMentionListAdapter suggestedMentionListAdapter;
     @NonNull
     protected ChannelConfig channelConfig = UIKitConfig.getGroupChannelConfig();
     @Nullable
+    Message targetMessage;
+    @Nullable
     private Uri mediaUri;
+    @Nullable
+    private Message forwardMessage;
 
     private final ActivityResultLauncher<Intent> getContentLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        SendbirdChat.setAutoBackgroundDetection(true);
+//        SendbirdChat.setAutoBackgroundDetection(true);
         final Intent intent = result.getData();
         int resultCode = result.getResultCode();
 
@@ -114,23 +139,23 @@ abstract public class BaseMessageListFragment<
         }
     });
     private final ActivityResultLauncher<Intent> takeCameraLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        SendbirdChat.setAutoBackgroundDetection(true);
+//        SendbirdChat.setAutoBackgroundDetection(true);
         int resultCode = result.getResultCode();
 
         if (resultCode != RESULT_OK || getContext() == null) return;
         final Uri mediaUri = this.mediaUri;
         if (mediaUri != null && isFragmentAlive()) {
-            sendFileMessage(mediaUri);
+            sendMediaMessage(mediaUri);
         }
     });
     private final ActivityResultLauncher<Intent> takeVideoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-        SendbirdChat.setAutoBackgroundDetection(true);
+//        SendbirdChat.setAutoBackgroundDetection(true);
         int resultCode = result.getResultCode();
 
         if (resultCode != RESULT_OK) return;
         final Uri mediaUri = this.mediaUri;
         if (mediaUri != null && isFragmentAlive()) {
-            sendFileMessage(mediaUri);
+            sendMediaMessage(mediaUri);
         }
     });
 
@@ -148,6 +173,32 @@ abstract public class BaseMessageListFragment<
         if (args != null && args.containsKey(StringSet.KEY_CHANNEL_CONFIG)) {
             channelConfig = args.getParcelable(StringSet.KEY_CHANNEL_CONFIG);
         }
+    }
+
+    private void setupKeyboardHeightObserver() {
+        final View rootView = getModule().getMessageInputComponent().getRootView();
+        if (rootView == null) {
+            return;
+        }
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                // 键盘可见性判断（排除状态栏等系统UI）
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                mainHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Rect rect = new Rect();
+                        rootView.getWindowVisibleDisplayFrame(rect);
+                        int screenHeight = rootView.getRootView().getHeight();
+                        int keypadHeight = screenHeight - rect.bottom;
+                        if (keypadHeight > screenHeight * 0.15) {
+                            getModule().getMessageInputComponent().hideEmoji();
+                        }
+                    }
+                }, 200);
+            }
+        });
     }
 
     @Override
@@ -168,6 +219,8 @@ abstract public class BaseMessageListFragment<
         if (this.adapter != null) {
             module.getMessageListComponent().setAdapter(adapter);
         }
+        module.getMessageInputComponent().setSuggestedMentionListAdapter(suggestedMentionListAdapter == null ? new SuggestedMentionListAdapter() : suggestedMentionListAdapter);
+        setupKeyboardHeightObserver();
     }
 
     /**
@@ -178,7 +231,7 @@ abstract public class BaseMessageListFragment<
      * since 2.2.3
      */
     @NonNull
-    protected List<DialogListItem> makeMessageContextMenu(@NonNull BaseMessage message) {
+    protected List<DialogListItem> makeMessageContextMenu(@NonNull Message message) {
         return new ArrayList<>();
     }
 
@@ -199,6 +252,11 @@ abstract public class BaseMessageListFragment<
         return false;
     }
 
+    protected boolean onMessageListTouched(View v, MotionEvent e) {
+        getModule().getMessageInputComponent().hideEmoji();
+        return true;
+    }
+
     /**
      * Called when the item of the message list is clicked.
      *
@@ -217,26 +275,42 @@ abstract public class BaseMessageListFragment<
             switch (type) {
                 case VIEW_TYPE_FILE_MESSAGE_IMAGE_ME:
                 case VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER:
-                    //todo 图片
-//                    startActivity(PhotoViewActivity.newIntent(requireContext(),(ImageMessage) message.getContent(),message));
+                    startActivity(PhotoViewActivity.newIntent(requireContext(),(ImageMessage) message.getContent(),message));
                     break;
                 case VIEW_TYPE_FILE_MESSAGE_VIDEO_ME:
                 case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
                 case VIEW_TYPE_FILE_MESSAGE_ME:
                 case VIEW_TYPE_FILE_MESSAGE_OTHER:
-                    //todo 文件
-//                    final FileMessage fileMessage = (FileMessage) message;
-//                    FileDownloader.downloadFile(requireContext(), fileMessage, new OnResultHandler<File>() {
-//                        @Override
-//                        public void onResult(@NonNull File file) {
-//                            showFile(file, fileMessage.getType());
-//                        }
-//
-//                        @Override
-//                        public void onError(@Nullable SendbirdException e) {
-//                            toastError(R.string.sb_text_error_download_file);
-//                        }
-//                    });
+                    JIM.getInstance().getMessageManager().downloadMediaMessage(message.getMessageId(), new IMessageManager.IDownloadMediaMessageCallback() {
+                        @Override
+                        public void onProgress(int progress, Message message) {
+
+                        }
+
+                        @Override
+                        public void onSuccess(Message message) {
+                            MediaMessageContent media = (MediaMessageContent) message.getContent();
+                            File file = new File(media.getLocalPath());
+                            String mimeType = "";
+                            if (media instanceof VideoMessage) {
+                                mimeType = "video/mp4";
+                            } else if (media instanceof FileMessage) {
+                                FileMessage fileMessage = (FileMessage) media;
+                                mimeType = fileMessage.getType();
+                            }
+                            showFile(file, mimeType);
+                        }
+
+                        @Override
+                        public void onError(int errorCode) {
+                            toastError(R.string.sb_text_error_download_file);
+                        }
+
+                        @Override
+                        public void onCancel(Message message) {
+
+                        }
+                    });
                     break;
                 case VIEW_TYPE_VOICE_MESSAGE_ME:
                 case VIEW_TYPE_VOICE_MESSAGE_OTHER:
@@ -244,6 +318,11 @@ abstract public class BaseMessageListFragment<
                         ((VoiceMessageView) view).callOnPlayerButtonClick();
                     }
                     break;
+                case VIEW_TYPE_USER_MESSAGE_ME:
+                case VIEW_TYPE_USER_MESSAGE_OTHER:
+                    if (message.getContent() instanceof CallFinishNotifyMessage) {
+                        voiceCall();
+                    }
                 default:
             }
         } else {
@@ -282,7 +361,7 @@ abstract public class BaseMessageListFragment<
      * @param user     The user that the clicked item displays
      *                 since 3.9.2
      */
-    protected void onEmojiReactionUserListProfileClicked(@NonNull View view, int position, @NonNull User user) {
+    protected void onEmojiReactionUserListProfileClicked(@NonNull View view, int position, @NonNull UserInfo user) {
         if (emojiReactionUserListProfileClickListener != null) {
             emojiReactionUserListProfileClickListener.onItemClick(view, position, user);
             return;
@@ -304,11 +383,8 @@ abstract public class BaseMessageListFragment<
             messageLongClickListener.onItemLongClick(view, position, message);
             return;
         }
-        //todo
 
-//        final SendingStatus status = message.getSendingStatus();
-//        if (status == SendingStatus.PENDING) return;
-//        showMessageContextMenu(view, message, makeMessageContextMenu(message));
+        showMessageContextMenu(view, message, makeMessageContextMenu(message));
     }
 
     /**
@@ -333,7 +409,7 @@ abstract public class BaseMessageListFragment<
      * @param user     The user that the clicked item displays
      *                 since 3.5.3
      */
-    protected void onMessageMentionClicked(@NonNull View view, int position, @NonNull User user) {
+    protected void onMessageMentionClicked(@NonNull View view, int position, @NonNull UserInfo user) {
         if (messageMentionClickListener != null) {
             messageMentionClickListener.onItemClick(view, position, user);
             return;
@@ -347,7 +423,7 @@ abstract public class BaseMessageListFragment<
         return (view, position, item) -> onMessageContextMenuItemClicked(message, view, position, item);
     }
 
-    private void download(@NonNull FileMessage fileMessage) {
+    private void download(@NonNull MediaMessageContent mediaMessage) {
         toastSuccess(R.string.sb_text_toast_success_start_download_file);
         TaskQueue.addTask(new JobResultTask<Boolean>() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -355,8 +431,21 @@ abstract public class BaseMessageListFragment<
             @NonNull
             public Boolean call() throws Exception {
                 if (getContext() == null) return false;
-                FileDownloader.getInstance().saveFile(getContext(), fileMessage.getUrl(),
-                        fileMessage.getType(), fileMessage.getName());
+                String type = "";
+                String name = String.valueOf(System.currentTimeMillis());
+                if (mediaMessage instanceof FileMessage) {
+                    FileMessage file = (FileMessage) mediaMessage;
+                    type = file.getType();
+                    name = file.getName();
+                } else if (mediaMessage instanceof ImageMessage) {
+                    type = "image/jpeg";
+                } else if (mediaMessage instanceof VoiceMessage) {
+                    type = "audio";
+                } else if (mediaMessage instanceof VideoMessage) {
+                    type = "video/mp4";
+                }
+                FileDownloader.getInstance().saveFile(getContext(), mediaMessage.getUrl(),
+                        type, name);
                 return true;
             }
 
@@ -400,6 +489,22 @@ abstract public class BaseMessageListFragment<
                 cancel -> Logger.dev("cancel"));
     }
 
+    void showRecallWarningDialog(@NonNull Message message) {
+        if (getContext() == null) return;
+        String title;
+        title = getString(R.string.sb_text_dialog_recall_message);
+        DialogUtils.showWarningDialog(
+                requireContext(),
+                title,
+                getString(R.string.sb_text_button_recall),
+                delete -> {
+                    Logger.dev("recall");
+                    recallMessage(message);
+                },
+                getString(R.string.sb_text_button_cancel),
+                cancel -> Logger.dev("cancel"));
+    }
+
     void showConfirmDialog(@NonNull String message) {
         if (getContext() == null) return;
         DialogUtils.showConfirmDialog(
@@ -410,7 +515,58 @@ abstract public class BaseMessageListFragment<
                 false);
     }
 
-    private void showUserProfile(@NonNull User sender) {
+    void showEmojiActionsDialog(@NonNull Message message, @NonNull DialogListItem[] actions) {
+        boolean showMoreButton = false;
+
+        final BaseMessageListAdapter adapter = getModule().getMessageListComponent().getAdapter();
+        if (adapter == null) {
+            return;
+        }
+
+        final List<String> emojiList = EmojiManager2.INSTANCE.getEmojiList();
+        int shownEmojiSize = emojiList.size();
+        if (emojiList.size() > 6) {
+            showMoreButton = true;
+            shownEmojiSize = 5;
+        }
+        List<String> shownEmojiList = emojiList.subList(0, shownEmojiSize);
+
+        final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(requireContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
+        MessageReaction messageReaction = getViewModel().getReactionByMessageId(message.getMessageId());
+        List<MessageReactionItem> reactionItemList = null;
+        if (messageReaction != null) {
+            reactionItemList = messageReaction.getItemList();
+        }
+        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, shownEmojiList, reactionItemList, showMoreButton);
+        hideKeyboard();
+        if (actions.length > 0 || shownEmojiList.size() > 0) {
+            final AlertDialog dialog = DialogUtils.showContentViewAndListDialog(requireContext(), emojiListView, actions, createMessageActionListener(message));
+
+            emojiListView.setEmojiClickListener((view, position, emojiKey) -> {
+                dialog.dismiss();
+
+                if (!view.isSelected()) {
+                    // when adding emoji, check if it's allowed
+                    if (!EmojiExtensionsKt.containsEmoji(emojiList, emojiKey)) {
+                        toastError(R.string.sb_text_error_add_reaction);
+                        return;
+                    }
+                }
+
+                getViewModel().toggleReaction(view, message, emojiKey, e -> {
+                    if (e != null)
+                        toastError(view.isSelected() ? R.string.sb_text_error_delete_reaction : R.string.sb_text_error_add_reaction);
+                });
+            });
+
+            emojiListView.setMoreButtonClickListener(v -> {
+                dialog.dismiss();
+                showEmojiListDialog(message, getViewModel().getReactionByMessageId(message.getMessageId()));
+            });
+        }
+    }
+
+    private void showUserProfile(@NonNull UserInfo sender) {
         final Bundle args = getArguments();
         final boolean useUserProfile = args == null || args.getBoolean(StringSet.KEY_USE_USER_PROFILE, UIKitConfig.getCommon().getEnableUsingDefaultUserProfile());
         if (getContext() == null || SendbirdUIKit.getAdapter() == null || !useUserProfile) return;
@@ -423,6 +579,69 @@ abstract public class BaseMessageListFragment<
         if (getView() != null) {
             SoftInputUtils.hideSoftKeyboard(getView());
         }
+        getModule().getMessageInputComponent().hideEmoji();
+    }
+
+    void toggleReaction(@NonNull View view, @NonNull Message message, @NonNull String reactionKey) {
+        getViewModel().toggleReaction(view, message, reactionKey, e -> {
+            if (e != null && isFragmentAlive()) {
+                toastError(view.isSelected() ? R.string.sb_text_error_delete_reaction : R.string.sb_text_error_add_reaction);
+            }
+        });
+    }
+
+    void showEmojiReactionDialog(@NonNull Message message, int position) {
+        if (getContext() == null) {
+            return;
+        }
+        //todo reaction
+
+        final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(getContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
+        final EmojiReactionUserListView emojiReactionUserListView = new EmojiReactionUserListView(contextThemeWrapper);
+        emojiReactionUserListView.setOnProfileClickListener(this::onEmojiReactionUserListProfileClicked);
+
+        emojiReactionUserListView.setEmojiReactionUserData(this,
+                position,
+                getViewModel().getReactionByMessageId(message.getMessageId()).getItemList());
+        hideKeyboard();
+        DialogUtils.showContentDialog(requireContext(), emojiReactionUserListView);
+    }
+
+    void showEmojiListDialog(@NonNull Message message, MessageReaction reaction) {
+        if (getContext() == null) {
+            return;
+        }
+
+        final BaseMessageListAdapter adapter = getModule().getMessageListComponent().getAdapter();
+        if (adapter == null) {
+            return;
+        }
+
+        final List<String> emojiList = EmojiManager2.INSTANCE.getEmojiList();
+        final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(getContext(), getModule().getParams().getTheme(), R.attr.sb_component_list);
+        List<MessageReactionItem> messageReactionItemList = null;
+        if (reaction != null) {
+            messageReactionItemList = reaction.getItemList();
+        }
+        final EmojiListView emojiListView = EmojiListView.create(contextThemeWrapper, emojiList, messageReactionItemList, false);
+        hideKeyboard();
+        final AlertDialog dialog = DialogUtils.showContentDialog(requireContext(), emojiListView);
+
+        emojiListView.setEmojiClickListener((view, position, emojiKey) -> {
+            dialog.dismiss();
+
+            if (!view.isSelected()) {
+                // when adding emoji, check if it's allowed
+//                if (!EmojiExtensionsKt.containsEmoji(emojiList, emojiKey)) {
+//                    toastError(R.string.sb_text_error_add_reaction);
+//                    return;
+//                }
+            }
+            getViewModel().toggleReaction(view, message, emojiKey, e -> {
+                if (e != null)
+                    toastError(view.isSelected() ? R.string.sb_text_error_delete_reaction : R.string.sb_text_error_add_reaction);
+            });
+        });
     }
 
     void sendFileMessageInternal(@NonNull FileInfo fileInfo, @NonNull FileMessageCreateParams params) {
@@ -476,11 +695,12 @@ abstract public class BaseMessageListFragment<
         if (channelConfig.getInput().getEnableDocument()) {
             items.add(new DialogListItem(R.string.sb_text_channel_input_document, R.drawable.icon_document));
         }
-        ConversationInfo channel = getViewModel().getChannel();
+        ConversationInfo channel = getViewModel().getConversationInfo();
         assert channel != null;
         if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
-            items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_camera));
+            items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_voice_message_on));
         }
+        items.add(new DialogListItem(R.string.text_name_card, R.drawable.icon_user));
         if (items.isEmpty()) return;
         hideKeyboard();
         DialogUtils.showListBottomDialog(requireContext(), items.toArray(new DialogListItem[0]), (view, position, item) -> {
@@ -496,6 +716,8 @@ abstract public class BaseMessageListFragment<
                     takeFile();
                 } else if (key == R.string.sb_text_channel_input_voice_call) {
                     voiceCall();
+                } else if (key == R.string.text_name_card) {
+                    nameCard();
                 }
             } catch (Exception e) {
                 Logger.e(e);
@@ -518,7 +740,7 @@ abstract public class BaseMessageListFragment<
      * since 2.0.1
      */
     public void takeCamera() {
-        SendbirdChat.setAutoBackgroundDetection(false);
+//        SendbirdChat.setAutoBackgroundDetection(false);
         requestPermission(PermissionUtils.CAMERA_PERMISSION, () -> {
             if (getContext() == null) return;
             this.mediaUri = FileUtils.createImageFileUri(getContext());
@@ -535,9 +757,52 @@ abstract public class BaseMessageListFragment<
         requestPermission(PermissionUtils.RECORD_AUDIO_PERMISSION, () -> {
             if (getContext() == null) return;
 
-            assert getViewModel().getChannel() != null;
-            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getChannel().getConversation().getConversationId());
+            assert getViewModel().getConversationInfo() != null;
+            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId());
         });
+    }
+
+    private void nameCard() {
+        Intent intent = new Intent("com.jet.im.action.user_list");
+        intent.putExtra("type", 0);
+        startActivityForResult(intent, 555);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (getActivity() == null) {
+            return;
+        }
+        if (requestCode == 555) {
+            if (data == null) {
+                return;
+            }
+            String userId = data.getStringExtra("user_id");
+            String name = data.getStringExtra("name");
+            String portrait = data.getStringExtra("portrait");
+
+            ContactCardMessage contactCardMessage = new ContactCardMessage();
+            if (TextUtils.isNotEmpty(userId)) {
+                contactCardMessage.setUserId(userId);
+            }
+            if (TextUtils.isNotEmpty(name)) {
+                contactCardMessage.setName(name);
+            }
+            if (TextUtils.isNotEmpty(portrait)) {
+                contactCardMessage.setPortrait(portrait);
+            }
+            getViewModel().sendMessage(contactCardMessage);
+        } else if (requestCode == 666) {
+            if (data == null || forwardMessage == null) {
+                return;
+            }
+            int typeValue = data.getIntExtra("type", 1);
+            String conversationId = data.getStringExtra("id");
+            Conversation.ConversationType conversationType = Conversation.ConversationType.setValue(typeValue);
+            getViewModel().sendMessage(forwardMessage.getContent(), new Conversation(conversationType, conversationId));
+        }
     }
 
     /**
@@ -546,7 +811,7 @@ abstract public class BaseMessageListFragment<
      * since 3.2.1
      */
     public void takeVideo() {
-        SendbirdChat.setAutoBackgroundDetection(false);
+//        SendbirdChat.setAutoBackgroundDetection(false);
         requestPermission(PermissionUtils.CAMERA_PERMISSION, () -> {
             if (getContext() == null) return;
             this.mediaUri = FileUtils.createVideoFileUri(getContext());
@@ -573,7 +838,7 @@ abstract public class BaseMessageListFragment<
         ActivityResultContracts.PickVisualMedia.VisualMediaType mediaType =
                 channelConfig.getInput().getGallery().getPickVisualMediaType();
         if (mediaType != null) {
-            SendbirdChat.setAutoBackgroundDetection(false);
+//            SendbirdChat.setAutoBackgroundDetection(false);
             picker.launch(new PickVisualMediaRequest.Builder()
                     .setMediaType(mediaType)
                     .build());
@@ -587,7 +852,7 @@ abstract public class BaseMessageListFragment<
      * since 3.9.0
      */
     public boolean isMultipleMediaEnabled() {
-        ConversationInfo channel = getViewModel().getChannel();
+        ConversationInfo channel = getViewModel().getConversationInfo();
         if (channel == null) return false;
         return channelConfig.getEnableMultipleFilesMessage();
     }
@@ -600,7 +865,7 @@ abstract public class BaseMessageListFragment<
      */
     @VisibleForTesting
     void onMultipleMediaResult(@NonNull List<Uri> uris) {
-        SendbirdChat.setAutoBackgroundDetection(true);
+//        SendbirdChat.setAutoBackgroundDetection(true);
         if (uris.isEmpty()) return;
         if (uris.size() > getMultipleFilesMessageFileCountLimit()) {
             showConfirmDialog(getString(R.string.sb_text_error_multiple_files_count_limit, getMultipleFilesMessageFileCountLimit()));
@@ -623,7 +888,7 @@ abstract public class BaseMessageListFragment<
     @VisibleForTesting
     void onImageResult(@Nullable Uri uri) {
         if (uri != null && isFragmentAlive()) {
-            sendImageMessage(uri);
+            sendMediaMessage(uri);
         }
     }
 
@@ -750,7 +1015,7 @@ abstract public class BaseMessageListFragment<
      * since 2.0.1
      */
     public void takeFile() {
-        SendbirdChat.setAutoBackgroundDetection(false);
+//        SendbirdChat.setAutoBackgroundDetection(false);
         final String[] permissions = PermissionUtils.GET_CONTENT_PERMISSION;
         if (permissions.length > 0) {
             requestPermission(permissions, () -> {
@@ -845,19 +1110,8 @@ abstract public class BaseMessageListFragment<
     protected void onBeforeUpdateUserMessage(@NonNull UserMessageUpdateParams params) {
     }
 
-    /**
-     * Sends a user message.
-     *
-     * @param params Params of user message. Refer to {@link UserMessageCreateParams}.
-     *               since 1.0.4
-     */
-    protected void sendUserMessage(@NonNull UserMessageCreateParams params) {
-        final CustomParamsHandler customHandler = SendbirdUIKit.getCustomParamsHandler();
-        if (customHandler != null) {
-            customHandler.onBeforeSendUserMessage(params);
-        }
-        onBeforeSendUserMessage(params);
-        getViewModel().sendUserMessage(params);
+    protected void sendTextMessage(String content, String parentMessageId, MessageMentionInfo mentionInfo) {
+        getViewModel().sendTextMessage(content, parentMessageId, mentionInfo);
     }
 
     /**
@@ -866,16 +1120,32 @@ abstract public class BaseMessageListFragment<
      * @param uri A file Uri
      *            since 1.0.4
      */
-    protected void sendImageMessage(@NonNull Uri uri) {
+    protected void sendMediaMessage(@NonNull Uri uri) {
         if (getContext() != null) {
             FileInfo.fromUri(getContext(), uri, false, new OnResultHandler<FileInfo>() {
                 @Override
                 public void onResult(@NonNull FileInfo info) {
                     BaseMessageListFragment.this.mediaUri = null;
-                    final ConversationInfo channel = getViewModel().getChannel();
+                    final ConversationInfo channel = getViewModel().getConversationInfo();
                     if (channel == null) return;
                     if (getContext() != null) {
-                        getViewModel().sendImageMessage(info.getPath());
+                        if (info.getMimeType()!= null && info.getMimeType().startsWith((StringSet.video))) {
+                            VideoMessage videoMessage = new VideoMessage();
+                            videoMessage.setLocalPath(info.getPath());
+                            videoMessage.setSnapshotLocalPath(info.getThumbnailPath());
+                            videoMessage.setHeight(info.getThumbnailHeight());
+                            videoMessage.setWidth(info.getThumbnailWidth());
+                            videoMessage.setSize(info.getSize());
+                            videoMessage.setDuration(info.getDuration());
+                            getViewModel().sendVideoMessage(videoMessage);
+                        } else {
+                            ImageMessage imageMessage = new ImageMessage();
+                            imageMessage.setLocalPath(info.getPath());
+                            imageMessage.setThumbnailLocalPath(info.getThumbnailPath());
+                            imageMessage.setHeight(info.getThumbnailHeight());
+                            imageMessage.setWidth(info.getThumbnailWidth());
+                            getViewModel().sendImageMessage(imageMessage);
+                        }
                     }
                 }
 
@@ -901,7 +1171,15 @@ abstract public class BaseMessageListFragment<
                 @Override
                 public void onResult(@NonNull FileInfo info) {
                     BaseMessageListFragment.this.mediaUri = null;
-                    sendFileMessage(info);
+                    final ConversationInfo channel = getViewModel().getConversationInfo();
+                    if (channel == null) return;
+                    if (getContext() != null) {
+                        FileMessage fileMessage = new FileMessage();
+                        fileMessage.setLocalPath(info.getPath());
+                        fileMessage.setName(info.getFileName());
+                        fileMessage.setSize(info.getSize());
+                        getViewModel().sendFileMessage(fileMessage);
+                    }
                 }
 
                 @Override
@@ -921,7 +1199,7 @@ abstract public class BaseMessageListFragment<
      *             since 3.4.0
      */
     protected void sendVoiceFileMessage(@NonNull VoiceMessageInfo info) {
-        final ConversationInfo channel = getViewModel().getChannel();
+        final ConversationInfo channel = getViewModel().getConversationInfo();
         if (channel == null) return;
         if (getContext() != null) {
             getViewModel().sendVoiceMessage(info.getPath(),info.getDuration());
@@ -945,6 +1223,12 @@ abstract public class BaseMessageListFragment<
         sendFileMessageInternal(info, params);
     }
 
+    protected void updateUserMessage(String messageId, String content, Conversation conversation) {
+        getViewModel().updateUserMessage(messageId, content, conversation, e -> {
+            if (e != null) toastError(R.string.sb_text_error_update_user_message);
+        });
+    }
+
     /**
      * Delete a message
      *
@@ -954,6 +1238,12 @@ abstract public class BaseMessageListFragment<
     protected void deleteMessage(@NonNull Message message) {
         getViewModel().deleteMessage(message, e -> {
             if (e != null) toastError(R.string.sb_text_error_delete_message);
+        });
+    }
+
+    protected void recallMessage(@NonNull Message message) {
+        getViewModel().recallMessage(message, e -> {
+            if (e != null) toastError(R.string.sb_text_error_recall_message);
         });
     }
 
@@ -968,6 +1258,12 @@ abstract public class BaseMessageListFragment<
         });
     }
 
+    protected void forwardMessage(Message message) {
+        forwardMessage = message;
+        Intent intent = new Intent("com.jet.im.action.conversation_select");
+        startActivityForResult(intent, 666);
+    }
+
     /**
      * Download {@link FileMessage} into external storage.
      * It needs to have a permission.
@@ -977,7 +1273,7 @@ abstract public class BaseMessageListFragment<
      * @param message A file message to download contents.
      *                since 2.2.3
      */
-    protected void saveFileMessage(@NonNull FileMessage message) {
+    protected void saveFileMessage(@NonNull MediaMessageContent message) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
             download(message);
         } else {
@@ -1011,7 +1307,7 @@ abstract public class BaseMessageListFragment<
      * @param emojiReactionUserListProfileClickListener The callback that will run.
      *                                                  since 3.9.2
      */
-    void setOnEmojiReactionUserListProfileClickListener(@Nullable OnItemClickListener<User> emojiReactionUserListProfileClickListener) {
+    void setOnEmojiReactionUserListProfileClickListener(@Nullable OnItemClickListener<UserInfo> emojiReactionUserListProfileClickListener) {
         this.emojiReactionUserListProfileClickListener = emojiReactionUserListProfileClickListener;
     }
 
@@ -1021,7 +1317,7 @@ abstract public class BaseMessageListFragment<
      * @param messageMentionClickListener The callback that will run.
      *                                    since 3.5.3
      */
-    void setOnMessageMentionClickListener(@Nullable OnItemClickListener<User> messageMentionClickListener) {
+    void setOnMessageMentionClickListener(@Nullable OnItemClickListener<UserInfo> messageMentionClickListener) {
         this.messageMentionClickListener = messageMentionClickListener;
     }
 

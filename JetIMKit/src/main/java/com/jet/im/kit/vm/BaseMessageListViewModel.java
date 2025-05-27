@@ -1,5 +1,9 @@
 package com.jet.im.kit.vm;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -7,8 +11,10 @@ import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.consts.StringSet;
 import com.jet.im.kit.interfaces.AuthenticateHandler;
+import com.jet.im.kit.interfaces.IGroupMemberProvider;
 import com.jet.im.kit.interfaces.OnCompleteHandler;
 import com.jet.im.kit.interfaces.OnPagedDataLoader;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitContract;
@@ -18,17 +24,25 @@ import com.jet.im.kit.model.LiveDataEx;
 import com.jet.im.kit.model.MentionSuggestion;
 import com.jet.im.kit.model.MessageList;
 import com.jet.im.kit.model.MutableLiveDataEx;
+import com.jet.im.kit.utils.TextUtils;
 import com.juggle.im.JIM;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
+import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.MessageMentionInfo;
+import com.juggle.im.model.MessageOptions;
+import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.TextMessage;
+import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.collection.Traceable;
 import com.sendbird.android.params.FileMessageCreateParams;
-import com.sendbird.android.params.UserMessageCreateParams;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,19 +50,23 @@ import java.util.List;
 
 abstract public class BaseMessageListViewModel extends BaseViewModel implements OnPagedDataLoader<List<Message>> {
     @Nullable
-    ConversationInfo channel;
+    ConversationInfo mConversationInfo;
     @NonNull
-    protected final Conversation conversation;
+    protected final Conversation mConversation;
+    @Nullable
+    MemberFinder mMemberFinder;
     @NonNull
     final MessageList cachedMessages = new MessageList();
+    @NonNull
+    final List<MessageReaction> mMessageReactions = new ArrayList<>();
     @NonNull
     final MutableLiveDataEx<ChannelViewModel.ChannelMessageData> messageList = new MutableLiveDataEx<>();
 
     @VisibleForTesting
     BaseMessageListViewModel(@NonNull Conversation conversation, @NonNull SendbirdUIKitContract sendbirdUIKitContract) {
         super(sendbirdUIKitContract);
-        this.channel = null;
-        this.conversation = conversation;
+        this.mConversationInfo = null;
+        this.mConversation = conversation;
     }
 
     /**
@@ -58,8 +76,8 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      * since 3.0.0
      */
     @Nullable
-    public ConversationInfo getChannel() {
-        return channel;
+    public ConversationInfo getConversationInfo() {
+        return mConversationInfo;
     }
 
 
@@ -82,8 +100,8 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      */
     @NonNull
     public LiveData<MentionSuggestion> getMentionSuggestion() {
-        //todo mention
-        return new MutableLiveData<>();
+        if (mMemberFinder == null) return new MutableLiveData<>();
+        return mMemberFinder.getMentionSuggestion();
     }
 
     @Override
@@ -96,6 +114,7 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     protected void onCleared() {
         super.onCleared();
         Logger.dev("-- onCleared ChannelViewModel");
+        if (mMemberFinder != null) mMemberFinder.dispose();
     }
 
     /**
@@ -113,68 +132,119 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 //        }
     }
 
-    /**
-     * Sends a text message to the channel.
-     *
-     * @param params Parameters to be applied to the message
-     *               since 3.0.0
-     */
-    public void sendUserMessage(@NonNull UserMessageCreateParams params) {
-        Logger.i("++ request send message : %s", params);
-        TextMessage textMessage = new TextMessage(params.getMessage());
-        if (channel != null) {
-            JIM.getInstance().getMessageManager().sendMessage(textMessage, channel.getConversation(), new IMessageManager.ISendMessageCallback() {
+    public void sendMessage(MessageContent content) {
+        if (mConversationInfo != null) {
+            Message m = JIM.getInstance().getMessageManager().sendMessage(content, mConversationInfo.getConversation(), new IMessageManager.ISendMessageCallback() {
                 @Override
                 public void onSuccess(Message message) {
                     Logger.i("++ sent message : %s", message);
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onError(Message message, int errorCode) {
                     Logger.e("send message error : %s", errorCode);
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
             });
+            onMessagesUpdated(mConversationInfo, m);
         }
+    }
 
+    public void sendMessage(MessageContent content, @NonNull Conversation conversation) {
+        if (mConversationInfo == null) {
+            return;
+        }
+        Message m = JIM.getInstance().getMessageManager().sendMessage(content, conversation, new IMessageManager.ISendMessageCallback() {
+            @Override
+            public void onSuccess(Message message) {
+                Logger.i("++ sent message : %s", message);
+                if (conversation.equals(mConversation)) {
+                    if (mConversationInfo != null) {
+                        onMessagesUpdated(mConversationInfo, message);
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Message message, int errorCode) {
+                Logger.e("send message error : %s", errorCode);
+                if (conversation.equals(mConversation)) {
+                    if (mConversationInfo != null) {
+                        onMessagesUpdated(mConversationInfo, message);
+                    }
+                }
+            }
+        });
+        onMessagesUpdated(mConversationInfo, m);
+    }
+
+    public void sendTextMessage(String content, String parentMessageId, MessageMentionInfo mentionInfo) {
+        Logger.i("++ request send message : %s", content);
+        TextMessage textMessage = new TextMessage(content);
+        MessageOptions options = new MessageOptions();
+        if (TextUtils.isNotEmpty(parentMessageId)) {
+            options.setReferredMessageId(parentMessageId);
+        }
+        if (mentionInfo != null) {
+            options.setMentionInfo(mentionInfo);
+        }
+        if (mConversationInfo != null) {
+            Message m = JIM.getInstance().getMessageManager().sendMessage(textMessage, mConversationInfo.getConversation(), options, new IMessageManager.ISendMessageCallback() {
+                @Override
+                public void onSuccess(Message message) {
+                    Logger.i("++ sent message : %s", message);
+                    Handler mH = new Handler(Looper.getMainLooper());
+                    mH.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            onMessagesUpdated(mConversationInfo, message);
+                        }
+                    }, 200);
+                }
+
+                @Override
+                public void onError(Message message, int errorCode) {
+                    Logger.e("send message error : %s", errorCode);
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+            });
+            onMessagesUpdated(mConversationInfo, m);
+        }
     }
 
     public void sendVoiceMessage(@NonNull String localPath, int duration) {
-        if (channel != null) {
+        if (mConversationInfo != null) {
             VoiceMessage voiceMessage = new VoiceMessage();
             voiceMessage.setLocalPath(localPath);
             voiceMessage.setDuration(duration);
-            JIM.getInstance().getMessageManager().sendMediaMessage(voiceMessage, channel.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
+            Message m = JIM.getInstance().getMessageManager().sendMediaMessage(voiceMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
                 @Override
                 public void onProgress(int progress, Message message) {
                 }
 
                 @Override
                 public void onSuccess(Message message) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onError(Message message, int errorCode) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onCancel(Message message) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
             });
+            onMessagesUpdated(mConversationInfo, m);
         }
     }
 
-
-    public void sendImageMessage(@NonNull String localPath) {
-        if (channel != null) {
-            ImageMessage imageMessage = new ImageMessage();
-            imageMessage.setLocalPath(localPath);
-            imageMessage.setThumbnailLocalPath(localPath);
-            JIM.getInstance().getMessageManager().sendMediaMessage(imageMessage, channel.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
+    public void sendImageMessage(@NonNull ImageMessage imageMessage) {
+        if (mConversationInfo != null) {
+            Message m = JIM.getInstance().getMessageManager().sendMediaMessage(imageMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
                 @Override
                 public void onProgress(int progress, Message message) {
 
@@ -182,19 +252,74 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
 
                 @Override
                 public void onSuccess(Message message) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onError(Message message, int errorCode) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
 
                 @Override
                 public void onCancel(Message message) {
-                    onMessagesUpdated(channel, message);
+                    onMessagesUpdated(mConversationInfo, message);
                 }
             });
+            onMessagesUpdated(mConversationInfo, m);
+        }
+    }
+
+    public void sendVideoMessage(@NonNull VideoMessage videoMessage) {
+        if (mConversationInfo != null) {
+            Message m = JIM.getInstance().getMessageManager().sendMediaMessage(videoMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
+                @Override
+                public void onProgress(int progress, Message message) {
+
+                }
+
+                @Override
+                public void onSuccess(Message message) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onError(Message message, int errorCode) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onCancel(Message message) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+            });
+            onMessagesUpdated(mConversationInfo, m);
+        }
+    }
+
+    public void sendFileMessage(@NonNull FileMessage fileMessage) {
+        if (mConversationInfo != null) {
+            Message m = JIM.getInstance().getMessageManager().sendMediaMessage(fileMessage, mConversationInfo.getConversation(), new IMessageManager.ISendMediaMessageCallback() {
+                @Override
+                public void onProgress(int progress, Message message) {
+
+                }
+
+                @Override
+                public void onSuccess(Message message) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onError(Message message, int errorCode) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onCancel(Message message) {
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+            });
+            onMessagesUpdated(mConversationInfo, m);
         }
     }
 
@@ -233,25 +358,89 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      *                since 3.0.0
      */
     public void resendMessage(@NonNull Message message, @Nullable OnCompleteHandler handler) {
-//        if (channel == null) return;
-//        if (message instanceof UserMessage) {
-//            channel.resendMessage((UserMessage) message, (userMessage, e) -> {
-//                if (handler != null) handler.onComplete(e);
-//                Logger.i("__ resent message : %s", userMessage);
-//            });
-//        } else if (message instanceof FileMessage) {
-//            FileInfo info = PendingMessageRepository.getInstance().getFileInfo(message);
-//            final File file = info == null ? null : info.getFile();
-//            channel.resendMessage((FileMessage) message, file, (fileMessage, e) -> {
-//                if (handler != null) handler.onComplete(e);
-//                Logger.i("__ resent file message : %s", fileMessage);
-//            });
-//        } else if (message instanceof MultipleFilesMessage) {
-//            channel.resendMessage((MultipleFilesMessage) message, null, (multipleFilesMessage, e) -> {
-//                if (handler != null) handler.onComplete(e);
-//                Logger.i("__ resent multiple files message : %s", multipleFilesMessage);
-//            });
-//        }
+        if (mConversationInfo == null) {
+            if (handler != null) {
+                handler.onComplete(new RuntimeException());
+            }
+            return;
+        }
+        MessageContent content = message.getContent();
+        if (content == null) {
+            if (handler != null) {
+                handler.onComplete(new RuntimeException());
+            }
+            return;
+        }
+        boolean needUpload = false;
+        if (content instanceof MediaMessageContent) {
+            MediaMessageContent mediaMessageContent = (MediaMessageContent) content;
+            if (TextUtils.isEmpty(mediaMessageContent.getUrl())) {
+                needUpload = true;
+            }
+        }
+        if (needUpload) {
+            Message m = JIM.getInstance().getMessageManager().resendMediaMessage(message, new IMessageManager.ISendMediaMessageCallback() {
+                @Override
+                public void onProgress(int progress, Message message) {
+
+                }
+
+                @Override
+                public void onSuccess(Message message) {
+                    if (handler != null) {
+                        handler.onComplete(null);
+                    }
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onError(Message message, int errorCode) {
+                    if (handler != null) {
+                        handler.onComplete(new RuntimeException());
+                    }
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onCancel(Message message) {
+
+                }
+            });
+            onMessagesUpdated(mConversationInfo, m);
+        } else {
+            Message m = JIM.getInstance().getMessageManager().resendMessage(message, new IMessageManager.ISendMessageCallback() {
+                @Override
+                public void onSuccess(Message message) {
+                    if (handler != null) {
+                        handler.onComplete(null);
+                    }
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+
+                @Override
+                public void onError(Message message, int errorCode) {
+                    if (handler != null) {
+                        handler.onComplete(new RuntimeException());
+                    }
+                    onMessagesUpdated(mConversationInfo, message);
+                }
+            });
+            onMessagesUpdated(mConversationInfo, m);
+        }
+    }
+
+    public void updateUserMessage(String messageId, String content, Conversation conversation, OnCompleteHandler handler) {
+        TextMessage t = new TextMessage(content);
+        JIM.getInstance().getMessageManager().updateMessage(messageId, t, conversation, new IMessageManager.IMessageCallback() {
+            @Override
+            public void onSuccess(Message message) {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                if (handler != null) handler.onComplete(new Exception());
+            }
+        });
     }
 
     /**
@@ -262,26 +451,109 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      *                since 3.0.0
      */
     public void deleteMessage(@NonNull Message message, @Nullable OnCompleteHandler handler) {
-        if (channel == null) return;
+        if (mConversationInfo == null) return;
         final Message.MessageState status = message.getState();
         if (status == Message.MessageState.SENT) {
             ArrayList<String> ids = new ArrayList<>();
             ids.add(message.getMessageId());
-            JIM.getInstance().getMessageManager().deleteMessagesByMessageIdList(channel.getConversation(), ids, new IMessageManager.ISimpleCallback() {
+            JIM.getInstance().getMessageManager().deleteMessagesByMessageIdList(mConversationInfo.getConversation(), ids, new IMessageManager.ISimpleCallback() {
                 @Override
                 public void onSuccess() {
                     if (handler != null) handler.onComplete(null);
-
                 }
 
                 @Override
                 public void onError(int errorCode) {
-                    if (handler != null)
-                        handler.onComplete(new RuntimeException("erroCode:" + errorCode));
+                    if (handler != null) {
+                        handler.onComplete(new RuntimeException("errorCode:" + errorCode));
+                    }
                     Logger.i("++ deleted message : %s", message);
                 }
             });
+        } else {
+            if (handler != null) {
+                handler.onComplete(new RuntimeException("Message not sent"));
+            }
         }
+    }
+
+    public void recallMessage(@NonNull Message message, @NonNull OnCompleteHandler handler) {
+        if (mConversationInfo == null) return;
+        final Message.MessageState status = message.getState();
+        if (status == Message.MessageState.SENT) {
+            JIM.getInstance().getMessageManager().recallMessage(message.getMessageId(), null, new IMessageManager.IRecallMessageCallback() {
+                @Override
+                public void onSuccess(Message message) {
+                    handler.onComplete(null);
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    handler.onComplete(new RuntimeException("errorCode:" + errorCode));
+                    Logger.i("++ recall message : %s", message);
+                }
+            });
+        } else {
+            handler.onComplete(new RuntimeException("Message not sent"));
+        }
+    }
+
+    /**
+     * Adds the reaction with {@code key} if the current user doesn't add it, otherwise the reaction will be deleted
+     *
+     * @param view View displaying the reaction with {@code key}
+     * @param message Message to which the reaction will be applieds
+     * @param key Key of reaction
+     * @param handler Callback handler called when this method is completed
+     * since 3.0.0
+     */
+    public void toggleReaction(@NonNull View view, @NonNull Message message, @NonNull String key, @Nullable OnCompleteHandler handler) {
+        if (mConversationInfo == null) return;
+        if (!view.isSelected()) {
+            Logger.i("__ add reaction : %s", key);
+            JIM.getInstance().getMessageManager().addMessageReaction(message.getMessageId(), mConversationInfo.getConversation(), key, new IMessageManager.ISimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    if (handler != null) {
+                        handler.onComplete(null);
+                    }
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    if (handler != null) {
+                        handler.onComplete(new RuntimeException());
+                    }
+                }
+            });
+        } else {
+            Logger.i("__ delete reaction : %s", key);
+            JIM.getInstance().getMessageManager().removeMessageReaction(message.getMessageId(), mConversationInfo.getConversation(), key, new IMessageManager.ISimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    if (handler != null) {
+                        handler.onComplete(null);
+                    }
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    if (handler != null) {
+                        handler.onComplete(new RuntimeException());
+                    }
+                }
+            });
+        }
+    }
+
+    public MessageReaction getReactionByMessageId(@NonNull String messageId) {
+        MessageReaction result = null;
+        for (MessageReaction reaction : mMessageReactions) {
+            if (reaction.getMessageId().equals(messageId)) {
+                result = reaction;
+            }
+        }
+        return result;
     }
 
     /**
@@ -292,24 +564,25 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      */
     @Override
     public void authenticate(@NonNull AuthenticateHandler handler) {
-        connect((e) -> {
-            if (e == null) {
-                ConversationInfo info = getChannel(conversation);
+
+        Handler mh = new Handler(Looper.getMainLooper());
+        mh.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ConversationInfo info = getChannel(mConversation);
                 if (info == null) {
                     info = new ConversationInfo();
-                    info.setConversation(conversation);
+                    info.setConversation(mConversation);
                 }
-                this.channel = info;
-                if (channel == null) {
+                BaseMessageListViewModel.this.mConversationInfo = info;
+                BaseMessageListViewModel.this.mMemberFinder = new MemberFinder(SendbirdUIKit.getUserMentionConfig(), mConversation.getConversationId());
+                if (mConversationInfo == null) {
                     handler.onAuthenticationFailed();
                 } else {
                     handler.onAuthenticated();
                 }
-
-            } else {
-                handler.onAuthenticationFailed();
             }
-        });
+        }, 50);
     }
 
     @VisibleForTesting
@@ -324,11 +597,12 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
      *                        since 3.0.0
      */
     public synchronized void loadMemberList(@Nullable String startWithFilter) {
+        if (mMemberFinder != null) mMemberFinder.find(startWithFilter);
     }
 
     void onMessagesUpdated(@NonNull ConversationInfo channel, @NonNull Message message) {
-        if (message == null || message.getClientMsgNo() == 0) return;
-        Message find = cachedMessages.getById(message.getClientMsgNo());
+        if (message.getClientMsgNo() == 0) return;
+        Message find = cachedMessages.getByClientNo(message.getClientMsgNo());
         String name;
         if (find == null) {
             cachedMessages.add(message);
@@ -375,6 +649,5 @@ abstract public class BaseMessageListViewModel extends BaseViewModel implements 
     public List<Message> buildMessageList() {
         return Collections.emptyList();
     }
-
 }
 

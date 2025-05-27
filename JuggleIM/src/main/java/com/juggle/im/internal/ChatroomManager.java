@@ -52,7 +52,8 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
                 JLogger.i("CHRM-Join", "success");
                 changeStatus(chatroomId, CachedChatroom.ChatroomStatus.JOINED);
                 //count 为 0， timestamp 也为 0，服务端永远同步不下来消息
-                if (prevMessageCount == 0) {
+                long existedSyncTime = getSyncTimeForChatroom(chatroomId);
+                if (prevMessageCount == 0 && existedSyncTime == 0) {
                     setSyncTime(chatroomId, timestamp);
                 }
                 syncChatroomAttr(chatroomId, getAttrSyncTimeForChatroom(chatroomId));
@@ -208,8 +209,7 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
     }
 
     synchronized private void changeStatus(String chatroomId, CachedChatroom.ChatroomStatus status) {
-        if (status == CachedChatroom.ChatroomStatus.QUIT
-        || status == CachedChatroom.ChatroomStatus.FAILED) {
+        if (status == CachedChatroom.ChatroomStatus.QUIT) {
             mCachedChatroomMap.remove(chatroomId);
             return;
         }

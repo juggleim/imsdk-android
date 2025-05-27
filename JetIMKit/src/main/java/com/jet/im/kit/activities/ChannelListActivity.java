@@ -7,7 +7,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -19,7 +18,7 @@ import com.jet.im.kit.utils.TextUtils;
 /**
  * Activity displays a list of channels from a current user.
  */
-public class ChannelListActivity extends AppCompatActivity {
+public class ChannelListActivity extends BaseActivity {
 
     /**
      * Create an intent for a {@link ChannelListActivity}.

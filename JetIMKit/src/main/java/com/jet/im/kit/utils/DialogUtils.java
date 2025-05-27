@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.view.ContextThemeWrapper;
 
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.SendbirdChat;
 import com.sendbird.android.channel.GroupChannel;
 import com.sendbird.android.params.GroupChannelCreateParams;
@@ -329,18 +330,18 @@ public final class DialogUtils {
 
     @NonNull
     public static AlertDialog showUserProfileDialog(@NonNull Context context,
-                                                    @NonNull User user,
+                                                    @NonNull UserInfo user,
                                                     boolean useChannelCreatable,
-                                                    @Nullable OnItemClickListener<User> userProfileItemClickListener,
+                                                    @Nullable OnItemClickListener<UserInfo> userProfileItemClickListener,
                                                     @Nullable LoadingDialogHandler handler) {
         return showUserProfileDialog(context, user, useChannelCreatable, userProfileItemClickListener, handler, false);
     }
 
     @NonNull
     public static AlertDialog showUserProfileDialog(@NonNull Context context,
-                                                    @NonNull User user,
+                                                    @NonNull UserInfo user,
                                                     boolean useChannelCreatable,
-                                                    @Nullable OnItemClickListener<User> userProfileItemClickListener,
+                                                    @Nullable OnItemClickListener<UserInfo> userProfileItemClickListener,
                                                     @Nullable LoadingDialogHandler handler,
                                                     boolean useOverlay) {
         int themeResId;

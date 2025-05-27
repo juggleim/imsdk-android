@@ -55,10 +55,19 @@ public class ConcreteConversationInfo extends ConversationInfo {
         this.mMentionUserList = mentionUserList;
     }
 
+    public List<String> getTagIdList() {
+        return mTagIdList;
+    }
+
+    public void setTagIdList(List<String> tagIdList) {
+        mTagIdList = tagIdList;
+    }
+
     private long mLastReadMessageIndex;
     private long mLastMessageIndex;
     private long mSyncTime;
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;
     private List<UserInfo> mMentionUserList;
+    private List<String> mTagIdList;
 }

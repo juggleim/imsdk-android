@@ -3,6 +3,7 @@ package com.juggle.im.internal;
 import android.text.TextUtils;
 import android.util.LruCache;
 
+import com.juggle.im.interfaces.GroupMember;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.UserInfo;
 
@@ -15,6 +16,7 @@ public class UserInfoCache {
     private final Lock mLock = new ReentrantLock();
     private final LruCache<String, UserInfo> mUserInfoCache = new LruCache<>(MAX_CACHED_COUNT);
     private final LruCache<String, GroupInfo> mGroupInfoCache = new LruCache<>(MAX_CACHED_COUNT);
+    private final LruCache<String, GroupMember> mGroupMemberCache = new LruCache<>(MAX_CACHED_COUNT);
 
     //清空缓存
     public void clearCache() {
@@ -22,6 +24,7 @@ public class UserInfoCache {
         try {
             mUserInfoCache.evictAll();
             mGroupInfoCache.evictAll();
+            mGroupMemberCache.evictAll();
         } finally {
             mLock.unlock();
         }
@@ -120,6 +123,56 @@ public class UserInfoCache {
             mLock.unlock();
         }
     }
+
+    public GroupMember getGroupMember(String groupId, String userId) {
+        mLock.lock();
+        try {
+            //判空
+            if (TextUtils.isEmpty(groupId) || TextUtils.isEmpty(userId)) {
+                return null;
+            }
+            //从缓存中查找
+            return mGroupMemberCache.get(keyForGroupMember(groupId, userId));
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    public void insertGroupMember(GroupMember groupMember) {
+        mLock.lock();
+        try {
+            //判空
+            if (groupMember == null || TextUtils.isEmpty(groupMember.getGroupId()) || TextUtils.isEmpty(groupMember.getUserId())) {
+                return;
+            }
+            //更新缓存
+            mGroupMemberCache.put(keyForGroupMember(groupMember.getGroupId(), groupMember.getUserId()), groupMember);
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    public void insertGroupMemberList(List<GroupMember> list) {
+        mLock.lock();
+        try {
+            //判空
+            if (list == null || list.isEmpty()) {
+                return;
+            }
+            //更新缓存
+            for (GroupMember member : list) {
+                mGroupMemberCache.put(keyForGroupMember(member.getGroupId(), member.getUserId()), member);
+            }
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    private String keyForGroupMember(String groupId, String userId) {
+        return groupId + sSeparator + userId;
+    }
+
+    private static final String sSeparator = "+++";
 
 }
 

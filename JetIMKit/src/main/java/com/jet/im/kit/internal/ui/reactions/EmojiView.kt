@@ -40,7 +40,8 @@ internal class EmojiView @JvmOverloads constructor(
             val failedDrawable: Drawable? = emojiFailedDrawableResTint?.let {
                 DrawableUtils.setTintList(context, emojiFailedDrawableRes, emojiFailedDrawableResTint)
             } ?: AppCompatResources.getDrawable(getContext(), emojiFailedDrawableRes)
-            binding.ivEmoji.setImageDrawable(failedDrawable)
+            binding.ivEmoji.text = "failed"
+//            binding.ivEmoji.setImageDrawable(failedDrawable)
         } finally {
             a.recycle()
         }
@@ -50,27 +51,32 @@ internal class EmojiView @JvmOverloads constructor(
         binding.emojiPanel.setBackgroundResource(backgroundResource)
     }
 
-    fun setImageDrawable(drawable: Drawable?) {
-        binding.ivEmoji.setImageDrawable(drawable)
+//    fun setImageDrawable(drawable: Drawable?) {
+//        binding.ivEmoji.setImageDrawable(drawable)
+//    }
+
+    fun setText(emoji: String) {
+        binding.ivEmoji.text = emoji
     }
 
-    private fun setEmojiUrl(emojiUrl: String?) {
-        val overrideSize = resources
-            .getDimensionPixelSize(R.dimen.sb_size_38)
-        val failedDrawable: Drawable? = emojiFailedDrawableResTint?.let {
-            DrawableUtils.setTintList(context, emojiFailedDrawableRes, emojiFailedDrawableResTint)
-        } ?: AppCompatResources.getDrawable(context, emojiFailedDrawableRes)
-        Glide.with(binding.ivEmoji)
-            .load(emojiUrl)
-            .override(overrideSize, overrideSize)
-            .centerCrop()
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .error(failedDrawable)
-            .placeholder(failedDrawable)
-            .into(binding.ivEmoji)
-    }
+//    private fun setEmojiUrl(emojiUrl: String?) {
+//        val overrideSize = resources
+//            .getDimensionPixelSize(R.dimen.sb_size_38)
+//        val failedDrawable: Drawable? = emojiFailedDrawableResTint?.let {
+//            DrawableUtils.setTintList(context, emojiFailedDrawableRes, emojiFailedDrawableResTint)
+//        } ?: AppCompatResources.getDrawable(context, emojiFailedDrawableRes)
+//        Glide.with(binding.ivEmoji)
+//            .load(emojiUrl)
+//            .override(overrideSize, overrideSize)
+//            .centerCrop()
+//            .diskCacheStrategy(DiskCacheStrategy.ALL)
+//            .error(failedDrawable)
+//            .placeholder(failedDrawable)
+//            .into(binding.ivEmoji)
+//    }
 
-    fun drawEmoji(emoji: Emoji) {
-        setEmojiUrl(EmojiManager.getEmojiUrl(emoji.key))
+    fun drawEmoji(emoji: String) {
+        binding.ivEmoji.text = emoji
+//        setEmojiUrl(EmojiManager.getEmojiUrl(emoji.key))
     }
 }

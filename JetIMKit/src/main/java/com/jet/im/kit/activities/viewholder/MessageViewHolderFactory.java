@@ -6,11 +6,14 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.jet.im.kit.consts.StringSet;
+import com.jet.im.kit.databinding.SbViewAdminMessageBinding;
+import com.jet.im.kit.databinding.SbViewMyContactCardMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileImageMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyFileVideoMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyUserMessageBinding;
 import com.jet.im.kit.databinding.SbViewMyVoiceMessageBinding;
+import com.jet.im.kit.databinding.SbViewOtherContactCardMessageBinding;
 import com.jet.im.kit.databinding.SbViewOtherFileImageMessageBinding;
 import com.jet.im.kit.databinding.SbViewOtherFileMessageBinding;
 import com.jet.im.kit.databinding.SbViewOtherFileVideoMessageBinding;
@@ -18,11 +21,13 @@ import com.jet.im.kit.databinding.SbViewOtherUserMessageBinding;
 import com.jet.im.kit.databinding.SbViewOtherVoiceMessageBinding;
 import com.jet.im.kit.databinding.SbViewTimeLineMessageBinding;
 import com.jet.im.kit.internal.extensions.MessageExtensionsKt;
+import com.jet.im.kit.internal.ui.viewholders.MyContactCardMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyImageFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyUserMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyVideoFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.MyVoiceMessageViewHolder;
+import com.jet.im.kit.internal.ui.viewholders.OtherContactCardMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.OtherFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.OtherImageFileMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.OtherUserMessageViewHolder;
@@ -31,17 +36,24 @@ import com.jet.im.kit.internal.ui.viewholders.OtherVoiceMessageViewHolder;
 import com.jet.im.kit.internal.ui.viewholders.TimelineViewHolder;
 import com.jet.im.kit.model.MessageListUIParams;
 import com.jet.im.kit.model.TimelineMessage;
+import com.jet.im.kit.model.message.ContactCardMessage;
+import com.jet.im.kit.model.message.FriendNotifyMessage;
+import com.jet.im.kit.model.message.GroupNotifyMessage;
+import com.jet.im.kit.model.message.StreamTextMessage;
 import com.jet.im.kit.utils.MessageUtils;
+import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
+import com.juggle.im.model.messages.RecallInfoMessage;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 import com.sendbird.android.message.BaseMessage;
 import com.sendbird.android.message.MultipleFilesMessage;
 import com.sendbird.android.message.UserMessage;
+import com.sendbird.uikit.internal.ui.viewholders.AdminMessageViewHolder;
 
 /**
  * A Factory manages a type of messages.
@@ -114,6 +126,9 @@ public class MessageViewHolderFactory {
             case VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER:
                 holder = new OtherVideoFileMessageViewHolder(SbViewOtherFileVideoMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
+            case VIEW_TYPE_ADMIN_MESSAGE:
+                holder = new AdminMessageViewHolder(SbViewAdminMessageBinding.inflate(inflater, parent, false), new MessageListUIParams.Builder().setUseMessageGroupUI(false).build());
+                break;
             case VIEW_TYPE_TIME_LINE:
                 holder = new TimelineViewHolder(SbViewTimeLineMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
@@ -122,6 +137,12 @@ public class MessageViewHolderFactory {
                 break;
             case VIEW_TYPE_VOICE_MESSAGE_OTHER:
                 holder = new OtherVoiceMessageViewHolder(SbViewOtherVoiceMessageBinding.inflate(inflater, parent, false), messageListUIParams);
+                break;
+            case VIEW_TYPE_CONTACT_CARD_MESSAGE_ME:
+                holder = new MyContactCardMessageViewHolder(SbViewMyContactCardMessageBinding.inflate(inflater, parent, false), messageListUIParams);
+                break;
+            case VIEW_TYPE_CONTACT_CARD_MESSAGE_OTHER:
+                holder = new OtherContactCardMessageViewHolder(SbViewOtherContactCardMessageBinding.inflate(inflater, parent, false), messageListUIParams);
                 break;
             default:
                 // unknown message type
@@ -154,7 +175,9 @@ public class MessageViewHolderFactory {
     public static MessageType getMessageType(@NonNull Message message) {
         MessageType type;
         MessageContent content = message.getContent();
-        if (content instanceof TextMessage) {
+        if (content instanceof TextMessage
+        || content instanceof CallFinishNotifyMessage
+        || content instanceof StreamTextMessage) {
             if (MessageUtils.isMine(message)) {
                 type = MessageType.VIEW_TYPE_USER_MESSAGE_ME;
             } else {
@@ -184,12 +207,15 @@ public class MessageViewHolderFactory {
             } else {
                 type = MessageType.VIEW_TYPE_FILE_MESSAGE_OTHER;
             }
-        }
-        else if (content instanceof FileMessage) {
+        } else if (content instanceof FriendNotifyMessage
+        || content instanceof GroupNotifyMessage
+        || content instanceof RecallInfoMessage) {
+            type = MessageType.VIEW_TYPE_ADMIN_MESSAGE;
+        } else if (content instanceof ContactCardMessage) {
             if (MessageUtils.isMine(message)) {
-                type = MessageType.VIEW_TYPE_FILE_MESSAGE_ME;
+                type = MessageType.VIEW_TYPE_CONTACT_CARD_MESSAGE_ME;
             } else {
-                type = MessageType.VIEW_TYPE_FILE_MESSAGE_OTHER;
+                type = MessageType.VIEW_TYPE_CONTACT_CARD_MESSAGE_OTHER;
             }
         }
 //        else if (message instanceof MultipleFilesMessage && MessageExtensionsKt.containsOnlyImageFiles((MultipleFilesMessage) message)) {

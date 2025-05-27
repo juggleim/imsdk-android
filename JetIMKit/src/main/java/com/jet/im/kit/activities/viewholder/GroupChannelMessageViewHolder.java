@@ -5,7 +5,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.sendbird.android.message.Reaction;
+import com.juggle.im.model.MessageReactionItem;
 import com.jet.im.kit.interfaces.EmojiReactionHandler;
 import com.jet.im.kit.interfaces.OnItemClickListener;
 import com.jet.im.kit.interfaces.OnItemLongClickListener;
@@ -34,8 +34,16 @@ public abstract class GroupChannelMessageViewHolder extends MessageViewHolder im
      * @param moreButtonClickListener The callback to be invoked when the emoji reaction more button is clicked and held.
      * since 1.1.0
      */
-    abstract public void setEmojiReaction(@NonNull List<Reaction> reactionList,
+    abstract public void setEmojiReaction(@NonNull List<? extends MessageReactionItem> reactionList,
                                           @Nullable OnItemClickListener<String> emojiReactionClickListener,
                                           @Nullable OnItemLongClickListener<String> emojiReactionLongClickListener,
                                           @Nullable View.OnClickListener moreButtonClickListener);
+
+    public void setEmojiReaction(@NonNull List<? extends MessageReactionItem> reactionList,
+                                 @NonNull List<String> totalEmojiList,
+                                 @Nullable OnItemClickListener<String> emojiReactionClickListener,
+                                 @Nullable OnItemLongClickListener<String> emojiReactionLongClickListener,
+                                 @Nullable View.OnClickListener moreButtonClickListener) {
+        setEmojiReaction(reactionList, emojiReactionClickListener, emojiReactionLongClickListener, moreButtonClickListener);
+    }
 }

@@ -11,6 +11,7 @@ import com.juggle.im.call.ICallSession;
 import com.juggle.im.call.internal.media.CallMediaManager;
 import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.internal.UserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.JWebSocket;
 import com.juggle.im.internal.core.network.RtcRoomListCallback;
@@ -76,8 +77,9 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         }
     }
 
-    public CallManager(JIMCore core) {
+    public CallManager(JIMCore core, UserInfoManager userInfoManager) {
         this.mCore = core;
+        this.mUserInfoManager = userInfoManager;
         mCore.getWebSocket().setCallListener(this);
     }
 
@@ -109,7 +111,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
                                         callSession.addMember(member);
                                     }
                                 }
-                                mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+                                mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
                                 initCallSessionWithCallStatus(callSession, callStatus);
                             }
 
@@ -158,7 +160,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
                 }
             }
         }
-        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userMap.values()));
+        mUserInfoManager.insertUserInfoList(new ArrayList<>(userMap.values()));
         if (isInvite) {
             CallSessionImpl callSession = getCallSessionImpl(room.getRoomId());
             if (callSession == null) {
@@ -186,7 +188,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         }
         Map<String, UserInfo> userInfoMap = new HashMap<>();
         userInfoMap.put(user.getUserId(), user);
-        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
 
         CallSessionImpl callSession = getCallSessionImpl(room.getRoomId());
         if (callSession == null) {
@@ -202,7 +204,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         }
         Map<String, UserInfo> userInfoMap = new HashMap<>();
         userInfoMap.put(user.getUserId(), user);
-        mCore.getDbManager().insertUserInfoList(new ArrayList<>(userInfoMap.values()));
+        mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
 
         CallSessionImpl callSession = getCallSessionImpl(room.getRoomId());
         if (callSession == null) {
@@ -304,6 +306,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
 
     private ConcurrentHashMap<String, ICallReceiveListener> mListenerMap = new ConcurrentHashMap<>();;
     private final JIMCore mCore;
+    private final UserInfoManager mUserInfoManager;
     private final List<CallSessionImpl> mCallSessionList = new ArrayList<>();
     private CallInternalConst.CallEngineType mEngineType;
 }

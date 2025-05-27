@@ -10,12 +10,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
+    <TextView
         android:id="@+id/ivEmoji"
         android:layout_width="match_parent"
         android:layout_height="@dimen/sb_size_0"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/sb_emoji_default_description"
+        android:textAppearance="@style/SendbirdSubtitle1Primary300"
+        android:textSize="@dimen/sb_text_size_26"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

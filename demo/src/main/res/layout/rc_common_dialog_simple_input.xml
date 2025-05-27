@@ -6,7 +6,7 @@
     android:layout_height="wrap_content">
 <LinearLayout
     android:layout_width="280dp"
-    android:layout_height="199dp"
+    android:layout_height="148dp"
     android:background="@drawable/common_dialog_bg"
     android:orientation="vertical">
     <TextView
@@ -26,9 +26,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:layout_height="85dp"
+        android:layout_height="@dimen/sb_size_44"
         android:textSize="12dp"
-        android:gravity="start|top"
+        android:gravity="left|center_vertical"
         android:background="@drawable/common_edit_bg"
         android:maxLength="64" />
 
@@ -50,7 +50,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:padding="8dp"
-            android:text="cancel"
+            android:text="@string/j_cancel"
             android:textColor="#333333" />
 
         <View
@@ -66,7 +66,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:padding="8dp"
-            android:text="confirm"
+            android:text="@string/j_confirm"
             android:textColor="#0099ff" />
     </LinearLayout>
 </LinearLayout>

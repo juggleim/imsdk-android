@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.jet.im.kit.internal.ui.components.HeaderView
+        android:id="@+id/headerView"
+        android:layout_width="match_parent"
+        android:layout_height="44dp" />
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/sb_size_30">
+            <com.jet.im.kit.widgets.WrapHeightGridView
+                android:id="@+id/profile_gv_group_member"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#ffffff"
+                android:gravity="start"
+                android:listSelector="@android:color/transparent"
+                android:numColumns="5"
+                android:paddingStart="1dp"
+                android:paddingEnd="1dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#fff">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.25dp"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#dfdfdd" />
+            </LinearLayout>
+            
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_all_group_member"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:item_content="@string/text_all_group_member"
+                app:item_right_image="@drawable/ic_mine_go">
+
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+<!--            <com.jet.im.kit.internal.ui.widgets.SettingItemView-->
+<!--                android:id="@+id/profile_siv_group_portrait_container"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="@dimen/sb_size_44"-->
+<!--                android:layout_marginTop="@dimen/sb_size_20"-->
+<!--                app:item_content="@string/text_group_portrait"-->
+<!--                app:item_divider="true"-->
+<!--                app:item_image_width="@dimen/sb_size_20"-->
+<!--                app:item_right_image_height="@dimen/sb_size_30"-->
+<!--                app:item_right_image_width="@dimen/sb_size_30">-->
+<!--            </com.jet.im.kit.internal.ui.widgets.SettingItemView>-->
+
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_group_name_container"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_44"
+                app:item_content="@string/text_group_name"
+                app:item_value_text_size="15sp"
+                app:item_divider="true"
+                app:item_right_image="@drawable/ic_mine_go">
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_group_qrcode"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_44"
+                app:item_content="@string/text_group_qrcode"
+                app:item_value_text_size="15sp"
+                app:item_divider="true"
+                app:item_right_image="@drawable/ic_mine_go">
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_group_broadcast"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_44"
+                app:item_content="@string/text_group_announcement"
+                app:item_value_text_size="15sp"
+                app:item_divider="true"
+                app:item_right_image="@drawable/ic_mine_go">
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_group_nickname"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_44"
+                app:item_content="@string/text_group_nickname"
+                app:item_value_text_size="15sp"
+                app:item_divider="true"
+                app:item_right_image="@drawable/ic_mine_go">
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_group_management"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_44"
+                app:item_content="@string/text_group_management"
+                app:item_value_text_size="15sp"
+                app:item_divider="true"
+                app:item_right_image="@drawable/ic_mine_go">
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_message_notice"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_44"
+                android:layout_marginTop="@dimen/sb_size_20"
+                app:item_content="@string/j_mute_notifications"
+                app:item_divider="true"
+                app:item_switch="true">
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_set_top"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_44"
+                app:item_content="@string/text_set_top"
+                app:item_divider="true"
+                app:item_switch="true">
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+            <com.jet.im.kit.internal.ui.widgets.SettingItemView
+                android:id="@+id/profile_siv_clear_message"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_44"
+                android:layout_marginTop="@dimen/sb_size_20"
+                app:item_content="@string/text_clear_message"
+                app:item_right_image="@drawable/ic_mine_go">
+            </com.jet.im.kit.internal.ui.widgets.SettingItemView>
+
+            <Button
+                android:id="@+id/profile_btn_group_quit"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sb_size_48"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="14dp"
+                android:background="@drawable/btn_red_selector"
+                android:text="@string/text_delete_and_quit"
+                android:textColor="#FFF"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

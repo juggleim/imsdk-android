@@ -1,8 +1,10 @@
 package com.juggle.chat.http;
 
+import com.juggle.chat.bean.FriendApplicationBean;
 import com.juggle.chat.bean.FriendBean;
 import com.juggle.chat.bean.HttpResult;
 import com.juggle.chat.bean.ListResult;
+import com.juggle.chat.bean.SearchUserBean;
 
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -19,5 +21,14 @@ public interface FriendsService {
     Call<HttpResult<Object>> addFriend(@Body RequestBody body);
 
     @POST("/jim/users/search")
-    Call<HttpResult<ListResult<FriendBean>>> searchUsers(@Body RequestBody body);
+    Call<HttpResult<ListResult<SearchUserBean>>> searchUsers(@Body RequestBody body);
+
+    @POST("/jim/friends/apply")
+    Call<HttpResult<Object>> applyFriend(@Body RequestBody body);
+
+    @POST("/jim/friends/confirm")
+    Call<HttpResult<Object>> confirmFriend(@Body RequestBody body);
+
+    @GET("/jim/friends/applications")
+    Call<HttpResult<ListResult<FriendApplicationBean>>> getFriendApplicationList(@Query("start") int start, @Query("count") int count);
 }

@@ -1,8 +1,15 @@
 <resources>
 
+    <style name="Theme.Splash" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@mipmap/ic_launcher</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
+        <item name="android:statusBarColor">#ffffff</item>
         <item name="colorPrimary">@color/primary_300</item>
         <item name="colorPrimaryDark">@color/primary_300</item>
         <item name="colorAccent">@color/secondary_300</item>
@@ -18,6 +25,11 @@
 
     <style name="AppTheme.Sendbird.Custom">
         <item name="sb_module_channel">@style/Module.Channel.Custom</item>
+    </style>
+
+    <style name="AnimationMainTitleMore">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
     </style>
 
     <style name="Module.Channel.Custom">
@@ -53,6 +65,15 @@
 
     <style name="TextStyle.Alignment" parent="@android:style/Widget.TextView">
         <item name="android:textDirection">locale</item>
+    </style>
+
+    <style name="profile_user_detail_btn">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_marginLeft">25dp</item>
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginRight">25dp</item>
+        <item name="android:textSize">17dp</item>
     </style>
 
 

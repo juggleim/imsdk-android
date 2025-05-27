@@ -127,4 +127,59 @@
     <string name="text_resend">Resend</string>
     <string name="text_delete">Delete</string>
     <string name="text_custom_header">Custom Header</string>
+
+    <string name="text_my_qrcode">My QR code</string>
+    <string name="text_push_setting">Push setting</string>
+    <string name="text_global_disturb">Global disturb</string>
+    <string name="text_privacy_policy">Privacy policy</string>
+    <string name="text_user_agreement">User agreement</string>
+    <string name="text_push_language_setting">Push language setting</string>
+    <string name="text_profile">Profile</string>
+    <string name="text_portrait">Portrait</string>
+    <string name="text_update_nickname">Update nickname</string>
+    <string name="text_new_friend">New friend</string>
+    <string name="text_bots">Bots</string>
+    <string name="text_group_name">Group name</string>
+    <string name="text_added">Added</string>
+    <string name="text_add_friend_confirm">Add friend?</string>
+    <string name="text_delete_and_quit">Delete and quit</string>
+    <string name="text_operation_fail">Operation fail</string>
+    <string name="text_user_information">User Information</string>
+    <string name="text_start_chat">Start chat</string>
+    <string name="text_add_friend">Add friend</string>
+    <string name="text_friend_application_sent">Friend application sent</string>
+    <string name="text_group_member">Group member</string>
+    <string name="text_group_management">Group management</string>
+    <string name="text_update_group_name">Update group name</string>
+    <string name="text_update_group_nickname">Update group nickname</string>
+    <string name="text_group_announcement_tips">After release, the group announcement will be sent as a system message, visible to all members.</string>
+    <string name="text_edit_group_announcement">Please edit group announcement</string>
+    <string name="text_select_group_member">Select group member</string>
+    <string name="text_change_group_owner">Change group owner</string>
+    <string name="text_group_mute">Group mute</string>
+    <string name="text_display_history_message_before_join_group">Display history messages before join group</string>
+    <string name="text_group_need_verify">The group enables verification, only friends invitation allowed</string>
+    <string name="text_qrcode_group_tips">Scan QR code to join the group immediately</string>
+    <string name="text_save_to_phone">Save to phone</string>
+    <string name="text_share_to_juggle">Share to JuggleChat</string>
+    <string name="text_qrcode_private_tips">Scan QR code to add me as friend</string>
+    <string name="text_member_count">%d Person(s)</string>
+    <string name="text_create_group">Create group</string>
+    <string name="text_scan_qrcode">Scan QR code</string>
+
+    <string name="zxing_msg_camera_framework_bug">Sorry, the Android camera encountered a problem. You may need to restart the device.</string>
+    <string name="zxing_distinguish_picture">Identify the Qrcode from the image</string>
+    <string name="zxing_qr_can_not_recognized">The QR code can’t be recognized</string>
+    <string name="zxing_open_light">Open</string>
+    <string name="zxing_close_light">Close</string>
+    <string name="zxing_tips_qrcode_scan">Put the QR code into the frame that it can be scanned automatically.</string>
+    <string name="zxing_scan_from_picture">Select image</string>
+    <string name="zxing_msg_camera_permission_grant_needed">您需要在设置中打开相机权限</string>
+
+    <string name="text_check_network">Please check network settings</string>
+    <string name="text_album">Album</string>
+    <string name="text_join_group">Join the group</string>
+    <string name="text_group_has_members">%1$d&#160;member(s) in group</string>
+    <string name="text_select_conversation">Select a conversation</string>
+
 </resources>

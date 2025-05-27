@@ -63,7 +63,7 @@ public class ChannelListModule extends BaseModule {
         this.params = params;
         this.headerComponent = new HeaderComponent();
         this.headerComponent.getParams().setUseLeftButton(false);
-        this.headerComponent.getParams().setUseRightButton(false);
+        this.headerComponent.getParams().setUseRightButton(true);
         this.channelListComponent = new ChannelListComponent();
         this.statusComponent = new StatusComponent();
     }

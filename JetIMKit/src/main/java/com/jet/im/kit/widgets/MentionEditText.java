@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.core.content.res.ResourcesCompat;
 
+import com.juggle.im.model.UserInfo;
 import com.sendbird.android.user.User;
 import com.jet.im.kit.activities.adapter.MutableBaseAdapter;
 import com.jet.im.kit.interfaces.OnMentionEventListener;
@@ -47,7 +48,7 @@ public class MentionEditText extends AppCompatEditText {
     @NonNull
     private final AtomicBoolean isDelKeyEventAlreadyHandled = new AtomicBoolean(false);
     @NonNull
-    private final ListPopupDialog<User> suggestionDialog;
+    private final ListPopupDialog<UserInfo> suggestionDialog;
 
     @NonNull
     private final ThemeableSnackbar snackbar;
@@ -261,7 +262,7 @@ public class MentionEditText extends AppCompatEditText {
      * @param suggestedMentionList The updated suggested user list for mention
      * since 3.0.0
      */
-    public void notifySuggestedMentionDataChanged(@NonNull List<User> suggestedMentionList) {
+    public void notifySuggestedMentionDataChanged(@NonNull List<UserInfo> suggestedMentionList) {
         if (suggestedMentionList.isEmpty()) {
             if (suggestionDialog.isShowing()) {
                 suggestionDialog.dismiss();
@@ -288,7 +289,7 @@ public class MentionEditText extends AppCompatEditText {
      * @param adapter The adapter for a list of suggested users for mention
      * since 3.0.0
      */
-    public void setSuggestedMentionListAdapter(@NonNull MutableBaseAdapter<User> adapter) {
+    public void setSuggestedMentionListAdapter(@NonNull MutableBaseAdapter<UserInfo> adapter) {
         suggestionDialog.setAdapter(adapter);
     }
 
@@ -375,10 +376,10 @@ public class MentionEditText extends AppCompatEditText {
      * since 3.0.0
      */
     @NonNull
-    public List<User> getMentionedUsers() {
+    public List<UserInfo> getMentionedUsers() {
         if (getText() == null) return Collections.emptyList();
         final MentionSpan[] spans = getText().getSpans(0, getText().length(), MentionSpan.class);
-        final List<User> mentionedUsers = new ArrayList<>();
+        final List<UserInfo> mentionedUsers = new ArrayList<>();
         for (MentionSpan span : spans) {
             mentionedUsers.add(span.getMentionedUser());
         }

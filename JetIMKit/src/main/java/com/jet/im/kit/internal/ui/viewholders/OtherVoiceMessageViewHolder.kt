@@ -13,23 +13,30 @@ import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
+import com.sendbird.android.message.Emoji
 
 internal class OtherVoiceMessageViewHolder internal constructor(
     val binding: SbViewOtherVoiceMessageBinding,
     messageListUIParams: MessageListUIParams
 ) : GroupChannelMessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams){
+    override fun bind(channel: ConversationInfo, message: Message, reactionList: List<MessageReactionItem>, params: MessageListUIParams){
         binding.otherVoiceMessageView.messageUIConfig = messageUIConfig
-        binding.otherVoiceMessageView.drawMessage(channel, message, params)
+        binding.otherVoiceMessageView.drawMessage(channel, message, reactionList, params)
     }
 
     override fun setEmojiReaction(
-        reactionList: List<Reaction>,
+        reactionList: List<MessageReactionItem>,
+        totalEmojiList: List<String>,
         emojiReactionClickListener: OnItemClickListener<String>?,
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
+        binding.otherVoiceMessageView.binding.rvEmojiReactionList.apply {
+            setReactionList(reactionList, totalEmojiList)
+            setClickListeners(emojiReactionClickListener, emojiReactionLongClickListener, moreButtonClickListener)
+        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
@@ -37,5 +44,13 @@ internal class OtherVoiceMessageViewHolder internal constructor(
             ClickableViewIdentifier.Chat.name to binding.otherVoiceMessageView.binding.voiceMessage,
             ClickableViewIdentifier.Profile.name to binding.otherVoiceMessageView.binding.ivProfileView,
         )
+    }
+
+    override fun setEmojiReaction(
+        reactionList: MutableList<out MessageReactionItem>,
+        emojiReactionClickListener: OnItemClickListener<String>?,
+        emojiReactionLongClickListener: OnItemLongClickListener<String>?,
+        moreButtonClickListener: View.OnClickListener?
+    ) {
     }
 }

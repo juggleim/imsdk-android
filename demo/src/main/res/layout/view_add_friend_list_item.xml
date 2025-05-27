@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/vgMemberItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="@dimen/sb_size_16"
+    android:paddingTop="@dimen/sb_size_10"
+    android:paddingRight="@dimen/sb_size_16"
+    android:paddingBottom="@dimen/sb_size_10">
+
+    <ImageView
+        android:id="@+id/ivProfile"
+        android:layout_width="@dimen/sb_size_36"
+        android:layout_height="@dimen/sb_size_36"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/sb_view_member_item_profile_description"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvNickname"
+        android:layout_width="@dimen/sb_size_0"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/sb_size_16"
+        android:layout_marginRight="@dimen/sb_size_16"
+        android:gravity="left"
+        android:textAppearance="@style/SendbirdBody1OnLight01"
+        app:layout_constraintLeft_toRightOf="@+id/ivProfile"
+        app:layout_constraintRight_toLeftOf="@+id/tv_add_btn"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_add_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/sb_size_12"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

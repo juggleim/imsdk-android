@@ -13,28 +13,43 @@ import com.jet.im.kit.interfaces.OnItemLongClickListener
 import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
+import com.juggle.im.model.MessageReactionItem
+import com.sendbird.android.message.Emoji
 
 internal class MyVoiceMessageViewHolder internal constructor(
     val binding: SbViewMyVoiceMessageBinding,
     messageListUIParams: MessageListUIParams
 ) : GroupChannelMessageViewHolder(binding.root, messageListUIParams) {
 
-    override fun bind(channel: ConversationInfo, message: Message, params: MessageListUIParams) {
+    override fun bind(channel: ConversationInfo, message: Message, reactionList: List<MessageReactionItem>, params: MessageListUIParams) {
         binding.myVoiceMessageView.messageUIConfig = messageUIConfig
-        binding.myVoiceMessageView.drawMessage(channel, message, params)
+        binding.myVoiceMessageView.drawMessage(channel, message, reactionList, params)
     }
 
     override fun setEmojiReaction(
-        reactionList: List<Reaction>,
+        reactionList: List<MessageReactionItem>,
+        totalEmojiList: List<String>,
         emojiReactionClickListener: OnItemClickListener<String>?,
         emojiReactionLongClickListener: OnItemLongClickListener<String>?,
         moreButtonClickListener: View.OnClickListener?
     ) {
+        binding.myVoiceMessageView.binding.rvEmojiReactionList.apply {
+            setReactionList(reactionList, totalEmojiList)
+            setClickListeners(emojiReactionClickListener, emojiReactionLongClickListener, moreButtonClickListener)
+        }
     }
 
     override fun getClickableViewMap(): Map<String, View> {
         return mapOf(
             ClickableViewIdentifier.Chat.name to binding.myVoiceMessageView.binding.voiceMessage,
         )
+    }
+
+    override fun setEmojiReaction(
+        reactionList: MutableList<out MessageReactionItem>,
+        emojiReactionClickListener: OnItemClickListener<String>?,
+        emojiReactionLongClickListener: OnItemLongClickListener<String>?,
+        moreButtonClickListener: View.OnClickListener?
+    ) {
     }
 }

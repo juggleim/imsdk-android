@@ -6,13 +6,13 @@ import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.jet.im.kit.SendbirdUIKit;
 import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IConversationManager;
 import com.jet.im.kit.interfaces.AuthenticateHandler;
 import com.jet.im.kit.interfaces.OnCompleteHandler;
 import com.jet.im.kit.interfaces.OnPagedDataLoader;
-import com.jet.im.kit.internal.contracts.GroupChannelCollectionContract;
-import com.jet.im.kit.internal.contracts.GroupChannelCollectionImpl;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitContract;
 import com.jet.im.kit.internal.contracts.SendbirdUIKitImpl;
 import com.jet.im.kit.internal.contracts.TaskQueueContract;
@@ -20,27 +20,23 @@ import com.jet.im.kit.internal.contracts.TaskQueueImpl;
 import com.jet.im.kit.internal.tasks.JobTask;
 import com.jet.im.kit.internal.testmodel.ChannelListViewModelDataContract;
 import com.jet.im.kit.log.Logger;
+import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.sendbird.android.channel.GroupChannel;
-import com.sendbird.android.exception.SendbirdException;
 
 import org.jetbrains.annotations.TestOnly;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * ViewModel preparing and managing data related with the list of channels
  * <p>
  * since 3.0.0
  */
-public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLoader<List<ConversationInfo>> {
-
-    @Nullable
-    private GroupChannelCollectionContract collection;
+public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLoader<List<ConversationInfo>>, IConversationManager.IConversationListener {
 
     @NonNull
     private final IConversationManager query;
@@ -48,9 +44,9 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
     private final MutableLiveData<List<ConversationInfo>> channelList;
 
     @NonNull
-    private final IConversationManager.IConversationListener collectionHandler;
-    @NonNull
     private final TaskQueueContract taskQueue;
+
+    private boolean mHasNext = true;
 
     @Nullable
     @VisibleForTesting
@@ -71,80 +67,13 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         this.query = query == null ? createGroupChannelListQuery() : query;
         this.channelList = new MutableLiveData<>();
         this.taskQueue = taskQueue;
-        this.collectionHandler = new IConversationManager.IConversationListener() {
-            @Override
-            public void onConversationInfoAdd(List<ConversationInfo> conversationInfoList) {
-                List<ConversationInfo> list = channelList.getValue();
-                if (list == null || list.isEmpty()) {
-                    channelList.postValue(conversationInfoList);
-                    return;
-                }
-                list.addAll(0, conversationInfoList);
-                channelList.postValue(list);
-            }
-
-            @Override
-            public void onConversationInfoUpdate(List<ConversationInfo> conversationInfoList) {
-                List<ConversationInfo> list = channelList.getValue();
-                if (list == null || list.isEmpty()) {
-                    channelList.postValue(conversationInfoList);
-                    return;
-                }
-                for (ConversationInfo newInfo : conversationInfoList) {
-                    int index = -1;
-                    for (int i = 0; i < list.size(); i++) {
-                        ConversationInfo oldInfo = list.get(i);
-                        if (newInfo.getConversation().equals(oldInfo.getConversation())) {
-                            index = i;
-                            break;
-                        }
-                    }
-                    if (index != -1) {
-                        list.remove(index);
-                    }
-                    list.add(0, newInfo);
-                }
-
-                channelList.postValue(list);
-            }
-
-            @Override
-            public void onConversationInfoDelete(List<ConversationInfo> conversationInfoList) {
-                List<ConversationInfo> list = channelList.getValue();
-                if (list == null || list.isEmpty()) {
-                    return;
-                }
-                for (ConversationInfo newInfo : conversationInfoList) {
-                    int index = -1;
-                    for (int i = 0; i < list.size(); i++) {
-                        ConversationInfo oldInfo = list.get(i);
-                        if (newInfo.getConversation().equals(oldInfo.getConversation())) {
-                            index = i;
-                            break;
-                        }
-                    }
-                    if (index != -1) {
-                        list.remove(index);
-                    }
-                }
-
-                channelList.postValue(list);
-            }
-
-            @Override
-            public void onTotalUnreadMessageCountUpdate(int count) {
-//                notifyChannelChanged();
-            }
-        };
     }
 
     @TestOnly
     ChannelListViewModel(@NonNull ChannelListViewModelDataContract contract) {
         super(contract.getSendbirdUIKit());
-        this.collection = contract.getCollection();
         this.query = contract.getQuery();
         this.channelList = contract.getChannelList();
-        this.collectionHandler = contract.getCollectionHandler();
         this.taskQueue = contract.getTaskQueue();
         this.contract = contract;
     }
@@ -153,10 +82,8 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
     boolean isSameProperties(@NonNull ChannelListViewModelDataContract contract) {
         // It's enough to check the instance's reference.
         return contract.getSendbirdUIKit() == this.sendbirdUIKit
-                && contract.getCollection() == this.collection
                 && contract.getQuery() == query
                 && contract.getChannelList() == channelList
-                && contract.getCollectionHandler() == collectionHandler
                 && contract.getTaskQueue() == taskQueue;
     }
 
@@ -171,34 +98,10 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         return channelList;
     }
 
-    @VisibleForTesting
-    synchronized void initChannelCollection() {
-        Logger.d(">> ChannelListViewModel::initChannelCollection()");
-        if (this.collection != null) {
-            disposeChannelCollection();
-        }
-        this.collection = createGroupChannelCollection();
-        this.collection.setConversationCollectionHandler(collectionHandler);
-    }
-
-    private synchronized void disposeChannelCollection() {
-        Logger.d(">> ChannelListViewModel::disposeChannelCollection()");
-        if (this.collection != null) {
-            this.collection.dispose();
-        }
-    }
-
-    private void notifyChannelChanged() {
-        if (collection == null) return;
-        List<ConversationInfo> newList = collection.getChannelList();
-        Logger.d(">> ChannelListViewModel::notifyDataSetChanged(), size = %s", newList.size());
-        channelList.postValue(newList);
-    }
-
     @Override
     protected void onCleared() {
         super.onCleared();
-        disposeChannelCollection();
+        JIM.getInstance().getConversationManager().removeListener("ChannelListViewModel");
     }
 
     /**
@@ -226,7 +129,7 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
 
     @Override
     public boolean hasNext() {
-        return collection != null && collection.getHasMore();
+        return mHasNext;
     }
 
     /**
@@ -237,7 +140,9 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
      * since 3.0.0
      */
     public void loadInitial() {
-        initChannelCollection();
+        this.channelList.postValue(new ArrayList<>());
+        JIM.getInstance().getConversationManager().addListener("ChannelListViewModel", this);
+
         taskQueue.addTask(new JobTask<List<ConversationInfo>>() {
             @Override
             protected List<ConversationInfo> call() throws Exception {
@@ -252,36 +157,33 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
      * If the request is succeed, you can observe updated data through {@link #getChannelList()}.
      *
      * @return Returns the queried list of <code>GroupChannel</code>s if no error occurs
-     * @throws Exception Throws exception if getting the channel list are failed
-     *                   since 3.0.0
      */
     @NonNull
     @Override
-    public List<ConversationInfo> loadNext() throws Exception {
+    public List<ConversationInfo> loadNext() {
         if (!hasNext()) return Collections.emptyList();
 
-        try {
-            return loadMoreBlocking();
-        } finally {
-            notifyChannelChanged();
-        }
+        List<ConversationInfo> conversationInfoList = loadMoreBlocking();
+        conversationInfoList = mergeConversations(channelList.getValue(), conversationInfoList);
+        channelList.postValue(conversationInfoList);
+        return conversationInfoList;
     }
 
     @NonNull
-    private List<ConversationInfo> loadMoreBlocking() throws Exception {
-        if (collection == null) return Collections.emptyList();
-
-        final CountDownLatch lock = new CountDownLatch(1);
-        final AtomicReference<SendbirdException> error = new AtomicReference<>();
-        final AtomicReference<List<ConversationInfo>> channelListRef = new AtomicReference<>();
-        collection.loadMore((channelList) -> {
-            channelListRef.set(channelList);
-            lock.countDown();
-        });
-        lock.await();
-
-        if (error.get() != null) throw error.get();
-        return channelListRef.get();
+    private List<ConversationInfo> loadMoreBlocking() {
+        long timestamp = 0;
+        if (channelList.getValue() != null && !channelList.getValue().isEmpty()) {
+            timestamp = channelList.getValue().get(channelList.getValue().size() - 1).getSortTime();
+        }
+        int[] types = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
+        List<ConversationInfo> conversationInfoList = JIM.getInstance().getConversationManager().getConversationInfoList(types, 20, timestamp, JIMConst.PullDirection.OLDER);
+        if (conversationInfoList != null && conversationInfoList.size() < 20) {
+            mHasNext = false;
+        }
+        if (conversationInfoList == null) {
+            conversationInfoList = new ArrayList<>();
+        }
+        return conversationInfoList;
     }
 
     /**
@@ -299,6 +201,54 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
                     if (handler != null) handler.onComplete(e);
                     Logger.i("++ setPushNotification enable : %s result : %s", enable, e == null ? "success" : "error");
                 });
+    }
+
+    public void setRead(ConversationInfo conversationInfo) {
+        JIM.getInstance().getConversationManager().clearUnreadCount(conversationInfo.getConversation(), new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
+    public void setUnread(ConversationInfo conversationInfo) {
+        JIM.getInstance().getConversationManager().setUnread(conversationInfo.getConversation(), new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
+    public void mute(ConversationInfo conversationInfo, boolean isMute) {
+        JIM.getInstance().getConversationManager().setMute(conversationInfo.getConversation(), isMute, new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
+    }
+
+    public void delete(ConversationInfo conversationInfo) {
+        JIM.getInstance().getConversationManager().deleteConversationInfo(conversationInfo.getConversation(), new IConversationManager.ISimpleCallback() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
     }
 
     /**
@@ -343,8 +293,88 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         return JIM.getInstance().getConversationManager();
     }
 
-    @NonNull
-    private GroupChannelCollectionContract createGroupChannelCollection() {
-        return new GroupChannelCollectionImpl(query);
+    @Override
+    public void onConversationInfoAdd(List<ConversationInfo> conversationInfoList) {
+        List<ConversationInfo> mergeList = mergeConversations(channelList.getValue(), conversationInfoList);
+        channelList.postValue(mergeList);
+    }
+
+    @Override
+    public void onConversationInfoUpdate(List<ConversationInfo> conversationInfoList) {
+        List<ConversationInfo> mergeList = mergeConversations(channelList.getValue(), conversationInfoList);
+        channelList.postValue(mergeList);
+    }
+
+    @Override
+    public void onConversationInfoDelete(List<ConversationInfo> conversationInfoList) {
+        List<ConversationInfo> list = channelList.getValue();
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        for (ConversationInfo newInfo : conversationInfoList) {
+            int index = -1;
+            for (int i = 0; i < list.size(); i++) {
+                ConversationInfo oldInfo = list.get(i);
+                if (newInfo.getConversation().equals(oldInfo.getConversation())) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index != -1) {
+                list.remove(index);
+            }
+        }
+        channelList.postValue(list);
+    }
+
+    @Override
+    public void onTotalUnreadMessageCountUpdate(int count) {
+
+    }
+
+    private List<ConversationInfo> mergeConversations(List<ConversationInfo> oldList, List<ConversationInfo> newList) {
+        if (newList == null) {
+            return oldList;
+        }
+        if (oldList == null) {
+            oldList = new ArrayList<>();
+        } else {
+            oldList = new ArrayList<>(oldList);
+        }
+        ConversationInfo toBeRemove;
+        for (ConversationInfo newInfo : newList) {
+            if (newInfo.getConversation().getConversationType() == Conversation.ConversationType.SYSTEM
+            && newInfo.getConversation().getConversationId().equals(SendbirdUIKit.FRIEND_CONVERSATION_ID)) {
+                continue;
+            }
+            toBeRemove = null;
+            for (ConversationInfo oldInfo : oldList) {
+                if (oldInfo.getConversation().equals(newInfo.getConversation())) {
+                    toBeRemove = oldInfo;
+                    break;
+                }
+            }
+            if (toBeRemove != null) {
+                oldList.remove(toBeRemove);
+            }
+            oldList.add(newInfo);
+        }
+        List<ConversationInfo> topConversationInfoList = new ArrayList<>();
+        List<ConversationInfo> notTopConversationInfoList = new ArrayList<>();
+        for (ConversationInfo info : oldList) {
+            if (info.isTop()) {
+                topConversationInfoList.add(info);
+            } else {
+                notTopConversationInfoList.add(info);
+            }
+        }
+        Comparator<ConversationInfo> topComparator = Comparator.comparingLong(ConversationInfo::getTopTime).reversed();
+        Comparator<ConversationInfo> notTopComparator = Comparator.comparingLong(ConversationInfo::getSortTime).reversed();
+        topConversationInfoList.sort(topComparator);
+        notTopConversationInfoList.sort(notTopComparator);
+        List<ConversationInfo> result = new ArrayList<>();
+        result.addAll(topConversationInfoList);
+        result.addAll(notTopConversationInfoList);
+        return result;
     }
 }

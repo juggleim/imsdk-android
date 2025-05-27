@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.jet.im.kit.internal.ui.components.HeaderView
+        android:id="@+id/headerView"
+        android:layout_width="match_parent"
+        android:layout_height="44dp" />
+
+    <LinearLayout
+        android:id="@+id/profile_ll_detail_info_group"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sb_size_80"
+        android:background="@color/rc_voip_white"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.jet.im.kit.widgets.SelectableRoundedImageView
+            android:id="@+id/profile_iv_detail_user_portrait"
+            android:layout_width="@dimen/sb_size_47"
+            android:layout_height="@dimen/sb_size_47"
+            android:layout_marginStart="@dimen/sb_size_14"
+            android:layout_marginTop="@dimen/sb_size_10"
+            android:layout_marginBottom="@dimen/sb_size_10"
+            android:scaleType="centerCrop"
+            app:sriv_left_bottom_corner_radius="@dimen/sb_size_3"
+            app:sriv_left_top_corner_radius="@dimen/sb_size_3"
+            app:sriv_right_bottom_corner_radius="@dimen/sb_size_3"
+            app:sriv_right_top_corner_radius="@dimen/sb_size_3"
+            app:sriv_oval="true"/>
+
+        <TextView
+            android:id="@+id/profile_tv_detail_display_name"
+            style="@style/TextStyle.Alignment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/sb_size_14"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLength="16"
+            android:maxLines="1"
+            android:textColor="#333333"
+            android:textSize="@dimen/sb_text_size_16" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/profile_btn_detail_start_chat"
+        style="@style/profile_user_detail_btn"
+        android:background="@drawable/profile_btn_contact_blue_selector"
+        android:text="@string/text_start_chat"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/profile_btn_detail_start_voice"
+        style="@style/profile_user_detail_btn"
+        android:background="@drawable/profile_btn_contact_white_selector"
+        android:text="@string/rc_voip_audio"
+        android:textColor="#333333" />
+
+    <Button
+        android:id="@+id/profile_btn_detail_start_video"
+        style="@style/profile_user_detail_btn"
+        android:background="@drawable/profile_btn_contact_white_selector"
+        android:text="@string/rc_voip_video"
+        android:textColor="#333333" />
+
+    <Button
+        android:id="@+id/profile_btn_detail_add_friend"
+        style="@style/profile_user_detail_btn"
+        android:background="@drawable/profile_btn_contact_blue_selector"
+        android:text="@string/text_add_friend"
+        android:textColor="#FFFFFF"
+        android:visibility="gone" />
+
+</LinearLayout>

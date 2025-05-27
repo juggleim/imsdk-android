@@ -36,6 +36,10 @@ import com.jet.im.kit.model.UserMentionConfig;
 import com.jet.im.kit.model.VoiceRecorderConfig;
 import com.jet.im.kit.model.configurations.Common;
 import com.jet.im.kit.model.configurations.UIKitConfig;
+import com.jet.im.kit.model.message.ContactCardMessage;
+import com.jet.im.kit.model.message.FriendNotifyMessage;
+import com.jet.im.kit.model.message.GroupNotifyMessage;
+import com.jet.im.kit.model.message.StreamTextMessage;
 import com.jet.im.kit.utils.FileUtils;
 import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.utils.UIKitPrefs;
@@ -71,6 +75,7 @@ public class SendbirdUIKit {
 
     public static volatile String authorization;
     public static volatile String appKey;
+    public static final String FRIEND_CONVERSATION_ID = "friend_apply";
 
     /**
      * UIKit log level. It depends on android Log level.
@@ -315,6 +320,7 @@ public class SendbirdUIKit {
         FileUtils.removeDeletableDir(context.getApplicationContext());
         UIKitPrefs.init(context.getApplicationContext());
         EmojiManager.init();
+        registerMessages();
     }
 
     /**
@@ -653,6 +659,13 @@ public class SendbirdUIKit {
         if (handler != null) {
             handler.onDisconnected();
         }
+    }
+
+    private static void registerMessages() {
+        JIM.getInstance().getMessageManager().registerContentType(GroupNotifyMessage.class);
+        JIM.getInstance().getMessageManager().registerContentType(FriendNotifyMessage.class);
+        JIM.getInstance().getMessageManager().registerContentType(ContactCardMessage.class);
+        JIM.getInstance().getMessageManager().registerContentType(StreamTextMessage.class);
     }
 
     /**

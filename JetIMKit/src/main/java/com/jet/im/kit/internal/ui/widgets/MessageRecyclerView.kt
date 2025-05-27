@@ -63,6 +63,7 @@ internal class MessageRecyclerView @JvmOverloads constructor(
     val bannerView: View
         get() = binding.tvBanner
     var onScrollFirstButtonClickListener: OnConsumableClickListener? = null
+    var onMessageListTouchListener: OnTouchListener? = null
 
     fun setBannerText(text: String?) {
         binding.tvBanner.visibility = if (TextUtils.isEmpty(text)) GONE else VISIBLE
@@ -110,7 +111,8 @@ internal class MessageRecyclerView @JvmOverloads constructor(
                 a.getColorStateList(R.styleable.MessageListView_sb_message_scroll_bottom_icon_tint)
             setBackgroundResource(android.R.color.transparent)
             binding.rvMessageList.setBackgroundResource(recyclerViewBackground)
-            binding.rvMessageList.setOnTouchListener { v: View, _: MotionEvent? ->
+            binding.rvMessageList.setOnTouchListener { v: View, e: MotionEvent? ->
+                onMessageListTouchListener?.onTouch(v, e)
                 SoftInputUtils.hideSoftKeyboard(this)
                 v.performClick()
                 false

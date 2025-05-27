@@ -14,10 +14,7 @@ import com.jet.im.kit.utils.DrawableUtils
 import com.jet.im.kit.utils.ViewUtils
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
-import com.sendbird.android.channel.GroupChannel
-import com.sendbird.android.message.BaseMessage
-import com.sendbird.android.message.FileMessage
-import com.sendbird.android.message.SendingStatus
+import com.juggle.im.model.MessageReactionItem
 
 internal class MyFileMessageView @JvmOverloads internal constructor(
     context: Context,
@@ -55,62 +52,36 @@ internal class MyFileMessageView @JvmOverloads internal constructor(
                 )
             val messageBackgroundTint =
                 a.getColorStateList(R.styleable.MessageView_File_sb_message_me_background_tint)
+            val emojiReactionListBackground = a.getResourceId(
+                R.styleable.MessageView_File_sb_message_emoji_reaction_list_background,
+                R.drawable.sb_shape_chat_bubble_reactions_light
+            )
             binding.tvSentAt.setAppearance(context, sentAtAppearance)
             binding.tvFileName.setAppearance(context, messageTextAppearance)
             binding.tvFileName.paintFlags =
                 binding.tvFileName.paintFlags or Paint.UNDERLINE_TEXT_FLAG
             binding.contentPanelWithReactions.background =
                 DrawableUtils.setTintList(context, messageBackground, messageBackgroundTint)
+            binding.emojiReactionListBackground.setBackgroundResource(emojiReactionListBackground)
         } finally {
             a.recycle()
         }
     }
 
     override fun drawMessage(
-        channel: GroupChannel,
-        message: BaseMessage,
-        params: MessageListUIParams
-    ) {
-        val fileMessage = message as FileMessage
-        val isSent = message.sendingStatus == SendingStatus.SUCCEEDED
-        val messageGroupType = params.messageGroupType
-        binding.tvSentAt.visibility =
-            if (isSent && (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_SINGLE)) VISIBLE else GONE
-        binding.ivStatus.drawStatus(message, channel, params.shouldUseMessageReceipt())
-
-        messageUIConfig?.let {
-            it.myMessageTextUIConfig.mergeFromTextAppearance(context, messageTextAppearance)
-            it.mySentAtTextUIConfig.mergeFromTextAppearance(context, sentAtAppearance)
-            it.myMessageBackground?.let { background ->
-                binding.contentPanel.background = background
-            }
-
-        }
-
-        ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
-        ViewUtils.drawFilename(binding.tvFileName, fileMessage, messageUIConfig)
-        ViewUtils.drawFileIcon(binding.ivIcon, fileMessage)
-
-        val paddingTop =
-            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        val paddingBottom =
-            resources.getDimensionPixelSize(if (messageGroupType == MessageGroupType.GROUPING_TYPE_HEAD || messageGroupType == MessageGroupType.GROUPING_TYPE_BODY) R.dimen.sb_size_1 else R.dimen.sb_size_8)
-        binding.root.setPadding(
-            binding.root.paddingLeft,
-            paddingTop,
-            binding.root.paddingRight,
-            paddingBottom
-        )
-    }
-
-    override fun drawMessage(
         channel: ConversationInfo,
         message: Message,
+        reactionItemList: List<MessageReactionItem>,
         params: MessageListUIParams
     ) {
         val fileMessage = message.content as com.juggle.im.model.messages.FileMessage
         val isSent = message.state == Message.MessageState.SENT
+        val enableReactions =
+            reactionItemList.isNotEmpty()
         val messageGroupType = params.messageGroupType
+
+        binding.emojiReactionListBackground.visibility = if (enableReactions) VISIBLE else GONE
+        binding.rvEmojiReactionList.visibility = if (enableReactions) VISIBLE else GONE
         binding.tvSentAt.visibility =
             if (isSent && (messageGroupType == MessageGroupType.GROUPING_TYPE_TAIL || messageGroupType == MessageGroupType.GROUPING_TYPE_SINGLE)) VISIBLE else GONE
         binding.ivStatus.drawStatus(message, channel, params.shouldUseMessageReceipt())
@@ -121,11 +92,14 @@ internal class MyFileMessageView @JvmOverloads internal constructor(
             it.myMessageBackground?.let { background ->
                 binding.contentPanel.background = background
             }
-
+            it.myReactionListBackground?.let { reactionListBackground ->
+                binding.emojiReactionListBackground.background = reactionListBackground
+            }
         }
 
         ViewUtils.drawSentAt(binding.tvSentAt, message, messageUIConfig)
         ViewUtils.drawFilename(binding.tvFileName, message, fileMessage, messageUIConfig)
+        ViewUtils.drawReactionEnabled(binding.rvEmojiReactionList)
         ViewUtils.drawFileIcon(binding.ivIcon, "file")
 
         val paddingTop =

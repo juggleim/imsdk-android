@@ -158,6 +158,7 @@
     <dimen name="sb_size_98">98dp</dimen>
     <dimen name="sb_size_99">99dp</dimen>
     <dimen name="sb_size_100">100dp</dimen>
+    <dimen name="sb_size_160">160dp</dimen>
 
     <dimen name="sb_message_max_height">400dp</dimen>
     <dimen name="sb_message_max_width">240dp</dimen>
