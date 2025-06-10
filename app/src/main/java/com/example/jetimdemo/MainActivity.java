@@ -59,16 +59,6 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements IChatroomManager.IChatroomListener, IChatroomManager.IChatroomAttributesListener, IConversationManager.IConversationTagListener {
 
-    private final String TOKEN1 = "CgZhcHBrZXkaIDAr072n8uOcw5YBeKCcQ+QCw4m6YWhgt99U787/dEJS";
-    private final String TOKEN2 = "CgZhcHBrZXkaINodQgLnbhTbt0SzC8b/JFwjgUAdIfUZTEFK8DvDLgM1";
-    private final String TOKEN3 = "CgZhcHBrZXkaINMDzs7BBTTZTwjKtM10zyxL4DBWFuZL6Z/OAU0Iajpv";
-    private final String TOKEN4 = "CgZhcHBrZXkaIDHZwzfny4j4GiJye8y8ehU5fpJ+wVOGI3dCsBMfyLQv";
-    private final String TOKEN5 = "CgZhcHBrZXkaIOx2upLCsmsefp8U/KNb52UGnAEu/xf+im3QaUd0HTC2";
-    //nsw3sue72begyv7y,AVaoVF4zG
-    private final String TOKEN6 = "ChBuc3czc3VlNzJiZWd5djd5GiAH3t-KKHZ0UOZNG6mfNL8m2hAUbN4RYH0iskZQTm6M7Q==";
-    private final String TOKEN1181 = "ChBuc3czc3VlNzJiZWd5djd5GiB3vwQOFxILM02aHvzk0yXsSWIyWy-vkA4CLovMyoelAQ==";
-    private final String TOKEN1182 = "ChBuc3czc3VlNzJiZWd5djd5GiDuv7mgMhk4e9roYlO9WeWer6_KZGn-hpJGuiMKsCI7Yw==";
-
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
@@ -200,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
             }
         }, 11000);
 
-        JIM.getInstance().getCallManager().initZegoEngine(1881186044, this);
         JIM.getInstance().getMessageManager().addReadReceiptListener("main", new IMessageManager.IMessageReadReceiptListener() {
             @Override
             public void onMessagesRead(Conversation conversation, List<String> messageIds) {

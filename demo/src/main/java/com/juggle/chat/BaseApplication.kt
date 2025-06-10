@@ -122,15 +122,15 @@ class BaseApplication : MultiDexApplication() {
         PreferenceUtils.init(applicationContext)
         // initialize SendbirdUIKit
         val serverList = ArrayList<String>()
-        serverList.add("wss://ws.juggleim.com")
+        serverList.add("xxx")
         JIM.getInstance().setServerUrls(serverList)
         initUIKit(this)
         val logConfig = JLogConfig.Builder(this).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).setLogWriteLevel(JLogLevel.JLogLevelVerbose).build()
         val initConfig = InitConfig.Builder().setJLogConfig(logConfig).build()
-        val appKey = "nsw3sue72begyv7y"
+        val appKey = "xxx"
         JIM.getInstance().init(this, appKey, initConfig)
         SendbirdUIKit.appKey = appKey
-        CallCenter.getInstance().initZegoEngine(1881186044, this)
+        CallCenter.getInstance().initZegoEngine(111, this)
         // setup uikit configurations
         HttpsURLConnection.setDefaultSSLSocketFactory(SSLHelper.getTrustAllSSLSocketFactory())
         HttpsURLConnection.setDefaultHostnameVerifier(object :HostnameVerifier{

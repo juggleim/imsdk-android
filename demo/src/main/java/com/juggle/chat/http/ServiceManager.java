@@ -55,7 +55,7 @@ public class ServiceManager {
                 }).build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://ws.juggleim.com/")
+                .baseUrl("xxx")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpClient)
                 .build();
