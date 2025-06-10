@@ -23,6 +23,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.jetimdemo.databinding.ActivityMainBinding;
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
+import com.juggle.im.interfaces.GroupMember;
 import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.interfaces.IConversationManager;
@@ -30,7 +31,9 @@ import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.internal.uploader.FileUtil;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.GetConversationOptions;
 import com.juggle.im.model.GetMessageOptions;
+import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
@@ -38,6 +41,7 @@ import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageQueryOptions;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.SearchConversationsResult;
+import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.SnapshotPackedVideoMessage;
@@ -53,7 +57,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements IChatroomManager.IChatroomListener, IChatroomManager.IChatroomAttributesListener {
+public class MainActivity extends AppCompatActivity implements IChatroomManager.IChatroomListener, IChatroomManager.IChatroomAttributesListener, IConversationManager.IConversationTagListener {
 
     private final String TOKEN1 = "CgZhcHBrZXkaIDAr072n8uOcw5YBeKCcQ+QCw4m6YWhgt99U787/dEJS";
     private final String TOKEN2 = "CgZhcHBrZXkaINodQgLnbhTbt0SzC8b/JFwjgUAdIfUZTEFK8DvDLgM1";
@@ -78,35 +82,102 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
             @Override
             public void onStatusChange(JIMConst.ConnectionStatus status, int code, String extra) {
                 Log.i("demo", "main activity onStatusChange status is " + status + " code is " + code);
+                UserInfo userInfo = JIM.getInstance().getUserInfoManager().getUserInfo("userId");
+                GroupInfo groupInfo = JIM.getInstance().getUserInfoManager().getGroupInfo("groupId");
                 if (status == JIMConst.ConnectionStatus.CONNECTED) {
                     Handler mainHandler = new Handler(Looper.getMainLooper());
                     mainHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            List<ConversationInfo> conversationInfoList = JIM.getInstance().getConversationManager().getConversationInfoList();
+                            int i = 0;
+//                            GetConversationOptions options = new GetConversationOptions();
+//                            options.setPullDirection(JIMConst.PullDirection.OLDER);
+////                            options.setTimestamp(0);
+//                            options.setCount(20);
+//                            options.setTagId("T1740034164513");
+//                            List<ConversationInfo> conversationInfoList = JIM.getInstance().getConversationManager().getConversationInfoList(options);
+//                            int count = JIM.getInstance().getConversationManager().getUnreadCountWithTag("T1740034164513");
+//                            int count2 = JIM.getInstance().getConversationManager().getUnreadCountWithTag("fsadfasdf");
+//                            int i = 1;
+//
+//                            Conversation c1 = new Conversation(Conversation.ConversationType.PRIVATE, "YvoGswbXyqU");
+//                            Conversation c2 = new Conversation(Conversation.ConversationType.PRIVATE, "NXiLqt0b9_i");
+//
+//                            JIM.getInstance().getConversationManager().addConversationsToTag(Collections.singletonList(c1), "T1740034164513", new IConversationManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    int i = 1;
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//
+//                                    int i = 1;
+//                                }
+//                            });
+//
+//                            JIM.getInstance().getConversationManager().removeConversationsFromTag(Collections.singletonList(c2), "T1740034164513", new IConversationManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    int i = 1;
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//
+//                                    int i = 1;
+//                                }
+//                            });
 
-                            Conversation c = new Conversation(Conversation.ConversationType.PRIVATE, "111");
-                            ImageMessage image = new ImageMessage();
-                            image.setUrl("www.baidu.com");
+//                            JIM.getInstance().getMessageManager().getMessagesReaction(messageIdList, c, new IMessageManager.IMessageReactionListCallback() {
+//                                @Override
+//                                public void onSuccess(List<MessageReaction> reactionList) {
+//                                    int i = 1;
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//                                    int i = 1;
+//
+//                                }
+//                            });
 
-                            TextMessage t = new TextMessage("111111");
-                            JIM.getInstance().getMessageManager().sendMessage(t, c, new IMessageManager.ISendMessageCallback() {
-                                @Override
-                                public void onSuccess(Message message) {
-                                    int i = 1;
-                                }
 
-                                @Override
-                                public void onError(Message message, int errorCode) {
-                                    int i = 1;
-                                }
-                            });
+
+
+//                            JIM.getInstance().getMessageManager().removeMessageReaction("nw4vfsf3ac4e5xsl", c, "%uD83D%uDE04", new IMessageManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    int i = 1;
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//
+//                                    int i = 1;
+//                                }
+//                            });
+
+//                            JIM.getInstance().getMessageManager().addMessageReaction("nw4vfsf3ac4e5xsl", c, "%uD83D%uDE04", new IMessageManager.ISimpleCallback() {
+//                                @Override
+//                                public void onSuccess() {
+//                                    int i = 1;
+//                                }
+//
+//                                @Override
+//                                public void onError(int errorCode) {
+//                                    int i = 1;
+//
+//                                }
+//                            });
+
+
 
 
 
                         }
                     }, 500);
-
-
                 }
             }
 
@@ -120,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
 
             }
         });
-        JIM.getInstance().getConnectionManager().connect("ChBuc3czc3VlNzJiZWd5djd5GiBWTg16NeQ-1JvJQG1XN7qiOrISfZ9RzxqDy0ff8rAC-A==");
+        JIM.getInstance().getConnectionManager().connect("ChBuc3czc3VlNzJiZWd5djd5GiCJQefp9NOXL23cc_ux0o53VypAkehIqxPVZZ2sbCi6tA==");
         Handler mH = new Handler(Looper.getMainLooper());
         mH.postDelayed(new Runnable() {
             @Override
@@ -249,6 +320,8 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
         });
         JIM.getInstance().getChatroomManager().addListener("main", this);
         JIM.getInstance().getChatroomManager().addAttributesListener("main", this);
+
+        JIM.getInstance().getConversationManager().addTagListener("main", this);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -523,5 +596,15 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
     @Override
     public void onChatroomDestroy(String chatroomId) {
         Log.i("demo", "onChatroomDestroy, chatroomId is " + chatroomId);
+    }
+
+    @Override
+    public void onConversationsAddToTag(String tagId, List<Conversation> conversations) {
+        Log.i("demo", "onConversationsAddToTag, tagId is " + tagId + ", count is " + conversations.size());
+    }
+
+    @Override
+    public void onConversationsRemoveFromTag(String tagId, List<Conversation> conversations) {
+        Log.i("demo", "onConversationsRemoveFromTag, tagId is " + tagId + ", count is " + conversations.size());
     }
 }

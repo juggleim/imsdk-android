@@ -21,7 +21,6 @@ public class TextMessage extends MessageContent {
         this.mContentType = "jg:text";
     }
 
-
     @Override
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();

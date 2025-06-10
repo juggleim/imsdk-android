@@ -19,6 +19,8 @@ import com.jet.im.kit.consts.TypingIndicatorType
 import com.jet.im.kit.interfaces.CustomParamsHandler
 import com.jet.im.kit.interfaces.UserInfo
 import com.jet.im.kit.model.configurations.UIKitConfig
+import com.jet.im.kit.model.message.FriendNotifyMessage
+import com.jet.im.kit.model.message.GroupNotifyMessage
 import com.juggle.im.JIM.InitConfig
 import com.juggle.im.internal.logger.JLogConfig
 import com.juggle.im.internal.logger.JLogLevel
@@ -120,15 +122,15 @@ class BaseApplication : MultiDexApplication() {
         PreferenceUtils.init(applicationContext)
         // initialize SendbirdUIKit
         val serverList = ArrayList<String>()
-        serverList.add("xxx")
+        serverList.add("wss://ws.juggleim.com")
         JIM.getInstance().setServerUrls(serverList)
         initUIKit(this)
         val logConfig = JLogConfig.Builder(this).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).setLogWriteLevel(JLogLevel.JLogLevelVerbose).build()
         val initConfig = InitConfig.Builder().setJLogConfig(logConfig).build()
-        val appKey = "xxx"
+        val appKey = "nsw3sue72begyv7y"
         JIM.getInstance().init(this, appKey, initConfig)
         SendbirdUIKit.appKey = appKey
-        CallCenter.getInstance().initZegoEngine(111, this)
+        CallCenter.getInstance().initZegoEngine(1881186044, this)
         // setup uikit configurations
         HttpsURLConnection.setDefaultSSLSocketFactory(SSLHelper.getTrustAllSSLSocketFactory())
         HttpsURLConnection.setDefaultHostnameVerifier(object :HostnameVerifier{

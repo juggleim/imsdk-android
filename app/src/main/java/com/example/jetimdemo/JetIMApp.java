@@ -23,14 +23,14 @@ public class JetIMApp extends Application {
     public void onCreate() {
         super.onCreate();
         List<String> serverList = new ArrayList<>();
-        serverList.add("xxx");
+        serverList.add("wss://ws.juggleim.com");
         JIM.getInstance().setServerUrls(serverList);
         JIM.InitConfig initConfig = new JIM.InitConfig.Builder()
                 .setPushConfig(new PushConfig.Builder().build())
                 .setJLogConfig(new JLogConfig.Builder(getApplicationContext()).setLogConsoleLevel(JLogLevel.JLogLevelVerbose).build())
                 .build();
-        JIM.getInstance().init(this, "xxx", initConfig);
-        JIM.getInstance().getCallManager().initZegoEngine(111, this);
+        JIM.getInstance().init(this, "nsw3sue72begyv7y", initConfig);
+        JIM.getInstance().getCallManager().initZegoEngine(1881186044, this);
 //        try {
 //            TrustManager[] trustAllCerts = new TrustManager[]{
 //                    new X509TrustManager() {

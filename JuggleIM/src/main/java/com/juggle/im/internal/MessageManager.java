@@ -66,6 +66,7 @@ import com.juggle.im.model.messages.RecallInfoMessage;
 import com.juggle.im.model.messages.SnapshotPackedVideoMessage;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.ThumbnailPackedImageMessage;
+import com.juggle.im.model.messages.UnknownMessage;
 import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 
@@ -125,7 +126,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ConcreteMessage message = new ConcreteMessage();
         message.setContent(content);
         message.setConversation(conversation);
-        message.setContentType(content.getContentType());
+        if (content instanceof UnknownMessage) {
+            UnknownMessage unknown = (UnknownMessage) content;
+            message.setContentType(unknown.getMessageType());
+        } else {
+            message.setContentType(content.getContentType());
+        }
         message.setDirection(direction);
         message.setState(state);
         message.setSenderUserId(mCore.getUserId());
@@ -166,7 +172,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     private void updateMessageWithContent(ConcreteMessage message) {
         if (message.getContent() != null) {
-            message.setContentType(message.getContent().getContentType());
+            if (message.getContent() instanceof UnknownMessage) {
+                UnknownMessage unknown = (UnknownMessage) message.getContent();
+                message.setContentType(unknown.getMessageType());
+            } else {
+                message.setContentType(message.getContent().getContentType());
+            }
         }
         if (message.hasReferredInfo()) {
             ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId());
@@ -1105,7 +1116,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Update", "success");
                 updateMessageSendSyncTime(timestamp);
-                m.setContentType(content.getContentType());
+                if (content instanceof UnknownMessage) {
+                    UnknownMessage unknown = (UnknownMessage) content;
+                    m.setContentType(unknown.getMessageType());
+                } else {
+                    m.setContentType(content.getContentType());
+                }
                 m.setContent(content);
                 mCore.getDbManager().updateMessageContentWithMessageId(content, m.getContentType(), messageId);
                 int flags = m.getFlags() | MessageContent.MessageFlag.IS_MODIFIED.getValue();

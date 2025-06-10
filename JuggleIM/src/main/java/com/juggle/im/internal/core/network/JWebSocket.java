@@ -21,6 +21,7 @@ import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.messages.UnknownMessage;
 import com.juggle.im.push.PushChannel;
 
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
@@ -104,8 +105,15 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               SendMessageCallback callback) {
         Integer key = mCmdIndex;
         byte[] encodeBytes = encodeContentData(content);
+        String contentType;
+        if (content instanceof UnknownMessage) {
+            UnknownMessage unknown = (UnknownMessage) content;
+            contentType = unknown.getMessageType();
+        } else {
+            contentType = content.getContentType();
+        }
 
-        byte[] bytes = mPbData.sendMessageData(content.getContentType(),
+        byte[] bytes = mPbData.sendMessageData(contentType,
                 encodeBytes,
                 content.getFlags(),
                 clientUid,
@@ -152,7 +160,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     public void updateMessage(String messageId, MessageContent content, Conversation conversation, long timestamp, long msgSeqNo, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] contentBytes = encodeContentData(content);
-        byte[] bytes = mPbData.updateMessageData(messageId, content.getContentType(), contentBytes, conversation, timestamp, msgSeqNo, mCmdIndex++);
+        String contentType;
+        if (content instanceof UnknownMessage) {
+            UnknownMessage unknown = (UnknownMessage) content;
+            contentType = unknown.getMessageType();
+        } else {
+            contentType = content.getContentType();
+        }
+        byte[] bytes = mPbData.updateMessageData(messageId, contentType, contentBytes, conversation, timestamp, msgSeqNo, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "update message, messageId is " + messageId);
         sendWhenOpen(bytes);

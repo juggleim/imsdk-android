@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.messages.UnknownMessage;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -37,7 +38,10 @@ public class ContentTypeCenter {
     public MessageContent getContent(byte[] data, String type) {
         Class<? extends MessageContent> cls = mContentTypeMap.get(type);
         if (cls == null) {
-            return null;
+            UnknownMessage unknownMessage = new UnknownMessage();
+            unknownMessage.decode(data);
+            unknownMessage.setMessageType(type);
+            return unknownMessage;
         }
         MessageContent content = null;
         try {
