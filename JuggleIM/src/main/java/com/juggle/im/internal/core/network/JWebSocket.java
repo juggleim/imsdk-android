@@ -648,7 +648,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         boolean onMessageReceive(ConcreteMessage message);
         void onSyncNotify(long syncTime);
         void onChatroomSyncNotify(String chatroomId, long syncTime);
-        void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content);
+        void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content, int count);
     }
 
     public interface IWebSocketChatroomListener {
@@ -902,7 +902,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) {
             if (ack.code == 0) {
-                mMessageListener.onMessageSend(ack.msgId, ack.timestamp, ack.seqNo, ack.clientUid, ack.contentType, ack.content);
+                mMessageListener.onMessageSend(ack.msgId, ack.timestamp, ack.seqNo, ack.clientUid, ack.contentType, ack.content, ack.groupMemberCount);
             }
             return;
         }
@@ -911,7 +911,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             if (ack.code != 0) {
                 callback.onError(ack.code, callback.getClientMsgNo());
             } else {
-                callback.onSuccess(callback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.seqNo, ack.contentType, ack.content);
+                callback.onSuccess(callback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.seqNo, ack.contentType, ack.content, ack.groupMemberCount);
             }
         }
     }

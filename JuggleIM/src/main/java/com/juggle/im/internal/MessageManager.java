@@ -215,14 +215,20 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
-            public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo, String contentType, MessageContent content) {
+            public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo, String contentType, MessageContent content, int groupMemberCount) {
                 JLogger.i("MSG-Send", "success, clientMsgNo is " + clientMsgNo);
-                mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, seqNo);
+                mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, seqNo, groupMemberCount);
                 message.setClientMsgNo(clientMsgNo);
                 message.setMessageId(msgId);
                 message.setTimestamp(timestamp);
                 message.setSeqNo(seqNo);
                 message.setState(Message.MessageState.SENT);
+                if (message.getConversation().getConversationType() == Conversation.ConversationType.GROUP) {
+                    GroupMessageReadInfo info = new GroupMessageReadInfo();
+                    info.setReadCount(0);
+                    info.setMemberCount(groupMemberCount);
+                    message.setGroupMessageReadInfo(info);
+                }
 
                 if (contentType != null && content != null) {
                     mCore.getDbManager().updateMessageContentWithMessageId(content, contentType, msgId);
@@ -2089,12 +2095,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content) {
+    public void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content, int groupMemberCount) {
         if (clientUid == null || TextUtils.isEmpty(clientUid)
         || messageId == null || TextUtils.isEmpty(messageId)) {
             return;
         }
-        mCore.getDbManager().updateMessageAfterSendWithClientUid(clientUid, messageId, timestamp, seqNo);
+        mCore.getDbManager().updateMessageAfterSendWithClientUid(clientUid, messageId, timestamp, seqNo, groupMemberCount);
         if (contentType != null && content != null) {
             mCore.getDbManager().updateMessageContentWithMessageId(content, contentType, messageId);
         }
