@@ -21,7 +21,9 @@ import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.UnknownMessage;
+import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.push.PushChannel;
 
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
@@ -133,7 +135,26 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     private byte[] encodeContentData(MessageContent content) {
         byte[] encodeBytes;
-        if (content instanceof MediaMessageContent) {
+
+        if (content instanceof ImageMessage) {
+            ImageMessage imageMessage = (ImageMessage) content;
+            String local = imageMessage.getLocalPath();
+            String thumbnailLocal = imageMessage.getThumbnailLocalPath();
+            imageMessage.setLocalPath("");
+            imageMessage.setThumbnailLocalPath("");
+            encodeBytes = imageMessage.encode();
+            imageMessage.setLocalPath(local);
+            imageMessage.setThumbnailLocalPath(thumbnailLocal);
+        } else if (content instanceof VideoMessage) {
+            VideoMessage videoMessage = (VideoMessage) content;
+            String local = videoMessage.getLocalPath();
+            String snapshotLocal = videoMessage.getSnapshotLocalPath();
+            videoMessage.setLocalPath("");
+            videoMessage.setSnapshotLocalPath("");
+            encodeBytes = videoMessage.encode();
+            videoMessage.setLocalPath(local);
+            videoMessage.setSnapshotLocalPath(snapshotLocal);
+        } else if (content instanceof MediaMessageContent) {
             MediaMessageContent mediaContent = (MediaMessageContent) content;
             String local = mediaContent.getLocalPath();
             mediaContent.setLocalPath("");
