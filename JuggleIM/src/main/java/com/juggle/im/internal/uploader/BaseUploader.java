@@ -5,7 +5,7 @@ package com.juggle.im.internal.uploader;
  * @create 2024-05-29 9:04
  */
 public abstract class BaseUploader implements IUploader {
-    private static final long PROGRESS_CALLBACK_INTERVAL = 500;//进度回调时间间隔
+    private static final long PROGRESS_CALLBACK_INTERVAL = 100;//进度回调时间间隔
 
     private final UploaderCallback mUploaderCallback;
     protected final String mLocalPath;
