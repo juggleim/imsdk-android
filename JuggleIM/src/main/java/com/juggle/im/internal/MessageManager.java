@@ -1463,7 +1463,22 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             boolean isContain = false;
             for (Message remoteMessage : mergedList) {
                 if (localMessage.getClientMsgNo() == remoteMessage.getClientMsgNo()) {
-                    if (localMessage.getContent() instanceof MediaMessageContent
+                    if (localMessage.getContent().getClass() == remoteMessage.getContent().getClass()) {
+                        remoteMessage.setLocalAttribute(localMessage.getLocalAttribute());
+                    }
+                    if (localMessage.getContent() instanceof ImageMessage
+                    && remoteMessage.getContent() instanceof  ImageMessage) {
+                        ImageMessage localImage = (ImageMessage) localMessage.getContent();
+                        ImageMessage remoteImage = (ImageMessage) remoteMessage.getContent();
+                        remoteImage.setThumbnailLocalPath(localImage.getThumbnailLocalPath());
+                        remoteImage.setLocalPath(localImage.getLocalPath());
+                    } else if (localMessage.getContent() instanceof VideoMessage
+                    && remoteMessage.getContent() instanceof VideoMessage) {
+                        VideoMessage localVideo = (VideoMessage) localMessage.getContent();
+                        VideoMessage remoteVideo = (VideoMessage) remoteMessage.getContent();
+                        remoteVideo.setLocalPath(localVideo.getLocalPath());
+                        remoteVideo.setSnapshotLocalPath(localVideo.getSnapshotLocalPath());
+                    } else if (localMessage.getContent() instanceof MediaMessageContent
                     && remoteMessage.getContent() instanceof MediaMessageContent) {
                         MediaMessageContent localContent = (MediaMessageContent) localMessage.getContent();
                         MediaMessageContent remoteContent = (MediaMessageContent) remoteMessage.getContent();
