@@ -2,7 +2,9 @@ package com.juggle.im.call.internal;
 
 import android.os.Message;
 import android.text.TextUtils;
+import android.view.View;
 
+import com.juggle.im.JIM;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.ICallSession;
 import com.juggle.im.call.internal.fsm.CallConnectedState;
@@ -13,21 +15,27 @@ import com.juggle.im.call.internal.fsm.CallOutgoingState;
 import com.juggle.im.call.internal.fsm.CallSuperState;
 import com.juggle.im.call.internal.media.CallMediaManager;
 import com.juggle.im.call.internal.media.ICallCompleteCallback;
+import com.juggle.im.call.internal.media.ICallMediaListener;
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.internal.UserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.CallAuthCallback;
 import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.statemachine.StateMachine;
+import com.juggle.im.model.UserInfo;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CallSessionImpl extends StateMachine implements ICallSession {
+public class CallSessionImpl extends StateMachine implements ICallSession, ICallMediaListener {
     protected CallSessionImpl(String name) {
         super(name);
 
@@ -86,6 +94,40 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
     }
 
     @Override
+    public void inviteUsers(List<String> userIdList) {
+        sendMessage(CallEvent.INVITE, userIdList);
+    }
+
+    @Override
+    public void enableCamera(boolean isEnable) {
+        CallMediaManager.getInstance().enableCamera(isEnable);
+    }
+
+    @Override
+    public void setVideoView(String userId, View view) {
+        if (TextUtils.isEmpty(userId)) {
+            return;
+        }
+        if (userId.equals(JIM.getInstance().getCurrentUserId())) {
+            CallMediaManager.getInstance().startPreview(view);
+        } else {
+            if (view != null) {
+                mViewMap.put(userId, view);
+            } else {
+                mViewMap.remove(userId);
+            }
+            if (mCallStatus == CallConst.CallStatus.CONNECTED) {
+                CallMediaManager.getInstance().setVideoView(mCallId, userId, view);
+            }
+        }
+    }
+
+    @Override
+    public void startPreview(View view) {
+        CallMediaManager.getInstance().startPreview(view);
+    }
+
+    @Override
     public void muteMicrophone(boolean isMute) {
         CallMediaManager.getInstance().muteMicrophone(isMute);
     }
@@ -101,6 +143,11 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
     }
 
     @Override
+    public void useFrontCamera(boolean isEnable) {
+        CallMediaManager.getInstance().useFrontCamera(isEnable);
+    }
+
+    @Override
     public String getCallId() {
         return mCallId;
     }
@@ -108,6 +155,11 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
     @Override
     public boolean isMultiCall() {
         return mIsMultiCall;
+    }
+
+    @Override
+    public CallConst.CallMediaType getMediaType() {
+        return mMediaType;
     }
 
     @Override
@@ -185,6 +237,113 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
             } else {
                 mFinishReason = CallConst.CallFinishReason.OTHER_SIDE_HANGUP;
             }
+        } else {
+            if (mListeners != null) {
+                for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> {
+                        entry.getValue().onUsersLeave(Collections.singletonList(userId));
+                    });
+                }
+            }
+        }
+    }
+
+    public void membersQuit(List<String> userIdList) {
+        for (String userId : userIdList) {
+            removeMember(userId);
+        }
+        if (!mIsMultiCall) {
+            mFinishTime = System.currentTimeMillis();
+            mFinishReason = CallConst.CallFinishReason.OTHER_SIDE_NO_RESPONSE;
+        } else {
+            if (mListeners != null) {
+                for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> {
+                        entry.getValue().onUsersLeave(userIdList);
+                    });
+                }
+            }
+        }
+    }
+
+    public void memberAccept(String userId) {
+        for (CallMember member : mMembers) {
+            if (member.getUserInfo().getUserId().equals(userId)) {
+                member.setCallStatus(CallConst.CallStatus.CONNECTING);
+            }
+        }
+    }
+
+    public void membersInviteBySelf(List<String> userIdList) {
+        List<String> resultList = new ArrayList<>();
+        for (String userId : userIdList) {
+            boolean isExist = false;
+            for (CallMember member : mMembers) {
+                if (userId.equals(member.getUserInfo().getUserId())) {
+                    isExist = true;
+                    break;
+                }
+            }
+            if (!isExist) {
+                CallMember newMember = new CallMember();
+                UserInfo userInfo = JIM.getInstance().getUserInfoManager().getUserInfo(userId);
+                if (userInfo == null) {
+                    userInfo = new UserInfo();
+                    userInfo.setUserId(userId);
+                }
+                newMember.setUserInfo(userInfo);
+                newMember.setCallStatus(CallConst.CallStatus.INCOMING);
+                newMember.setStartTime(System.currentTimeMillis());
+                newMember.setInviter(JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId()));
+                mMembers.add(newMember);
+                resultList.add(userId);
+            }
+        }
+        if (!resultList.isEmpty()) {
+            if (mListeners != null) {
+                for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> {
+                        entry.getValue().onUsersInvite(mCore.getUserId(), resultList);
+                    });
+                }
+            }
+        }
+    }
+
+    public void addInviteMembers(UserInfo inviter, List<UserInfo> targetUsers) {
+        if (inviter == null || targetUsers == null) {
+            return;
+        }
+        List<String> userIdList = new ArrayList<>();
+        for (UserInfo userInfo : targetUsers) {
+            if (userInfo.getUserId().equals(mCore.getUserId())) {
+                continue;
+            }
+            boolean isExist = false;
+            for (CallMember member : mMembers) {
+                if (userInfo.getUserId().equals(member.getUserInfo().getUserId())) {
+                    isExist = true;
+                    break;
+                }
+            }
+            if (!isExist) {
+                CallMember newMember = new CallMember();
+                newMember.setUserInfo(userInfo);
+                newMember.setCallStatus(CallConst.CallStatus.INCOMING);
+                newMember.setStartTime(System.currentTimeMillis());
+                newMember.setInviter(inviter);
+                mMembers.add(newMember);
+                userIdList.add(userInfo.getUserId());
+            }
+        }
+        if (!userIdList.isEmpty()) {
+            if (mListeners != null) {
+                for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> {
+                        entry.getValue().onUsersInvite(inviter.getUserId(), userIdList);
+                    });
+                }
+            }
         }
     }
 
@@ -203,18 +362,49 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
         }
     }
 
-    public void signalSingleInvite() {
-        List<String> targetIds = new ArrayList<>();
-        for (CallMember member : mMembers) {
-            if (member.getUserInfo() != null && member.getUserInfo().getUserId() != null) {
-                targetIds.add(member.getUserInfo().getUserId());
+    public void membersConnected(List<String> userIdList) {
+        for (String userId : userIdList) {
+            for (CallMember member : mMembers) {
+                if (member.getUserInfo().getUserId().equals(userId)) {
+                    member.setCallStatus(CallConst.CallStatus.CONNECTED);
+                    break;
+                }
             }
         }
-        mCore.getWebSocket().callInvite(mCallId, false, targetIds, mEngineType.getValue(), new CallAuthCallback() {
+        if (mListeners != null) {
+            for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                mCore.getCallbackHandler().post(() -> {
+                    entry.getValue().onUsersConnect(userIdList);
+                });
+            }
+        }
+    }
+
+    public void cameraEnable(String userId, boolean enable) {
+        if (mListeners != null) {
+            for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                mCore.getCallbackHandler().post(() -> {
+                    entry.getValue().onUserCameraEnable(userId, enable);
+                });
+            }
+        }
+    }
+
+    public void signalInvite() {
+        List<String> targetIds = new ArrayList<>();
+        for (CallMember member : mMembers) {
+            targetIds.add(member.getUserInfo().getUserId());
+        }
+        signalInvite(targetIds);
+    }
+
+    public void signalInvite(List<String> userIdList) {
+        mCore.getWebSocket().callInvite(mCallId, mIsMultiCall, mMediaType, userIdList, mEngineType.getValue(), new CallAuthCallback() {
             @Override
             public void onSuccess(String zegoToken) {
                 JLogger.i("Call-Signal", "send invite success");
                 mZegoToken = zegoToken;
+                sendMessage(CallEvent.INVITE_DONE, userIdList);
             }
 
             @Override
@@ -267,7 +457,6 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
             @Override
             public void onError(int errorCode) {
                 JLogger.e("Call-Signal", "call connected error, code is " + errorCode);
-
             }
         });
     }
@@ -278,6 +467,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
 
     public void mediaQuit() {
         JLogger.i("Call-Media", "media quit");
+        CallMediaManager.getInstance().stopPreview();
         CallMediaManager.getInstance().leaveRoom(mCallId);
     }
 
@@ -334,6 +524,24 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
         transitionTo(mOutgoingState);
     }
 
+    @Override
+    public View viewForUserId(String userId) {
+        return mViewMap.get(userId);
+    }
+
+    @Override
+    public void onUsersJoin(List<String> userIdList) {
+        sendMessage(CallEvent.PARTICIPANT_JOIN_CHANNEL, userIdList);
+    }
+
+    @Override
+    public void onUserCameraChange(String userId, boolean enable) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("enable", enable);
+        map.put("userId", userId);
+        sendMessage(CallEvent.PARTICIPANT_ENABLE_CAMERA, map);
+    }
+
     private void destroy() {
         if (mSessionLifeCycleListener != null) {
             mSessionLifeCycleListener.onSessionFinish(this);
@@ -346,6 +554,10 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
 
     public void setMultiCall(boolean multiCall) {
         mIsMultiCall = multiCall;
+    }
+
+    public void setMediaType(CallConst.CallMediaType mediaType) {
+        mMediaType = mediaType;
     }
 
     public void setCallStatus(CallConst.CallStatus callStatus) {
@@ -384,6 +596,10 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
         mCore = core;
     }
 
+    public JIMCore getCore() {
+        return mCore;
+    }
+
     public void setSessionLifeCycleListener(ICallSessionLifeCycleListener sessionLifeCycleListener) {
         mSessionLifeCycleListener = sessionLifeCycleListener;
     }
@@ -396,6 +612,19 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
         mZegoToken = zegoToken;
     }
 
+    @Override
+    public CallMember getCurrentCallMember() {
+        CallMember current = new CallMember();
+        UserInfo userInfo = JIM.getInstance().getUserInfoManager().getUserInfo(JIM.getInstance().getCurrentUserId());
+        current.setUserInfo(userInfo);
+        current.setCallStatus(mCallStatus);
+        current.setStartTime(mStartTime);
+        current.setConnectTime(mConnectTime);
+        current.setFinishTime(mFinishTime);
+        current.setInviter(JIM.getInstance().getUserInfoManager().getUserInfo(mInviter));
+        return current;
+    }
+
     private JIMCore mCore;
     private CallInternalConst.CallEngineType mEngineType;
     private ICallSessionLifeCycleListener mSessionLifeCycleListener;
@@ -404,6 +633,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
     private String mZegoToken;
     private String mCallId;
     private boolean mIsMultiCall;
+    private CallConst.CallMediaType mMediaType;
     private CallConst.CallStatus mCallStatus;
     private long mStartTime;
     private long mConnectTime;
@@ -411,7 +641,8 @@ public class CallSessionImpl extends StateMachine implements ICallSession {
     private String mOwner;
     private String mInviter;
     private CallConst.CallFinishReason mFinishReason;
-    private List<CallMember> mMembers = new ArrayList<>();
+    private final List<CallMember> mMembers = new ArrayList<>();
+    private final Map<String, View> mViewMap = new HashMap<>();
 
     private final CallSuperState mSuperState;
     private final CallIdleState mIdleState;

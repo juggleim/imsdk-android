@@ -2,6 +2,8 @@ package com.j.im.jzegocall;
 
 import android.app.Application;
 import android.content.Context;
+import android.text.TextUtils;
+import android.view.View;
 
 import com.juggle.im.call.internal.media.CallMediaRoom;
 import com.juggle.im.call.internal.media.CallMediaRoomConfig;
@@ -13,6 +15,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import im.zego.zegoexpress.ZegoExpressEngine;
 import im.zego.zegoexpress.callback.IZegoEventHandler;
@@ -20,12 +23,14 @@ import im.zego.zegoexpress.callback.IZegoRoomLoginCallback;
 import im.zego.zegoexpress.constants.ZegoEngineState;
 import im.zego.zegoexpress.constants.ZegoPlayerState;
 import im.zego.zegoexpress.constants.ZegoPublisherState;
+import im.zego.zegoexpress.constants.ZegoRemoteDeviceState;
 import im.zego.zegoexpress.constants.ZegoRoomState;
 import im.zego.zegoexpress.constants.ZegoRoomStateChangedReason;
 import im.zego.zegoexpress.constants.ZegoScenario;
 import im.zego.zegoexpress.constants.ZegoStreamQualityLevel;
 import im.zego.zegoexpress.constants.ZegoUpdateType;
 import im.zego.zegoexpress.entity.ZegoBroadcastMessageInfo;
+import im.zego.zegoexpress.entity.ZegoCanvas;
 import im.zego.zegoexpress.entity.ZegoEngineProfile;
 import im.zego.zegoexpress.entity.ZegoRoomConfig;
 import im.zego.zegoexpress.entity.ZegoRoomExtraInfo;
@@ -58,7 +63,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
             @Override
             public void onRoomLoginResult(int errorCode, JSONObject extendedData) {
                 if (errorCode == 0) {
-                    String streamId = room.getRoomId() + "+++" + user.getUserId();
+                    String streamId = createStreamId(room.getRoomId(), user.getUserId());
                     sEngine.startPublishingStream(streamId);
                 }
                 if (callback != null) {
@@ -71,6 +76,40 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
     @Override
     public void leaveRoom(String roomId) {
         sEngine.logoutRoom();
+    }
+
+    @Override
+    public void startPreview(View view) {
+        sEngine.startPreview(new ZegoCanvas(view));
+    }
+
+    @Override
+    public void stopPreview() {
+        sEngine.stopPreview();
+    }
+
+    @Override
+    public void enableCamera(boolean isEnable) {
+        sEngine.enableCamera(isEnable);
+    }
+
+    @Override
+    public void useFrontCamera(boolean isEnable) {
+        sEngine.useFrontCamera(isEnable);
+    }
+
+    @Override
+    public void setListener(ICallMediaEngineListener listener) {
+        mListener = listener;
+    }
+
+    @Override
+    public void setVideoView(String roomId, String userId, View view) {
+        if (TextUtils.isEmpty(roomId) || TextUtils.isEmpty(userId)) {
+            return;
+        }
+        String streamId = createStreamId(roomId, userId);
+        sEngine.startPlayingStream(streamId, new ZegoCanvas(view));
     }
 
     @Override
@@ -99,6 +138,15 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
         if (sHandler != null) {
             sHandler.onRoomStreamUpdate(roomID, updateType, streamList, extendedData);
         }
+    }
+
+    @Override
+    public void onRemoteCameraStateUpdate(String streamID, ZegoRemoteDeviceState state) {
+        if (mListener == null) {
+            return;
+        }
+        String userId = userIdWithStreamId(streamID);
+        mListener.onUserCameraChange(userId, state == ZegoRemoteDeviceState.OPEN);
     }
 
     @Override
@@ -164,6 +212,17 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
 
     @Override
     public void onRoomUserUpdate(String roomID, ZegoUpdateType updateType, ArrayList<ZegoUser> userList) {
+        if (updateType == ZegoUpdateType.ADD) {
+            List<String> userIdList = new ArrayList<>();
+            for (ZegoUser zegoUser : userList) {
+                userIdList.add(zegoUser.userID);
+            }
+            if (mListener != null) {
+                mListener.onUsersJoin(userIdList);
+            }
+        } else if (updateType == ZegoUpdateType.DELETE) {
+            // 暂不处理
+        }
         if (sHandler != null) {
             sHandler.onRoomUserUpdate(roomID, updateType, userList);
         }
@@ -197,10 +256,24 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
         }
     }
 
+    private String createStreamId(String roomId, String userId) {
+        return roomId + SEPARATOR + userId;
+    }
+
+    private String userIdWithStreamId(String streamId) {
+        String[] parts = streamId.split(SEPARATOR);
+        if (parts.length > 1) {
+            return parts[1];
+        }
+        return "";
+    }
+
     public static void setEventHandler(IZegoEventHandler handler) {
         sHandler = handler;
     }
 
     private static ZegoExpressEngine sEngine;
     private static IZegoEventHandler sHandler;
+    private static final String SEPARATOR = "+++";
+    private ICallMediaEngineListener mListener;
 }

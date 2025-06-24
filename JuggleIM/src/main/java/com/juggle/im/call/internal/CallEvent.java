@@ -14,11 +14,15 @@ public class CallEvent {
     public final static int ACCEPT_DONE= 203;
     public final static int ACCEPT_FAIL = 204;
     public final static int INCOMING_TIMEOUT = 205;
+    public final static int INVITE_DONE = 206;
 
     public final static int RECEIVE_INVITE = 301;
     public final static int RECEIVE_ACCEPT = 302;
     public final static int RECEIVE_HANGUP = 303;
     public final static int ROOM_DESTROY = 304;
+    public final static int RECEIVE_INVITE_OTHERS = 305;
+    public final static int RECEIVE_SELF_QUIT = 306;
+    public final static int RECEIVE_QUIT = 307;
 
     public final static int JOIN_CHANNEL_DONE = 401;
     public final static int JOIN_CHANNEL_FAIL = 402;

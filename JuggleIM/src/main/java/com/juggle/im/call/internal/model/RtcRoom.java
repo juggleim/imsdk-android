@@ -55,10 +55,19 @@ public class RtcRoom {
         mMembers = members;
     }
 
+    public CallConst.CallMediaType getMediaType() {
+        return mMediaType;
+    }
+
+    public void setMediaType(CallConst.CallMediaType mediaType) {
+        mMediaType = mediaType;
+    }
+
     private String mRoomId;
     private UserInfo mOwner;
     private boolean mIsMultiCall;
     private String mDeviceId;
     private CallConst.CallStatus mCallStatus;
     private List<CallMember> mMembers;
+    private CallConst.CallMediaType mMediaType;
 }

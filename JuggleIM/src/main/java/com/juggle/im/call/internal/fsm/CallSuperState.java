@@ -6,6 +6,10 @@ import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.CallEvent;
 import com.juggle.im.call.internal.CallSessionImpl;
 import com.juggle.im.internal.util.JLogger;
+import com.juggle.im.model.UserInfo;
+
+import java.util.List;
+import java.util.Map;
 
 public class CallSuperState extends CallState {
     @Override
@@ -17,17 +21,29 @@ public class CallSuperState extends CallState {
             JLogger.e("FSM-Sm", "callSession is null");
             return true;
         }
+        String userId;
+        List<String> userIdList;
+        Map<?, ?> map;
 
         switch (msg.what) {
             case CallEvent.INVITE:
                 // do nothing
                 // idle 状态处理
+                // connected 状态处理
                 // 其它状态下 invite 两次不会是同一个 callSession
+                break;
+
+            case CallEvent.INVITE_DONE:
+                // do nothing
+                // outgoing 状态处理
+                // connected 状态处理
+                // 其它状态下忽略
                 break;
 
             case CallEvent.INVITE_FAIL:
                 // do nothing
                 // outgoing 状态处理
+                // connected 状态处理
                 // 其它状态下忽略
                 break;
 
@@ -35,6 +51,15 @@ public class CallSuperState extends CallState {
                 // do nothing
                 // idle 状态处理
                 // 其它状态下忽略（服务端不会给已在房间内的用户发送同一个 callId 的 invite）
+                break;
+
+            case CallEvent.RECEIVE_INVITE_OTHERS:
+                // idle 状态 do nothing
+                // 其它状态统一由这里处理
+                map = (Map<?, ?>) msg.obj;
+                UserInfo inviter = (UserInfo) map.get("inviter");
+                List<UserInfo> targetUsers = (List<UserInfo>) map.get("targetUsers");
+                callSession.addInviteMembers(inviter, targetUsers);
                 break;
 
             case CallEvent.HANGUP:
@@ -46,6 +71,15 @@ public class CallSuperState extends CallState {
                     callSession.setFinishReason(CallConst.CallFinishReason.HANGUP);
                 }
                 callSession.signalHangup();
+                callSession.transitionToIdleState();
+                break;
+
+            case CallEvent.RECEIVE_SELF_QUIT:
+                if (callSession.getCallStatus() == CallConst.CallStatus.CONNECTED) {
+                    callSession.setFinishReason(CallConst.CallFinishReason.NETWORK_ERROR);
+                } else if (callSession.getCallStatus() == CallConst.CallStatus.INCOMING) {
+                    callSession.setFinishReason(CallConst.CallFinishReason.NO_RESPONSE);
+                }
                 callSession.transitionToIdleState();
                 break;
 
@@ -71,14 +105,25 @@ public class CallSuperState extends CallState {
                 break;
 
             case CallEvent.RECEIVE_ACCEPT:
-                // TODO: 更新 member 状态
-                // outgoing 状态处理
-                // 其它状态忽略
+                // outgoing 状态处理（别的用户 accept）
+                // incoming 状态处理（当前用户在其它端 accept）
+                userId = (String) msg.obj;
+                callSession.memberAccept(userId);
                 break;
 
             case CallEvent.RECEIVE_HANGUP:
-                String userId = (String) msg.obj;
+                // incoming 状态处理（当前用户在其它端 hangup）
+                userId = (String) msg.obj;
                 callSession.memberHangup(userId);
+                if (!callSession.isMultiCall()) {
+                    callSession.transitionToIdleState();
+                }
+                break;
+
+            case CallEvent.RECEIVE_QUIT:
+                // 跟 JCallEventReceiveHangup 不同，incoming 状态不会收到当前用户在其它端的 quit 事件
+                userIdList = (List<String>) msg.obj;
+                callSession.membersQuit(userIdList);
                 if (!callSession.isMultiCall()) {
                     callSession.transitionToIdleState();
                 }
@@ -94,6 +139,24 @@ public class CallSuperState extends CallState {
                 // do nothing
                 // connecting 状态处理
                 // 其它状态忽略
+                break;
+
+            case CallEvent.PARTICIPANT_JOIN_CHANNEL:
+                userIdList = (List<String>) msg.obj;
+                callSession.membersConnected(userIdList);
+                break;
+
+            case CallEvent.PARTICIPANT_LEAVE_CHANNEL:
+                break;
+
+            case CallEvent.PARTICIPANT_ENABLE_CAMERA:
+                map = (Map<?, ?>) msg.obj;
+                boolean enable = (boolean) map.get("enable");
+                userId = (String) map.get("userId");
+                callSession.cameraEnable(userId, enable);
+                break;
+
+            case CallEvent.PARTICIPANT_ENABLE_MIC:
                 break;
 
             default:

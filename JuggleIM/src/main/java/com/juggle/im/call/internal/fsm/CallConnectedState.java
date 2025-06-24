@@ -3,9 +3,11 @@ package com.juggle.im.call.internal.fsm;
 import android.os.Message;
 
 import com.juggle.im.call.CallConst;
+import com.juggle.im.call.internal.CallEvent;
 import com.juggle.im.call.internal.CallSessionImpl;
 import com.juggle.im.internal.util.JLogger;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -29,7 +31,36 @@ public class CallConnectedState extends CallState {
 
     @Override
     public boolean processMessage(Message msg) {
-        return super.processMessage(msg);
+        super.processMessage(msg);
+
+        CallSessionImpl callSession = getCallSessionImpl();
+        if (callSession == null) {
+            JLogger.e("FSM-Sm", "callSession is null");
+            return true;
+        }
+
+        List<String> userIdList;
+
+        switch (msg.what) {
+            case CallEvent.INVITE:
+                userIdList = (List<String>) msg.obj;
+                callSession.signalInvite(userIdList);
+                break;
+
+            case CallEvent.INVITE_DONE:
+                userIdList = (List<String>) msg.obj;
+                callSession.membersInviteBySelf(userIdList);
+                break;
+
+            case CallEvent.INVITE_FAIL:
+                callSession.error(CallConst.CallErrorCode.INVITE_FAIL);
+                break;
+
+            default:
+                return false;
+        }
+
+        return true;
     }
 
     private void startPing() {

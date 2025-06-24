@@ -1,14 +1,18 @@
 package com.juggle.im.call.internal.media;
 
 import android.content.Context;
+import android.view.View;
 
 import com.juggle.im.JIM;
 import com.juggle.im.call.internal.CallSessionImpl;
 
+import org.json.JSONObject;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
-public class CallMediaManager {
+public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListener {
 
     public static CallMediaManager getInstance() {
         return SingletonHolder.sInstance;
@@ -19,6 +23,7 @@ public class CallMediaManager {
             Class clazz = Class.forName("com.j.im.jzegocall.CallMediaZegoEngine");
             Constructor constructor = clazz.getConstructor(int.class, Context.class);
             mEngine = (ICallMediaEngine) constructor.newInstance(appId, context);
+            mEngine.setListener(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -32,11 +37,38 @@ public class CallMediaManager {
         CallMediaRoomConfig config = new CallMediaRoomConfig();
         config.setUserStatusNotify(true);
         config.setZegoToken(callSession.getZegoToken());
-        mEngine.joinRoom(room, user, config, callback);
+        mEngine.joinRoom(room, user, config, new ICallCompleteCallback() {
+            @Override
+            public void onComplete(int errorCode, JSONObject data) {
+                if (errorCode == 0) {
+                    mListener = callSession;
+                }
+                if (callback != null) {
+                    callback.onComplete(errorCode, data);
+                }
+            }
+        });
     }
 
     public void leaveRoom(String roomId) {
+        mListener = null;
         mEngine.leaveRoom(roomId);
+    }
+
+    public void enableCamera(boolean isEnable) {
+        mEngine.enableCamera(isEnable);
+    }
+
+    public void startPreview(View view) {
+        mEngine.startPreview(view);
+    }
+
+    public void stopPreview() {
+        mEngine.stopPreview();
+    }
+
+    public void setVideoView(String roomId, String userId, View view) {
+        mEngine.setVideoView(roomId, userId, view);
     }
 
     public void muteMicrophone(boolean isMute) {
@@ -51,10 +83,43 @@ public class CallMediaManager {
         mEngine.setSpeakerEnable(isEnable);
     }
 
+    public void useFrontCamera(boolean isEnable) {
+        mEngine.useFrontCamera(isEnable);
+    }
+
+    @Override
+    public View viewForUserId(String userId) {
+        if (mListener != null) {
+            return mListener.viewForUserId(userId);
+        }
+        return null;
+    }
+
+    @Override
+    public void onUsersJoin(List<String> userIdList) {
+        if (mListener != null) {
+            mListener.onUsersJoin(userIdList);
+        }
+    }
+
+    @Override
+    public void onUserCameraChange(String userId, boolean enable) {
+        if (mListener != null) {
+            mListener.onUserCameraChange(userId, enable);
+        }
+
+    }
+
+    @Override
+    public void onUsersLeave(List<String> userIdList) {
+
+    }
+
     private static class SingletonHolder {
         static final CallMediaManager sInstance = new CallMediaManager();
     }
 
     private ICallMediaEngine mEngine;
+    private ICallMediaListener mListener;
 
 }

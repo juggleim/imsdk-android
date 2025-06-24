@@ -20,9 +20,11 @@ import com.juggle.im.internal.util.JUtility;
 import com.juggle.im.model.UserInfo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListener, ICallSessionLifeCycleListener {
@@ -37,29 +39,25 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
 
     @Override
     public ICallSession startSingleCall(String userId, ICallSession.ICallSessionListener listener) {
-        synchronized (this) {
-            if (!mCallSessionList.isEmpty()) {
-                if (listener != null) {
-                    mCore.getCallbackHandler().post(() -> {
-                        listener.onErrorOccur(CallConst.CallErrorCode.CALL_EXIST);
-                    });
-                }
-                return null;
+        return startSingleCall(userId, CallConst.CallMediaType.VOICE, listener);
+    }
+
+    @Override
+    public ICallSession startSingleCall(String userId, CallConst.CallMediaType mediaType, ICallSession.ICallSessionListener listener) {
+        if (TextUtils.isEmpty(userId)) {
+            if (listener != null) {
+                mCore.getCallbackHandler().post(() -> {
+                    listener.onErrorOccur(CallConst.CallErrorCode.INVALID_PARAMETER);
+                });
             }
+            return null;
         }
-        String callId = JUtility.getUUID();
-        CallSessionImpl callSession = createCallSessionImpl(callId, false);
-        callSession.setOwner(JIM.getInstance().getCurrentUserId());
-        CallMember member = new CallMember();
-        UserInfo userInfo = new UserInfo();
-        userInfo.setUserId(userId);
-        member.setUserInfo(userInfo);
-        member.setCallStatus(CallConst.CallStatus.INCOMING);
-        callSession.addMember(member);
-        callSession.addListener(callId+"-JIM", listener);
-        callSession.sendMessage(CallEvent.INVITE);
-        addCallSession(callSession);
-        return callSession;
+        return startCall(Collections.singletonList(userId), false, mediaType, listener);
+    }
+
+    @Override
+    public ICallSession startMultiCall(List<String> userIdList, CallConst.CallMediaType mediaType, ICallSession.ICallSessionListener listener) {
+        return startCall(userIdList, true, mediaType, listener);
     }
 
     @Override
@@ -72,7 +70,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
 
     @Override
     public void removeReceiveListener(String key) {
-        if (!TextUtils.isEmpty(key) && mListenerMap != null) {
+        if (!TextUtils.isEmpty(key)) {
             mListenerMap.remove(key);
         }
     }
@@ -145,39 +143,38 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
             return;
         }
         Map<String, UserInfo> userMap = new HashMap<>();
-        if (inviter != null && inviter.getUserId() != null) {
-            userMap.put(inviter.getUserId(), inviter);
-        }
-        if (room.getOwner() != null && room.getOwner().getUserId() != null) {
-            userMap.put(room.getOwner().getUserId(), room.getOwner());
-        }
-        boolean isInvite = false;
-        for (UserInfo userInfo : targetUsers) {
-            if (userInfo.getUserId() != null) {
-                userMap.put(userInfo.getUserId(), userInfo);
-                if (userInfo.getUserId().equals(mCore.getUserId())) {
-                    isInvite = true;
-                }
-            }
+        for (CallMember member : room.getMembers()) {
+            userMap.put(member.getUserInfo().getUserId(), member.getUserInfo());
         }
         mUserInfoManager.insertUserInfoList(new ArrayList<>(userMap.values()));
-        if (isInvite) {
-            CallSessionImpl callSession = getCallSessionImpl(room.getRoomId());
-            if (callSession == null) {
-                callSession = createCallSessionImpl(room.getRoomId(), room.isMultiCall());
-                if (room.getOwner() != null) {
-                    callSession.setOwner(room.getOwner().getUserId());
+        CallSessionImpl callSession = getCallSessionImpl(room.getRoomId());
+        if (callSession != null) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("inviter", inviter);
+            m.put("targetUsers", targetUsers);
+            callSession.sendMessage(CallEvent.RECEIVE_INVITE_OTHERS, m);
+        } else {
+            boolean isInvite = false;
+            for (UserInfo userInfo : targetUsers) {
+                if (userInfo.getUserId().equals(mCore.getUserId())) {
+                    isInvite = true;
+                    break;
                 }
-                if (inviter != null) {
-                    callSession.setInviter(inviter.getUserId());
-                }
-                CallMember member = new CallMember();
-                member.setUserInfo(inviter);
-                member.setCallStatus(CallConst.CallStatus.OUTGOING);
-                callSession.addMember(member);
-                addCallSession(callSession);
             }
-            callSession.sendMessage(CallEvent.RECEIVE_INVITE);
+            if (isInvite) {
+                callSession = createCallSessionImpl(room.getRoomId(), room.isMultiCall());
+                callSession.setOwner(room.getOwner().getUserId());
+                callSession.setInviter(inviter.getUserId());
+                callSession.setMediaType(room.getMediaType());
+                CallMediaManager.getInstance().enableCamera(callSession.getMediaType() == CallConst.CallMediaType.VIDEO);
+                for (CallMember member : room.getMembers()) {
+                    if (!member.getUserInfo().getUserId().equals(mCore.getUserId())) {
+                        callSession.addMember(member);
+                    }
+                }
+                addCallSession(callSession);
+                callSession.sendMessage(CallEvent.RECEIVE_INVITE);
+            }
         }
     }
 
@@ -195,6 +192,32 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
             return;
         }
         callSession.sendMessage(CallEvent.RECEIVE_HANGUP, user.getUserId());
+    }
+
+    @Override
+    public void onCallQuit(RtcRoom room, List<CallMember> members) {
+        if (room == null || members == null || members.isEmpty()) {
+            return;
+        }
+        Map<String, UserInfo> userMap = new HashMap<>();
+        boolean includeCurrent = false;
+        for (CallMember member : members) {
+            userMap.put(member.getUserInfo().getUserId(), member.getUserInfo());
+            if (mCore.getUserId().equals(member.getUserInfo().getUserId())) {
+                includeCurrent = true;
+            }
+        }
+        mUserInfoManager.insertUserInfoList(new ArrayList<>(userMap.values()));
+
+        CallSessionImpl callSession = getCallSessionImpl(room.getRoomId());
+        if (callSession == null) {
+            return;
+        }
+        if (includeCurrent) {
+            callSession.sendMessage(CallEvent.RECEIVE_SELF_QUIT);
+        } else {
+            callSession.sendMessage(CallEvent.RECEIVE_QUIT, new ArrayList<>(userMap.keySet()));
+        }
     }
 
     @Override
@@ -237,10 +260,8 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
     @Override
     public void onCallReceive(CallSessionImpl session) {
         mCore.getCallbackHandler().post(() -> {
-            if (mListenerMap != null) {
-                for (Map.Entry<String, ICallReceiveListener> entry : mListenerMap.entrySet()) {
-                    entry.getValue().onCallReceive(session);
-                }
+            for (Map.Entry<String, ICallReceiveListener> entry : mListenerMap.entrySet()) {
+                entry.getValue().onCallReceive(session);
             }
         });
     }
@@ -260,6 +281,50 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
             }
         }
         return needHangupOther;
+    }
+
+    private ICallSession startCall(List<String> userIdList, boolean isMulti, CallConst.CallMediaType mediaType, ICallSession.ICallSessionListener listener) {
+        synchronized (this) {
+            if (!mCallSessionList.isEmpty()) {
+                if (listener != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        listener.onErrorOccur(CallConst.CallErrorCode.CALL_EXIST);
+                    });
+                }
+                return null;
+            }
+        }
+        if (userIdList == null || userIdList.isEmpty()) {
+            if (listener != null) {
+                mCore.getCallbackHandler().post(() -> {
+                    listener.onErrorOccur(CallConst.CallErrorCode.INVALID_PARAMETER);
+                });
+            }
+            return null;
+        }
+        String callId = JUtility.getUUID();
+        CallSessionImpl callSession = createCallSessionImpl(callId, isMulti);
+        callSession.setOwner(JIM.getInstance().getCurrentUserId());
+        callSession.setMediaType(mediaType);
+        CallMediaManager.getInstance().enableCamera(mediaType == CallConst.CallMediaType.VIDEO);
+        for (String userId : userIdList) {
+            CallMember member = new CallMember();
+            UserInfo userInfo = JIM.getInstance().getUserInfoManager().getUserInfo(userId);
+            if (userInfo == null) {
+                userInfo = new UserInfo();
+                userInfo.setUserId(userId);
+            }
+            member.setUserInfo(userInfo);
+            member.setCallStatus(CallConst.CallStatus.INCOMING);
+            member.setStartTime(System.currentTimeMillis());
+            UserInfo inviter = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+            member.setInviter(inviter);
+            callSession.addMember(member);
+        }
+        callSession.addListener(callId+"-JIM", listener);
+        callSession.sendMessage(CallEvent.INVITE);
+        addCallSession(callSession);
+        return callSession;
     }
 
     private void initCallSessionWithCallStatus(CallSessionImpl callSession, CallConst.CallStatus callStatus) {
@@ -304,7 +369,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         }
     }
 
-    private ConcurrentHashMap<String, ICallReceiveListener> mListenerMap = new ConcurrentHashMap<>();;
+    private final ConcurrentHashMap<String, ICallReceiveListener> mListenerMap = new ConcurrentHashMap<>();;
     private final JIMCore mCore;
     private final UserInfoManager mUserInfoManager;
     private final List<CallSessionImpl> mCallSessionList = new ArrayList<>();

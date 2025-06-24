@@ -38,6 +38,8 @@ public class CallIncomingState extends CallState {
             JLogger.e("FSM-Sm", "callSession is null");
             return true;
         }
+        boolean result = false;
+        String userId;
 
         switch (msg.what) {
             case CallEvent.ACCEPT:
@@ -47,30 +49,55 @@ public class CallIncomingState extends CallState {
                 } else {
                     callSession.signalAccept();
                 }
+                result = true;
+                break;
+
+            case CallEvent.RECEIVE_ACCEPT:
+                userId = (String) msg.obj;
+                // 当前用户在其它端 accept，else 走 super
+                if (callSession.getCore().getUserId().equals(userId)) {
+                    callSession.setFinishReason(CallConst.CallFinishReason.ACCEPT_ON_OTHER_CLIENT);
+                    callSession.transitionToIdleState();
+                    result = true;
+                }
+                break;
+
+            case CallEvent.RECEIVE_HANGUP:
+                userId = (String) msg.obj;
+                // 当前用户在其它端 hangup，else 走 super
+                if (callSession.getCore().getUserId().equals(userId)) {
+                    callSession.setFinishReason(CallConst.CallFinishReason.HANGUP_ON_OTHER_CLIENT);
+                    callSession.transitionToIdleState();
+                    result = true;
+                }
                 break;
 
             case CallEvent.INCOMING_TIMEOUT:
                 incomingTimeout();
                 callSession.transitionToIdleState();
+                result = true;
                 break;
 
             case CallEvent.ACCEPT_AFTER_HANGUP_OTHER:
                 callSession.signalAccept();
+                result = true;
                 break;
 
             case CallEvent.ACCEPT_DONE:
                 callSession.transitionToConnectingState();
+                result = true;
                 break;
 
             case CallEvent.ACCEPT_FAIL:
                 callSession.error(CallConst.CallErrorCode.ACCEPT_FAIL);
                 callSession.transitionToIdleState();
+                result = true;
                 break;
 
             default:
-                return false;
+                break;
         }
-        return true;
+        return result;
     }
 
     private void startHangupTimer() {

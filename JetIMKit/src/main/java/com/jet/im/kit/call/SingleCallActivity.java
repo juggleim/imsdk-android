@@ -21,6 +21,8 @@ import com.juggle.im.JIM;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.ICallSession;
 
+import java.util.List;
+
 public class SingleCallActivity extends BaseCallActivity implements ICallSession.ICallSessionListener {
     private static final int LOSS_RATE_ALARM = 20;
     private LayoutInflater inflater;
@@ -65,7 +67,7 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
 
     private void initView() {
         RelativeLayout buttonLayout = (RelativeLayout) inflater.inflate(R.layout.rc_voip_call_bottom_connected_button_layout, null);
-        RelativeLayout userInfoLayout = null;
+        RelativeLayout userInfoLayout;
         userInfoLayout = (RelativeLayout) inflater.inflate(R.layout.rc_voip_audio_call_user_info_incoming, null);
         userInfoLayout.findViewById(R.id.iv_large_preview_Mask).setVisibility(View.VISIBLE);
 
@@ -285,6 +287,31 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
 
     @Override
     public void onErrorOccur(CallConst.CallErrorCode errorCode) {
+
+    }
+
+    @Override
+    public void onUsersInvite(String inviterId, List<String> userIdList) {
+
+    }
+
+    @Override
+    public void onUsersConnect(List<String> userIdList) {
+
+    }
+
+    @Override
+    public void onUsersLeave(List<String> userIdList) {
+
+    }
+
+    @Override
+    public void onUserCameraEnable(String userId, boolean enable) {
+
+    }
+
+    @Override
+    public void onUserMicrophoneEnable(String userId, boolean enable) {
 
     }
 }

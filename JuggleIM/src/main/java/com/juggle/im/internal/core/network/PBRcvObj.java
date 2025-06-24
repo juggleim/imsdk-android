@@ -170,7 +170,7 @@ class PBRcvObj {
 
     static class RtcRoomEventNtf {
         PBRtcRoomEventType eventType;
-        CallMember member;
+        List<CallMember> members;
         RtcRoom room;
     }
 
