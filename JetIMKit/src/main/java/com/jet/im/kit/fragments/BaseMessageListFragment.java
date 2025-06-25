@@ -67,6 +67,7 @@ import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
 import com.juggle.im.JIM;
+import com.juggle.im.call.CallConst;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
@@ -321,7 +322,12 @@ abstract public class BaseMessageListFragment<
                 case VIEW_TYPE_USER_MESSAGE_ME:
                 case VIEW_TYPE_USER_MESSAGE_OTHER:
                     if (message.getContent() instanceof CallFinishNotifyMessage) {
-                        voiceCall();
+                        CallFinishNotifyMessage callFinishNotifyMessage = (CallFinishNotifyMessage) message.getContent();
+                        if (callFinishNotifyMessage.getMediaType() == CallConst.CallMediaType.VOICE) {
+                            voiceCall();
+                        } else {
+                            videoCall();
+                        }
                     }
                 default:
             }
@@ -699,6 +705,7 @@ abstract public class BaseMessageListFragment<
         assert channel != null;
         if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
             items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_voice_message_on));
+            items.add(new DialogListItem(R.string.sb_text_channel_input_video_call, R.drawable.icon_camera));
         }
         items.add(new DialogListItem(R.string.text_name_card, R.drawable.icon_user));
         if (items.isEmpty()) return;
@@ -716,6 +723,8 @@ abstract public class BaseMessageListFragment<
                     takeFile();
                 } else if (key == R.string.sb_text_channel_input_voice_call) {
                     voiceCall();
+                } else if (key == R.string.sb_text_channel_input_video_call) {
+                    videoCall();
                 } else if (key == R.string.text_name_card) {
                     nameCard();
                 }
@@ -758,7 +767,16 @@ abstract public class BaseMessageListFragment<
             if (getContext() == null) return;
 
             assert getViewModel().getConversationInfo() != null;
-            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId());
+            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VOICE);
+        });
+    }
+
+    public void videoCall() {
+        requestPermission(PermissionUtils.VIDEO_CALL_PERMISSION, () -> {
+            if (getContext() == null) return;
+
+            assert getViewModel().getConversationInfo() != null;
+            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VIDEO);
         });
     }
 

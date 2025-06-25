@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.juggle.im.JIM;
+import com.juggle.im.call.CallConst;
 import com.juggle.im.call.ICallManager;
 import com.juggle.im.call.ICallSession;
 
@@ -17,10 +18,10 @@ public class CallCenter implements ICallManager.ICallReceiveListener {
         mContext = context;
     }
 
-    public void startSingleCall(Context context, String userId) {
+    public void startSingleCall(Context context, String userId, CallConst.CallMediaType mediaType) {
         if (context == null) return;
-        ICallSession callSession = JIM.getInstance().getCallManager().startSingleCall(userId, null);
-        Intent intent = new Intent("com.jet.im.intent.action.SINGLE_AUDIO");
+        ICallSession callSession = JIM.getInstance().getCallManager().startSingleCall(userId, mediaType, null);
+        Intent intent = new Intent("com.jet.im.intent.action.SINGLE_CALL");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra("callId", callSession.getCallId());
         context.startActivity(intent);
@@ -31,10 +32,15 @@ public class CallCenter implements ICallManager.ICallReceiveListener {
         if (mContext == null) {
             return;
         }
-        Intent intent = new Intent("com.jet.im.intent.action.SINGLE_AUDIO");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("callId", callSession.getCallId());
-        mContext.startActivity(intent);
+        Intent intent;
+        if (!callSession.isMultiCall()) {
+            intent = new Intent("com.jet.im.intent.action.SINGLE_CALL");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("callId", callSession.getCallId());
+            mContext.startActivity(intent);
+        } else {
+
+        }
     }
 
     private CallCenter() {

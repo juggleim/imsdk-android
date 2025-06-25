@@ -1907,6 +1907,14 @@ class PBData {
         result.setRoomId(pbRoom.getRoomId());
         result.setOwner(userInfoWithPBUserInfo(pbRoom.getOwner()));
         result.setMultiCall(pbRoom.getRoomType() == Rtcroom.RtcRoomType.OneMore);
+        result.setMediaType(CallConst.CallMediaType.setValue(pbRoom.getRtcMediaTypeValue()));
+
+        List<CallMember> members = new ArrayList<>();
+        for (Rtcroom.RtcMember member : pbRoom.getMembersList()) {
+            CallMember outMember = callMemberWithPBRtcMember(member);
+            members.add(outMember);
+        }
+        result.setMembers(members);
         return result;
     }
 
