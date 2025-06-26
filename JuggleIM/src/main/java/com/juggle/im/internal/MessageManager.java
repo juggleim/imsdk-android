@@ -2253,6 +2253,21 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         mChatroomManager.setSyncTime(lastMessage.getConversation().getConversationId(), lastMessage.getTimestamp());
 
         for (ConcreteMessage message : messages) {
+            //recall message
+            if (message.getContentType().equals(RecallCmdMessage.CONTENT_TYPE)) {
+                RecallCmdMessage cmd = (RecallCmdMessage) message.getContent();
+                Message recallMessage = handleRecallCmdMessage(message.getConversation(), cmd.getOriginalMessageId(), cmd.getExtra());
+                //recallMessage 为空表示被撤回的消息本地不存在，不需要回调
+                if (recallMessage != null) {
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            mCore.getCallbackHandler().post(() -> entry.getValue().onMessageRecall(recallMessage));
+                        }
+                    }
+                }
+                continue;
+            }
+
             //cmd消息不回调
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
