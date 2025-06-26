@@ -44,6 +44,7 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
     /// 是否切换了自己和对方的视频 view（默认对方为 LView，自己为 SView）
     private boolean mSwitchMainSubVideo;
     private boolean mUseFrontCamera = true;
+    private boolean mEnableCamera = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,10 +75,10 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
 
         if (mCallSession.getCallStatus() == CallConst.CallStatus.OUTGOING) {
             RelativeLayout layout = buttonLayout.findViewById(R.id.rc_voip_call_mute);
-            layout.setVisibility(View.VISIBLE);
+            layout.setVisibility(View.GONE);
             ImageView button = buttonLayout.findViewById(R.id.rc_voip_call_mute_btn);
             button.setEnabled(false);
-            buttonLayout.findViewById(R.id.rc_voip_handfree).setVisibility(View.VISIBLE);
+            buttonLayout.findViewById(R.id.rc_voip_handfree).setVisibility(View.GONE);
         }
 
         if (mCallSession.getMediaType() == CallConst.CallMediaType.VOICE) {
@@ -131,8 +132,11 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
     @Override
     public void onCallConnect() {
         if (mCallSession.getMediaType() == CallConst.CallMediaType.VOICE) {
-            findViewById(R.id.rc_voip_call_minimize).setVisibility(View.VISIBLE);
+//            findViewById(R.id.rc_voip_call_minimize).setVisibility(View.VISIBLE);
             RelativeLayout btnLayout = (RelativeLayout) inflater.inflate(R.layout.rc_voip_call_bottom_connected_button_layout, null);
+            RelativeLayout layout = btnLayout.findViewById(R.id.rc_voip_call_mute);
+            layout.setVisibility(View.VISIBLE);
+            btnLayout.findViewById(R.id.rc_voip_handfree).setVisibility(View.VISIBLE);
             ImageView button = btnLayout.findViewById(R.id.rc_voip_call_mute_btn);
             button.setEnabled(true);
             mButtonContainer.removeAllViews();
@@ -153,8 +157,8 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
 //                userName.setShadowLayer(16F, 0F, 2F, getResources().getColor(R.color.rc_voip_reminder_shadow));//callkit_shadowcolor
                 CallUtils.textViewShadowLayer(userName, SingleCallActivity.this);
             }
-            mCallSession.setVideoView(mCallSession.getMembers().get(0).getUserInfo().getUserId(), mLPreviewContainer);
-            mCallSession.setVideoView(JIM.getInstance().getCurrentUserId(), mSPreviewContainer);
+//            mCallSession.setVideoView(mCallSession.getMembers().get(0).getUserInfo().getUserId(), mLPreviewContainer);
+//            mCallSession.setVideoView(JIM.getInstance().getCurrentUserId(), mSPreviewContainer);
         }
         TextView tv_rc_voip_call_remind_info =  mUserInfoContainer.findViewById(R.id.rc_voip_call_remind_info);
         CallUtils.textViewShadowLayer(tv_rc_voip_call_remind_info, SingleCallActivity.this);
@@ -215,7 +219,7 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
         isInformationShow = true;
         mUserInfoContainer.setVisibility(View.VISIBLE);
 
-        mUserInfoContainer.findViewById(R.id.rc_voip_call_minimize).setVisibility(View.VISIBLE);
+//        mUserInfoContainer.findViewById(R.id.rc_voip_call_minimize).setVisibility(View.VISIBLE);
         mButtonContainer.setVisibility(View.VISIBLE);
         RelativeLayout btnLayout = (RelativeLayout) inflater.inflate(R.layout.rc_voip_call_bottom_connected_button_layout, null);
         btnLayout.findViewById(R.id.rc_voip_call_mute).setSelected(muted);
@@ -225,18 +229,13 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
         mButtonContainer.addView(btnLayout);
         View view = findViewById(R.id.rc_voip_audio_chat);
         view.setVisibility(View.VISIBLE);
-//        view.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (RongIMClient.getInstance().getCurrentConnectionStatus() == RongIMClient.ConnectionStatusListener.ConnectionStatus.CONNECTED) {
-//                    RongCallClient.getInstance().changeCallMediaType(RongCallCommon.CallMediaType.AUDIO);
-//                    callSession.setMediaType(RongCallCommon.CallMediaType.AUDIO);
-//                    initAudioCallView();
-//                }else {
-//                    showShortToast("IM连接异常，请检查网络后重试");
-//                }
-//            }
-//        });
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mEnableCamera = !mEnableCamera;
+                mCallSession.enableCamera(mEnableCamera);
+            }
+        });
     }
 
     public void onHangupBtnClick(View view) {

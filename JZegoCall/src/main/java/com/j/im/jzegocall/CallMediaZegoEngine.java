@@ -41,7 +41,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
     public CallMediaZegoEngine(int appId, Context context) {
         ZegoEngineProfile profile = new ZegoEngineProfile();
         profile.appID = appId;
-        profile.scenario = ZegoScenario.STANDARD_VOICE_CALL;
+        profile.scenario = ZegoScenario.STANDARD_VIDEO_CALL;
         profile.application = (Application) context.getApplicationContext();
         sEngine = ZegoExpressEngine.createEngine(profile, this);
         sEngine.enableCamera(false);
