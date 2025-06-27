@@ -840,7 +840,8 @@ abstract public class BaseMessageListFragment<
                 return;
             }
             List<String> userIdList = data.getStringArrayListExtra("userIdList");
-            CallCenter.getInstance().startMultiCall(getActivity(), userIdList, mMediaType);
+            assert getViewModel().getConversationInfo() != null;
+            CallCenter.getInstance().startMultiCall(getActivity(), userIdList, mMediaType, getViewModel().getConversationInfo().getConversation().getConversationId());
         }
     }
 

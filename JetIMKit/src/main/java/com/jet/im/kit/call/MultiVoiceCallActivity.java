@@ -36,14 +36,17 @@ public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSes
     RelativeLayout outgoingLayout;
     RelativeLayout outgoingController;
     RelativeLayout incomingController;
+    String groupId;
 
-    boolean shouldShowFloat = true;
-    boolean startForCheckPermissions = false;
+//    boolean shouldShowFloat = true;
+//    boolean startForCheckPermissions = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.rc_voip_ac_muti_audio);
+
+        groupId = getIntent().getStringExtra("groupId");
         audioContainer = findViewById(R.id.rc_voip_container);
         incomingLayout = (RelativeLayout) LayoutInflater.from(this).inflate(R.layout.rc_voip_item_incoming_maudio, null);
         TextView tv_invite_incoming_audio = incomingLayout.findViewById(R.id.tv_invite_incoming_audio);
@@ -58,13 +61,13 @@ public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSes
         button.setEnabled(false);
         incomingController = (RelativeLayout) LayoutInflater.from(this).inflate(R.layout.rc_voip_call_bottom_incoming_button_layout, null);
 
-        startForCheckPermissions = getIntent().getBooleanExtra("checkPermissions", false);
+//        startForCheckPermissions = getIntent().getBooleanExtra("checkPermissions", false);
         mCallSession.addListener(TAG, this);
         initView();
     }
 
     void initView() {
-        Intent intent = getIntent();
+//        Intent intent = getIntent();
 //        callAction = RongCallAction.valueOf(intent.getStringExtra("callAction"));
 //        if (callAction == null || callAction.equals(RongCallAction.ACTION_RESUME_CALL)) {
 //            RelativeLayout relativeLayout = (RelativeLayout) outgoingLayout.findViewById(R.id.reltive_voip_outgoing_audio_title);
@@ -220,7 +223,12 @@ public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSes
         imgvAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // todo
+                Intent intent = new Intent("com.jet.im.action.select_group_member");
+                intent.putExtra("groupId", groupId);
+                intent.putExtra("type", 3);
+
+                startActivityForResult(intent, 777);
+
 //                 if (callSession.getConversationType().equals(Conversation.ConversationType.GROUP)) {
 //                    Intent intent = new Intent(MultiAudioCallActivity.this, CallSelectMemberActivity.class);
 //                    ArrayList<String> added = new ArrayList<>();
@@ -340,5 +348,17 @@ public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSes
     public void onReceiveBtnClick(View view) {
         Log.i(TAG, "onReceiveBtnClick");
         mCallSession.accept();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 777) {
+            if (data == null) {
+                return;
+            }
+            List<String> userIdList = data.getStringArrayListExtra("userIdList");
+            mCallSession.inviteUsers(userIdList);
+        }
     }
 }

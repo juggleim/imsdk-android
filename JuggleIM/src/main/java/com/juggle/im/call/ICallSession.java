@@ -82,6 +82,4 @@ public interface ICallSession {
     List<CallMember> getMembers();
     // 当前用户
     CallMember getCurrentCallMember();
-
-
 }

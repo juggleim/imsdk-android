@@ -1058,6 +1058,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private void handleRtcRoomEventNtf(PBRcvObj.RtcRoomEventNtf ntf) {
         JLogger.i("Call-RmEvent", "type is " + ntf.eventType);
         switch (ntf.eventType) {
+            case QUIT:
+                if (mCallListener != null) {
+                    mCallListener.onCallQuit(ntf.room, ntf.members);
+                }
+                break;
+
             case DESTROY:
                 if (mCallListener != null) {
                     mCallListener.onRoomDestroy(ntf.room);

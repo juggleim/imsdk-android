@@ -47,11 +47,15 @@ public class CallEvent {
        put(ACCEPT_DONE, "accept done");
        put(ACCEPT_FAIL, "accept fail");
        put(INCOMING_TIMEOUT, "incoming timeout");
+       put(INVITE_DONE, "invite done");
 
        put(RECEIVE_INVITE, "receive invite");
        put(RECEIVE_ACCEPT, "receive accept");
        put(RECEIVE_HANGUP, "receive hangup");
        put(ROOM_DESTROY, "room destroy");
+       put(RECEIVE_INVITE_OTHERS, "invite others");
+       put(RECEIVE_SELF_QUIT, "receive self quit");
+       put(RECEIVE_QUIT, "receive quit");
 
        put(JOIN_CHANNEL_DONE, "join channel done");
        put(JOIN_CHANNEL_FAIL, "join channel fail");
