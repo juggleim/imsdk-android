@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -127,6 +128,7 @@ abstract public class BaseMessageListFragment<
     private Uri mediaUri;
     @Nullable
     private Message forwardMessage;
+    private CallConst.CallMediaType mMediaType;
 
     private final ActivityResultLauncher<Intent> getContentLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 //        SendbirdChat.setAutoBackgroundDetection(true);
@@ -703,10 +705,10 @@ abstract public class BaseMessageListFragment<
         }
         ConversationInfo channel = getViewModel().getConversationInfo();
         assert channel != null;
-        if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
+//        if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
             items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_voice_message_on));
             items.add(new DialogListItem(R.string.sb_text_channel_input_video_call, R.drawable.icon_camera));
-        }
+//        }
         items.add(new DialogListItem(R.string.text_name_card, R.drawable.icon_user));
         if (items.isEmpty()) return;
         hideKeyboard();
@@ -767,7 +769,16 @@ abstract public class BaseMessageListFragment<
             if (getContext() == null) return;
 
             assert getViewModel().getConversationInfo() != null;
-            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VOICE);
+            if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
+                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VOICE);
+            } else if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.GROUP) {
+                mMediaType = CallConst.CallMediaType.VOICE;
+                Intent intent = new Intent("com.jet.im.action.select_group_member");
+                intent.putExtra("groupId", getViewModel().getConversationInfo().getConversation().getConversationId());
+                intent.putExtra("type", 3);
+
+                startActivityForResult(intent, 777);
+            }
         });
     }
 
@@ -776,7 +787,11 @@ abstract public class BaseMessageListFragment<
             if (getContext() == null) return;
 
             assert getViewModel().getConversationInfo() != null;
-            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VIDEO);
+            if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
+                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VIDEO);
+            } else if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.GROUP)  {
+
+            }
         });
     }
 
@@ -820,6 +835,12 @@ abstract public class BaseMessageListFragment<
             String conversationId = data.getStringExtra("id");
             Conversation.ConversationType conversationType = Conversation.ConversationType.setValue(typeValue);
             getViewModel().sendMessage(forwardMessage.getContent(), new Conversation(conversationType, conversationId));
+        } else if (requestCode == 777) {
+            if (data == null) {
+                return;
+            }
+            List<String> userIdList = data.getStringArrayListExtra("userIdList");
+            CallCenter.getInstance().startMultiCall(getActivity(), userIdList, mMediaType);
         }
     }
 

@@ -54,6 +54,17 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".call.MultiVoiceCallActivity"
+            android:exported="true"
+            android:launchMode="standard"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize">
+            <intent-filter>
+                <action android:name="com.jet.im.intent.action.MULTI_VOICE_CALL" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name=".activities.PersonInfoActivity" />
         <provider
             android:name=".model.SendbirdUIKitFileProvider"

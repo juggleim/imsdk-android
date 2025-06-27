@@ -2,6 +2,7 @@ package com.jet.im.kit.call;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.util.TypedValue;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
@@ -18,5 +19,10 @@ public class CallUtils {
 
     public static Drawable BackgroundDrawable(int drawable, Context context) {
         return ContextCompat.getDrawable(context, drawable);
+    }
+
+    public static int dp2px(float dpVal, Context context) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                dpVal, context.getResources().getDisplayMetrics());
     }
 }

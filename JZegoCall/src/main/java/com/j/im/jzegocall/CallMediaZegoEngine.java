@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import im.zego.zegoexpress.ZegoExpressEngine;
 import im.zego.zegoexpress.callback.IZegoEventHandler;
@@ -132,7 +133,15 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
         if (updateType == ZegoUpdateType.ADD) {
             for (ZegoStream stream : streamList) {
                 String streamId = stream.streamID;
+                String userId = userIdWithStreamId(streamId);
+                View view = mListener.viewForUserId(userId);
+                ZegoCanvas canvas = null;
+                if (view != null) {
+                    canvas = new ZegoCanvas(view);
+                }
+//                sEngine.startPlayingStream(streamId, canvas);
                 sEngine.startPlayingStream(streamId);
+
             }
         }
         if (sHandler != null) {
@@ -146,7 +155,11 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
             return;
         }
         String userId = userIdWithStreamId(streamID);
-        mListener.onUserCameraChange(userId, state == ZegoRemoteDeviceState.OPEN);
+        if (state == ZegoRemoteDeviceState.OPEN) {
+            mListener.onUserCameraChange(userId, true);
+        } else if (state == ZegoRemoteDeviceState.DISABLE) {
+            mListener.onUserCameraChange(userId, false);
+        }
     }
 
     @Override
@@ -261,7 +274,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
     }
 
     private String userIdWithStreamId(String streamId) {
-        String[] parts = streamId.split(SEPARATOR);
+        String[] parts = streamId.split(Pattern.quote(SEPARATOR));
         if (parts.length > 1) {
             return parts[1];
         }

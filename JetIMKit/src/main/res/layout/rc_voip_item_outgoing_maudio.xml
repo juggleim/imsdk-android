@@ -93,17 +93,17 @@
         android:layout_marginRight="20dp"
         android:layout_height="wrap_content">
 
-<!--        <io.rong.callkit.util.CallVerticalScrollView-->
-<!--            android:id="@+id/rc_voip_members_container"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:scrollbars="none"-->
-<!--            android:gravity="center"-->
-<!--            android:layout_gravity="center_horizontal"-->
-<!--            android:listSelector="@android:color/transparent"-->
-<!--            android:layout_alignParentLeft="true"-->
-<!--            android:layout_alignParentStart="true">-->
-<!--        </io.rong.callkit.util.CallVerticalScrollView>-->
+        <com.jet.im.kit.call.CallVerticalScrollView
+            android:id="@+id/rc_voip_members_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:listSelector="@android:color/transparent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
+        </com.jet.im.kit.call.CallVerticalScrollView>
 
     </LinearLayout>
 
