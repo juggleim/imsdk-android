@@ -705,10 +705,10 @@ abstract public class BaseMessageListFragment<
         }
         ConversationInfo channel = getViewModel().getConversationInfo();
         assert channel != null;
-//        if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
-            items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_voice_message_on));
+        items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_voice_message_on));
+        if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
             items.add(new DialogListItem(R.string.sb_text_channel_input_video_call, R.drawable.icon_camera));
-//        }
+        }
         items.add(new DialogListItem(R.string.text_name_card, R.drawable.icon_user));
         if (items.isEmpty()) return;
         hideKeyboard();
