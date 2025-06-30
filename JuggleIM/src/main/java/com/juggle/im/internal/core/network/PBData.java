@@ -1183,6 +1183,7 @@ class PBData {
                     a.timestamp = publishAckMsgBody.getTimestamp();
                     a.seqNo = publishAckMsgBody.getMsgSeqNo();
                     a.clientUid = publishAckMsgBody.getClientMsgId();
+                    a.groupMemberCount = publishAckMsgBody.getMemberCount();
                     if (publishAckMsgBody.hasModifiedMsg()) {
                         Message modifiedMsg = messageWithDownMsg(publishAckMsgBody.getModifiedMsg());
                         a.contentType = modifiedMsg.getContentType();

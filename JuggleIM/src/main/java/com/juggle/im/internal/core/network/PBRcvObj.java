@@ -35,6 +35,7 @@ class PBRcvObj {
         String clientUid;
         String contentType;
         MessageContent content;
+        int groupMemberCount;
     }
 
     static class PublishMsgBody {

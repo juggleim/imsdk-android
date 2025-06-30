@@ -163,7 +163,7 @@ class MessageSql {
             + "seq_no INTEGER,"
             + "message_index INTEGER,"
             + "read_count INTEGER DEFAULT 0,"
-            + "member_count INTEGER DEFAULT -1,"
+            + "member_count INTEGER DEFAULT 0,"
             + "is_deleted BOOLEAN DEFAULT 0,"
             + "search_content TEXT,"
             + "local_attribute TEXT,"
@@ -348,12 +348,12 @@ class MessageSql {
     static final String SQL_DESC = " DESC";
     static final String SQL_LIMIT = " LIMIT ";
 
-    static String sqlUpdateMessageAfterSend(int state, long clientMsgNo, long timestamp, long seqNo) {
-        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s WHERE id = %s", state, timestamp, seqNo, clientMsgNo);
+    static String sqlUpdateMessageAfterSend(int state, long clientMsgNo, long timestamp, long seqNo, int groupMemberCount) {
+        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s, member_count = %s WHERE id = %s", state, timestamp, seqNo, groupMemberCount, clientMsgNo);
     }
 
-    static String sqlUpdateMessageAfterSendWithClientUid(int state, long timestamp, long seqNo) {
-        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s WHERE client_uid = ?", state, timestamp, seqNo);
+    static String sqlUpdateMessageAfterSendWithClientUid(int state, long timestamp, long seqNo, int groupMemberCount) {
+        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s, member_count = %s WHERE client_uid = ?", state, timestamp, seqNo, groupMemberCount);
     }
 
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_ID = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE message_uid = ?";

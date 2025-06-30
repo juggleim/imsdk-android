@@ -647,15 +647,16 @@ public class DBManager {
     public void updateMessageAfterSend(long clientMsgNo,
                                        String msgId,
                                        long timestamp,
-                                       long seqNo) {
+                                       long seqNo,
+                                       int groupMemberCount) {
         Object[] args = new Object[]{msgId};
-        String sql = MessageSql.sqlUpdateMessageAfterSend(Message.MessageState.SENT.getValue(), clientMsgNo, timestamp, seqNo);
+        String sql = MessageSql.sqlUpdateMessageAfterSend(Message.MessageState.SENT.getValue(), clientMsgNo, timestamp, seqNo, groupMemberCount);
         execSQL(sql, args);
     }
 
-    public void updateMessageAfterSendWithClientUid(String clientUid, String messageId, long timestamp, long seqNo) {
+    public void updateMessageAfterSendWithClientUid(String clientUid, String messageId, long timestamp, long seqNo, int groupMemberCount) {
         Object[] args = new Object[]{messageId, clientUid};
-        String sql = MessageSql.sqlUpdateMessageAfterSendWithClientUid(Message.MessageState.SENT.getValue(), timestamp, seqNo);
+        String sql = MessageSql.sqlUpdateMessageAfterSendWithClientUid(Message.MessageState.SENT.getValue(), timestamp, seqNo, groupMemberCount);
         execSQL(sql, args);
     }
 

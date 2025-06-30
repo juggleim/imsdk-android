@@ -13,7 +13,7 @@ public class JIMConst {
             this.status = status;
         }
 
-        int getStatus() {
+        public int getStatus() {
             return this.status;
         }
 

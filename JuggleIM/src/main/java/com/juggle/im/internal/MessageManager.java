@@ -66,6 +66,7 @@ import com.juggle.im.model.messages.RecallInfoMessage;
 import com.juggle.im.model.messages.SnapshotPackedVideoMessage;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.ThumbnailPackedImageMessage;
+import com.juggle.im.model.messages.UnknownMessage;
 import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.model.messages.VoiceMessage;
 
@@ -125,7 +126,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ConcreteMessage message = new ConcreteMessage();
         message.setContent(content);
         message.setConversation(conversation);
-        message.setContentType(content.getContentType());
+        if (content instanceof UnknownMessage) {
+            UnknownMessage unknown = (UnknownMessage) content;
+            message.setContentType(unknown.getMessageType());
+        } else {
+            message.setContentType(content.getContentType());
+        }
         message.setDirection(direction);
         message.setState(state);
         message.setSenderUserId(mCore.getUserId());
@@ -166,7 +172,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     private void updateMessageWithContent(ConcreteMessage message) {
         if (message.getContent() != null) {
-            message.setContentType(message.getContent().getContentType());
+            if (message.getContent() instanceof UnknownMessage) {
+                UnknownMessage unknown = (UnknownMessage) message.getContent();
+                message.setContentType(unknown.getMessageType());
+            } else {
+                message.setContentType(message.getContent().getContentType());
+            }
         }
         if (message.hasReferredInfo()) {
             ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId());
@@ -204,14 +215,20 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
-            public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo, String contentType, MessageContent content) {
+            public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo, String contentType, MessageContent content, int groupMemberCount) {
                 JLogger.i("MSG-Send", "success, clientMsgNo is " + clientMsgNo);
-                mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, seqNo);
+                mCore.getDbManager().updateMessageAfterSend(clientMsgNo, msgId, timestamp, seqNo, groupMemberCount);
                 message.setClientMsgNo(clientMsgNo);
                 message.setMessageId(msgId);
                 message.setTimestamp(timestamp);
                 message.setSeqNo(seqNo);
                 message.setState(Message.MessageState.SENT);
+                if (message.getConversation().getConversationType() == Conversation.ConversationType.GROUP) {
+                    GroupMessageReadInfo info = new GroupMessageReadInfo();
+                    info.setReadCount(0);
+                    info.setMemberCount(groupMemberCount);
+                    message.setGroupMessageReadInfo(info);
+                }
 
                 if (contentType != null && content != null) {
                     mCore.getDbManager().updateMessageContentWithMessageId(content, contentType, msgId);
@@ -1105,7 +1122,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Update", "success");
                 updateMessageSendSyncTime(timestamp);
-                m.setContentType(content.getContentType());
+                if (content instanceof UnknownMessage) {
+                    UnknownMessage unknown = (UnknownMessage) content;
+                    m.setContentType(unknown.getMessageType());
+                } else {
+                    m.setContentType(content.getContentType());
+                }
                 m.setContent(content);
                 mCore.getDbManager().updateMessageContentWithMessageId(content, m.getContentType(), messageId);
                 int flags = m.getFlags() | MessageContent.MessageFlag.IS_MODIFIED.getValue();
@@ -1441,7 +1463,22 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             boolean isContain = false;
             for (Message remoteMessage : mergedList) {
                 if (localMessage.getClientMsgNo() == remoteMessage.getClientMsgNo()) {
-                    if (localMessage.getContent() instanceof MediaMessageContent
+                    if (localMessage.getContent().getClass() == remoteMessage.getContent().getClass()) {
+                        remoteMessage.setLocalAttribute(localMessage.getLocalAttribute());
+                    }
+                    if (localMessage.getContent() instanceof ImageMessage
+                    && remoteMessage.getContent() instanceof  ImageMessage) {
+                        ImageMessage localImage = (ImageMessage) localMessage.getContent();
+                        ImageMessage remoteImage = (ImageMessage) remoteMessage.getContent();
+                        remoteImage.setThumbnailLocalPath(localImage.getThumbnailLocalPath());
+                        remoteImage.setLocalPath(localImage.getLocalPath());
+                    } else if (localMessage.getContent() instanceof VideoMessage
+                    && remoteMessage.getContent() instanceof VideoMessage) {
+                        VideoMessage localVideo = (VideoMessage) localMessage.getContent();
+                        VideoMessage remoteVideo = (VideoMessage) remoteMessage.getContent();
+                        remoteVideo.setLocalPath(localVideo.getLocalPath());
+                        remoteVideo.setSnapshotLocalPath(localVideo.getSnapshotLocalPath());
+                    } else if (localMessage.getContent() instanceof MediaMessageContent
                     && remoteMessage.getContent() instanceof MediaMessageContent) {
                         MediaMessageContent localContent = (MediaMessageContent) localMessage.getContent();
                         MediaMessageContent remoteContent = (MediaMessageContent) remoteMessage.getContent();
@@ -2073,12 +2110,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content) {
+    public void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content, int groupMemberCount) {
         if (clientUid == null || TextUtils.isEmpty(clientUid)
         || messageId == null || TextUtils.isEmpty(messageId)) {
             return;
         }
-        mCore.getDbManager().updateMessageAfterSendWithClientUid(clientUid, messageId, timestamp, seqNo);
+        mCore.getDbManager().updateMessageAfterSendWithClientUid(clientUid, messageId, timestamp, seqNo, groupMemberCount);
         if (contentType != null && content != null) {
             mCore.getDbManager().updateMessageContentWithMessageId(content, contentType, messageId);
         }
@@ -2216,6 +2253,21 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         mChatroomManager.setSyncTime(lastMessage.getConversation().getConversationId(), lastMessage.getTimestamp());
 
         for (ConcreteMessage message : messages) {
+            //recall message
+            if (message.getContentType().equals(RecallCmdMessage.CONTENT_TYPE)) {
+                RecallCmdMessage cmd = (RecallCmdMessage) message.getContent();
+                Message recallMessage = handleRecallCmdMessage(message.getConversation(), cmd.getOriginalMessageId(), cmd.getExtra());
+                //recallMessage 为空表示被撤回的消息本地不存在，不需要回调
+                if (recallMessage != null) {
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            mCore.getCallbackHandler().post(() -> entry.getValue().onMessageRecall(recallMessage));
+                        }
+                    }
+                }
+                continue;
+            }
+
             //cmd消息不回调
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;

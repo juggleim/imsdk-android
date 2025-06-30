@@ -21,6 +21,9 @@ import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.messages.ImageMessage;
+import com.juggle.im.model.messages.UnknownMessage;
+import com.juggle.im.model.messages.VideoMessage;
 import com.juggle.im.push.PushChannel;
 
 import org.java_websocket.exceptions.WebsocketNotConnectedException;
@@ -104,8 +107,15 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               SendMessageCallback callback) {
         Integer key = mCmdIndex;
         byte[] encodeBytes = encodeContentData(content);
+        String contentType;
+        if (content instanceof UnknownMessage) {
+            UnknownMessage unknown = (UnknownMessage) content;
+            contentType = unknown.getMessageType();
+        } else {
+            contentType = content.getContentType();
+        }
 
-        byte[] bytes = mPbData.sendMessageData(content.getContentType(),
+        byte[] bytes = mPbData.sendMessageData(contentType,
                 encodeBytes,
                 content.getFlags(),
                 clientUid,
@@ -125,7 +135,26 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     private byte[] encodeContentData(MessageContent content) {
         byte[] encodeBytes;
-        if (content instanceof MediaMessageContent) {
+
+        if (content instanceof ImageMessage) {
+            ImageMessage imageMessage = (ImageMessage) content;
+            String local = imageMessage.getLocalPath();
+            String thumbnailLocal = imageMessage.getThumbnailLocalPath();
+            imageMessage.setLocalPath("");
+            imageMessage.setThumbnailLocalPath("");
+            encodeBytes = imageMessage.encode();
+            imageMessage.setLocalPath(local);
+            imageMessage.setThumbnailLocalPath(thumbnailLocal);
+        } else if (content instanceof VideoMessage) {
+            VideoMessage videoMessage = (VideoMessage) content;
+            String local = videoMessage.getLocalPath();
+            String snapshotLocal = videoMessage.getSnapshotLocalPath();
+            videoMessage.setLocalPath("");
+            videoMessage.setSnapshotLocalPath("");
+            encodeBytes = videoMessage.encode();
+            videoMessage.setLocalPath(local);
+            videoMessage.setSnapshotLocalPath(snapshotLocal);
+        } else if (content instanceof MediaMessageContent) {
             MediaMessageContent mediaContent = (MediaMessageContent) content;
             String local = mediaContent.getLocalPath();
             mediaContent.setLocalPath("");
@@ -152,7 +181,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     public void updateMessage(String messageId, MessageContent content, Conversation conversation, long timestamp, long msgSeqNo, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] contentBytes = encodeContentData(content);
-        byte[] bytes = mPbData.updateMessageData(messageId, content.getContentType(), contentBytes, conversation, timestamp, msgSeqNo, mCmdIndex++);
+        String contentType;
+        if (content instanceof UnknownMessage) {
+            UnknownMessage unknown = (UnknownMessage) content;
+            contentType = unknown.getMessageType();
+        } else {
+            contentType = content.getContentType();
+        }
+        byte[] bytes = mPbData.updateMessageData(messageId, contentType, contentBytes, conversation, timestamp, msgSeqNo, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "update message, messageId is " + messageId);
         sendWhenOpen(bytes);
@@ -633,7 +669,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         boolean onMessageReceive(ConcreteMessage message);
         void onSyncNotify(long syncTime);
         void onChatroomSyncNotify(String chatroomId, long syncTime);
-        void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content);
+        void onMessageSend(String messageId, long timestamp, long seqNo, String clientUid, String contentType, MessageContent content, int count);
     }
 
     public interface IWebSocketChatroomListener {
@@ -887,7 +923,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) {
             if (ack.code == 0) {
-                mMessageListener.onMessageSend(ack.msgId, ack.timestamp, ack.seqNo, ack.clientUid, ack.contentType, ack.content);
+                mMessageListener.onMessageSend(ack.msgId, ack.timestamp, ack.seqNo, ack.clientUid, ack.contentType, ack.content, ack.groupMemberCount);
             }
             return;
         }
@@ -896,7 +932,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             if (ack.code != 0) {
                 callback.onError(ack.code, callback.getClientMsgNo());
             } else {
-                callback.onSuccess(callback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.seqNo, ack.contentType, ack.content);
+                callback.onSuccess(callback.getClientMsgNo(), ack.msgId, ack.timestamp, ack.seqNo, ack.contentType, ack.content, ack.groupMemberCount);
             }
         }
     }

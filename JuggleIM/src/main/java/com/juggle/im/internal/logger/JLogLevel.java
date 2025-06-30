@@ -27,4 +27,13 @@ public enum JLogLevel {
     public String getName() {
         return name;
     }
+
+    public static JLogLevel setValue(int value) {
+        for (JLogLevel l : JLogLevel.values()) {
+            if (value == l.code) {
+                return l;
+            }
+        }
+        return JLogLevelNone;
+    }
 }

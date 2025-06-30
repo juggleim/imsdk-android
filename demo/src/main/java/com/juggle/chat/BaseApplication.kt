@@ -19,6 +19,8 @@ import com.jet.im.kit.consts.TypingIndicatorType
 import com.jet.im.kit.interfaces.CustomParamsHandler
 import com.jet.im.kit.interfaces.UserInfo
 import com.jet.im.kit.model.configurations.UIKitConfig
+import com.jet.im.kit.model.message.FriendNotifyMessage
+import com.jet.im.kit.model.message.GroupNotifyMessage
 import com.juggle.im.JIM.InitConfig
 import com.juggle.im.internal.logger.JLogConfig
 import com.juggle.im.internal.logger.JLogLevel
