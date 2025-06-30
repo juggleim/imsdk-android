@@ -304,6 +304,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         }
         String callId = JUtility.getUUID();
         CallSessionImpl callSession = createCallSessionImpl(callId, isMulti);
+        callSession.setCallStatus(CallConst.CallStatus.OUTGOING);
         callSession.setOwner(JIM.getInstance().getCurrentUserId());
         callSession.setMediaType(mediaType);
         CallMediaManager.getInstance().enableCamera(mediaType == CallConst.CallMediaType.VIDEO);
