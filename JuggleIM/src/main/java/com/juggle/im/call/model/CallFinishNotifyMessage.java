@@ -19,9 +19,13 @@ public class CallFinishNotifyMessage extends MessageContent {
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put(REASON, mFinishNotifyType.getValue());
+            if (mFinishNotifyType != null) {
+                jsonObject.put(REASON, mFinishNotifyType.getValue());
+            }
             jsonObject.put(DURATION, mDuration);
-            jsonObject.put(MEDIA_TYPE, mMediaType.getValue());
+            if (mMediaType != null) {
+                jsonObject.put(MEDIA_TYPE, mMediaType.getValue());
+            }
         } catch (JSONException e) {
             JLogger.e("MSG-Encode", "CallFinishNotifyMessage JSONException " + e.getMessage());
         }
