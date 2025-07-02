@@ -32,6 +32,8 @@ public class CallIdleState extends CallState {
             return true;
         }
 
+        boolean result = true;
+
         switch (msg.what) {
             case CallEvent.INVITE:
                 callSession.transitionToOutgoingState();
@@ -41,10 +43,15 @@ public class CallIdleState extends CallState {
                 callSession.transitionToIncomingState();
                 break;
 
+            case CallEvent.RECEIVE_INVITE_OTHERS:
+                // do nothing
+                break;
+
             default:
-                return false;
+                result = false;
+                break;
         }
 
-        return true;
+        return result;
     }
 }

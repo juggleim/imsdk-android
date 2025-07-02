@@ -19,7 +19,7 @@ public class CallOutgoingState extends CallState {
         if (callSession != null) {
             callSession.setCallStatus(CallConst.CallStatus.OUTGOING);
             startOutgoingTimer();
-            callSession.signalSingleInvite();
+            callSession.signalInvite();
         }
     }
 
@@ -40,6 +40,12 @@ public class CallOutgoingState extends CallState {
         }
 
         switch (msg.what) {
+            case CallEvent.INVITE_DONE:
+                if (callSession.isMultiCall()) {
+                    callSession.transitionToConnectingState();
+                }
+                break;
+
             case CallEvent.INVITE_FAIL:
                 inviteFail();
                 callSession.transitionToIdleState();
@@ -52,7 +58,7 @@ public class CallOutgoingState extends CallState {
 
             case CallEvent.RECEIVE_ACCEPT:
                 String userId = (String) msg.obj;
-                memberAccept(userId);
+                callSession.memberAccept(userId);
                 if (!callSession.isMultiCall()) {
                     callSession.transitionToConnectingState();
                 }
@@ -102,27 +108,6 @@ public class CallOutgoingState extends CallState {
         }
         callSession.setFinishTime(System.currentTimeMillis());
         callSession.setFinishReason(CallConst.CallFinishReason.OTHER_SIDE_NO_RESPONSE);
-    }
-
-    private void memberAccept(String userId) {
-        CallSessionImpl callSession = getCallSessionImpl();
-        if (callSession == null) {
-            return;
-        }
-        if (!callSession.isMultiCall()) {
-            if (callSession.getMembers() == null) {
-                return;
-            }
-            for (CallMember member : callSession.getMembers()) {
-                if (member.getUserInfo() != null
-                && member.getUserInfo().getUserId() != null
-                && member.getUserInfo().getUserId().equals(userId)) {
-                    member.setCallStatus(CallConst.CallStatus.CONNECTING);
-                }
-            }
-        } else {
-
-        }
     }
 
     private Timer mOutgoingTimer;

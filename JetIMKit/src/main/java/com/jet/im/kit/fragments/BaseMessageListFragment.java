@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -67,6 +68,7 @@ import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
 import com.juggle.im.JIM;
+import com.juggle.im.call.CallConst;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
@@ -126,6 +128,7 @@ abstract public class BaseMessageListFragment<
     private Uri mediaUri;
     @Nullable
     private Message forwardMessage;
+    private CallConst.CallMediaType mMediaType;
 
     private final ActivityResultLauncher<Intent> getContentLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 //        SendbirdChat.setAutoBackgroundDetection(true);
@@ -321,7 +324,12 @@ abstract public class BaseMessageListFragment<
                 case VIEW_TYPE_USER_MESSAGE_ME:
                 case VIEW_TYPE_USER_MESSAGE_OTHER:
                     if (message.getContent() instanceof CallFinishNotifyMessage) {
-                        voiceCall();
+                        CallFinishNotifyMessage callFinishNotifyMessage = (CallFinishNotifyMessage) message.getContent();
+                        if (callFinishNotifyMessage.getMediaType() == CallConst.CallMediaType.VOICE) {
+                            voiceCall();
+                        } else {
+                            videoCall();
+                        }
                     }
                 default:
             }
@@ -697,8 +705,9 @@ abstract public class BaseMessageListFragment<
         }
         ConversationInfo channel = getViewModel().getConversationInfo();
         assert channel != null;
+        items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_voice_message_on));
         if (channel.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
-            items.add(new DialogListItem(R.string.sb_text_channel_input_voice_call, R.drawable.icon_voice_message_on));
+            items.add(new DialogListItem(R.string.sb_text_channel_input_video_call, R.drawable.icon_camera));
         }
         items.add(new DialogListItem(R.string.text_name_card, R.drawable.icon_user));
         if (items.isEmpty()) return;
@@ -716,6 +725,8 @@ abstract public class BaseMessageListFragment<
                     takeFile();
                 } else if (key == R.string.sb_text_channel_input_voice_call) {
                     voiceCall();
+                } else if (key == R.string.sb_text_channel_input_video_call) {
+                    videoCall();
                 } else if (key == R.string.text_name_card) {
                     nameCard();
                 }
@@ -758,7 +769,29 @@ abstract public class BaseMessageListFragment<
             if (getContext() == null) return;
 
             assert getViewModel().getConversationInfo() != null;
-            CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId());
+            if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
+                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VOICE);
+            } else if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.GROUP) {
+                mMediaType = CallConst.CallMediaType.VOICE;
+                Intent intent = new Intent("com.jet.im.action.select_group_member");
+                intent.putExtra("groupId", getViewModel().getConversationInfo().getConversation().getConversationId());
+                intent.putExtra("type", 3);
+
+                startActivityForResult(intent, 777);
+            }
+        });
+    }
+
+    public void videoCall() {
+        requestPermission(PermissionUtils.VIDEO_CALL_PERMISSION, () -> {
+            if (getContext() == null) return;
+
+            assert getViewModel().getConversationInfo() != null;
+            if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
+                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VIDEO);
+            } else if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.GROUP)  {
+
+            }
         });
     }
 
@@ -802,6 +835,13 @@ abstract public class BaseMessageListFragment<
             String conversationId = data.getStringExtra("id");
             Conversation.ConversationType conversationType = Conversation.ConversationType.setValue(typeValue);
             getViewModel().sendMessage(forwardMessage.getContent(), new Conversation(conversationType, conversationId));
+        } else if (requestCode == 777) {
+            if (data == null) {
+                return;
+            }
+            List<String> userIdList = data.getStringArrayListExtra("userIdList");
+            assert getViewModel().getConversationInfo() != null;
+            CallCenter.getInstance().startMultiCall(getActivity(), userIdList, mMediaType, getViewModel().getConversationInfo().getConversation().getConversationId());
         }
     }
 

@@ -4,8 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.juggle.im.JIM;
+import com.juggle.im.call.CallConst;
 import com.juggle.im.call.ICallManager;
 import com.juggle.im.call.ICallSession;
+
+import java.util.List;
 
 public class CallCenter implements ICallManager.ICallReceiveListener {
     public static CallCenter getInstance() {
@@ -17,12 +20,18 @@ public class CallCenter implements ICallManager.ICallReceiveListener {
         mContext = context;
     }
 
-    public void startSingleCall(Context context, String userId) {
+    public void startSingleCall(Context context, String userId, CallConst.CallMediaType mediaType) {
         if (context == null) return;
-        ICallSession callSession = JIM.getInstance().getCallManager().startSingleCall(userId, null);
-        Intent intent = new Intent("com.jet.im.intent.action.SINGLE_AUDIO");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("callId", callSession.getCallId());
+        ICallSession callSession = JIM.getInstance().getCallManager().startSingleCall(userId, mediaType, null);
+        Intent intent = buildIntent(false, callSession.getMediaType(), callSession.getCallId());
+        context.startActivity(intent);
+    }
+
+    public void startMultiCall(Context context, List<String> userIdList, CallConst.CallMediaType mediaType, String groupId) {
+        if (context == null) return;
+        ICallSession callSession = JIM.getInstance().getCallManager().startMultiCall(userIdList, mediaType, null);
+        Intent intent = buildIntent(true, mediaType, callSession.getCallId());
+        intent.putExtra("groupId", groupId);
         context.startActivity(intent);
     }
 
@@ -31,10 +40,24 @@ public class CallCenter implements ICallManager.ICallReceiveListener {
         if (mContext == null) {
             return;
         }
-        Intent intent = new Intent("com.jet.im.intent.action.SINGLE_AUDIO");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("callId", callSession.getCallId());
+        Intent intent = buildIntent(callSession.isMultiCall(), callSession.getMediaType(), callSession.getCallId());
         mContext.startActivity(intent);
+    }
+
+    private Intent buildIntent(boolean isMultiCall, CallConst.CallMediaType mediaType, String callId) {
+        Intent intent;
+        if (!isMultiCall) {
+            intent = new Intent("com.jet.im.intent.action.SINGLE_CALL");
+        } else {
+            if (mediaType == CallConst.CallMediaType.VOICE) {
+                intent = new Intent("com.jet.im.intent.action.MULTI_VOICE_CALL");
+            } else {
+                intent = new Intent("com.jet.im.intent.action.MULTI_VIDEO_CALL");
+            }
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("callId", callId);
+        return intent;
     }
 
     private CallCenter() {

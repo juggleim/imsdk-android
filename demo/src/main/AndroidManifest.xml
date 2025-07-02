@@ -39,7 +39,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".contacts.group.select.SelectGroupMemberActivity" />
+        <activity android:name=".contacts.group.select.SelectGroupMemberActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.jet.im.action.select_group_member" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name=".contacts.add.AddFriendListActivity" />
         <activity android:name=".settings.WebViewActivity" />
         <activity android:name=".settings.PushSettingActivity" />

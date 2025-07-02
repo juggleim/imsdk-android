@@ -7,7 +7,9 @@ import androidx.annotation.NonNull;
 
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
+import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
+import com.juggle.im.call.model.CallMember;
 import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteMessage;
@@ -520,9 +522,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void callInvite(String callId, boolean isMultiCall, List<String> userIdList, int engineType, CallAuthCallback callback) {
+    public void callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, List<String> userIdList, int engineType, CallAuthCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.callInvite(callId, isMultiCall, userIdList, engineType, mCmdIndex++);
+        byte[] bytes = mPbData.callInvite(callId, isMultiCall, mediaType, userIdList, engineType, mCmdIndex++);
         JLogger.i("WS-Send", "call invite, callId is " + callId + ", isMultiCall is " + isMultiCall);
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
@@ -682,7 +684,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public interface IWebSocketCallListener {
         void onCallInvite(RtcRoom room, UserInfo inviter, List<UserInfo> targetUsers);
+        // 用户主动挂断
         void onCallHangup(RtcRoom room, UserInfo user);
+        // 用户掉线或者被踢出通话
+        void onCallQuit(RtcRoom room, List<CallMember> members);
         void onCallAccept(RtcRoom room, UserInfo user);
         void onRoomDestroy(RtcRoom room);
     }
@@ -1053,6 +1058,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private void handleRtcRoomEventNtf(PBRcvObj.RtcRoomEventNtf ntf) {
         JLogger.i("Call-RmEvent", "type is " + ntf.eventType);
         switch (ntf.eventType) {
+            case QUIT:
+                if (mCallListener != null) {
+                    mCallListener.onCallQuit(ntf.room, ntf.members);
+                }
+                break;
+
             case DESTROY:
                 if (mCallListener != null) {
                     mCallListener.onRoomDestroy(ntf.room);

@@ -4,22 +4,20 @@
 	android:background="@color/callkit_black"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <SurfaceView
         android:id="@+id/rc_voip_call_large_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone">
-    </FrameLayout>
+        />
 
-    <FrameLayout
+    <SurfaceView
         android:id="@+id/rc_voip_call_small_preview"
         android:layout_width="100dp"
         android:layout_height="180dp"
         android:layout_marginTop="12dp"
         android:layout_marginRight="5dp"
         android:layout_gravity="right|top"
-        android:visibility="gone">
-    </FrameLayout>
+    />
 
     <RelativeLayout
         android:id="@+id/rc_voip_call_information"

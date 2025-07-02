@@ -14,6 +14,11 @@ public class CallConnectingState extends CallState {
         CallSessionImpl callSession = getCallSessionImpl();
         if (callSession != null) {
             callSession.setCallStatus(CallConst.CallStatus.CONNECTING);
+            if (callSession.getMediaType() == CallConst.CallMediaType.VIDEO) {
+                callSession.enableCamera(true);
+            } else {
+                callSession.enableCamera(false);
+            }
             callSession.mediaJoin();
         }
     }
