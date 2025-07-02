@@ -19,7 +19,7 @@ public class CallConst {
             this.mValue = value;
         }
 
-        int getStatus() {
+        public int getStatus() {
             return this.mValue;
         }
 
@@ -97,7 +97,7 @@ public class CallConst {
             this.value = value;
         }
 
-        int getValue() {
+        public int getValue() {
             return this.value;
         }
     }
@@ -117,7 +117,7 @@ public class CallConst {
             this.value = value;
         }
 
-        int getValue() {
+        public int getValue() {
             return this.value;
         }
     }
