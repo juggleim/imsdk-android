@@ -197,6 +197,13 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
         }
     }
 
+    @Override
+    public void onRoomTokenWillExpire(String roomID, int remainTimeInSecond) {
+        if (sHandler != null) {
+            sHandler.onRoomTokenWillExpire(roomID, remainTimeInSecond);
+        }
+    }
+
     public static void setEventHandler(IZegoEventHandler handler) {
         sHandler = handler;
     }
