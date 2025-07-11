@@ -4,6 +4,7 @@ import android.view.View;
 
 import com.juggle.im.call.model.CallMember;
 
+import java.util.HashMap;
 import java.util.List;
 
 public interface ICallSession {
@@ -31,6 +32,10 @@ public interface ICallSession {
 
         // 用户开启/关闭麦克风
         void onUserMicrophoneEnable(String userId, boolean enable);
+
+        // 用户声音大小变化
+        // userId 为 key，声音大小为 value
+        void onSoundLevelUpdate(HashMap<String, Float> soundLevels);
     }
 
     void addListener(String key, ICallSessionListener listener);

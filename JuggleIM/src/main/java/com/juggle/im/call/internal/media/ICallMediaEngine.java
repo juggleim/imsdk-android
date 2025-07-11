@@ -2,6 +2,7 @@ package com.juggle.im.call.internal.media;
 
 import android.view.View;
 
+import java.util.HashMap;
 import java.util.List;
 
 public interface ICallMediaEngine {
@@ -11,6 +12,7 @@ public interface ICallMediaEngine {
         void onUsersJoin(List<String> userIdList);
         void onUserCameraChange(String userId, boolean enable);
         void onUsersLeave(List<String> userIdList);
+        void onSoundLevelUpdate(HashMap<String, Float> soundLevels);
     }
 
     void joinRoom(CallMediaRoom room, CallMediaUser user, CallMediaRoomConfig config, ICallCompleteCallback callback);

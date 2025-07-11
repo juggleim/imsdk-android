@@ -1,10 +1,13 @@
 package com.j.im.jzegocall;
 
+import static im.zego.zegoexpress.constants.ZegoViewMode.ASPECT_FILL;
+
 import android.app.Application;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 
+import com.juggle.im.JIM;
 import com.juggle.im.call.internal.media.CallMediaRoom;
 import com.juggle.im.call.internal.media.CallMediaRoomConfig;
 import com.juggle.im.call.internal.media.CallMediaUser;
@@ -16,6 +19,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import im.zego.zegoexpress.ZegoExpressEngine;
@@ -81,7 +85,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
 
     @Override
     public void startPreview(View view) {
-        sEngine.startPreview(new ZegoCanvas(view));
+        sEngine.startPreview(createCanvasWithView(view));
     }
 
     @Override
@@ -110,7 +114,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
             return;
         }
         String streamId = createStreamId(roomId, userId);
-        sEngine.startPlayingStream(streamId, new ZegoCanvas(view));
+        sEngine.startPlayingStream(streamId, createCanvasWithView(view));
     }
 
     @Override
@@ -137,11 +141,10 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
                 View view = mListener.viewForUserId(userId);
                 ZegoCanvas canvas = null;
                 if (view != null) {
-                    canvas = new ZegoCanvas(view);
+                    canvas = createCanvasWithView(view);
                 }
-//                sEngine.startPlayingStream(streamId, canvas);
-                sEngine.startPlayingStream(streamId);
-
+                sEngine.startPlayingStream(streamId, canvas);
+                sEngine.startSoundLevelMonitor();
             }
         }
         if (sHandler != null) {
@@ -197,6 +200,14 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
 
     @Override
     public void onCapturedSoundLevelUpdate(float soundLevel) {
+        String userId = JIM.getInstance().getCurrentUserId();
+        if (!TextUtils.isEmpty(userId)) {
+            if (mListener != null) {
+                HashMap<String, Float> map = new HashMap<>();
+                map.put(JIM.getInstance().getCurrentUserId(), soundLevel);
+                mListener.onSoundLevelUpdate(map);
+            }
+        }
         if (sHandler != null) {
             sHandler.onCapturedSoundLevelUpdate(soundLevel);
         }
@@ -204,6 +215,15 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
 
     @Override
     public void onRemoteSoundLevelUpdate(HashMap<String, Float> soundLevels) {
+        if (mListener != null) {
+            HashMap<String, Float> map = new HashMap<>();
+            for (Map.Entry<String, Float> entry : soundLevels.entrySet()) {
+                String userId = userIdWithStreamId(entry.getKey());
+                map.put(userId, entry.getValue());
+            }
+            mListener.onSoundLevelUpdate(map);
+        }
+
         if (sHandler != null) {
             sHandler.onRemoteSoundLevelUpdate(soundLevels);
         }
@@ -269,6 +289,13 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
         }
     }
 
+    @Override
+    public void onRoomTokenWillExpire(String roomID, int remainTimeInSecond) {
+        if (sHandler != null) {
+            sHandler.onRoomTokenWillExpire(roomID, remainTimeInSecond);
+        }
+    }
+
     private String createStreamId(String roomId, String userId) {
         return roomId + SEPARATOR + userId;
     }
@@ -279,6 +306,12 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
             return parts[1];
         }
         return "";
+    }
+
+    private ZegoCanvas createCanvasWithView(View view) {
+        ZegoCanvas canvas = new ZegoCanvas(view);
+        canvas.viewMode = ASPECT_FILL;
+        return canvas;
     }
 
     public static void setEventHandler(IZegoEventHandler handler) {

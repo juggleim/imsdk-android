@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
 
 public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListener {
@@ -107,12 +108,18 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
         if (mListener != null) {
             mListener.onUserCameraChange(userId, enable);
         }
-
     }
 
     @Override
     public void onUsersLeave(List<String> userIdList) {
 
+    }
+
+    @Override
+    public void onSoundLevelUpdate(HashMap<String, Float> soundLevels) {
+        if (mListener != null) {
+            mListener.onSoundLevelUpdate(soundLevels);
+        }
     }
 
     private static class SingletonHolder {

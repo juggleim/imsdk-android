@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
@@ -23,7 +24,9 @@ import com.juggle.im.call.ICallSession;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.model.UserInfo;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SingleCallActivity extends BaseCallActivity implements ICallSession.ICallSessionListener {
     private static final int LOSS_RATE_ALARM = 20;
@@ -413,6 +416,15 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
     @Override
     public void onUserMicrophoneEnable(String userId, boolean enable) {
 
+    }
+
+    @Override
+    public void onSoundLevelUpdate(HashMap<String, Float> soundLevels) {
+        Log.i("SingleCallActivity", "onSoundLevelUpdate start");
+        for (Map.Entry<String, Float> entry : soundLevels.entrySet()) {
+            Log.i("SingleCallActivity", "onSoundLevelUpdate userId is " + entry.getKey() + ", value is " + entry.getValue());
+        }
+        Log.i("SingleCallActivity", "onSoundLevelUpdate end");
     }
 
     public void onSwitchCameraClick(View view) {

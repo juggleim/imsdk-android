@@ -14,6 +14,7 @@ import com.jet.im.kit.R;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.ICallSession;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class MultiVideoCallActivity extends BaseCallActivity implements ICallSession.ICallSessionListener {
@@ -166,6 +167,11 @@ public class MultiVideoCallActivity extends BaseCallActivity implements ICallSes
 
     @Override
     public void onUserMicrophoneEnable(String userId, boolean enable) {
+
+    }
+
+    @Override
+    public void onSoundLevelUpdate(HashMap<String, Float> soundLevels) {
 
     }
 }

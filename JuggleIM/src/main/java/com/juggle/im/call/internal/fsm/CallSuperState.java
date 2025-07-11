@@ -8,6 +8,7 @@ import com.juggle.im.call.internal.CallSessionImpl;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.UserInfo;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -157,6 +158,11 @@ public class CallSuperState extends CallState {
                 break;
 
             case CallEvent.PARTICIPANT_ENABLE_MIC:
+                break;
+
+            case CallEvent.SOUND_LEVEL_UPDATE:
+                HashMap<String, Float> soundLevels = (HashMap<String, Float>) msg.obj;
+                callSession.soundLevelUpdate(soundLevels);
                 break;
 
             default:

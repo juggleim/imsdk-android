@@ -390,6 +390,16 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         }
     }
 
+    public void soundLevelUpdate(HashMap<String, Float> soundLevels) {
+        if (mListeners != null) {
+            for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                mCore.getCallbackHandler().post(() -> {
+                   entry.getValue().onSoundLevelUpdate(soundLevels);
+                });
+            }
+        }
+    }
+
     public void signalInvite() {
         List<String> targetIds = new ArrayList<>();
         for (CallMember member : mMembers) {
@@ -540,6 +550,11 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         map.put("enable", enable);
         map.put("userId", userId);
         sendMessage(CallEvent.PARTICIPANT_ENABLE_CAMERA, map);
+    }
+
+    @Override
+    public void onSoundLevelUpdate(HashMap<String, Float> soundLevels) {
+        sendMessage(CallEvent.SOUND_LEVEL_UPDATE, soundLevels);
     }
 
     private void destroy() {

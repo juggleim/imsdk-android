@@ -25,6 +25,7 @@ import com.juggle.im.call.model.CallMember;
 import com.juggle.im.model.UserInfo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSession.ICallSessionListener {
@@ -337,6 +338,11 @@ public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSes
 
     @Override
     public void onUserMicrophoneEnable(String userId, boolean enable) {
+
+    }
+
+    @Override
+    public void onSoundLevelUpdate(HashMap<String, Float> soundLevels) {
 
     }
 

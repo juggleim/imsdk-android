@@ -31,6 +31,7 @@ public class CallEvent {
     public final static int PARTICIPANT_LEAVE_CHANNEL = 502;
     public final static int PARTICIPANT_ENABLE_CAMERA = 503;
     public final static int PARTICIPANT_ENABLE_MIC = 504;
+    public final static int SOUND_LEVEL_UPDATE = 505;
 
     public static String nameOfEvent(int event) {
         return sEventNameMap.get(event);
@@ -64,6 +65,7 @@ public class CallEvent {
        put(PARTICIPANT_LEAVE_CHANNEL, "participant leave channel");
        put(PARTICIPANT_ENABLE_CAMERA, "participant enable camera");
        put(PARTICIPANT_ENABLE_MIC, "participant enable mic");
+       put(SOUND_LEVEL_UPDATE, "sound level update");
 
     }};
 }
