@@ -310,15 +310,11 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         CallMediaManager.getInstance().enableCamera(mediaType == CallConst.CallMediaType.VIDEO);
         for (String userId : userIdList) {
             CallMember member = new CallMember();
-            UserInfo userInfo = JIM.getInstance().getUserInfoManager().getUserInfo(userId);
-            if (userInfo == null) {
-                userInfo = new UserInfo();
-                userInfo.setUserId(userId);
-            }
+            UserInfo userInfo = getUserInfo(userId);
             member.setUserInfo(userInfo);
             member.setCallStatus(CallConst.CallStatus.INCOMING);
             member.setStartTime(System.currentTimeMillis());
-            UserInfo inviter = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+            UserInfo inviter = getUserInfo(mCore.getUserId());
             member.setInviter(inviter);
             callSession.addMember(member);
         }
@@ -358,6 +354,15 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
             }
         }
         return null;
+    }
+
+    private UserInfo getUserInfo(String userId) {
+        UserInfo userInfo = JIM.getInstance().getUserInfoManager().getUserInfo(userId);
+        if (userInfo == null) {
+            userInfo = new UserInfo();
+            userInfo.setUserId(userId);
+        }
+        return userInfo;
     }
 
     public ICallSession getCallSession(String callId) {
