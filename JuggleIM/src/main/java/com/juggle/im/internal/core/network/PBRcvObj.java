@@ -155,6 +155,15 @@ class PBRcvObj {
         }
     }
 
+    static class GetTopMsgAck extends QryAck {
+        ConcreteMessage message;
+        UserInfo userInfo;
+        long createdTime;
+        GetTopMsgAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
     static class PublishMsgNtf {
         long syncTime;
         String chatroomId;
@@ -216,6 +225,7 @@ class PBRcvObj {
         static final int qryCallRoomAck = 32;
         static final int qryMsgExtAck = 33;
         static final int getUserInfoAck = 34;
+        static final int getTopMsgAck = 35;
     }
 
     public enum PBChatroomEventType {
@@ -312,6 +322,7 @@ class PBRcvObj {
     StringAck mStringAck;
     RtcQryCallRoomsAck mRtcQryCallRoomsAck;
     QryMsgExtAck mQryMsgExtAck;
+    GetTopMsgAck mGetTopMsgAck;
 
     private int mRcvType;
 }

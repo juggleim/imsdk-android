@@ -11,6 +11,23 @@ import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.internal.ConstInternal;
+import com.juggle.im.internal.core.network.wscallback.AddConversationCallback;
+import com.juggle.im.internal.core.network.wscallback.CallAuthCallback;
+import com.juggle.im.internal.core.network.wscallback.ChatroomWebSocketCallback;
+import com.juggle.im.internal.core.network.wscallback.GetGlobalMuteCallback;
+import com.juggle.im.internal.core.network.wscallback.GetTopMsgCallback;
+import com.juggle.im.internal.core.network.wscallback.IWebSocketCallback;
+import com.juggle.im.internal.core.network.wscallback.MessageReactionListCallback;
+import com.juggle.im.internal.core.network.wscallback.QryHisMsgCallback;
+import com.juggle.im.internal.core.network.wscallback.QryReadDetailCallback;
+import com.juggle.im.internal.core.network.wscallback.QryUploadFileCredCallback;
+import com.juggle.im.internal.core.network.wscallback.RtcRoomListCallback;
+import com.juggle.im.internal.core.network.wscallback.SendMessageCallback;
+import com.juggle.im.internal.core.network.wscallback.SyncConversationsCallback;
+import com.juggle.im.internal.core.network.wscallback.UpdateChatroomAttrCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketTimestampCallback;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.MergeInfo;
@@ -301,11 +318,27 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void setTop(Conversation conversation, boolean isTop, String userId, WebSocketTimestampCallback callback) {
+    public void setConversationTop(Conversation conversation, boolean isTop, String userId, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.topConversationData(conversation, userId, isTop, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "setTop, conversation is " + conversation + ", isTop is " + isTop);
+        JLogger.i("WS-Send", "set conversation top, conversation is " + conversation + ", isTop is " + isTop);
+        sendWhenOpen(bytes);
+    }
+
+    public void setMessageTop(String messageId, Conversation conversation, boolean isTop, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.topMessageData(messageId, conversation, isTop, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "set message top, messageId is " + messageId + ", isTop is " + isTop);
+        sendWhenOpen(bytes);
+    }
+
+    public void getTopMessage(Conversation conversation, GetTopMsgCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getTopMessageData(conversation, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "get top message, conversation is " + conversation);
         sendWhenOpen(bytes);
     }
 
@@ -652,6 +685,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof WebSocketDataCallback) {
             WebSocketDataCallback sCallback = (WebSocketDataCallback) callback;
             sCallback.onError(errorCode);
+        } else if (callback instanceof GetTopMsgCallback) {
+            GetTopMsgCallback sCallback = (GetTopMsgCallback) callback;
+            sCallback.onError(errorCode);
         }
     }
 
@@ -820,6 +856,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 break;
             case PBRcvObj.PBRcvType.qryMsgExtAck:
                 handleQryMsgExtAck(obj.mQryMsgExtAck);
+                break;
+            case PBRcvObj.PBRcvType.getTopMsgAck:
+                handleGetTopMsgAck(obj.mGetTopMsgAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -1164,6 +1203,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.reactionList);
+            }
+        }
+    }
+
+    private void handleGetTopMsgAck(PBRcvObj.GetTopMsgAck ack) {
+        JLogger.i("WS-Receive", "handleGetTopMsgAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof GetTopMsgCallback) {
+            GetTopMsgCallback callback = (GetTopMsgCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.message, ack.userInfo, ack.createdTime);
             }
         }
     }

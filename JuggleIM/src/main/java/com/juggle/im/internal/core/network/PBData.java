@@ -537,6 +537,45 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] topMessageData(String messageId, Conversation conversation, boolean isTop, int index) {
+        Appmessages.TopMsgReq req = Appmessages.TopMsgReq.newBuilder()
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setTargetId(conversation.getConversationId())
+                .setMsgId(messageId)
+                .build();
+        String topic;
+        if (isTop) {
+            topic = SET_TOP_MSG;
+        } else {
+            topic = DEL_TOP_MSG;
+        }
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(topic)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getTopMessageData(Conversation conversation, int index) {
+        Appmessages.GetTopMsgReq req = Appmessages.GetTopMsgReq.newBuilder()
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setTargetId(conversation.getConversationId())
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(GET_TOP_MSG)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] markUnread(Conversation conversation, String userId, int index) {
         Appmessages.Conversation pbConversation = Appmessages.Conversation.newBuilder()
                 .setChannelTypeValue(conversation.getConversationType().getValue())
@@ -1263,6 +1302,9 @@ class PBData {
                         case PBRcvObj.PBRcvType.qryMsgExtAck:
                             obj = qryMsgExtAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
+                        case PBRcvObj.PBRcvType.getTopMsgAck:
+                            obj = getTopMsgAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
                         default:
                             break;
                     }
@@ -1556,6 +1598,21 @@ class PBData {
         PBRcvObj.QryMsgExtAck ack = new PBRcvObj.QryMsgExtAck(body);
         ack.reactionList = reactionList;
         obj.mQryMsgExtAck = ack;
+        return obj;
+    }
+
+    private PBRcvObj getTopMsgAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.getTopMsgAck);
+        Appmessages.TopMsg topMsg = Appmessages.TopMsg.parseFrom(body.getData());
+        ConcreteMessage concreteMessage = messageWithDownMsg(topMsg.getMsg());
+        UserInfo userInfo = userInfoWithPBUserInfo(topMsg.getOperator());
+        long timestamp = topMsg.getCreatedTime();
+        PBRcvObj.GetTopMsgAck ack = new PBRcvObj.GetTopMsgAck(body);
+        ack.message = concreteMessage;
+        ack.userInfo = userInfo;
+        ack.createdTime = timestamp;
+        obj.mGetTopMsgAck = ack;
         return obj;
     }
 
@@ -2212,6 +2269,9 @@ class PBData {
     private static final String QRY_MSG_EX_SET = "qry_msg_exset";
     private static final String TAG_ADD_CONVERS = "tag_add_convers";
     private static final String TAG_DEL_CONVERS = "tag_del_convers";
+    private static final String SET_TOP_MSG = "set_top_msg";
+    private static final String DEL_TOP_MSG = "del_top_msg";
+    private static final String GET_TOP_MSG = "get_top_msg";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
@@ -2271,6 +2331,9 @@ class PBData {
             put(MODIFY_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(TAG_ADD_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
             put(TAG_DEL_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(SET_TOP_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(DEL_TOP_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(GET_TOP_MSG, PBRcvObj.PBRcvType.getTopMsgAck);
         }
     };
 

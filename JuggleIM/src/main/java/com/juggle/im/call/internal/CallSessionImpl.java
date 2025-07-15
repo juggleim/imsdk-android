@@ -17,10 +17,9 @@ import com.juggle.im.call.internal.media.CallMediaManager;
 import com.juggle.im.call.internal.media.ICallCompleteCallback;
 import com.juggle.im.call.internal.media.ICallMediaListener;
 import com.juggle.im.call.model.CallMember;
-import com.juggle.im.internal.UserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
-import com.juggle.im.internal.core.network.CallAuthCallback;
-import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
+import com.juggle.im.internal.core.network.wscallback.CallAuthCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.statemachine.StateMachine;
 import com.juggle.im.model.UserInfo;
@@ -32,7 +31,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CallSessionImpl extends StateMachine implements ICallSession, ICallMediaListener {

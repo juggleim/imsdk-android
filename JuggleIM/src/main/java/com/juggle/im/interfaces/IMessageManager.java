@@ -132,6 +132,11 @@ public interface IMessageManager {
         void onComplete(List<SearchConversationsResult> resultList);
     }
 
+    interface IGetTopMessageCallback {
+        void onSuccess(Message message, UserInfo operator, long timestamp);
+        void onError(int errorCode);
+    }
+
     Message sendMessage(MessageContent content,
                         Conversation conversation,
                         ISendMessageCallback callback);
@@ -430,6 +435,22 @@ public interface IMessageManager {
 
     void setMessageState(long clientMsgNo, Message.MessageState state);
 
+    /**
+     * 设置置顶
+     * @param messageId 消息 id
+     * @param conversation 消息所属会话标识
+     * @param isTop 是否置顶
+     * @param callback 结果回调
+     */
+    void setTop(String messageId, Conversation conversation, boolean isTop, ISimpleCallback callback);
+
+    /**
+     * 获取置顶消息
+     * @param conversation 会话标识
+     * @param callback 结果回调
+     */
+    void getTopMessage(Conversation conversation, IGetTopMessageCallback callback);
+
     void registerContentType(Class<? extends MessageContent> messageContentClass);
 
     void addListener(String key, IMessageListener listener);
@@ -464,6 +485,9 @@ public interface IMessageManager {
 
         //删除消息回应的回调
         void onMessageReactionRemove(Conversation conversation, MessageReaction reaction);
+
+        //消息置顶的回调
+        void onMessageSetTop(Message message, UserInfo operator, boolean isTop);
     }
 
     interface IMessageSyncListener {

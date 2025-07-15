@@ -6,7 +6,7 @@ import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IMessageUploadProvider;
 import com.juggle.im.internal.core.JIMCore;
-import com.juggle.im.internal.core.network.QryUploadFileCredCallback;
+import com.juggle.im.internal.core.network.wscallback.QryUploadFileCredCallback;
 import com.juggle.im.internal.logger.IJLog;
 import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.model.upload.UploadOssType;

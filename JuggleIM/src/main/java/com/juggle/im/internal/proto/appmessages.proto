@@ -123,7 +123,7 @@ message DownMsg{
   repeated MsgExtItem msgExSet = 25;
   repeated MsgExtItem msgExts = 26;
   repeated ConverTag converTags = 27;
-  string searchText = 29;
+  string SearchText = 29;
   GrpMemberInfo grpMemberInfo = 30;
 }
 
@@ -332,11 +332,26 @@ message QryMergedMsgsReq{
   int32 order = 3;
 }
 
+message QryMsgExtReq{
+  string targetId = 1;
+  ChannelType channelType = 2;
+  repeated string msgIds = 3;
+}
+
 message MsgExt {
   string targetId = 1;
   ChannelType channelType = 2;
   string msgId = 3;
   MsgExtItem ext = 4;
+}
+
+message MsgExtItemsList{
+  repeated MsgExtItems items = 1;
+}
+
+message MsgExtItems{
+  string msgId = 1;
+  repeated MsgExtItem exts = 2;
 }
 
 message MsgExtItem {
@@ -846,17 +861,19 @@ message OnlineOfflineMsg {
   string instanceId = 9;
 }
 
-message QryMsgExtReq{
+message TopMsgReq{
   string targetId = 1;
   ChannelType channelType = 2;
-  repeated string msgIds = 3;
+  string msgId = 3;
 }
 
-message MsgExtItemsList{
-  repeated MsgExtItems items = 1;
+message GetTopMsgReq{
+  string targetId = 1;
+  ChannelType channelType = 2;
 }
 
-message MsgExtItems{
-  string msgId = 1;
-  repeated MsgExtItem exts = 2;
+message TopMsg{
+  DownMsg msg = 1;
+  UserInfo operator = 2;
+  int64 createdTime = 3;
 }

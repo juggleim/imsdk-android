@@ -6,10 +6,10 @@ import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.internal.core.JIMCore;
-import com.juggle.im.internal.core.network.AddConversationCallback;
-import com.juggle.im.internal.core.network.SyncConversationsCallback;
-import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
-import com.juggle.im.internal.core.network.WebSocketTimestampCallback;
+import com.juggle.im.internal.core.network.wscallback.AddConversationCallback;
+import com.juggle.im.internal.core.network.wscallback.SyncConversationsCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketTimestampCallback;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.messages.ClearUnreadMessage;
@@ -216,7 +216,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             }
             return;
         }
-        mCore.getWebSocket().setTop(conversation, isTop, mCore.getUserId(), new WebSocketTimestampCallback() {
+        mCore.getWebSocket().setConversationTop(conversation, isTop, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("CONV-Top", "success");

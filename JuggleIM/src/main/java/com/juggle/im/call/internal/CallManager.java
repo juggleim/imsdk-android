@@ -1,7 +1,6 @@
 package com.juggle.im.call.internal;
 
 import android.content.Context;
-import android.os.Message;
 import android.text.TextUtils;
 
 import com.juggle.im.JIM;
@@ -14,7 +13,7 @@ import com.juggle.im.call.model.CallMember;
 import com.juggle.im.internal.UserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.JWebSocket;
-import com.juggle.im.internal.core.network.RtcRoomListCallback;
+import com.juggle.im.internal.core.network.wscallback.RtcRoomListCallback;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.JUtility;
 import com.juggle.im.model.UserInfo;
@@ -24,7 +23,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListener, ICallSessionLifeCycleListener {

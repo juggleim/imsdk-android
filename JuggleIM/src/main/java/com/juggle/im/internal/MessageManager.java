@@ -12,13 +12,14 @@ import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.interfaces.IMessageUploadProvider;
 import com.juggle.im.internal.core.JIMCore;
-import com.juggle.im.internal.core.network.GetGlobalMuteCallback;
+import com.juggle.im.internal.core.network.wscallback.GetGlobalMuteCallback;
 import com.juggle.im.internal.core.network.JWebSocket;
-import com.juggle.im.internal.core.network.MessageReactionListCallback;
-import com.juggle.im.internal.core.network.QryHisMsgCallback;
-import com.juggle.im.internal.core.network.QryReadDetailCallback;
-import com.juggle.im.internal.core.network.SendMessageCallback;
-import com.juggle.im.internal.core.network.WebSocketTimestampCallback;
+import com.juggle.im.internal.core.network.wscallback.GetTopMsgCallback;
+import com.juggle.im.internal.core.network.wscallback.MessageReactionListCallback;
+import com.juggle.im.internal.core.network.wscallback.QryHisMsgCallback;
+import com.juggle.im.internal.core.network.wscallback.QryReadDetailCallback;
+import com.juggle.im.internal.core.network.wscallback.SendMessageCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketTimestampCallback;
 import com.juggle.im.internal.downloader.MediaDownloadEngine;
 import com.juggle.im.internal.logger.IJLog;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
@@ -40,6 +41,7 @@ import com.juggle.im.internal.model.messages.RecallCmdMessage;
 import com.juggle.im.internal.model.messages.TagAddConvMessage;
 import com.juggle.im.internal.model.messages.TagDelConvMessage;
 import com.juggle.im.internal.model.messages.TopConvMessage;
+import com.juggle.im.internal.model.messages.TopMsgMessage;
 import com.juggle.im.internal.model.messages.UnDisturbConvMessage;
 import com.juggle.im.internal.util.FileUtils;
 import com.juggle.im.internal.util.JLogger;
@@ -114,6 +116,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(MsgModifyMessage.class);
         ContentTypeCenter.getInstance().registerContentType(TagAddConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(TagDelConvMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(TopMsgMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -1687,7 +1690,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     if (callback != null) {
                         callback.onSuccess();
                     }
-                    UserInfo currentUser = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+                    UserInfo currentUser = mUserInfoManager.getUserInfo(mCore.getUserId());
                     if (currentUser == null) {
                         currentUser = new UserInfo();
                         currentUser.setUserId(mCore.getUserId());
@@ -1794,7 +1797,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     reaction.setMessageId(messageId);
                     MessageReactionItem item = new MessageReactionItem();
                     item.setReactionId(reactionId);
-                    UserInfo currentUser = JIM.getInstance().getUserInfoManager().getUserInfo(mCore.getUserId());
+                    UserInfo currentUser = mUserInfoManager.getUserInfo(mCore.getUserId());
                     if (currentUser == null) {
                         currentUser = new UserInfo();
                         currentUser.setUserId(mCore.getUserId());
@@ -2000,6 +2003,104 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         if (mSendReceiveListener != null) {
             mSendReceiveListener.onMessagesSetState(m.getConversation(), clientMsgNo, state);
         }
+    }
+
+    @Override
+    public void setTop(String messageId, Conversation conversation, boolean isTop, ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-SetTop", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        if (TextUtils.isEmpty(messageId)
+                || conversation == null
+                || TextUtils.isEmpty(conversation.getConversationId())) {
+            JLogger.e("MSG-SetTop", "invalid parameter");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        mCore.getWebSocket().setMessageTop(messageId, conversation, isTop, new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                JLogger.i("MSG-SetTop", "success");
+                updateMessageSendSyncTime(timestamp);
+                Message message = mCore.getDbManager().getMessageWithMessageId(messageId);
+                UserInfo user = mUserInfoManager.getUserInfo(mCore.getUserId());
+                if (user == null) {
+                    user = new UserInfo();
+                    user.setUserId(mCore.getUserId());
+                }
+                UserInfo finalUser = user;
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                    if (mListenerMap != null) {
+                        for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                            entry.getValue().onMessageSetTop(message, finalUser, isTop);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-SetTop", "error code is " + errorCode);
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void getTopMessage(Conversation conversation, IGetTopMessageCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-GetTop", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        if (conversation == null
+                || TextUtils.isEmpty(conversation.getConversationId())) {
+            JLogger.e("MSG-GetTop", "invalid parameter");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        mCore.getWebSocket().getTopMessage(conversation, new GetTopMsgCallback() {
+            @Override
+            public void onSuccess(ConcreteMessage message, UserInfo userInfo, long timestamp) {
+                JLogger.i("MSG-GetTop", "success");
+                insertRemoteMessages(Collections.singletonList(message));
+                mUserInfoManager.insertUserInfoList(Collections.singletonList(userInfo));
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess(message, userInfo, timestamp);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-GetTop", "error code is " + errorCode);
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -2543,6 +2644,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 continue;
             }
 
+            //top message
+            if (message.getContentType().equals(TopMsgMessage.CONTENT_TYPE)) {
+                handleTopMsgMessage(message);
+                continue;
+            }
+
             //clear total unread message
             if (message.getContentType().equals(ClearTotalUnreadMessage.CONTENT_TYPE)) {
                 ClearTotalUnreadMessage clearTotalUnreadMessage = (ClearTotalUnreadMessage) message.getContent();
@@ -2653,6 +2760,36 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 mCore.setMessageReceiveTime(receiveTime);
             }
         }
+    }
+
+    private void handleTopMsgMessage(ConcreteMessage message) {
+        TopMsgMessage topMsg = (TopMsgMessage) message.getContent();
+        //延时操作有可能导致乱序，但是针对这个业务，回调延迟也不会造成太大影响
+        getMessagesByMessageIds(message.getConversation(), Collections.singletonList(topMsg.getMessageId()), new IGetMessagesCallback() {
+            @Override
+            public void onSuccess(List<Message> messages) {
+                if (!messages.isEmpty()) {
+                    Message m = messages.get(0);
+                    UserInfo userInfo = mUserInfoManager.getUserInfo(message.getSenderUserId());
+                    if (userInfo == null) {
+                        userInfo = new UserInfo();
+                        userInfo.setUserId(message.getSenderUserId());
+                    }
+                    UserInfo finalUserInfo = userInfo;
+                    mCore.getCallbackHandler().post(() -> {
+                        if (mListenerMap != null) {
+                            for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
+                                entry.getValue().onMessageSetTop(m, finalUserInfo, topMsg.isTop());
+                            }
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+            }
+        });
     }
 
     private void handleClearHistoryMessageCmdMessage(Conversation conversation, long startTime, String senderId) {
