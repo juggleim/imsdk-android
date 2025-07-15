@@ -2040,7 +2040,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     if (callback != null) {
                         callback.onSuccess();
                     }
-                    if (mListenerMap != null) {
+                    if (message != null && mListenerMap != null) {
                         for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
                             entry.getValue().onMessageSetTop(message, finalUser, isTop);
                         }

@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
@@ -1609,6 +1610,11 @@ class PBData {
         UserInfo userInfo = userInfoWithPBUserInfo(topMsg.getOperator());
         long timestamp = topMsg.getCreatedTime();
         PBRcvObj.GetTopMsgAck ack = new PBRcvObj.GetTopMsgAck(body);
+        if (!topMsg.hasMsg()) {
+            ack.code = JErrorCode.MESSAGE_NOT_EXIST;
+            obj.mGetTopMsgAck = ack;
+            return obj;
+        }
         ack.message = concreteMessage;
         ack.userInfo = userInfo;
         ack.createdTime = timestamp;
