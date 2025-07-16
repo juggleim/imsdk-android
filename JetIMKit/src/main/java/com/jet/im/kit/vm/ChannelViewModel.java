@@ -267,6 +267,11 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                 }
                 notifyDataSetChanged(StringSet.ACTION_GET_REACTIONS);
             }
+
+            @Override
+            public void onMessageSetTop(Message message, UserInfo operator, boolean isTop) {
+
+            }
         });
     }
 

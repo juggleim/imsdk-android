@@ -20,16 +20,16 @@ public class CallCenter implements ICallManager.ICallReceiveListener {
         mContext = context;
     }
 
-    public void startSingleCall(Context context, String userId, CallConst.CallMediaType mediaType) {
+    public void startSingleCall(Context context, String userId, CallConst.CallMediaType mediaType, String extra) {
         if (context == null) return;
-        ICallSession callSession = JIM.getInstance().getCallManager().startSingleCall(userId, mediaType, null);
+        ICallSession callSession = JIM.getInstance().getCallManager().startSingleCall(userId, mediaType, extra, null);
         Intent intent = buildIntent(false, callSession.getMediaType(), callSession.getCallId());
         context.startActivity(intent);
     }
 
-    public void startMultiCall(Context context, List<String> userIdList, CallConst.CallMediaType mediaType, String groupId) {
+    public void startMultiCall(Context context, List<String> userIdList, CallConst.CallMediaType mediaType, String extra, String groupId) {
         if (context == null) return;
-        ICallSession callSession = JIM.getInstance().getCallManager().startMultiCall(userIdList, mediaType, null);
+        ICallSession callSession = JIM.getInstance().getCallManager().startMultiCall(userIdList, mediaType, extra,null);
         Intent intent = buildIntent(true, mediaType, callSession.getCallId());
         intent.putExtra("groupId", groupId);
         context.startActivity(intent);

@@ -18,12 +18,16 @@ message RtcRoom{
     UserInfo owner = 3;
     RtcChannel rtcChannel = 4;
     RtcMediaType rtcMediaType = 5;
+    string ext = 6;
     
     repeated RtcMember members = 51;
 }
 
 enum RtcChannel {
     Zego = 0;
+    LivekitRtc = 1;
+        
+    JuggleRtc = 11; //自建音视频，保留
 }
 
 enum RtcRoomType{
@@ -94,6 +98,7 @@ message RtcInviteReq{
     string roomId = 3;
     RtcChannel rtcChannel = 4;
     RtcMediaType rtcMediaType = 5;
+    string ext = 6;
 }
 
 message RtcMemberRooms{
@@ -112,6 +117,9 @@ message RtcMemberRoom{
 
 message RtcAuth{
     ZegoAuth zegoAuth = 1;
+    LivekitRtcAuth livekitRtcAuth = 2;
+
+    JuggleRtcAuth juggleRtcAuth = 11;
 }
 
 message ZegoAuth{
@@ -133,4 +141,13 @@ enum InviteType{
 
 message RtcAnswer{
     string roomId = 1;
+}
+
+message JuggleRtcAuth{
+    string token = 1;
+}
+
+message LivekitRtcAuth{
+    string token = 1;
+    string serviceUrl = 2;
 }

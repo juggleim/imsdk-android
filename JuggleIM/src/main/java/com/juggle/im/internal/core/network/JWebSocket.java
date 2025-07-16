@@ -555,9 +555,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, List<String> userIdList, int engineType, CallAuthCallback callback) {
+    public void callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, List<String> userIdList, int engineType, String extra, CallAuthCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.callInvite(callId, isMultiCall, mediaType, userIdList, engineType, mCmdIndex++);
+        byte[] bytes = mPbData.callInvite(callId, isMultiCall, mediaType, userIdList, engineType, extra, mCmdIndex++);
         JLogger.i("WS-Send", "call invite, callId is " + callId + ", isMultiCall is " + isMultiCall);
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);

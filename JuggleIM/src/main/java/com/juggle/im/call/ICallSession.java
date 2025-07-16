@@ -87,4 +87,6 @@ public interface ICallSession {
     List<CallMember> getMembers();
     // 当前用户
     CallMember getCurrentCallMember();
+    // 扩展字段
+    String getExtra();
 }

@@ -801,7 +801,7 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, List<String> userIdList, int engineType, int index) {
+    byte[] callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, List<String> userIdList, int engineType, String extra, int index) {
         Rtcroom.RtcInviteReq.Builder builder = Rtcroom.RtcInviteReq.newBuilder();
         if (isMultiCall) {
             builder.setRoomType(Rtcroom.RtcRoomType.OneMore);
@@ -812,6 +812,7 @@ class PBData {
         builder.setRoomId(callId);
         builder.setRtcChannelValue(engineType);
         builder.setRtcMediaTypeValue(mediaType.getValue());
+        builder.setExt(extra);
         Rtcroom.RtcInviteReq req = builder.build();
 
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
@@ -1971,6 +1972,7 @@ class PBData {
         result.setOwner(userInfoWithPBUserInfo(pbRoom.getOwner()));
         result.setMultiCall(pbRoom.getRoomType() == Rtcroom.RtcRoomType.OneMore);
         result.setMediaType(CallConst.CallMediaType.setValue(pbRoom.getRtcMediaTypeValue()));
+        result.setExtra(pbRoom.getExt());
 
         List<CallMember> members = new ArrayList<>();
         for (Rtcroom.RtcMember member : pbRoom.getMembersList()) {

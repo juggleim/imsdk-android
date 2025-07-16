@@ -42,6 +42,11 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
 
     @Override
     public ICallSession startSingleCall(String userId, CallConst.CallMediaType mediaType, ICallSession.ICallSessionListener listener) {
+        return startSingleCall(userId, mediaType, "", listener);
+    }
+
+    @Override
+    public ICallSession startSingleCall(String userId, CallConst.CallMediaType mediaType, String extra, ICallSession.ICallSessionListener listener) {
         if (TextUtils.isEmpty(userId)) {
             if (listener != null) {
                 mCore.getCallbackHandler().post(() -> {
@@ -50,12 +55,17 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
             }
             return null;
         }
-        return startCall(Collections.singletonList(userId), false, mediaType, listener);
+        return startCall(Collections.singletonList(userId), false, mediaType, extra, listener);
     }
 
     @Override
     public ICallSession startMultiCall(List<String> userIdList, CallConst.CallMediaType mediaType, ICallSession.ICallSessionListener listener) {
-        return startCall(userIdList, true, mediaType, listener);
+        return startCall(userIdList, true, mediaType, "", listener);
+    }
+
+    @Override
+    public ICallSession startMultiCall(List<String> userIdList, CallConst.CallMediaType mediaType, String extra, ICallSession.ICallSessionListener listener) {
+        return startCall(userIdList, true, mediaType, extra, listener);
     }
 
     @Override
@@ -100,6 +110,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
                                 RtcRoom singleRoom = singleRooms.get(0);
                                 CallSessionImpl callSession = createCallSessionImpl(singleRoom.getRoomId(), singleRoom.isMultiCall());
                                 callSession.setOwner(singleRoom.getOwner().getUserId());
+                                callSession.setExtra(singleRoom.getExtra());
                                 Map<String, UserInfo> userInfoMap = new HashMap<>();
                                 for (CallMember member : singleRoom.getMembers()) {
                                     userInfoMap.put(member.getUserInfo().getUserId(), member.getUserInfo());
@@ -164,6 +175,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
                 callSession.setOwner(room.getOwner().getUserId());
                 callSession.setInviter(inviter.getUserId());
                 callSession.setMediaType(room.getMediaType());
+                callSession.setExtra(room.getExtra());
                 CallMediaManager.getInstance().enableCamera(callSession.getMediaType() == CallConst.CallMediaType.VIDEO);
                 for (CallMember member : room.getMembers()) {
                     if (!member.getUserInfo().getUserId().equals(mCore.getUserId())) {
@@ -281,7 +293,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         return needHangupOther;
     }
 
-    private ICallSession startCall(List<String> userIdList, boolean isMulti, CallConst.CallMediaType mediaType, ICallSession.ICallSessionListener listener) {
+    private ICallSession startCall(List<String> userIdList, boolean isMulti, CallConst.CallMediaType mediaType, String extra, ICallSession.ICallSessionListener listener) {
         synchronized (this) {
             if (!mCallSessionList.isEmpty()) {
                 if (listener != null) {
@@ -305,6 +317,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         callSession.setCallStatus(CallConst.CallStatus.OUTGOING);
         callSession.setOwner(JIM.getInstance().getCurrentUserId());
         callSession.setMediaType(mediaType);
+        callSession.setExtra(extra);
         CallMediaManager.getInstance().enableCamera(mediaType == CallConst.CallMediaType.VIDEO);
         for (String userId : userIdList) {
             CallMember member = new CallMember();

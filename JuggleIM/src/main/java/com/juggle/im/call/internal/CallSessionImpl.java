@@ -407,7 +407,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     }
 
     public void signalInvite(List<String> userIdList) {
-        mCore.getWebSocket().callInvite(mCallId, mIsMultiCall, mMediaType, userIdList, mEngineType.getValue(), new CallAuthCallback() {
+        mCore.getWebSocket().callInvite(mCallId, mIsMultiCall, mMediaType, userIdList, mEngineType.getValue(), mExtra, new CallAuthCallback() {
             @Override
             public void onSuccess(String zegoToken) {
                 JLogger.i("Call-Signal", "send invite success");
@@ -638,6 +638,15 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         return current;
     }
 
+    @Override
+    public String getExtra() {
+        return mExtra;
+    }
+
+    public void setExtra(String extra) {
+        mExtra = extra;
+    }
+
     private JIMCore mCore;
     private CallInternalConst.CallEngineType mEngineType;
     private ICallSessionLifeCycleListener mSessionLifeCycleListener;
@@ -653,6 +662,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     private long mFinishTime;
     private String mOwner;
     private String mInviter;
+    private String mExtra;
     private CallConst.CallFinishReason mFinishReason;
     private final List<CallMember> mMembers = new ArrayList<>();
     private final Map<String, View> mViewMap = new HashMap<>();

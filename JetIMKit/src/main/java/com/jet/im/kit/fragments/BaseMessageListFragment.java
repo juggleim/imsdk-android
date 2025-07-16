@@ -770,7 +770,7 @@ abstract public class BaseMessageListFragment<
 
             assert getViewModel().getConversationInfo() != null;
             if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
-                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VOICE);
+                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VOICE, "eee");
             } else if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.GROUP) {
                 mMediaType = CallConst.CallMediaType.VOICE;
                 Intent intent = new Intent("com.jet.im.action.select_group_member");
@@ -788,7 +788,7 @@ abstract public class BaseMessageListFragment<
 
             assert getViewModel().getConversationInfo() != null;
             if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
-                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VIDEO);
+                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VIDEO, "");
             } else if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.GROUP)  {
 
             }
@@ -841,7 +841,7 @@ abstract public class BaseMessageListFragment<
             }
             List<String> userIdList = data.getStringArrayListExtra("userIdList");
             assert getViewModel().getConversationInfo() != null;
-            CallCenter.getInstance().startMultiCall(getActivity(), userIdList, mMediaType, getViewModel().getConversationInfo().getConversation().getConversationId());
+            CallCenter.getInstance().startMultiCall(getActivity(), userIdList, mMediaType, "", getViewModel().getConversationInfo().getConversation().getConversationId());
         }
     }
 

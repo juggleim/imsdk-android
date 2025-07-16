@@ -63,6 +63,14 @@ public class RtcRoom {
         mMediaType = mediaType;
     }
 
+    public String getExtra() {
+        return mExtra;
+    }
+
+    public void setExtra(String extra) {
+        mExtra = extra;
+    }
+
     private String mRoomId;
     private UserInfo mOwner;
     private boolean mIsMultiCall;
@@ -70,4 +78,5 @@ public class RtcRoom {
     private CallConst.CallStatus mCallStatus;
     private List<CallMember> mMembers;
     private CallConst.CallMediaType mMediaType;
+    private String mExtra;
 }

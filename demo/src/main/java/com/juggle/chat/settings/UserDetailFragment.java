@@ -82,14 +82,14 @@ public class UserDetailFragment extends PermissionFragment {
             requestPermission(PermissionUtils.RECORD_AUDIO_PERMISSION, () -> {
                 if (getContext() == null) return;
 
-                CallCenter.getInstance().startSingleCall(getContext(), mUserId, CallConst.CallMediaType.VOICE);
+                CallCenter.getInstance().startSingleCall(getContext(), mUserId, CallConst.CallMediaType.VOICE, "");
             });
         });
         mBinding.profileBtnDetailStartVideo.setOnClickListener(v -> {
             requestPermission(PermissionUtils.VIDEO_CALL_PERMISSION, () -> {
                 if (getContext() == null) return;
 
-                CallCenter.getInstance().startSingleCall(getContext(), mUserId, CallConst.CallMediaType.VIDEO);
+                CallCenter.getInstance().startSingleCall(getContext(), mUserId, CallConst.CallMediaType.VIDEO, "");
             });
         });
         mBinding.profileBtnDetailAddFriend.setOnClickListener(v -> {
