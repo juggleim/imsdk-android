@@ -812,6 +812,9 @@ class PBData {
         builder.setRoomId(callId);
         builder.setRtcChannelValue(engineType);
         builder.setRtcMediaTypeValue(mediaType.getValue());
+        if (extra == null) {
+            extra = "";
+        }
         builder.setExt(extra);
         Rtcroom.RtcInviteReq req = builder.build();
 
@@ -1838,7 +1841,9 @@ class PBData {
         if (downMsg.hasReferMsg()) {
             ConcreteMessage referMsg = messageWithDownMsg(downMsg.getReferMsg());
             message.setReferredMessage(referMsg);
+            message.setReferMsgId(referMsg.getMessageId());
         }
+        message.setDelete(downMsg.getIsDelete());
         message.setContent(messageContent);
         return message;
     }

@@ -121,6 +121,7 @@ class MessageSql {
             cv.put(COL_REFER_MSG_ID, message.getReferredMessage().getMessageId());
         }
         cv.put(COL_FLAGS, flags);
+        cv.put(COL_IS_DELETED, message.isDelete());
         return cv;
     }
 
@@ -179,6 +180,7 @@ class MessageSql {
     static final String SQL_CREATE_MESSAGE_CONVERSATION_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_ts ON message(conversation_type, conversation_id, timestamp)";
     static final String SQL_ALTER_ADD_FLAGS = "ALTER TABLE message ADD COLUMN flags INTEGER";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
+    static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID_EVEN_DELETE = "SELECT * FROM message WHERE message_uid = ?";
     static final String SQL_GET_MESSAGE_WITH_CLIENT_UID = "SELECT * FROM message WHERE client_uid = ?";
     static final String SQL_SEARCH_MESSAGE_IN_CONVERSATIONS = "SELECT conversation_type, conversation_id, count(*) AS match_count FROM message ";
     static final String SQL_SET_MESSAGE_FLAGS = "UPDATE message SET flags = ? WHERE message_uid = ?";

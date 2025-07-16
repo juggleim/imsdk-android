@@ -788,7 +788,7 @@ abstract public class BaseMessageListFragment<
 
             assert getViewModel().getConversationInfo() != null;
             if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.PRIVATE) {
-                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VIDEO, "");
+                CallCenter.getInstance().startSingleCall(getContext(), getViewModel().getConversationInfo().getConversation().getConversationId(), CallConst.CallMediaType.VIDEO, null);
             } else if (getViewModel().getConversationInfo().getConversation().getConversationType() == Conversation.ConversationType.GROUP)  {
 
             }

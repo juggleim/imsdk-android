@@ -378,6 +378,22 @@ public class DBManager {
         return message;
     }
 
+    public ConcreteMessage getMessageWithMessageIdEvenDelete(String messageId) {
+        ConcreteMessage message = null;
+        if (TextUtils.isEmpty(messageId)) {
+            return null;
+        }
+        String[] args = new String[]{messageId};
+        Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID_EVEN_DELETE, args);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                message = getMessageWithCursor(cursor);
+            }
+            cursor.close();
+        }
+        return message;
+    }
+
     private ConcreteMessage getMessageWithClientUid(String clientUid) {
         ConcreteMessage message = null;
         if (TextUtils.isEmpty(clientUid)) {
@@ -404,7 +420,7 @@ public class DBManager {
             return message;
         }
         //查询被引用的消息
-        ConcreteMessage referMsg = getMessageWithMessageId(message.getReferMsgId());
+        ConcreteMessage referMsg = getMessageWithMessageIdEvenDelete(message.getReferMsgId());
         if (referMsg != null) {
             message.setReferredMessage(referMsg);
         }
