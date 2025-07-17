@@ -13,6 +13,7 @@ public interface ICallMediaEngine {
         void onUserCameraChange(String userId, boolean enable);
         void onUsersLeave(List<String> userIdList);
         void onSoundLevelUpdate(HashMap<String, Float> soundLevels);
+        void onVideoFirstFrameRender(String userId);
     }
 
     void joinRoom(CallMediaRoom room, CallMediaUser user, CallMediaRoomConfig config, ICallCompleteCallback callback);

@@ -10,4 +10,5 @@ public interface ICallMediaListener {
     void onUsersJoin(List<String> userIdList);
     void onUserCameraChange(String userId, boolean enable);
     void onSoundLevelUpdate(HashMap<String, Float> soundLevels);
+    void onVideoFirstFrameRender(String userId);
 }

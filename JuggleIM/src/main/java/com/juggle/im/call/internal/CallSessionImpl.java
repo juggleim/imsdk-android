@@ -398,6 +398,16 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         }
     }
 
+    public void videoFirstFrameRender(String userId) {
+        if (mListeners != null) {
+            for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                mCore.getCallbackHandler().post(() -> {
+                    entry.getValue().onVideoFirstFrameRender(userId);
+                });
+            }
+        }
+    }
+
     public void signalInvite() {
         List<String> targetIds = new ArrayList<>();
         for (CallMember member : mMembers) {
@@ -553,6 +563,11 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     @Override
     public void onSoundLevelUpdate(HashMap<String, Float> soundLevels) {
         sendMessage(CallEvent.SOUND_LEVEL_UPDATE, soundLevels);
+    }
+
+    @Override
+    public void onVideoFirstFrameRender(String userId) {
+        sendMessage(CallEvent.VIDEO_FIRST_FRAME_RENDER, userId);
     }
 
     private void destroy() {

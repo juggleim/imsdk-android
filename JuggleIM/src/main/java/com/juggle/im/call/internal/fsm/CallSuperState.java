@@ -165,6 +165,11 @@ public class CallSuperState extends CallState {
                 callSession.soundLevelUpdate(soundLevels);
                 break;
 
+            case CallEvent.VIDEO_FIRST_FRAME_RENDER:
+                userId = (String) msg.obj;
+                callSession.videoFirstFrameRender(userId);
+                break;
+
             default:
                 return false;
         }

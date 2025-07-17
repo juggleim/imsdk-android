@@ -36,6 +36,9 @@ public interface ICallSession {
         // 用户声音大小变化
         // userId 为 key，声音大小为 value
         void onSoundLevelUpdate(HashMap<String, Float> soundLevels);
+
+        // 视频渲染第一祯回调
+        void onVideoFirstFrameRender(String userId);
     }
 
     void addListener(String key, ICallSessionListener listener);

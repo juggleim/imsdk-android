@@ -163,6 +163,20 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
         } else if (state == ZegoRemoteDeviceState.DISABLE) {
             mListener.onUserCameraChange(userId, false);
         }
+        if (sHandler != null) {
+            sHandler.onRemoteCameraStateUpdate(streamID, state);
+        }
+    }
+
+    @Override
+    public void onPlayerRenderVideoFirstFrame(String streamID) {
+        String userId = userIdWithStreamId(streamID);
+        if (mListener != null) {
+            mListener.onVideoFirstFrameRender(userId);
+        }
+        if (sHandler != null) {
+            sHandler.onPlayerRenderVideoFirstFrame(streamID);
+        }
     }
 
     @Override

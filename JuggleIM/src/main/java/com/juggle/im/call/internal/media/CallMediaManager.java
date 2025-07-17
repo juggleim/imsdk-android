@@ -122,6 +122,13 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
         }
     }
 
+    @Override
+    public void onVideoFirstFrameRender(String userId) {
+        if (mListener != null) {
+            mListener.onVideoFirstFrameRender(userId);
+        }
+    }
+
     private static class SingletonHolder {
         static final CallMediaManager sInstance = new CallMediaManager();
     }

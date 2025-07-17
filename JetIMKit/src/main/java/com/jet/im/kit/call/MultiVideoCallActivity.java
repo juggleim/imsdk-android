@@ -174,4 +174,9 @@ public class MultiVideoCallActivity extends BaseCallActivity implements ICallSes
     public void onSoundLevelUpdate(HashMap<String, Float> soundLevels) {
 
     }
+
+    @Override
+    public void onVideoFirstFrameRender(String userId) {
+
+    }
 }

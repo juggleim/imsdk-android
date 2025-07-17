@@ -346,6 +346,11 @@ public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSes
 
     }
 
+    @Override
+    public void onVideoFirstFrameRender(String userId) {
+
+    }
+
     public void onHangupBtnClick(View view) {
         Log.i(TAG, "onHangupBtnClick");
         mCallSession.hangup();

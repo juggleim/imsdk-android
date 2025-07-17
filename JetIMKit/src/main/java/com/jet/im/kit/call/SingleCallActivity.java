@@ -427,6 +427,11 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
         Log.i("SingleCallActivity", "onSoundLevelUpdate end");
     }
 
+    @Override
+    public void onVideoFirstFrameRender(String userId) {
+        Log.i("SingleCallActivity", "onVideoFirstFrameRender userId is " + userId);
+    }
+
     public void onSwitchCameraClick(View view) {
         mUseFrontCamera = !mUseFrontCamera;
         mCallSession.useFrontCamera(mUseFrontCamera);
