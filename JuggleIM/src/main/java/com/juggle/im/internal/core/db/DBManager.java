@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.GroupMember;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
@@ -157,6 +158,11 @@ public class DBManager {
         }
         List<ConversationInfo> list = conversationListFromCursor(cursor);
         cursor.close();
+        for (ConversationInfo info : list) {
+            if (info instanceof ConcreteConversationInfo) {
+                checkLastMessage((ConcreteConversationInfo) info);
+            }
+        }
         return list;
     }
 
@@ -173,6 +179,11 @@ public class DBManager {
         }
         List<ConversationInfo> list = conversationListFromCursor(cursor);
         cursor.close();
+        for (ConversationInfo info : list) {
+            if (info instanceof ConcreteConversationInfo) {
+                checkLastMessage((ConcreteConversationInfo) info);
+            }
+        }
         return list;
     }
 
@@ -187,6 +198,11 @@ public class DBManager {
         }
         List<ConversationInfo> list = conversationListFromCursor(cursor);
         cursor.close();
+        for (ConversationInfo info : list) {
+            if (info instanceof ConcreteConversationInfo) {
+                checkLastMessage((ConcreteConversationInfo) info);
+            }
+        }
         return list;
     }
 
@@ -200,6 +216,7 @@ public class DBManager {
             }
             cursor.close();
         }
+        checkLastMessage(result);
         return result;
     }
 
@@ -362,12 +379,12 @@ public class DBManager {
         mTopConversationsOrderType = type;
     }
 
-    public ConcreteMessage getMessageWithMessageId(String messageId) {
+    public ConcreteMessage getMessageWithMessageId(String messageId, long now) {
         ConcreteMessage message = null;
         if (TextUtils.isEmpty(messageId)) {
             return null;
         }
-        String[] args = new String[]{messageId};
+        String[] args = new String[]{messageId, String.valueOf(now)};
         Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID, args);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
@@ -427,10 +444,10 @@ public class DBManager {
         return message;
     }
 
-    public List<SearchConversationsResult> searchMessageInConversations(MessageQueryOptions options) {
+    public List<SearchConversationsResult> searchMessageInConversations(MessageQueryOptions options, long now) {
         List<SearchConversationsResult> resultList = new ArrayList<>();
         List<String> args = new ArrayList<>();
-        String sql = MessageSql.sqlSearchMessageInConversations(options, args);
+        String sql = MessageSql.sqlSearchMessageInConversations(options, now, args);
         //执行查询
         Cursor cursor = rawQuery(sql, args.toArray(new String[0]));
         if (cursor == null) {
@@ -472,7 +489,8 @@ public class DBManager {
             List<String> senderUserIds,
             List<Message.MessageState> messageStates,
             List<Conversation> conversations,
-            List<Conversation.ConversationType> conversationTypes
+            List<Conversation.ConversationType> conversationTypes,
+            long now
     ) {
         List<Message> result = new ArrayList<>();
         if (count < 1) return result;
@@ -481,7 +499,7 @@ public class DBManager {
         }
         //处理sql及查询条件
         List<String> whereArgs = new ArrayList<>();
-        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, conversationTypes, whereArgs);
+        String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, conversationTypes, now, whereArgs);
         //执行查询
         Cursor cursor = rawQuery(sql, whereArgs.toArray(new String[0]));
         if (cursor == null) {
@@ -574,9 +592,10 @@ public class DBManager {
     }
 
     //从消息表中获取会话中最新一条消息
-    public Message getLastMessage(Conversation conversation) {
+    public Message getLastMessage(Conversation conversation, long now) {
         String sql = MessageSql.sqlGetLastMessageInConversation(conversation);
-        Cursor cursor = rawQuery(sql, null);
+        String[] args = new String[]{String.valueOf(now)};
+        Cursor cursor = rawQuery(sql, args);
         List<Message> list = new ArrayList<>();
         if (cursor == null) {
             return null;
@@ -629,7 +648,7 @@ public class DBManager {
                 ConcreteMessage m = null;
                 //messageId 排重
                 if (!TextUtils.isEmpty(message.getMessageId())) {
-                    m = getMessageWithMessageId(message.getMessageId());
+                    m = getMessageWithMessageId(message.getMessageId(), 0);
                 }
                 //clientUid 排重
                 if (m == null && !TextUtils.isEmpty(message.getClientUid())) {
@@ -653,6 +672,12 @@ public class DBManager {
         execSQL(sql, args);
     }
 
+    public void updateDestroyTimeWithMessageId(String messageId, long destroyTime) {
+        String sql = MessageSql.SQL_UPDATE_DESTROY_TIME;
+        Object[] args = new Object[]{destroyTime, messageId};
+        execSQL(sql, args);
+    }
+
     public void updateMessage(ConcreteMessage message) {
         performTransaction(() -> {
             ContentValues cv = MessageSql.getMessageUpdateCV(message);
@@ -665,13 +690,13 @@ public class DBManager {
                                        long timestamp,
                                        long seqNo,
                                        int groupMemberCount) {
-        Object[] args = new Object[]{msgId};
+        Object[] args = new Object[]{msgId, timestamp};
         String sql = MessageSql.sqlUpdateMessageAfterSend(Message.MessageState.SENT.getValue(), clientMsgNo, timestamp, seqNo, groupMemberCount);
         execSQL(sql, args);
     }
 
     public void updateMessageAfterSendWithClientUid(String clientUid, String messageId, long timestamp, long seqNo, int groupMemberCount) {
-        Object[] args = new Object[]{messageId, clientUid};
+        Object[] args = new Object[]{messageId, timestamp, clientUid};
         String sql = MessageSql.sqlUpdateMessageAfterSendWithClientUid(Message.MessageState.SENT.getValue(), timestamp, seqNo, groupMemberCount);
         execSQL(sql, args);
     }
@@ -853,6 +878,29 @@ public class DBManager {
                 }
             }
         });
+    }
+
+    private void checkLastMessage(ConcreteConversationInfo info) {
+        if (info == null) {
+            return;
+        }
+        boolean needUpdate = false;
+        long timeDifference = JIM.getInstance().getTimeDifference();
+        long now = System.currentTimeMillis() + timeDifference;
+        // 当 lastMessage 存在的时候，检查它是否被删除或者过期了。不存在的时候不做处理
+        if (info.getLastMessage() instanceof ConcreteMessage) {
+            ConcreteMessage conversationLastMessage = (ConcreteMessage) info.getLastMessage();
+            ConcreteMessage lastMessage = getMessageWithClientUid(conversationLastMessage.getClientUid());
+            if (lastMessage != null) {
+                if (lastMessage.isDelete() || (lastMessage.getDestroyTime() > 0 && lastMessage.getDestroyTime() <= now)) {
+                    needUpdate = true;
+                }
+            }
+        }
+        if (needUpdate) {
+            Message newLast = getLastMessage(info.getConversation(), now);
+            info.setLastMessage(newLast);
+        }
     }
 
     private synchronized Cursor rawQuery(String sql, String[] selectionArgs) {

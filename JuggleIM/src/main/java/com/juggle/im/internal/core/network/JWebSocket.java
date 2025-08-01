@@ -123,6 +123,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               PushData pushData,
                               boolean isBroadcast,
                               String userId,
+                              long lifeTime,
+                              long lifeTimeAfterRead,
                               SendMessageCallback callback) {
         Integer key = mCmdIndex;
         byte[] encodeBytes = encodeContentData(content);
@@ -146,7 +148,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 conversation.getConversationId(),
                 mentionInfo,
                 referMsg,
-                pushData);
+                pushData,
+                lifeTime,
+                lifeTimeAfterRead);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "send message");
         sendWhenOpen(bytes);
@@ -764,6 +768,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
         mHeartbeatManager.updateLastMessageReceivedTime();
         PBRcvObj obj = mPbData.rcvObjWithBytes(bytes);
+        if (obj.timestamp > 0) {
+            mTimeDifference = obj.timestamp - System.currentTimeMillis();
+        }
         switch (obj.getRcvType()) {
             case PBRcvObj.PBRcvType.connectAck:
                 handleConnectAckMsg(obj.mConnectAck);
@@ -922,6 +929,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public void setAppKey(String appKey) {
         mAppKey = appKey;
+    }
+
+    public long getTimeDifference() {
+        return mTimeDifference;
     }
 
     private void sendConnectMsg() {
@@ -1426,6 +1437,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private Integer mCmdIndex = 0;
     private JWebSocketClient mWebSocketClient;
     private boolean mIsCompeteFinish;
+    private long mTimeDifference;
     private final List<JWebSocketClient> mCompeteWSCList;
     private final List<WebSocketStatus> mCompeteStatusList;
     private final Handler mSendHandler;

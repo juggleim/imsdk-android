@@ -80,12 +80,14 @@ class MessageSql {
         long msgIndex = 0;
         String clientUid = "";
         int flags = 0;
+        long lifeTime = 0;
         if (message instanceof ConcreteMessage) {
             ConcreteMessage c = (ConcreteMessage) message;
             seqNo = c.getSeqNo();
             msgIndex = c.getMsgIndex();
             clientUid = c.getClientUid();
             flags = c.getFlags();
+            lifeTime = c.getLifeTime();
         }
         cv.put(COL_CONVERSATION_TYPE, message.getConversation().getConversationType().getValue());
         cv.put(COL_CONVERSATION_ID, message.getConversation().getConversationId());
@@ -122,6 +124,9 @@ class MessageSql {
         }
         cv.put(COL_FLAGS, flags);
         cv.put(COL_IS_DELETED, message.isDelete());
+        cv.put(COL_LIFE_TIME, lifeTime);
+        cv.put(COL_LIFE_TIME_AFTER_READ, message.getLifeTimeAfterRead());
+        cv.put(COL_DESTROY_TIME, message.getDestroyTime());
         return cv;
     }
 
@@ -170,7 +175,10 @@ class MessageSql {
             + "local_attribute TEXT,"
             + "mention_info TEXT,"
             + "refer_msg_id VARCHAR (64),"
-            + "flags INTEGER"
+            + "flags INTEGER,"
+            + "life_time INTEGER DEFAULT 0,"
+            + "life_time_after_read INTEGER DEFAULT 0,"
+            + "destroy_time INTEGER DEFAULT 0"
             + ")";
 
     static final String TABLE = "message";
@@ -179,16 +187,22 @@ class MessageSql {
     static final String SQL_CREATE_MESSAGE_CONVERSATION_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation ON message(conversation_type, conversation_id)";
     static final String SQL_CREATE_MESSAGE_CONVERSATION_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_ts ON message(conversation_type, conversation_id, timestamp)";
     static final String SQL_ALTER_ADD_FLAGS = "ALTER TABLE message ADD COLUMN flags INTEGER";
-    static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0";
+    static final String SQL_ALTER_ADD_LIFE_TIME = "ALTER TABLE message ADD COLUMN life_time INTEGER DEFAULT 0";
+    static final String SQL_ALTER_ADD_LIFE_TIME_AFTER_READ = "ALTER TABLE message ADD COLUMN life_time_after_read INTEGER DEFAULT 0";
+    static final String SQL_ALTER_ADD_DESTROY_TIME = "ALTER TABLE message ADD COLUMN destroy_time INTEGER DEFAULT 0";
+    static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0  AND (destroy_time = 0 OR destroy_time > ?)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID_EVEN_DELETE = "SELECT * FROM message WHERE message_uid = ?";
     static final String SQL_GET_MESSAGE_WITH_CLIENT_UID = "SELECT * FROM message WHERE client_uid = ?";
     static final String SQL_SEARCH_MESSAGE_IN_CONVERSATIONS = "SELECT conversation_type, conversation_id, count(*) AS match_count FROM message ";
     static final String SQL_SET_MESSAGE_FLAGS = "UPDATE message SET flags = ? WHERE message_uid = ?";
+    static final String SQL_UPDATE_DESTROY_TIME = "UPDATE message SET destroy_time = ? WHERE message_uid = ?";
 
-    static String sqlSearchMessageInConversations(MessageQueryOptions options, List<String> whereArgs) {
+    static String sqlSearchMessageInConversations(MessageQueryOptions options, long now, List<String> whereArgs) {
         List<String> whereClauses = new ArrayList<>();
         //添加 is_deleted = 0 条件
         whereClauses.add("is_deleted = 0");
+        whereClauses.add("(destroy_time = 0 OR destroy_time > ?)");
+        whereArgs.add(String.valueOf(now));
         if (options != null) {
             //添加 direction 条件
             if (options.getDirection() != null) {
@@ -252,11 +266,14 @@ class MessageSql {
             List<Message.MessageState> messageStates,
             List<Conversation> conversations,
             List<Conversation.ConversationType> conversationTypes,
+            long now,
             List<String> whereArgs
     ) {
         List<String> whereClauses = new ArrayList<>();
         //添加 is_deleted = 0 条件
         whereClauses.add("is_deleted = 0");
+        whereClauses.add("(destroy_time = 0 OR destroy_time > ?)");
+        whereArgs.add(String.valueOf(now));
         //添加 direction 条件
         if (direction != null) {
             whereClauses.add("direction = ?");
@@ -313,7 +330,7 @@ class MessageSql {
     }
 
     static String sqlGetLastMessageInConversation(Conversation conversation) {
-        String sql = String.format("SELECT * FROM message WHERE conversation_type = '%s' AND conversation_id = '%s' AND is_deleted = 0", conversation.getConversationType().getValue(), conversation.getConversationId());
+        String sql = String.format("SELECT * FROM message WHERE conversation_type = '%s' AND conversation_id = '%s' AND is_deleted = 0 AND (destroy_time = 0 OR destroy_time > ?)", conversation.getConversationType().getValue(), conversation.getConversationId());
         sql = sql + SQL_ORDER_BY_TIMESTAMP + SQL_DESC + SQL_LIMIT + 1;
         return sql;
     }
@@ -351,11 +368,11 @@ class MessageSql {
     static final String SQL_LIMIT = " LIMIT ";
 
     static String sqlUpdateMessageAfterSend(int state, long clientMsgNo, long timestamp, long seqNo, int groupMemberCount) {
-        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s, member_count = %s WHERE id = %s", state, timestamp, seqNo, groupMemberCount, clientMsgNo);
+        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s, member_count = %s, destroy_time = CASE WHEN life_time != 0 THEN ? + life_time ELSE destroy_time END WHERE id = %s", state, timestamp, seqNo, groupMemberCount, clientMsgNo);
     }
 
     static String sqlUpdateMessageAfterSendWithClientUid(int state, long timestamp, long seqNo, int groupMemberCount) {
-        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s, member_count = %s WHERE client_uid = ?", state, timestamp, seqNo, groupMemberCount);
+        return String.format("UPDATE message SET message_uid = ?, state = %s, timestamp = %s, seq_no = %s, member_count = %s, destroy_time = CASE WHEN life_time != 0 THEN ? + life_time ELSE destroy_time END WHERE client_uid = ?", state, timestamp, seqNo, groupMemberCount);
     }
 
     static final String SQL_UPDATE_MESSAGE_CONTENT_WITH_MESSAGE_ID = "UPDATE message SET content = ?, type = ?, search_content = ? WHERE message_uid = ?";
@@ -421,4 +438,7 @@ class MessageSql {
     static final String COL_MENTION_INFO = "mention_info";
     static final String COL_REFER_MSG_ID = "refer_msg_id";
     static final String COL_FLAGS = "flags";
+    static final String COL_LIFE_TIME = "life_time";
+    static final String COL_LIFE_TIME_AFTER_READ = "life_time_after_read";
+    static final String COL_DESTROY_TIME = "destroy_time";
 }

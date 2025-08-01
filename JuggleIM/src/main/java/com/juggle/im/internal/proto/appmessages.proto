@@ -57,6 +57,10 @@ message UpMsg {
   DownMsg referMsg = 7;//被引用的消息
   repeated string toUserIds = 8;//群定向消息，指定接收消息的部分群成员
   MergedMsgs mergedMsgs = 9;
+  string SearchText = 10;
+  int64 lifeTime = 11;   // 消息默认生存周期，单位毫秒，例如：86400000，即该消息1天后会被自动删除
+  int64 lifeTimeAfterRead = 12; // 消息已读后的生存周期，通常小于lifeTime，例如60000，即消息已读1分钟后会被自动删除
+  string subChannel = 13;
   
   int64 msgTime = 51; 
 }

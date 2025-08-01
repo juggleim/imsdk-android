@@ -728,7 +728,8 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void onMessageUpdate(ConcreteMessage message) {
-        ConcreteMessage lastMessage = (ConcreteMessage)mCore.getDbManager().getLastMessage(message.getConversation());
+        long now = mCore.getCurrentTime();
+        ConcreteMessage lastMessage = (ConcreteMessage)mCore.getDbManager().getLastMessage(message.getConversation(), now);
         if (lastMessage.getClientMsgNo() == message.getClientMsgNo()) {
             mCore.getDbManager().updateLastMessageWithoutIndex(lastMessage);
             ConversationInfo info = mCore.getDbManager().getConversationInfo(message.getConversation());

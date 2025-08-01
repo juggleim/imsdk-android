@@ -139,7 +139,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         message.setState(state);
         message.setSenderUserId(mCore.getUserId());
         message.setClientUid(createClientUid());
-        message.setTimestamp(System.currentTimeMillis());
+        long now = System.currentTimeMillis();
+        message.setTimestamp(now);
         int flags = content.getFlags();
         if (isBroadcast) {
             flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
@@ -149,13 +150,18 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             message.setMentionInfo(options.getMentionInfo());
         }
         if (options != null && !TextUtils.isEmpty(options.getReferredMessageId())) {
-            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(options.getReferredMessageId());
+            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(options.getReferredMessageId(), mCore.getCurrentTime());
             if (referMsg != null) {
                 message.setReferredMessage(referMsg);
             }
         }
         if (options != null && options.getPushData() != null) {
             message.setPushData(options.getPushData());
+        }
+        message.setLifeTime(options.getLifeTime());
+        message.setLifeTimeAfterRead(options.getLifeTimeAfterRead());
+        if (message.getLifeTime() > 0) {
+            message.setDestroyTime(mCore.getCurrentTime() + message.getLifeTime());
         }
         //保存消息
         if ((message.getFlags() & MessageContent.MessageFlag.IS_SAVE.getValue()) != 0) {
@@ -183,7 +189,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
         }
         if (message.hasReferredInfo()) {
-            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId());
+            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId(), mCore.getCurrentTime());
             message.setReferredMessage(referMsg);
         }
         //保存消息
@@ -226,6 +232,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 message.setTimestamp(timestamp);
                 message.setSeqNo(seqNo);
                 message.setState(Message.MessageState.SENT);
+                message.setDestroyTime(timestamp + message.getLifeTime());
                 if (message.getConversation().getConversationType() == Conversation.ConversationType.GROUP) {
                     GroupMessageReadInfo info = new GroupMessageReadInfo();
                     info.setReadCount(0);
@@ -289,6 +296,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 message.getPushData(),
                 isBroadcast,
                 mCore.getUserId(),
+                message.getLifeTime(),
+                message.getLifeTimeAfterRead(),
                 messageCallback
         );
     }
@@ -423,6 +432,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             MessageOptions options = new MessageOptions();
             options.setMentionInfo(message.getMentionInfo());
             options.setReferredMessageId(message.getReferredMessage() == null ? null : message.getReferredMessage().getMessageId());
+            ConcreteMessage concreteMessage = (ConcreteMessage) message;
+            options.setLifeTime(concreteMessage.getLifeTime());
+            options.setLifeTimeAfterRead(concreteMessage.getLifeTimeAfterRead());
             return sendMessage(message.getContent(), message.getConversation(), options, callback);
         }
     }
@@ -493,6 +505,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         if (count > 100) {
             count = 100;
         }
+        long now = mCore.getCurrentTime();
         return mCore.getDbManager().getMessages(
                 count,
                 timestamp,
@@ -503,7 +516,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 messageQueryOptions != null ? messageQueryOptions.getSenderUserIds() : null,
                 messageQueryOptions != null ? messageQueryOptions.getStates() : null,
                 messageQueryOptions != null ? messageQueryOptions.getConversations() : null,
-                messageQueryOptions != null ? messageQueryOptions.getConversationTypes() : null);
+                messageQueryOptions != null ? messageQueryOptions.getConversationTypes() : null,
+                now
+        );
     }
 
     @Override
@@ -666,7 +681,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         JThreadPoolExecutor.runInBackground(new Runnable() {
             @Override
             public void run() {
-                List<SearchConversationsResult> resultList = mCore.getDbManager().searchMessageInConversations(options);
+                long now = mCore.getCurrentTime();
+                List<SearchConversationsResult> resultList = mCore.getDbManager().searchMessageInConversations(options, now);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onComplete(resultList));
                 }
@@ -677,7 +693,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     @Override
     public void downloadMediaMessage(String messageId, IDownloadMediaMessageCallback callback) {
         mCore.getSendHandler().post(() -> {
-            ConcreteMessage message = mCore.getDbManager().getMessageWithMessageId(messageId);
+            ConcreteMessage message = mCore.getDbManager().getMessageWithMessageId(messageId, mCore.getCurrentTime());
             if(message==null){
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
@@ -1520,6 +1536,10 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 if (mSendReceiveListener != null) {
                     mSendReceiveListener.onMessagesRead(conversation, messageIds);
                 }
+                List<Message> readMessages = mCore.getDbManager().getMessagesByMessageIds(messageIds);
+                for (Message readMessage : readMessages) {
+                    checkAndNotifyDestroyTime(readMessage, timestamp);
+                }
             }
 
             @Override
@@ -2029,7 +2049,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-SetTop", "success");
                 updateMessageSendSyncTime(timestamp);
-                Message message = mCore.getDbManager().getMessageWithMessageId(messageId);
+                long now = mCore.getCurrentTime();
+                Message message = mCore.getDbManager().getMessageWithMessageId(messageId, now);
                 UserInfo user = mUserInfoManager.getUserInfo(mCore.getUserId());
                 if (user == null) {
                     user = new UserInfo();
@@ -2160,6 +2181,24 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     public void removeReadReceiptListener(String key) {
         if (!TextUtils.isEmpty(key) && mReadReceiptListenerMap != null) {
             mReadReceiptListenerMap.remove(key);
+        }
+    }
+
+    @Override
+    public void addDestroyListener(String key, IMessageDestroyListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mDestroyListenerMap == null) {
+            mDestroyListenerMap = new ConcurrentHashMap<>();
+        }
+        mDestroyListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeDestroyListener(String key) {
+        if (!TextUtils.isEmpty(key) && mDestroyListenerMap != null) {
+            mDestroyListenerMap.remove(key);
         }
     }
 
@@ -2403,7 +2442,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private void saveReferMessages(ConcreteMessage message) {
         if (message.getReferredMessage() == null) return;
         //查询本地数据库是否已保存该引用消息
-        ConcreteMessage localReferMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId());
+        ConcreteMessage localReferMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId(), mCore.getCurrentTime());
         //如果本地数据库已保存该引用消息，直接将消息中原来的引用消息替换为本地保存的引用消息
         if (localReferMsg != null) {
             message.setReferredMessage(localReferMsg);
@@ -2595,6 +2634,10 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 if (mSendReceiveListener != null) {
                     mSendReceiveListener.onMessagesRead(message.getConversation(), readNtfMessage.getMessageIds());
                 }
+                List<Message> readMessages = mCore.getDbManager().getMessagesByMessageIds(readNtfMessage.getMessageIds());
+                for (Message readMessage : readMessages) {
+                    checkAndNotifyDestroyTime(readMessage, message.getTimestamp());
+                }
                 continue;
             }
 
@@ -2605,6 +2648,17 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 if (mReadReceiptListenerMap != null) {
                     for (Map.Entry<String, IMessageReadReceiptListener> entry : mReadReceiptListenerMap.entrySet()) {
                         mCore.getCallbackHandler().post(() -> entry.getValue().onGroupMessagesRead(message.getConversation(), groupReadNtfMessage.getMessages()));
+                    }
+                }
+                for (Map.Entry<String, GroupMessageReadInfo> entry : groupReadNtfMessage.getMessages().entrySet()) {
+                    String messageId = entry.getKey();
+                    GroupMessageReadInfo readInfo = entry.getValue();
+                    if (readInfo.getReadCount() >= readInfo.getMemberCount()) {
+                        List<Message> readMessages = mCore.getDbManager().getMessagesByMessageIds(Collections.singletonList(messageId));
+                        if (!readMessages.isEmpty()) {
+                            Message readMessage = readMessages.get(0);
+                            checkAndNotifyDestroyTime(readMessage, message.getTimestamp());
+                        }
                     }
                 }
                 continue;
@@ -2887,8 +2941,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     //通知会话更新最新信息
     private void notifyMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages) {
         if (mSendReceiveListener != null) {
+            long now = mCore.getCurrentTime();
             //从消息表中获取当前会话最新一条消息
-            Message lastMessage = mCore.getDbManager().getLastMessage(conversation);
+            Message lastMessage = mCore.getDbManager().getLastMessage(conversation, now);
             mSendReceiveListener.onMessageRemove(conversation, removedMessages, lastMessage == null ? null : (ConcreteMessage) lastMessage);
         }
     }
@@ -2896,8 +2951,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     //通知会话更新最新信息
     private void notifyMessageCleared(Conversation conversation, long startTime, String sendUserId) {
         if (mSendReceiveListener != null) {
+            long now = mCore.getCurrentTime();
             //获取当前会话最新一条消息
-            Message lastMessage = mCore.getDbManager().getLastMessage(conversation);
+            Message lastMessage = mCore.getDbManager().getLastMessage(conversation, now);
             mSendReceiveListener.onMessageClear(conversation, startTime, sendUserId, lastMessage == null ? null : (ConcreteMessage) lastMessage);
         }
     }
@@ -3000,6 +3056,26 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         return java.util.UUID.randomUUID().toString().replace("-", "");
     }
 
+    private void checkAndNotifyDestroyTime(Message readMessage, long timestamp) {
+        if (readMessage == null) {
+            return;
+        }
+        if (readMessage.getLifeTimeAfterRead() > 0 && !readMessage.isDelete()) {
+            long destroyTime = timestamp + readMessage.getLifeTimeAfterRead();
+            if (destroyTime < readMessage.getDestroyTime()) {
+                readMessage.setDestroyTime(destroyTime);
+                mCore.getDbManager().updateDestroyTimeWithMessageId(readMessage.getMessageId(), destroyTime);
+                mCore.getCallbackHandler().post(() -> {
+                    if (mDestroyListenerMap != null) {
+                        for (Map.Entry<String, IMessageDestroyListener> entry : mDestroyListenerMap.entrySet()) {
+                            entry.getValue().onMessageDestroyTimeUpdate(readMessage.getMessageId(), readMessage.getConversation(), destroyTime);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
     private synchronized void setTimeForChatroomSyncMap(String chatroomId, long timestamp) {
         mChatroomSyncMap.put(chatroomId, timestamp);
     }
@@ -3039,6 +3115,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
+    private ConcurrentHashMap<String, IMessageDestroyListener> mDestroyListenerMap;
     private IMessageUploadProvider mMessageUploadProvider;
     private IMessageUploadProvider mDefaultMessageUploadProvider;
     private ISendReceiveListener mSendReceiveListener;

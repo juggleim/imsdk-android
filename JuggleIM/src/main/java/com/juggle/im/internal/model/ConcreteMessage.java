@@ -104,6 +104,14 @@ public class ConcreteMessage extends Message {
         mPushData = pushData;
     }
 
+    public long getLifeTime() {
+        return mLifeTime;
+    }
+
+    public void setLifeTime(long lifeTime) {
+        mLifeTime = lifeTime;
+    }
+
 
     private long mSeqNo;
     private long mMsgIndex;
@@ -115,4 +123,5 @@ public class ConcreteMessage extends Message {
     private GroupMember mGroupMemberInfo;
     private String mReferMsgId;
     private PushData mPushData;
+    private long mLifeTime;
 }

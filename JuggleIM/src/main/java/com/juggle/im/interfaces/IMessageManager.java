@@ -465,6 +465,10 @@ public interface IMessageManager {
 
     void removeReadReceiptListener(String key);
 
+    void addDestroyListener(String key, IMessageDestroyListener listener);
+
+    void removeDestroyListener(String key);
+
     void setMessageUploadProvider(IMessageUploadProvider uploadProvider);
 
     interface IMessageListener {
@@ -498,5 +502,15 @@ public interface IMessageManager {
         void onMessagesRead(Conversation conversation, List<String> messageIds);
 
         void onGroupMessagesRead(Conversation conversation, Map<String, GroupMessageReadInfo> messages);
+    }
+
+    interface IMessageDestroyListener {
+        /**
+         * 消息销毁时间更新回调（一般发生在阅后即焚之类的场景）
+         * @param messageId 消息 id
+         * @param conversation 所在会话
+         * @param destroyTime 更新后的销毁时间
+         */
+        void onMessageDestroyTimeUpdate(String messageId, Conversation conversation, long destroyTime);
     }
 }

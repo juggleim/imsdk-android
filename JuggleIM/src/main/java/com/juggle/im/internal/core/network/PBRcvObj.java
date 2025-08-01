@@ -323,6 +323,7 @@ class PBRcvObj {
     RtcQryCallRoomsAck mRtcQryCallRoomsAck;
     QryMsgExtAck mQryMsgExtAck;
     GetTopMsgAck mGetTopMsgAck;
+    long timestamp;
 
     private int mRcvType;
 }

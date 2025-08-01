@@ -160,7 +160,9 @@ class PBData {
                            String conversationId,
                            MessageMentionInfo mentionInfo,
                            ConcreteMessage referMsg,
-                           PushData pushData) {
+                           PushData pushData,
+                           long lifeTime,
+                           long lifeTimeAfterRead) {
         ByteString byteString = ByteString.copyFrom(msgData);
         Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
         upMsgBuilder.setMsgType(contentType)
@@ -218,6 +220,8 @@ class PBData {
             }
             upMsgBuilder.setPushData(pbPushData);
         }
+        upMsgBuilder.setLifeTime(lifeTime);
+        upMsgBuilder.setLifeTimeAfterRead(lifeTimeAfterRead);
 
         Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
@@ -1212,6 +1216,7 @@ class PBData {
                     ack.session = connectAckMsgBody.getSession();
                     ack.extra = connectAckMsgBody.getExt();
                     obj.mConnectAck = ack;
+                    obj.timestamp = connectAckMsgBody.getTimestamp();
                     break;
 
                 case CmdType.publishAck: {
@@ -1235,6 +1240,7 @@ class PBData {
                         a.content = modifiedMsg.getContent();
                     }
                     obj.mPublishMsgAck = a;
+                    obj.timestamp = publishAckMsgBody.getTimestamp();
                 }
                 break;
 
@@ -1313,6 +1319,7 @@ class PBData {
                         default:
                             break;
                     }
+                    obj.timestamp = queryAckMsgBody.getTimestamp();
                     break;
 
                 case CmdType.publish:
@@ -1386,6 +1393,7 @@ class PBData {
                         n.targetUsers = targetUserList;
                         obj.mRtcInviteEventNtf = n;
                     }
+                    obj.timestamp = publishMsgBody.getTimestamp();
                     break;
 
                 case CmdType.disconnect:
@@ -1396,6 +1404,7 @@ class PBData {
                     m.timestamp = disconnectMsgBody.getTimestamp();
                     m.extra = disconnectMsgBody.getExt();
                     obj.mDisconnectMsg = m;
+                    obj.timestamp = disconnectMsgBody.getTimestamp();
                     break;
             }
         } catch (InvalidProtocolBufferException e) {
@@ -1845,6 +1854,8 @@ class PBData {
         }
         message.setDelete(downMsg.getIsDelete());
         message.setContent(messageContent);
+        message.setDestroyTime(downMsg.getDestroyTime());
+        message.setLifeTimeAfterRead(downMsg.getLifeTimeAfterRead());
         return message;
     }
 

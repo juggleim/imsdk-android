@@ -113,6 +113,11 @@ public class JIM {
     public String getDeviceId(Context context) {
         return JUtility.getDeviceId(context);
     }
+
+    public long getTimeDifference() {
+        return mCore.getTimeDifference();
+    }
+
     private static class SingletonHolder {
         static final JIM sInstance = new JIM();
     }
