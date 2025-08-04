@@ -22,6 +22,7 @@ public class ConcreteMessage extends Message {
         mGroupMemberInfo = other.getGroupMemberInfo();
         mReferMsgId = other.getReferMsgId();
         mPushData = other.getPushData();
+        mLifeTime = other.getLifeTime();
     }
 
     public long getSeqNo() {

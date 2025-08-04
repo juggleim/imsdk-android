@@ -68,6 +68,9 @@ class MessageSql {
         }
         message.setFlags(CursorHelper.readInt(cursor, COL_FLAGS));
         message.setEdit((message.getFlags() & MessageContent.MessageFlag.IS_MODIFIED.getValue()) != 0);
+        message.setLifeTime(CursorHelper.readLong(cursor, COL_LIFE_TIME));
+        message.setLifeTimeAfterRead(CursorHelper.readLong(cursor, COL_LIFE_TIME_AFTER_READ));
+        message.setDestroyTime(CursorHelper.readLong(cursor, COL_DESTROY_TIME));
         return message;
     }
 

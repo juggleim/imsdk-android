@@ -146,20 +146,22 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
         }
         message.setFlags(flags);
-        if (options != null && options.getMentionInfo() != null) {
-            message.setMentionInfo(options.getMentionInfo());
-        }
-        if (options != null && !TextUtils.isEmpty(options.getReferredMessageId())) {
-            ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(options.getReferredMessageId(), mCore.getCurrentTime());
-            if (referMsg != null) {
-                message.setReferredMessage(referMsg);
+        if (options != null) {
+            if (options.getMentionInfo() != null) {
+                message.setMentionInfo(options.getMentionInfo());
             }
+            if (!TextUtils.isEmpty(options.getReferredMessageId())) {
+                ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(options.getReferredMessageId(), mCore.getCurrentTime());
+                if (referMsg != null) {
+                    message.setReferredMessage(referMsg);
+                }
+            }
+            if (options.getPushData() != null) {
+                message.setPushData(options.getPushData());
+            }
+            message.setLifeTime(options.getLifeTime());
+            message.setLifeTimeAfterRead(options.getLifeTimeAfterRead());
         }
-        if (options != null && options.getPushData() != null) {
-            message.setPushData(options.getPushData());
-        }
-        message.setLifeTime(options.getLifeTime());
-        message.setLifeTimeAfterRead(options.getLifeTimeAfterRead());
         if (message.getLifeTime() > 0) {
             message.setDestroyTime(mCore.getCurrentTime() + message.getLifeTime());
         }
@@ -1364,7 +1366,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 null,
                 null,
                 Collections.singletonList(conversation),
-                null);
+                null,
+                mCore.getCurrentTime());
 
         boolean needRemote = false;
         if (localMessages.size() < count+1) {

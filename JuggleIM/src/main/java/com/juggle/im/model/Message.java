@@ -74,6 +74,8 @@ public class Message {
         mLocalAttribute = other.getLocalAttribute();
         mIsDelete = other.isDelete();
         mIsEdit = other.isEdit();
+        mLifeTimeAfterRead = other.getLifeTimeAfterRead();
+        mDestroyTime = other.getDestroyTime();
     }
 
     public Conversation getConversation() {
