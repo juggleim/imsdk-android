@@ -224,6 +224,19 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             mergeInfo.setContainerMsgId(mergeMessage.getContainerMsgId());
             mergeInfo.setMessages(mCore.getDbManager().getConcreteMessagesByMessageIds(mergeMessage.getMessageIdList()));
         }
+        MessageContent content = message.getContent();
+        if (mPreprocessor != null) {
+            content = mPreprocessor.messagePrepareForSend(message.getContent(), message.getConversation());
+        }
+        if (content == null) {
+            if (callback != null) {
+                m.setContent(content);
+                message.setContent(content);
+                mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo, String contentType, MessageContent content, int groupMemberCount) {
@@ -289,7 +302,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return;
         }
         mCore.getWebSocket().sendIMMessage(
-                message.getContent(),
+                content,
                 message.getConversation(),
                 message.getClientUid(),
                 mergeInfo,
@@ -2206,6 +2219,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void setPreprocessor(IMessagePreprocessor preprocessor) {
+        mPreprocessor = preprocessor;
+    }
+
+    @Override
     public void setMessageUploadProvider(IMessageUploadProvider uploadProvider) {
         this.mMessageUploadProvider = uploadProvider;
     }
@@ -2496,6 +2514,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     private void handleReceiveMessages(List<ConcreteMessage> messages, boolean isSync) {
+        if (mPreprocessor != null) {
+            for (ConcreteMessage message : messages) {
+                MessageContent content = mPreprocessor.messagePrepareForReceive(message.getContent(), message.getConversation());
+                if (content != null) {
+                    message.setContent(content);
+                }
+            }
+        }
+
         List<ConcreteMessage> messagesToSave = messagesToSave(messages);
         insertRemoteMessages(messagesToSave);
 
@@ -3120,6 +3147,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
     private ConcurrentHashMap<String, IMessageDestroyListener> mDestroyListenerMap;
     private IMessageUploadProvider mMessageUploadProvider;
+    private IMessagePreprocessor mPreprocessor;
     private IMessageUploadProvider mDefaultMessageUploadProvider;
     private ISendReceiveListener mSendReceiveListener;
 }

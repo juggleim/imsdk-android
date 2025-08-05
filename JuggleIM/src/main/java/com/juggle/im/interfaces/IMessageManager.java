@@ -469,6 +469,8 @@ public interface IMessageManager {
 
     void removeDestroyListener(String key);
 
+    void setPreprocessor(IMessagePreprocessor preprocessor);
+
     void setMessageUploadProvider(IMessageUploadProvider uploadProvider);
 
     interface IMessageListener {
@@ -512,5 +514,23 @@ public interface IMessageManager {
          * @param destroyTime 更新后的销毁时间
          */
         void onMessageDestroyTimeUpdate(String messageId, Conversation conversation, long destroyTime);
+    }
+
+    interface IMessagePreprocessor {
+        /**
+         * 消息入库之后，发送之前的回调
+         * @param content 待发送的消息内容
+         * @param conversation 所在会话
+         * @return 处理后的消息内容。如果返回为空，会导致发送失败。
+         */
+        MessageContent messagePrepareForSend(MessageContent content, Conversation conversation);
+
+        /**
+         * 接收到消息，入库之前的回调
+         * @param content 接收到的消息内容
+         * @param conversation 所在会话
+         * @return 处理后的消息内容，如果返回为空，会将原内容回调上去。
+         */
+        MessageContent messagePrepareForReceive(MessageContent content, Conversation conversation);
     }
 }
