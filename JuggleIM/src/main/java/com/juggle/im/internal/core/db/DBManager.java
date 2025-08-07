@@ -894,6 +894,9 @@ public class DBManager {
             if (lastMessage != null) {
                 if (lastMessage.isDelete() || (lastMessage.getDestroyTime() > 0 && lastMessage.getDestroyTime() <= now)) {
                     needUpdate = true;
+                } else {
+                    info.getLastMessage().setDestroyTime(lastMessage.getDestroyTime());
+                    info.getLastMessage().setLifeTimeAfterRead(lastMessage.getLifeTimeAfterRead());
                 }
             }
         }
