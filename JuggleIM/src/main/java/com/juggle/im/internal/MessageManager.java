@@ -4,10 +4,9 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.juggle.im.JErrorCode;
-import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
-import com.juggle.im.interfaces.GroupMember;
+import com.juggle.im.model.GroupMember;
 import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.interfaces.IMessageUploadProvider;

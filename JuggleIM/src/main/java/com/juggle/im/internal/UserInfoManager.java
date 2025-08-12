@@ -2,7 +2,7 @@ package com.juggle.im.internal;
 
 import android.text.TextUtils;
 
-import com.juggle.im.interfaces.GroupMember;
+import com.juggle.im.model.GroupMember;
 import com.juggle.im.interfaces.IUserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.model.GroupInfo;

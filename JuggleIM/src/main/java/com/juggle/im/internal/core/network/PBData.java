@@ -15,7 +15,7 @@ import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallMember;
-import com.juggle.im.interfaces.GroupMember;
+import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.ContentTypeCenter;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
@@ -2011,6 +2011,7 @@ class PBData {
             }
             userInfo.setExtra(extra);
         }
+        userInfo.setUpdatedTime(item.getMember().getUpdatedTime());
         return userInfo;
     }
 
@@ -2029,6 +2030,7 @@ class PBData {
             }
             result.setExtra(extra);
         }
+        result.setUpdatedTime(pbUserInfo.getUpdatedTime());
         return result;
     }
 
@@ -2050,6 +2052,7 @@ class PBData {
             }
             result.setExtra(extra);
         }
+        result.setUpdatedTime(pbGroupMember.getUpdatedTime());
         return result;
     }
 
@@ -2089,6 +2092,7 @@ class PBData {
             }
             result.setExtra(extra);
         }
+        result.setUpdatedTime(pbGroupInfo.getUpdatedTime());
         return result;
     }
 

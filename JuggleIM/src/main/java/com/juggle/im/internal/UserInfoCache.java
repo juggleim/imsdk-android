@@ -3,7 +3,7 @@ package com.juggle.im.internal;
 import android.text.TextUtils;
 import android.util.LruCache;
 
-import com.juggle.im.interfaces.GroupMember;
+import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.UserInfo;
 
@@ -54,7 +54,10 @@ public class UserInfoCache {
                 return;
             }
             //更新缓存
-            mUserInfoCache.put(userInfo.getUserId(), userInfo);
+            UserInfo old = mUserInfoCache.get(userInfo.getUserId());
+            if (old == null || userInfo.getUpdatedTime() >= old.getUpdatedTime()) {
+                mUserInfoCache.put(userInfo.getUserId(), userInfo);
+            }
         } finally {
             mLock.unlock();
         }
@@ -70,7 +73,10 @@ public class UserInfoCache {
             }
             //更新缓存
             for (UserInfo userInfo : list) {
-                mUserInfoCache.put(userInfo.getUserId(), userInfo);
+                UserInfo old = mUserInfoCache.get(userInfo.getUserId());
+                if (old == null || userInfo.getUpdatedTime() >= old.getUpdatedTime()) {
+                    mUserInfoCache.put(userInfo.getUserId(), userInfo);
+                }
             }
         } finally {
             mLock.unlock();
@@ -101,7 +107,10 @@ public class UserInfoCache {
                 return;
             }
             //更新缓存
-            mGroupInfoCache.put(groupInfo.getGroupId(), groupInfo);
+            GroupInfo old = mGroupInfoCache.get(groupInfo.getGroupId());
+            if (old == null || groupInfo.getUpdatedTime() >= old.getUpdatedTime()) {
+                mGroupInfoCache.put(groupInfo.getGroupId(), groupInfo);
+            }
         } finally {
             mLock.unlock();
         }
@@ -117,7 +126,10 @@ public class UserInfoCache {
             }
             //更新缓存
             for (GroupInfo groupInfo : list) {
-                mGroupInfoCache.put(groupInfo.getGroupId(), groupInfo);
+                GroupInfo old = mGroupInfoCache.get(groupInfo.getGroupId());
+                if (old == null || groupInfo.getUpdatedTime() >= old.getUpdatedTime()) {
+                    mGroupInfoCache.put(groupInfo.getGroupId(), groupInfo);
+                }
             }
         } finally {
             mLock.unlock();
@@ -146,7 +158,10 @@ public class UserInfoCache {
                 return;
             }
             //更新缓存
-            mGroupMemberCache.put(keyForGroupMember(groupMember.getGroupId(), groupMember.getUserId()), groupMember);
+            GroupMember old = mGroupMemberCache.get(keyForGroupMember(groupMember.getGroupId(), groupMember.getUserId()));
+            if (old == null || groupMember.getUpdatedTime() >= old.getUpdatedTime()) {
+                mGroupMemberCache.put(keyForGroupMember(groupMember.getGroupId(), groupMember.getUserId()), groupMember);
+            }
         } finally {
             mLock.unlock();
         }
@@ -161,7 +176,10 @@ public class UserInfoCache {
             }
             //更新缓存
             for (GroupMember member : list) {
-                mGroupMemberCache.put(keyForGroupMember(member.getGroupId(), member.getUserId()), member);
+                GroupMember old = mGroupMemberCache.get(keyForGroupMember(member.getGroupId(), member.getUserId()));
+                if (old == null || member.getUpdatedTime() >= old.getUpdatedTime()) {
+                    mGroupMemberCache.put(keyForGroupMember(member.getGroupId(), member.getUserId()), member);
+                }
             }
         } finally {
             mLock.unlock();

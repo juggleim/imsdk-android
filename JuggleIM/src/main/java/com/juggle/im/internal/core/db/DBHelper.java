@@ -96,7 +96,16 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 11) {
+            try {
+                sqLiteDatabase.execSQL(UserInfoSql.SQL_ALTER_USER_ADD_UPDATED_TIME);
+                sqLiteDatabase.execSQL(UserInfoSql.SQL_ALTER_GROUP_ADD_UPDATED_TIME);
+                sqLiteDatabase.execSQL(UserInfoSql.SQL_ALTER_GROUP_MEMBER_ADD_UPDATED_TIME);
+            } catch (SQLiteConstraintException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 10;
+    private final static int version = 11;
 }

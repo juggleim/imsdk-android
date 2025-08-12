@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
-import com.juggle.im.interfaces.GroupMember;
+import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.util.JLogger;
@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class DBManager {
 
@@ -790,9 +789,12 @@ public class DBManager {
     public void insertUserInfoList(List<UserInfo> userInfoList) {
         performTransaction(() -> {
             for (UserInfo info : userInfoList) {
-                String extra = UserInfoSql.stringFromMap(info.getExtra());
-                String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), extra};
-                execSQL(UserInfoSql.SQL_INSERT_USER_INFO, args);
+                UserInfo old = getUserInfo(info.getUserId());
+                if (old == null || info.getUpdatedTime() > old.getUpdatedTime()) {
+                    String extra = UserInfoSql.stringFromMap(info.getExtra());
+                    String[] args = new String[]{info.getUserId(), info.getUserName(), info.getPortrait(), extra, String.valueOf(info.getUpdatedTime())};
+                    execSQL(UserInfoSql.SQL_INSERT_USER_INFO, args);
+                }
             }
         });
     }
@@ -816,9 +818,12 @@ public class DBManager {
     public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
         performTransaction(() -> {
             for (GroupInfo info : groupInfoList) {
-                String extra = UserInfoSql.stringFromMap(info.getExtra());
-                String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), extra};
-                execSQL(UserInfoSql.SQL_INSERT_GROUP_INFO, args);
+                GroupInfo old = getGroupInfo(info.getGroupId());
+                if (old == null || info.getUpdatedTime() > old.getUpdatedTime()) {
+                    String extra = UserInfoSql.stringFromMap(info.getExtra());
+                    String[] args = new String[]{info.getGroupId(), info.getGroupName(), info.getPortrait(), extra, String.valueOf(info.getUpdatedTime())};
+                    execSQL(UserInfoSql.SQL_INSERT_GROUP_INFO, args);
+                }
             }
         });
     }
@@ -843,9 +848,16 @@ public class DBManager {
         if (members == null || members.isEmpty()) {
             return;
         }
-        List<String> whereArgs = new ArrayList<>();
-        String sql = UserInfoSql.sqlInsertGroupMembers(members, whereArgs);
-        execSQL(sql, whereArgs.toArray(new String[0]));
+        performTransaction(() -> {
+            for (GroupMember member : members) {
+                GroupMember old = getGroupMember(member.getGroupId(), member.getUserId());
+                if (old == null || member.getUpdatedTime() > old.getUpdatedTime()) {
+                    String extra = UserInfoSql.stringFromMap(member.getExtra());
+                    String[] args = new String[]{member.getGroupId(), member.getUserId(), member.getGroupDisplayName(), extra, String.valueOf(member.getUpdatedTime())};
+                    execSQL(UserInfoSql.SQL_INSERT_GROUP_MEMBER, args);
+                }
+            }
+        });
     }
 
     public List<MessageReaction> getMessageReactions(List<String> messageIds) {

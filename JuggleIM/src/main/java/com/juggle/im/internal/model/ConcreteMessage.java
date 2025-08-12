@@ -1,6 +1,6 @@
 package com.juggle.im.internal.model;
 
-import com.juggle.im.interfaces.GroupMember;
+import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.PushData;
