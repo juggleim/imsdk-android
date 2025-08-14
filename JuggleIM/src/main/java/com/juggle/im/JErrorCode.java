@@ -23,6 +23,15 @@ public class JErrorCode {
     //用户注销下线
     public static final int USER_LOG_OUT = 11012;
 
+    //非好友关系
+    public static final int NOT_FRIEND = 12009;
+    //没有操作权限
+    public static final int NO_OPERATION_PERMISSION = 12010;
+    //消息不存在
+    public static final int REMOTE_MESSAGE_NOT_EXIST = 12011;
+    //收藏重复消息
+    public static final int ADD_DUPLICATE_FAVORITE_MESSAGE = 12012;
+
     //群组不存在
     public static final int GROUP_NOT_EXIST = 13001;
     //不是群成员
