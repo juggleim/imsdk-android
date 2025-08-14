@@ -2,6 +2,8 @@ package com.juggle.im.interfaces;
 
 import com.juggle.im.JIMConst;
 import com.juggle.im.model.Conversation;
+import com.juggle.im.model.FavoriteMessage;
+import com.juggle.im.model.GetFavoriteMessageOption;
 import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
@@ -134,6 +136,11 @@ public interface IMessageManager {
 
     interface IGetTopMessageCallback {
         void onSuccess(Message message, UserInfo operator, long timestamp);
+        void onError(int errorCode);
+    }
+
+    interface IGetFavoriteMessageCallback {
+        void onSuccess(List<FavoriteMessage> messageList, String offset);
         void onError(int errorCode);
     }
 
@@ -450,6 +457,12 @@ public interface IMessageManager {
      * @param callback 结果回调
      */
     void getTopMessage(Conversation conversation, IGetTopMessageCallback callback);
+
+    void addFavorite(List<String> messageIdList, ISimpleCallback callback);
+
+    void removeFavorite(List<String> messageIdList, ISimpleCallback callback);
+
+    void getFavorite(GetFavoriteMessageOption option, IGetFavoriteMessageCallback callback);
 
     void registerContentType(Class<? extends MessageContent> messageContentClass);
 

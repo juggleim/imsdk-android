@@ -8,6 +8,7 @@ import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.upload.UploadOssType;
 import com.juggle.im.internal.model.upload.UploadPreSignCred;
 import com.juggle.im.internal.model.upload.UploadQiNiuCred;
+import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.TimePeriod;
@@ -164,6 +165,14 @@ class PBRcvObj {
         }
     }
 
+    static class GetFavoriteMsgAck extends QryAck {
+        List<FavoriteMessage> favoriteMessages;
+        String offset;
+        GetFavoriteMsgAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
     static class PublishMsgNtf {
         long syncTime;
         String chatroomId;
@@ -226,6 +235,7 @@ class PBRcvObj {
         static final int qryMsgExtAck = 33;
         static final int getUserInfoAck = 34;
         static final int getTopMsgAck = 35;
+        static final int getFavoriteMsgAck = 36;
     }
 
     public enum PBChatroomEventType {
@@ -323,6 +333,7 @@ class PBRcvObj {
     RtcQryCallRoomsAck mRtcQryCallRoomsAck;
     QryMsgExtAck mQryMsgExtAck;
     GetTopMsgAck mGetTopMsgAck;
+    GetFavoriteMsgAck mGetFavoriteMsgAck;
     long timestamp;
 
     private int mRcvType;

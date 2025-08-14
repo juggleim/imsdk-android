@@ -15,6 +15,7 @@ import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.ContentTypeCenter;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
@@ -574,6 +575,55 @@ class PBData {
                 .setIndex(index)
                 .setTopic(GET_TOP_MSG)
                 .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] favoriteMessagesData(List<Message> messages, boolean isAdd, String userId, int index) {
+        Appmessages.FavoriteMsgIds.Builder builder = Appmessages.FavoriteMsgIds.newBuilder();
+        for (Message message : messages) {
+            String receiverId = message.getConversation().getConversationId();
+            if (message.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE
+            && message.getDirection() == Message.MessageDirection.RECEIVE) {
+                receiverId = userId;
+            }
+            Appmessages.FavoriteMsgIdItem item = Appmessages.FavoriteMsgIdItem.newBuilder()
+                    .setSenderId(message.getSenderUserId())
+                    .setReceiverId(receiverId)
+                    .setChannelTypeValue(message.getConversation().getConversationType().getValue())
+                    .setMsgId(message.getMessageId())
+                    .build();
+            builder.addItems(item);
+        }
+        Appmessages.FavoriteMsgIds ids = builder.build();
+        String topic = isAdd ? ADD_FAVORITE_MSGS : DEL_FAVORITE_MSGS;
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(topic)
+                .setTargetId(userId)
+                .setData(ids.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getFavoriteMessagesData(String userId, int limit, String offset, int index) {
+        if (offset == null) {
+            offset = "";
+        }
+        Appmessages.QryFavoriteMsgsReq req = Appmessages.QryFavoriteMsgsReq.newBuilder()
+                .setLimit(limit)
+                .setOffset(offset)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_FAVORITE_MSGS)
+                .setTargetId(userId)
                 .setData(req.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
@@ -1316,6 +1366,9 @@ class PBData {
                         case PBRcvObj.PBRcvType.getTopMsgAck:
                             obj = getTopMsgAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
+                        case PBRcvObj.PBRcvType.getFavoriteMsgAck:
+                            obj = getFavoriteMsgAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
                         default:
                             break;
                     }
@@ -1632,6 +1685,24 @@ class PBData {
         ack.userInfo = userInfo;
         ack.createdTime = timestamp;
         obj.mGetTopMsgAck = ack;
+        return obj;
+    }
+
+    private PBRcvObj getFavoriteMsgAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.getFavoriteMsgAck);
+        Appmessages.FavoriteMsgs msgs = Appmessages.FavoriteMsgs.parseFrom(body.getData());
+        PBRcvObj.GetFavoriteMsgAck ack = new PBRcvObj.GetFavoriteMsgAck(body);
+        ack.offset = msgs.getOffset();
+        List<FavoriteMessage> list = new ArrayList<>();
+        for (Appmessages.FavoriteMsg msg : msgs.getItemsList()) {
+            FavoriteMessage favoriteMessage = new FavoriteMessage();
+            favoriteMessage.setMessage(messageWithDownMsg(msg.getMsg()));
+            favoriteMessage.setCreatedTime(msg.getCreatedTime());
+            list.add(favoriteMessage);
+        }
+        ack.favoriteMessages = list;
+        obj.mGetFavoriteMsgAck = ack;
         return obj;
     }
 
@@ -2300,6 +2371,9 @@ class PBData {
     private static final String SET_TOP_MSG = "set_top_msg";
     private static final String DEL_TOP_MSG = "del_top_msg";
     private static final String GET_TOP_MSG = "get_top_msg";
+    private static final String ADD_FAVORITE_MSGS = "add_favorite_msgs";
+    private static final String DEL_FAVORITE_MSGS = "del_favorite_msgs";
+    private static final String QRY_FAVORITE_MSGS = "qry_favorite_msgs";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
@@ -2362,6 +2436,9 @@ class PBData {
             put(SET_TOP_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(DEL_TOP_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(GET_TOP_MSG, PBRcvObj.PBRcvType.getTopMsgAck);
+            put(ADD_FAVORITE_MSGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(DEL_FAVORITE_MSGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(QRY_FAVORITE_MSGS, PBRcvObj.PBRcvType.getFavoriteMsgAck);
         }
     };
 

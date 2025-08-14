@@ -884,3 +884,30 @@ message TopMsg{
   UserInfo operator = 2;
   int64 createdTime = 3;
 }
+
+message FavoriteMsgIds{
+  repeated FavoriteMsgIdItem items = 1;
+}
+
+message FavoriteMsgIdItem{
+  string senderId = 1;
+  string receiverId = 2;
+  ChannelType channelType = 3;
+  string msgId = 4;
+  string subChannel = 5;
+}
+
+message QryFavoriteMsgsReq{
+  int64 limit = 1;
+  string offset = 2;
+}
+
+message FavoriteMsgs{
+  repeated FavoriteMsg items = 1;
+  string offset = 2;
+}
+
+message FavoriteMsg{
+  DownMsg msg = 1;
+  int64 createdTime = 2;
+}

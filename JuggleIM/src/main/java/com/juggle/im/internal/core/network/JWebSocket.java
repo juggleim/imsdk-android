@@ -14,6 +14,7 @@ import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.core.network.wscallback.AddConversationCallback;
 import com.juggle.im.internal.core.network.wscallback.CallAuthCallback;
 import com.juggle.im.internal.core.network.wscallback.ChatroomWebSocketCallback;
+import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.GetGlobalMuteCallback;
 import com.juggle.im.internal.core.network.wscallback.GetTopMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.IWebSocketCallback;
@@ -35,6 +36,7 @@ import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.MediaMessageContent;
+import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.PushData;
@@ -55,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListener, JWebSocketClient.IWebSocketClientListener {
     public JWebSocket(Handler sendHandler) {
@@ -343,6 +346,30 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         byte[] bytes = mPbData.getTopMessageData(conversation, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "get top message, conversation is " + conversation);
+        sendWhenOpen(bytes);
+    }
+
+    public void addFavoriteMessages(List<Message> messageList, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.favoriteMessagesData(messageList, true, userId, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "add favorite messages");
+        sendWhenOpen(bytes);
+    }
+
+    public void removeFavoriteMessages(List<Message> messageList, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.favoriteMessagesData(messageList, false, userId, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "add favorite messages");
+        sendWhenOpen(bytes);
+    }
+
+    public void getFavoriteMessages(String offset, int limit, String userId, GetFavoriteMsgCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getFavoriteMessagesData(userId, limit, offset, mCmdIndex++);
+        mWebSocketCommandManager.putCommand(key, callback);
+        JLogger.i("WS-Send", "get favorite messages");
         sendWhenOpen(bytes);
     }
 
@@ -692,6 +719,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof GetTopMsgCallback) {
             GetTopMsgCallback sCallback = (GetTopMsgCallback) callback;
             sCallback.onError(errorCode);
+        } else if (callback instanceof GetFavoriteMsgCallback) {
+            GetFavoriteMsgCallback sCallback = (GetFavoriteMsgCallback) callback;
+            sCallback.onError(errorCode);
         }
     }
 
@@ -866,6 +896,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 break;
             case PBRcvObj.PBRcvType.getTopMsgAck:
                 handleGetTopMsgAck(obj.mGetTopMsgAck);
+                break;
+            case PBRcvObj.PBRcvType.getFavoriteMsgAck:
+                handleGetFavoriteMsgAck(obj.mGetFavoriteMsgAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -1230,6 +1263,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.message, ack.userInfo, ack.createdTime);
+            }
+        }
+    }
+
+    private void handleGetFavoriteMsgAck(PBRcvObj.GetFavoriteMsgAck ack) {
+        JLogger.i("WS-Receive", "handleGetFavoriteMsgAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof GetFavoriteMsgCallback) {
+            GetFavoriteMsgCallback callback = (GetFavoriteMsgCallback) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.favoriteMessages, ack.offset);
             }
         }
     }

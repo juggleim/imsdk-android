@@ -6,6 +6,9 @@ import android.text.TextUtils;
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
+import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
+import com.juggle.im.model.FavoriteMessage;
+import com.juggle.im.model.GetFavoriteMessageOption;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IMessageManager;
@@ -2140,6 +2143,118 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void addFavorite(List<String> messageIdList, ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-AddFvr", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        if (messageIdList == null
+                || messageIdList.isEmpty()) {
+            JLogger.e("MSG-AddFvr", "invalid parameter");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        List<Message> messageList = getMessagesByMessageIds(messageIdList);
+        mCore.getWebSocket().addFavoriteMessages(messageList, mCore.getUserId(), new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                JLogger.i("MSG-AddFvr", "success");
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-AddFvr", "error, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void removeFavorite(List<String> messageIdList, ISimpleCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-RmFvr", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        if (messageIdList == null
+                || messageIdList.isEmpty()) {
+            JLogger.e("MSG-RmFvr", "invalid parameter");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        List<Message> messageList = getMessagesByMessageIds(messageIdList);
+        mCore.getWebSocket().removeFavoriteMessages(messageList, mCore.getUserId(), new WebSocketTimestampCallback() {
+            @Override
+            public void onSuccess(long timestamp) {
+                JLogger.i("MSG-RmFvr", "success");
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-RmFvr", "error, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
+    public void getFavorite(GetFavoriteMessageOption option, IGetFavoriteMessageCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-GetFvr", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        if (option == null || option.getCount() <= 0) {
+            JLogger.e("MSG-GetFvr", "invalid parameter");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        mCore.getWebSocket().getFavoriteMessages(option.getOffset(), option.getCount(), mCore.getUserId(), new GetFavoriteMsgCallback() {
+            @Override
+            public void onSuccess(List<FavoriteMessage> messageList, String offset) {
+                JLogger.i("MSG-GetFvr", "success");
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(messageList, offset));
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-GetFvr", "error, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+                }
+            }
+        });
+    }
+
+    @Override
     public void registerContentType(Class<? extends MessageContent> messageContentClass) {
         JLogger.i("MSG-Register", "class is " + messageContentClass);
         ContentTypeCenter.getInstance().registerContentType(messageContentClass);
@@ -2799,7 +2914,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         for (Map.Entry<String, Map<Conversation, List<ConcreteMessage>>> conversationEntry : mergeSameTypeMessages.entrySet()) {
             String contentType = conversationEntry.getKey();
             Map<Conversation, List<ConcreteMessage>> conversationsMap = conversationEntry.getValue();
-            if (conversationsMap == null || conversationsMap.values().isEmpty()) {
+            if (conversationsMap == null || conversationsMap.isEmpty()) {
                 continue;
             }
             switch (contentType) {
