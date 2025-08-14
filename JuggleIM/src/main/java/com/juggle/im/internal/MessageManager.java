@@ -2239,6 +2239,14 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(List<FavoriteMessage> messageList, String offset) {
                 JLogger.i("MSG-GetFvr", "success");
+                List<ConcreteMessage> messages = new ArrayList<>();
+                for (FavoriteMessage favoriteMessage : messageList) {
+                    if (favoriteMessage.getMessage() instanceof ConcreteMessage) {
+                        ConcreteMessage cm = (ConcreteMessage) favoriteMessage.getMessage();
+                        messages.add(cm);
+                    }
+                }
+                updateUserInfo(messages);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(messageList, offset));
                 }
