@@ -15,6 +15,7 @@ import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.ContentTypeCenter;
@@ -59,6 +60,10 @@ import app_messages.Rtcroom;
 class PBData {
     void resetDataConverter() {
         mConverter = new SimpleDataConverter();
+    }
+
+    void setMessagePreprocessor(IMessageManager.IMessagePreprocessor preprocessor) {
+        mMessagePreprocessor = preprocessor;
     }
 
     byte[] connectData(String appKey,
@@ -164,6 +169,10 @@ class PBData {
                            PushData pushData,
                            long lifeTime,
                            long lifeTimeAfterRead) {
+        if (mMessagePreprocessor != null) {
+            Conversation conversation = new Conversation(conversationType, conversationId);
+            msgData = mMessagePreprocessor.encryptMessageContent(msgData, conversation, contentType);
+        }
         ByteString byteString = ByteString.copyFrom(msgData);
         Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
         upMsgBuilder.setMsgType(contentType)
@@ -1888,7 +1897,11 @@ class PBData {
         message.setSenderUserId(downMsg.getSenderId());
         message.setSeqNo(downMsg.getMsgSeqNo());
         message.setMsgIndex(downMsg.getUnreadIndex());
-        MessageContent messageContent = ContentTypeCenter.getInstance().getContent(downMsg.getMsgContent().toByteArray(), downMsg.getMsgType());
+        byte[] content = downMsg.getMsgContent().toByteArray();
+        if (mMessagePreprocessor != null) {
+            content = mMessagePreprocessor.decryptMessageContent(content, conversation, message.getContentType());
+        }
+        MessageContent messageContent = ContentTypeCenter.getInstance().getContent(content, downMsg.getMsgType());
         if (messageContent != null) {
             if (messageContent instanceof MergeMessage) {
                 if (TextUtils.isEmpty(((MergeMessage) messageContent).getContainerMsgId())) {
@@ -2444,5 +2457,6 @@ class PBData {
 
     private final ConcurrentHashMap<Integer, String> mMsgCmdMap = new ConcurrentHashMap<>();
     private IDataConverter mConverter = new SimpleDataConverter();
+    private IMessageManager.IMessagePreprocessor mMessagePreprocessor;
 
 }

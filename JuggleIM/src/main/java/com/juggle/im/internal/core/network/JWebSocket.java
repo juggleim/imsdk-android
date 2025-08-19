@@ -10,6 +10,7 @@ import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.core.network.wscallback.AddConversationCallback;
 import com.juggle.im.internal.core.network.wscallback.CallAuthCallback;
@@ -115,6 +116,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public void setCallListener(IWebSocketCallListener listener) {
         mCallListener = listener;
+    }
+
+    public void setMessagePreprocessor(IMessageManager.IMessagePreprocessor preprocessor) {
+        mPbData.setMessagePreprocessor(preprocessor);
     }
 
     public void sendIMMessage(MessageContent content,

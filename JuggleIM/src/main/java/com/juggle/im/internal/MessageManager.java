@@ -227,13 +227,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             mergeInfo.setMessages(mCore.getDbManager().getConcreteMessagesByMessageIds(mergeMessage.getMessageIdList()));
         }
         MessageContent content = message.getContent();
-        if (mPreprocessor != null) {
-            content = mPreprocessor.messagePrepareForSend(message.getContent(), message.getConversation());
-        }
         if (content == null) {
             if (callback != null) {
-                m.setContent(content);
-                message.setContent(content);
                 mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.INVALID_PARAM));
             }
             return;
@@ -2342,7 +2337,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void setPreprocessor(IMessagePreprocessor preprocessor) {
-        mPreprocessor = preprocessor;
+        mCore.getWebSocket().setMessagePreprocessor(preprocessor);
     }
 
     @Override
@@ -2636,15 +2631,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     private void handleReceiveMessages(List<ConcreteMessage> messages, boolean isSync) {
-        if (mPreprocessor != null) {
-            for (ConcreteMessage message : messages) {
-                MessageContent content = mPreprocessor.messagePrepareForReceive(message.getContent(), message.getConversation());
-                if (content != null) {
-                    message.setContent(content);
-                }
-            }
-        }
-
         List<ConcreteMessage> messagesToSave = messagesToSave(messages);
         insertRemoteMessages(messagesToSave);
 
@@ -3269,7 +3255,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
     private ConcurrentHashMap<String, IMessageDestroyListener> mDestroyListenerMap;
     private IMessageUploadProvider mMessageUploadProvider;
-    private IMessagePreprocessor mPreprocessor;
     private IMessageUploadProvider mDefaultMessageUploadProvider;
     private ISendReceiveListener mSendReceiveListener;
 }

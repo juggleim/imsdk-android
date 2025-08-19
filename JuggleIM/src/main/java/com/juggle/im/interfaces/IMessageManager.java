@@ -531,19 +531,23 @@ public interface IMessageManager {
 
     interface IMessagePreprocessor {
         /**
-         * 消息入库之后，发送之前的回调
-         * @param content 待发送的消息内容
+         * 消息加密的回调
+         * 回调时机：消息入库之后，发送之前
+         * @param content 待发送的消息内容，已序列化成 byte[]
          * @param conversation 所在会话
-         * @return 处理后的消息内容。如果返回为空，会导致发送失败。
+         * @param contentType 消息类型
+         * @return 处理后的消息内容。
          */
-        MessageContent messagePrepareForSend(MessageContent content, Conversation conversation);
+        byte[] encryptMessageContent(byte[] content, Conversation conversation, String contentType);
 
         /**
-         * 接收到消息，入库之前的回调
-         * @param content 接收到的消息内容
+         * 消息解密的回调
+         * 回调时机：接收到消息，入库之前
+         * @param content 接收到的消息内容, byte[] 类型，还没反序列化
          * @param conversation 所在会话
-         * @return 处理后的消息内容，如果返回为空，会将原内容回调上去。
+         * @param contentType 消息类型
+         * @return 处理后的消息内容。
          */
-        MessageContent messagePrepareForReceive(MessageContent content, Conversation conversation);
+        byte[] decryptMessageContent(byte[] content, Conversation conversation, String contentType);
     }
 }
