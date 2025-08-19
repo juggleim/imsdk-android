@@ -28,6 +28,8 @@ message ConnectMsgBody{
     string instanceId = 17;//客户端实例标识,用于多开时识别不同的实例，clientSession
     string language = 18;//语言设置
     bool isBackend = 19;//app是否在后台
+
+    bytes secretNegotiate = 101; //密钥协商
 }
 
 message ConnectAckMsgBody{
@@ -36,6 +38,8 @@ message ConnectAckMsgBody{
     string session = 3;
     int64 timestamp = 4;
     string ext = 5;
+
+    bytes secretNegotiateAck = 101; //密钥协商应答
 }
 
 message DisconnectMsgBody{

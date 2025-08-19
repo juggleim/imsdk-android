@@ -3,7 +3,7 @@ package com.juggle.im.internal.core.network;
 import java.nio.ByteBuffer;
 import java.util.Random;
 
-public class SimpleDataConverter implements IDataConverter{
+public class SimpleDataConverter implements IDataConverter {
 
     public SimpleDataConverter() {
         Random random = new Random();
