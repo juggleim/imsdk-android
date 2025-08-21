@@ -60,6 +60,7 @@ import app_messages.Rtcroom;
 class PBData {
     void resetDataConverter() {
         mConverter = new SimpleDataConverter();
+        mConverter2 = new DataConverter();
     }
 
     void setMessagePreprocessor(IMessageManager.IMessagePreprocessor preprocessor) {
@@ -126,6 +127,7 @@ class PBData {
             }
         }
 //        builder.setLanguage(language);
+        builder.setSecretNegotiate(ByteString.copyFrom(mConverter2.getPubKey()));
         Connect.ConnectMsgBody body = builder.build();
         byte[] payload = mConverter.encode(body.toByteArray());
 
@@ -144,7 +146,7 @@ class PBData {
                 .setCode(code)
                 .setTimestamp(System.currentTimeMillis())
                 .build();
-        byte[] payload = mConverter.encode(body.toByteArray());
+        byte[] payload = encodePayload(body.toByteArray());
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.disconnect)
@@ -1241,7 +1243,7 @@ class PBData {
         Connect.PublishAckMsgBody body = Connect.PublishAckMsgBody.newBuilder()
                 .setIndex(index)
                 .build();
-        byte[] payload = mConverter.encode(body.toByteArray());
+        byte[] payload = encodePayload(body.toByteArray());
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.publishAck)
@@ -1264,12 +1266,14 @@ class PBData {
                 obj.setRcvType(PBRcvObj.PBRcvType.pong);
                 return obj;
             }
-            byte[] decodeData = mConverter.decode(msg.getPayload().toByteArray());
+            byte[] decodeData;
             switch (msg.getCmd()) {
                 case CmdType.connectAck:
+                    decodeData = mConverter.decode(msg.getPayload().toByteArray());
                     obj.setRcvType(PBRcvObj.PBRcvType.connectAck);
                     PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
                     Connect.ConnectAckMsgBody connectAckMsgBody = Connect.ConnectAckMsgBody.parseFrom(decodeData);
+                    mConverter2.storeSharedKey(connectAckMsgBody.getSecretNegotiateAck().toByteArray());
                     ack.code = connectAckMsgBody.getCode();
                     ack.userId = connectAckMsgBody.getUserId();
                     ack.session = connectAckMsgBody.getSession();
@@ -1279,6 +1283,7 @@ class PBData {
                     break;
 
                 case CmdType.publishAck: {
+                    decodeData = decodePayload(msg.getPayload().toByteArray());
                     Connect.PublishAckMsgBody publishAckMsgBody = Connect.PublishAckMsgBody.parseFrom(decodeData);
                     int type = getTypeInCmdMap(publishAckMsgBody.getIndex());
                     obj.setRcvType(type);
@@ -1304,6 +1309,7 @@ class PBData {
                 break;
 
                 case CmdType.queryAck:
+                    decodeData = decodePayload(msg.getPayload().toByteArray());
                     Connect.QueryAckMsgBody queryAckMsgBody = Connect.QueryAckMsgBody.parseFrom(decodeData);
                     int type = getTypeInCmdMap(queryAckMsgBody.getIndex());
                     obj.setRcvType(type);
@@ -1385,6 +1391,7 @@ class PBData {
                     break;
 
                 case CmdType.publish:
+                    decodeData = decodePayload(msg.getPayload().toByteArray());
                     Connect.PublishMsgBody publishMsgBody = Connect.PublishMsgBody.parseFrom(decodeData);
                     if (publishMsgBody.getTopic().equals(NTF)) {
                         Appmessages.Notify ntf = Appmessages.Notify.parseFrom(publishMsgBody.getData());
@@ -1459,6 +1466,7 @@ class PBData {
                     break;
 
                 case CmdType.disconnect:
+                    decodeData = decodePayload(msg.getPayload().toByteArray());
                     Connect.DisconnectMsgBody disconnectMsgBody = Connect.DisconnectMsgBody.parseFrom(decodeData);
                     obj.setRcvType(PBRcvObj.PBRcvType.disconnectMsg);
                     PBRcvObj.DisconnectMsg m = new PBRcvObj.DisconnectMsg();
@@ -1863,7 +1871,7 @@ class PBData {
     }
 
     private Connect.ImWebsocketMsg createImWebsocketMsgWithPublishMsg(Connect.PublishMsgBody publishMsgBody) {
-        byte[] payload = mConverter.encode(publishMsgBody.toByteArray());
+        byte[] payload = encodePayload(publishMsgBody.toByteArray());
         return Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.publish)
@@ -1873,7 +1881,7 @@ class PBData {
     }
 
     private Connect.ImWebsocketMsg createImWebsocketMsgWithQueryMsg(Connect.QueryMsgBody body) {
-        byte[] payload = mConverter.encode(body.toByteArray());
+        byte[] payload = encodePayload(body.toByteArray());
         return Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.query)
@@ -2214,6 +2222,18 @@ class PBData {
         return result;
     }
 
+    private byte[] encodePayload(byte[] data) {
+        byte[] b = mConverter.encode(data);
+        b = mConverter2.encode(b);
+        return b;
+    }
+
+    private byte[] decodePayload(byte[] data) {
+        byte[] b = mConverter2.decode(data);
+        b = mConverter.decode(b);
+        return b;
+    }
+
     private Conversation.ConversationType conversationTypeFromChannelType(Appmessages.ChannelType channelType) {
         Conversation.ConversationType result = Conversation.ConversationType.UNKNOWN;
         switch (channelType) {
@@ -2458,5 +2478,5 @@ class PBData {
     private final ConcurrentHashMap<Integer, String> mMsgCmdMap = new ConcurrentHashMap<>();
     private IDataConverter mConverter = new SimpleDataConverter();
     private IMessageManager.IMessagePreprocessor mMessagePreprocessor;
-
+    private DataConverter mConverter2 = new DataConverter();
 }
