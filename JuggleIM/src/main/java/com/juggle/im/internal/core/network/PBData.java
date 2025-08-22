@@ -43,6 +43,7 @@ import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.MergeMessage;
 import com.juggle.im.push.PushChannel;
 
+import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,7 +61,7 @@ import app_messages.Rtcroom;
 class PBData {
     void resetDataConverter() {
         mConverter = new SimpleDataConverter();
-        mConverter2 = new DataConverter();
+        mConverter2 = fetchUltConverter();
     }
 
     void setMessagePreprocessor(IMessageManager.IMessagePreprocessor preprocessor) {
@@ -127,7 +128,9 @@ class PBData {
             }
         }
 //        builder.setLanguage(language);
-        builder.setSecretNegotiate(ByteString.copyFrom(mConverter2.getPubKey()));
+        if (mConverter2 != null) {
+            builder.setSecretNegotiate(ByteString.copyFrom(mConverter2.getPubKey()));
+        }
         Connect.ConnectMsgBody body = builder.build();
         byte[] payload = mConverter.encode(body.toByteArray());
 
@@ -1273,7 +1276,9 @@ class PBData {
                     obj.setRcvType(PBRcvObj.PBRcvType.connectAck);
                     PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
                     Connect.ConnectAckMsgBody connectAckMsgBody = Connect.ConnectAckMsgBody.parseFrom(decodeData);
-                    mConverter2.storeSharedKey(connectAckMsgBody.getSecretNegotiateAck().toByteArray());
+                    if (mConverter2 != null) {
+                        mConverter2.storeSharedKey(connectAckMsgBody.getSecretNegotiateAck().toByteArray());
+                    }
                     ack.code = connectAckMsgBody.getCode();
                     ack.userId = connectAckMsgBody.getUserId();
                     ack.session = connectAckMsgBody.getSession();
@@ -2224,14 +2229,30 @@ class PBData {
 
     private byte[] encodePayload(byte[] data) {
         byte[] b = mConverter.encode(data);
-        b = mConverter2.encode(b);
+        if (mConverter2 != null) {
+            b = mConverter2.encrypt(b);
+        }
         return b;
     }
 
     private byte[] decodePayload(byte[] data) {
-        byte[] b = mConverter2.decode(data);
-        b = mConverter.decode(b);
-        return b;
+        if (mConverter2 != null) {
+            data = mConverter2.decrypt(data);
+        }
+        data = mConverter.decode(data);
+        return data;
+    }
+
+    private IUltEncrypt fetchUltConverter() {
+        IUltEncrypt converter = null;
+        try {
+            Class cls = Class.forName("com.juggle.im.ultimate.encrypt.DataConverter");
+            Constructor constructor = cls.getConstructor();
+            converter = (IUltEncrypt) constructor.newInstance();
+        } catch (Exception e) {
+            JLogger.i("CON-Enc", "DataConverter not exist");
+        }
+        return converter;
     }
 
     private Conversation.ConversationType conversationTypeFromChannelType(Appmessages.ChannelType channelType) {
@@ -2478,5 +2499,5 @@ class PBData {
     private final ConcurrentHashMap<Integer, String> mMsgCmdMap = new ConcurrentHashMap<>();
     private IDataConverter mConverter = new SimpleDataConverter();
     private IMessageManager.IMessagePreprocessor mMessagePreprocessor;
-    private DataConverter mConverter2 = new DataConverter();
+    private IUltEncrypt mConverter2 = fetchUltConverter();
 }
