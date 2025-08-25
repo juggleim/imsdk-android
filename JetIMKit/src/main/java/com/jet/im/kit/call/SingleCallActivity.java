@@ -415,7 +415,7 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
 
     @Override
     public void onUserMicrophoneEnable(String userId, boolean enable) {
-
+        Log.i("SingleCallActivity", "onUserMicrophoneEnable");
     }
 
     @Override

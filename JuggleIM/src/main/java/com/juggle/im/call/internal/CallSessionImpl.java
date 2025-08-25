@@ -388,6 +388,16 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         }
     }
 
+    public void micEnable(String userId, boolean enable) {
+        if (mListeners != null) {
+            for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                mCore.getCallbackHandler().post(() -> {
+                    entry.getValue().onUserMicrophoneEnable(userId, enable);
+                });
+            }
+        }
+    }
+
     public void soundLevelUpdate(HashMap<String, Float> soundLevels) {
         if (mListeners != null) {
             for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
@@ -558,6 +568,14 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         map.put("enable", enable);
         map.put("userId", userId);
         sendMessage(CallEvent.PARTICIPANT_ENABLE_CAMERA, map);
+    }
+
+    @Override
+    public void onUserMicStateUpdate(String userId, boolean enable) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("enable", enable);
+        map.put("userId", userId);
+        sendMessage(CallEvent.PARTICIPANT_ENABLE_MIC, map);
     }
 
     @Override

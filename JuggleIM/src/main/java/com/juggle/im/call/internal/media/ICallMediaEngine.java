@@ -11,6 +11,7 @@ public interface ICallMediaEngine {
         View viewForUserId(String userId);
         void onUsersJoin(List<String> userIdList);
         void onUserCameraChange(String userId, boolean enable);
+        void onUserMicStateUpdate(String userId, boolean enable);
         void onUsersLeave(List<String> userIdList);
         void onSoundLevelUpdate(HashMap<String, Float> soundLevels);
         void onVideoFirstFrameRender(String userId);

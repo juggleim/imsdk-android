@@ -111,6 +111,13 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
     }
 
     @Override
+    public void onUserMicStateUpdate(String userId, boolean enable) {
+        if (mListener != null) {
+            mListener.onUserMicStateUpdate(userId, enable);
+        }
+    }
+
+    @Override
     public void onUsersLeave(List<String> userIdList) {
 
     }

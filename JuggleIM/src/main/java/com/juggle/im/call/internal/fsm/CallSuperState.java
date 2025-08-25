@@ -25,6 +25,7 @@ public class CallSuperState extends CallState {
         String userId;
         List<String> userIdList;
         Map<?, ?> map;
+        boolean enable;
 
         switch (msg.what) {
             case CallEvent.INVITE:
@@ -152,12 +153,16 @@ public class CallSuperState extends CallState {
 
             case CallEvent.PARTICIPANT_ENABLE_CAMERA:
                 map = (Map<?, ?>) msg.obj;
-                boolean enable = (boolean) map.get("enable");
+                enable = (boolean) map.get("enable");
                 userId = (String) map.get("userId");
                 callSession.cameraEnable(userId, enable);
                 break;
 
             case CallEvent.PARTICIPANT_ENABLE_MIC:
+                map = (Map<?, ?>) msg.obj;
+                enable = (boolean) map.get("enable");
+                userId = (String) map.get("userId");
+                callSession.micEnable(userId, enable);
                 break;
 
             case CallEvent.SOUND_LEVEL_UPDATE:

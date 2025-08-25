@@ -9,6 +9,7 @@ public interface ICallMediaListener {
     View viewForUserId(String userId);
     void onUsersJoin(List<String> userIdList);
     void onUserCameraChange(String userId, boolean enable);
+    void onUserMicStateUpdate(String userId, boolean enable);
     void onSoundLevelUpdate(HashMap<String, Float> soundLevels);
     void onVideoFirstFrameRender(String userId);
 }

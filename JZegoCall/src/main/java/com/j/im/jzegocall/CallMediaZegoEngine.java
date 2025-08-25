@@ -169,6 +169,22 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
     }
 
     @Override
+    public void onRemoteMicStateUpdate(String streamID, ZegoRemoteDeviceState state) {
+        if (mListener == null) {
+            return;
+        }
+        String userId = userIdWithStreamId(streamID);
+        if (state == ZegoRemoteDeviceState.OPEN) {
+            mListener.onUserMicStateUpdate(userId, true);
+        } else if (state == ZegoRemoteDeviceState.MUTE) {
+            mListener.onUserMicStateUpdate(userId, false);
+        }
+        if (sHandler != null) {
+            sHandler.onRemoteMicStateUpdate(streamID, state);
+        }
+    }
+
+    @Override
     public void onPlayerRenderVideoFirstFrame(String streamID) {
         String userId = userIdWithStreamId(streamID);
         if (mListener != null) {
