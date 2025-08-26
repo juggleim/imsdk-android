@@ -5,6 +5,7 @@ import android.view.View;
 
 import com.juggle.im.JIM;
 import com.juggle.im.call.internal.CallSessionImpl;
+import com.juggle.im.call.model.CallVideoDenoiseParams;
 
 import org.json.JSONObject;
 
@@ -86,6 +87,14 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
 
     public void useFrontCamera(boolean isEnable) {
         mEngine.useFrontCamera(isEnable);
+    }
+
+    public void enableAEC(boolean isEnable) {
+        mEngine.enableAEC(isEnable);
+    }
+
+    public void setVideoDenoiseParams(CallVideoDenoiseParams params) {
+        mEngine.setVideoDenoiseParams(params);
     }
 
     @Override

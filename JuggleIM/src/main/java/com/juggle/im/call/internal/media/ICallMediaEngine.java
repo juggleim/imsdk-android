@@ -2,6 +2,8 @@ package com.juggle.im.call.internal.media;
 
 import android.view.View;
 
+import com.juggle.im.call.model.CallVideoDenoiseParams;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -36,6 +38,10 @@ public interface ICallMediaEngine {
     void setSpeakerEnable(boolean isEnable);
 
     void useFrontCamera(boolean isEnable);
+
+    void enableAEC(boolean isEnable);
+
+    void setVideoDenoiseParams(CallVideoDenoiseParams params);
 
     void setListener(ICallMediaEngineListener listener);
 }

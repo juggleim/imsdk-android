@@ -3,6 +3,7 @@ package com.juggle.im.call;
 import android.view.View;
 
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.call.model.CallVideoDenoiseParams;
 
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +66,10 @@ public interface ICallSession {
     void useFrontCamera(boolean isEnable);
     // 呼叫用户加入通话（isMultiCall 为 false 时不支持该功能）
     void inviteUsers(List<String> userIdList);
+    // 开启回声消除
+    void enableAEC(boolean isEnable);
+    // 设置视频降噪参数
+    void setVideoDenoiseParams(CallVideoDenoiseParams params);
 
     // 通话 id
     String getCallId();

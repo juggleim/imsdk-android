@@ -17,11 +17,13 @@ import com.juggle.im.call.internal.media.CallMediaManager;
 import com.juggle.im.call.internal.media.ICallCompleteCallback;
 import com.juggle.im.call.internal.media.ICallMediaListener;
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.call.model.CallVideoDenoiseParams;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.wscallback.CallAuthCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.statemachine.StateMachine;
+import com.juggle.im.model.Conversation;
 import com.juggle.im.model.UserInfo;
 
 import org.json.JSONObject;
@@ -94,6 +96,16 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     @Override
     public void inviteUsers(List<String> userIdList) {
         sendMessage(CallEvent.INVITE, userIdList);
+    }
+
+    @Override
+    public void enableAEC(boolean isEnable) {
+        CallMediaManager.getInstance().enableAEC(isEnable);
+    }
+
+    @Override
+    public void setVideoDenoiseParams(CallVideoDenoiseParams params) {
+        CallMediaManager.getInstance().setVideoDenoiseParams(params);
     }
 
     @Override
@@ -680,6 +692,14 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         mExtra = extra;
     }
 
+    public Conversation getConversation() {
+        return mConversation;
+    }
+
+    public void setConversation(Conversation conversation) {
+        mConversation = conversation;
+    }
+
     private JIMCore mCore;
     private CallInternalConst.CallEngineType mEngineType;
     private ICallSessionLifeCycleListener mSessionLifeCycleListener;
@@ -696,6 +716,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     private String mOwner;
     private String mInviter;
     private String mExtra;
+    private Conversation mConversation;
     private CallConst.CallFinishReason mFinishReason;
     private final List<CallMember> mMembers = new ArrayList<>();
     private final Map<String, View> mViewMap = new HashMap<>();

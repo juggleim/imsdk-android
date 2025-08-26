@@ -13,6 +13,7 @@ import com.juggle.im.call.internal.media.CallMediaRoomConfig;
 import com.juggle.im.call.internal.media.CallMediaUser;
 import com.juggle.im.call.internal.media.ICallCompleteCallback;
 import com.juggle.im.call.internal.media.ICallMediaEngine;
+import com.juggle.im.call.model.CallVideoDenoiseParams;
 
 import org.json.JSONObject;
 
@@ -27,6 +28,7 @@ import im.zego.zegoexpress.callback.IZegoEventHandler;
 import im.zego.zegoexpress.callback.IZegoRoomLoginCallback;
 import im.zego.zegoexpress.constants.ZegoEngineState;
 import im.zego.zegoexpress.constants.ZegoPlayerState;
+import im.zego.zegoexpress.constants.ZegoPublishChannel;
 import im.zego.zegoexpress.constants.ZegoPublisherState;
 import im.zego.zegoexpress.constants.ZegoRemoteDeviceState;
 import im.zego.zegoexpress.constants.ZegoRoomState;
@@ -34,6 +36,8 @@ import im.zego.zegoexpress.constants.ZegoRoomStateChangedReason;
 import im.zego.zegoexpress.constants.ZegoScenario;
 import im.zego.zegoexpress.constants.ZegoStreamQualityLevel;
 import im.zego.zegoexpress.constants.ZegoUpdateType;
+import im.zego.zegoexpress.constants.ZegoVideoDenoiseMode;
+import im.zego.zegoexpress.constants.ZegoVideoDenoiseStrength;
 import im.zego.zegoexpress.entity.ZegoBroadcastMessageInfo;
 import im.zego.zegoexpress.entity.ZegoCanvas;
 import im.zego.zegoexpress.entity.ZegoEngineProfile;
@@ -41,6 +45,7 @@ import im.zego.zegoexpress.entity.ZegoRoomConfig;
 import im.zego.zegoexpress.entity.ZegoRoomExtraInfo;
 import im.zego.zegoexpress.entity.ZegoStream;
 import im.zego.zegoexpress.entity.ZegoUser;
+import im.zego.zegoexpress.entity.ZegoVideoDenoiseParams;
 
 public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMediaEngine {
     public CallMediaZegoEngine(int appId, Context context) {
@@ -101,6 +106,19 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
     @Override
     public void useFrontCamera(boolean isEnable) {
         sEngine.useFrontCamera(isEnable);
+    }
+
+    @Override
+    public void enableAEC(boolean isEnable) {
+        sEngine.enableAEC(isEnable);
+    }
+
+    @Override
+    public void setVideoDenoiseParams(CallVideoDenoiseParams params) {
+        ZegoVideoDenoiseParams zp = new ZegoVideoDenoiseParams();
+        zp.mode = ZegoVideoDenoiseMode.getZegoVideoDenoiseMode(params.mode.value());
+        zp.strength = ZegoVideoDenoiseStrength.getZegoVideoDenoiseStrength(params.strength.value());
+        sEngine.setVideoDenoiseParams(zp, ZegoPublishChannel.MAIN);
     }
 
     @Override
