@@ -9,6 +9,7 @@ import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
+import com.juggle.im.call.model.CallInfo;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.internal.ConstInternal;
@@ -58,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 
 public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListener, JWebSocketClient.IWebSocketClientListener {
     public JWebSocket(Handler sendHandler) {
@@ -591,9 +591,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, List<String> userIdList, int engineType, String extra, CallAuthCallback callback) {
+    public void callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, Conversation conversation, List<String> userIdList, int engineType, String extra, CallAuthCallback callback) {
         Integer key = mCmdIndex;
-        byte[] bytes = mPbData.callInvite(callId, isMultiCall, mediaType, userIdList, engineType, extra, mCmdIndex++);
+        byte[] bytes = mPbData.callInvite(callId, isMultiCall, mediaType, conversation, userIdList, engineType, extra, mCmdIndex++);
         JLogger.i("WS-Send", "call invite, callId is " + callId + ", isMultiCall is " + isMultiCall);
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
@@ -619,6 +619,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.callConnected(callId, mCmdIndex++);
         JLogger.i("WS-Send", "call connected, callId is " + callId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void callJoin(String callId, RtcRoomListCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.callJoin(callId, mCmdIndex++);
+        JLogger.i("WS-Send", "call join, callId is " + callId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getConversationCallInfo(Conversation conversation, String userId, WebSocketDataCallback<CallInfo> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getConversationCallInfo(conversation, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "get conversation call info");
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }
@@ -765,6 +781,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         void onCallQuit(RtcRoom room, List<CallMember> members);
         void onCallAccept(RtcRoom room, UserInfo user);
         void onRoomDestroy(RtcRoom room);
+        void onUserJoin(List<CallMember> users, RtcRoom room);
     }
 
     @Override
@@ -904,6 +921,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 break;
             case PBRcvObj.PBRcvType.getFavoriteMsgAck:
                 handleGetFavoriteMsgAck(obj.mGetFavoriteMsgAck);
+                break;
+            case PBRcvObj.PBRcvType.getConversationConfAck:
+                handleGetConversationConfAck(obj.mTemplateAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -1158,6 +1178,12 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 }
                 break;
 
+            case JOIN:
+                if (mCallListener != null) {
+                    mCallListener.onUserJoin(ntf.members, ntf.room);
+                }
+                break;
+
             //todo
 
             default:
@@ -1284,6 +1310,23 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 callback.onError(ack.code);
             } else {
                 callback.onSuccess(ack.favoriteMessages, ack.offset);
+            }
+        }
+    }
+
+    private void handleGetConversationConfAck(PBRcvObj.TemplateAck<CallInfo> ack) {
+        JLogger.i("WS-Receive", "handleGetConversationConfAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof WebSocketDataCallback) {
+            @SuppressWarnings("unchecked")
+            WebSocketDataCallback<CallInfo> callback = (WebSocketDataCallback<CallInfo>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.t);
             }
         }
     }

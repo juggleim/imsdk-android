@@ -24,6 +24,11 @@ public class CallEvent {
     public final static int RECEIVE_SELF_QUIT = 306;
     public final static int RECEIVE_QUIT = 307;
 
+    public final static int JOIN = 351;
+    public final static int JOIN_DONE = 352;
+    public final static int JOIN_FAIL = 353;
+    public final static int RECEIVE_JOIN = 354;
+
     public final static int JOIN_CHANNEL_DONE = 401;
     public final static int JOIN_CHANNEL_FAIL = 402;
 
@@ -58,6 +63,11 @@ public class CallEvent {
        put(RECEIVE_INVITE_OTHERS, "invite others");
        put(RECEIVE_SELF_QUIT, "receive self quit");
        put(RECEIVE_QUIT, "receive quit");
+
+       put(JOIN, "join");
+       put(JOIN_DONE, "join done");
+       put(JOIN_FAIL, "join fail");
+       put(RECEIVE_JOIN, "receive join");
 
        put(JOIN_CHANNEL_DONE, "join channel done");
        put(JOIN_CHANNEL_FAIL, "join channel fail");

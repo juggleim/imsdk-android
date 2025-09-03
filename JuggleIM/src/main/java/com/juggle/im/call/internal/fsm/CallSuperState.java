@@ -175,6 +175,29 @@ public class CallSuperState extends CallState {
                 callSession.videoFirstFrameRender(userId);
                 break;
 
+            case CallEvent.JOIN:
+                // do nothing
+                // idle 状态处理
+                // 其它状态下忽略
+                break;
+
+            case CallEvent.JOIN_DONE:
+                // do nothing
+                // join 状态处理
+                // 其它状态下忽略
+                break;
+
+            case CallEvent.JOIN_FAIL:
+                // do nothing
+                // join 状态处理
+                // 其它状态下忽略
+                break;
+
+            case CallEvent.RECEIVE_JOIN:
+                List<UserInfo> userInfoList = (List<UserInfo>) msg.obj;
+                callSession.membersJoin(userInfoList);
+                break;
+
             default:
                 return false;
         }

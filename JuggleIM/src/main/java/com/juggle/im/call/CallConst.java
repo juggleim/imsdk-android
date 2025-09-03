@@ -12,7 +12,9 @@ public class CallConst {
         // 连接中
         CONNECTING(3),
         // 连接成功
-        CONNECTED(4);
+        CONNECTED(4),
+        // 主动加入
+        JOIN(5);
         private final int mValue;
 
         CallStatus(int value) {
@@ -109,7 +111,8 @@ public class CallConst {
         ACCEPT_FAIL(3),
         JOIN_MEDIA_ROOM_FAIL(4),
         INVALID_PARAMETER(5),
-        INVITE_FAIL(6);
+        INVITE_FAIL(6),
+        JOIN_ROOM_FAIL(7);
 
         private final int value;
 

@@ -10,6 +10,14 @@ message RtcRoomReq{
     RtcMember joinMember = 3;
     RtcChannel rtcChannel = 4;
     RtcMediaType rtcMediaType = 5;
+    string ext = 6;
+    ConverIndex attachedConver = 7;
+}
+
+message ConverIndex {
+    string targetId = 1;
+    ChannelType channelType = 2;
+    string subChannel = 3;
 }
 
 message RtcRoom{
@@ -19,6 +27,7 @@ message RtcRoom{
     RtcChannel rtcChannel = 4;
     RtcMediaType rtcMediaType = 5;
     string ext = 6;
+    RtcAuth auth= 7;
     
     repeated RtcMember members = 51;
 }
@@ -99,6 +108,7 @@ message RtcInviteReq{
     RtcChannel rtcChannel = 4;
     RtcMediaType rtcMediaType = 5;
     string ext = 6;
+    ConverIndex attachedConver = 7;
 }
 
 message RtcMemberRooms{
@@ -151,3 +161,19 @@ message LivekitRtcAuth{
     string token = 1;
     string serviceUrl = 2;
 }
+
+message ConverConf{
+    ActivedRtcRoom activedRtcRoom = 1;
+}
+
+message ActivedRtcRoom{
+    RtcRoomType roomType = 1;
+    string roomId = 2;
+    UserInfo owner = 3;
+    RtcChannel rtcChannel = 4;
+    RtcMediaType rtcMediaType = 5;
+    string ext = 6;
+
+    repeated RtcMember members = 51;
+}
+

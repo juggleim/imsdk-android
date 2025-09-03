@@ -1,25 +1,21 @@
-package com.juggle.im.call.internal.fsm;
+package com.juggle.im.call.internal;
 
 import android.os.Message;
 
 import com.juggle.im.call.CallConst;
-import com.juggle.im.call.internal.CallEvent;
-import com.juggle.im.call.internal.CallSessionImpl;
+import com.juggle.im.call.internal.fsm.CallState;
 import com.juggle.im.internal.util.JLogger;
 
-public class CallIdleState extends CallState {
+public class CallJoinState extends CallState {
+
     @Override
     public void enter() {
         super.enter();
         CallSessionImpl callSession = getCallSessionImpl();
         if (callSession != null) {
-            callSession.setCallStatus(CallConst.CallStatus.IDLE);
+            callSession.setCallStatus(CallConst.CallStatus.JOIN);
+            callSession.signalJoin();
         }
-    }
-
-    @Override
-    public void exit() {
-        super.exit();
     }
 
     @Override
@@ -33,29 +29,20 @@ public class CallIdleState extends CallState {
         }
 
         boolean result = true;
-
         switch (msg.what) {
-            case CallEvent.INVITE:
-                callSession.transitionToOutgoingState();
+            case CallEvent.JOIN_DONE:
+                callSession.transitionToConnectingState();
                 break;
 
-            case CallEvent.RECEIVE_INVITE:
-                callSession.transitionToIncomingState();
-                break;
-
-            case CallEvent.RECEIVE_INVITE_OTHERS:
-                // do nothing
-                break;
-
-            case CallEvent.JOIN:
-                callSession.transitionToJoinState();
+            case CallEvent.JOIN_FAIL:
+                callSession.error(CallConst.CallErrorCode.JOIN_ROOM_FAIL);
+                callSession.transitionToIdleState();
                 break;
 
             default:
                 result = false;
                 break;
         }
-
         return result;
     }
 }

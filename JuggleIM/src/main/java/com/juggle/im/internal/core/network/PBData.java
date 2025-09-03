@@ -14,6 +14,7 @@ import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
+import com.juggle.im.call.model.CallInfo;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.FavoriteMessage;
@@ -869,7 +870,7 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, List<String> userIdList, int engineType, String extra, int index) {
+    byte[] callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, Conversation conversation, List<String> userIdList, int engineType, String extra, int index) {
         Rtcroom.RtcInviteReq.Builder builder = Rtcroom.RtcInviteReq.newBuilder();
         if (isMultiCall) {
             builder.setRoomType(Rtcroom.RtcRoomType.OneMore);
@@ -884,6 +885,12 @@ class PBData {
             extra = "";
         }
         builder.setExt(extra);
+        if (conversation != null) {
+            Rtcroom.ConverIndex.Builder converIndexBuilder = Rtcroom.ConverIndex.newBuilder();
+            converIndexBuilder.setTargetId(conversation.getConversationId());
+            converIndexBuilder.setChannelTypeValue(conversation.getConversationType().getValue());
+            builder.setAttachedConver(converIndexBuilder);
+        }
         Rtcroom.RtcInviteReq req = builder.build();
 
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
@@ -929,6 +936,38 @@ class PBData {
                 .setTopic(RTC_UPD_STATE)
                 .setTargetId(callId)
                 .setData(member.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] callJoin(String callId, int index) {
+        Rtcroom.RtcRoomReq req = Rtcroom.RtcRoomReq.newBuilder()
+                .setRoomType(Rtcroom.RtcRoomType.OneMore)
+                .setRoomId(callId)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RTC_JOIN)
+                .setTargetId(callId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getConversationCallInfo(Conversation conversation, String userId, int index) {
+        Rtcroom.ConverIndex converIndex = Rtcroom.ConverIndex.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_CONVER_CONF)
+                .setTargetId(userId)
+                .setData(converIndex.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
@@ -1389,6 +1428,9 @@ class PBData {
                         case PBRcvObj.PBRcvType.getFavoriteMsgAck:
                             obj = getFavoriteMsgAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
+                        case PBRcvObj.PBRcvType.getConversationConfAck:
+                            obj = getConversationConfAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
                         default:
                             break;
                     }
@@ -1617,16 +1659,8 @@ class PBData {
         Rtcroom.RtcRoom room = Rtcroom.RtcRoom.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.qryCallRoomAck);
         List<RtcRoom> outRooms = new ArrayList<>();
-        RtcRoom outRoom = new RtcRoom();
-        outRoom.setMultiCall(room.getRoomType() == Rtcroom.RtcRoomType.OneMore);
-        outRoom.setRoomId(room.getRoomId());
-        outRoom.setOwner(userInfoWithPBUserInfo(room.getOwner()));
-        List<CallMember> members = new ArrayList<>();
-        for (Rtcroom.RtcMember member : room.getMembersList()) {
-            CallMember outMember = callMemberWithPBRtcMember(member);
-            members.add(outMember);
-        }
-        outRoom.setMembers(members);
+
+        RtcRoom outRoom = rtcRoomWithPBRtcRoom(room);
         outRooms.add(outRoom);
         //共用 RtcQryCallRoomsAck
         PBRcvObj.RtcQryCallRoomsAck a = new PBRcvObj.RtcQryCallRoomsAck(body);
@@ -1725,6 +1759,18 @@ class PBData {
         }
         ack.favoriteMessages = list;
         obj.mGetFavoriteMsgAck = ack;
+        return obj;
+    }
+
+    private PBRcvObj getConversationConfAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.getConversationConfAck);
+        Rtcroom.ConverConf converConf = Rtcroom.ConverConf.parseFrom(body.getData());
+        PBRcvObj.TemplateAck<CallInfo> ack = new PBRcvObj.TemplateAck<>(body);
+        if (converConf.hasActivedRtcRoom()) {
+            ack.t = callInfoWithPBActiveRtcRoom(converConf.getActivedRtcRoom());
+        }
+        obj.mTemplateAck = ack;
         return obj;
     }
 
@@ -2093,7 +2139,39 @@ class PBData {
             members.add(outMember);
         }
         result.setMembers(members);
+
+        if (pbRoom.hasAuth()) {
+            Rtcroom.RtcAuth auth = pbRoom.getAuth();
+            if (auth.hasZegoAuth()) {
+                Rtcroom.ZegoAuth zegoAuth = auth.getZegoAuth();
+                result.setToken(zegoAuth.getToken());
+            } else if (auth.hasLivekitRtcAuth()) {
+                Rtcroom.LivekitRtcAuth livekitRtcAuth = auth.getLivekitRtcAuth();
+                result.setToken(livekitRtcAuth.getToken());
+                result.setUrl(livekitRtcAuth.getServiceUrl());
+            }
+        }
         return result;
+    }
+
+    private CallInfo callInfoWithPBActiveRtcRoom(Rtcroom.ActivedRtcRoom room) {
+        if (room == null) {
+            return null;
+        }
+        CallInfo callInfo = new CallInfo();
+        callInfo.setCallId(room.getRoomId());
+        callInfo.setMultiCall(room.getRoomType() == Rtcroom.RtcRoomType.OneMore);
+        callInfo.setMediaType(CallConst.CallMediaType.setValue(room.getRtcMediaTypeValue()));
+        callInfo.setOwner(userInfoWithPBUserInfo(room.getOwner()));
+
+        List<CallMember> members = new ArrayList<>();
+        for (Rtcroom.RtcMember member : room.getMembersList()) {
+            CallMember outMember = callMemberWithPBRtcMember(member);
+            members.add(outMember);
+        }
+        callInfo.setMembers(members);
+        callInfo.setExtra(room.getExt());
+        return callInfo;
     }
 
     private UserInfo userInfoWithMemberReadDetailItem(Appmessages.MemberReadDetailItem item) {
@@ -2411,6 +2489,8 @@ class PBData {
     private static final String RTC_ACCEPT = "rtc_accept";
     private static final String RTC_QUIT = "rtc_quit";
     private static final String RTC_UPD_STATE = "rtc_upd_state";
+    private static final String RTC_JOIN = "rtc_join";
+    private static final String QRY_CONVER_CONF = "qry_conver_conf";
     private static final String RTC_MEMBER_ROOMS = "rtc_member_rooms";
     private static final String RTC_QRY = "rtc_qry";
     private static final String RTC_PING = "rtc_ping";
@@ -2493,6 +2573,8 @@ class PBData {
             put(ADD_FAVORITE_MSGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(DEL_FAVORITE_MSGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_FAVORITE_MSGS, PBRcvObj.PBRcvType.getFavoriteMsgAck);
+            put(RTC_JOIN, PBRcvObj.PBRcvType.qryCallRoomAck);
+            put(QRY_CONVER_CONF, PBRcvObj.PBRcvType.getConversationConfAck);
         }
     };
 

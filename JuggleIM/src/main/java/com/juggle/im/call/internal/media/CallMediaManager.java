@@ -10,7 +10,6 @@ import com.juggle.im.call.model.CallVideoDenoiseParams;
 import org.json.JSONObject;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -38,7 +37,7 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
         user.setUserId(JIM.getInstance().getCurrentUserId());
         CallMediaRoomConfig config = new CallMediaRoomConfig();
         config.setUserStatusNotify(true);
-        config.setZegoToken(callSession.getZegoToken());
+        config.setZegoToken(callSession.getToken());
         mEngine.joinRoom(room, user, config, new ICallCompleteCallback() {
             @Override
             public void onComplete(int errorCode, JSONObject data) {
@@ -106,9 +105,9 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
     }
 
     @Override
-    public void onUsersJoin(List<String> userIdList) {
+    public void onUsersConnect(List<String> userIdList) {
         if (mListener != null) {
-            mListener.onUsersJoin(userIdList);
+            mListener.onUsersConnect(userIdList);
         }
     }
 

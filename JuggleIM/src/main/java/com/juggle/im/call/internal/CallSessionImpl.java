@@ -16,10 +16,12 @@ import com.juggle.im.call.internal.fsm.CallSuperState;
 import com.juggle.im.call.internal.media.CallMediaManager;
 import com.juggle.im.call.internal.media.ICallCompleteCallback;
 import com.juggle.im.call.internal.media.ICallMediaListener;
+import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.call.model.CallVideoDenoiseParams;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.wscallback.CallAuthCallback;
+import com.juggle.im.internal.core.network.wscallback.RtcRoomListCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.statemachine.StateMachine;
@@ -51,6 +53,8 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         mConnectingState.setCallSessionImpl(this);
         mConnectedState = new CallConnectedState();
         mConnectedState.setCallSessionImpl(this);
+        mJoinState = new CallJoinState();
+        mJoinState.setCallSessionImpl(this);
 
         addState(mSuperState, null);
         addState(mIdleState, mSuperState);
@@ -58,6 +62,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         addState(mIncomingState, mSuperState);
         addState(mConnectingState, mSuperState);
         addState(mConnectedState, mSuperState);
+        addState(mJoinState, mSuperState);
 
         setInitialState(mIdleState);
         start();
@@ -390,6 +395,29 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         }
     }
 
+    public void membersJoin(List<UserInfo> userList) {
+        for (UserInfo userInfo : userList) {
+            if (userInfo.getUserId().equals(mCore.getUserId())) {
+                continue;
+            }
+            boolean isExist = false;
+            for (CallMember member : mMembers) {
+                if (userInfo.getUserId().equals(member.getUserInfo().getUserId())) {
+                    isExist = true;
+                    break;
+                }
+            }
+            if (!isExist) {
+                CallMember newMember = new CallMember();
+                newMember.setUserInfo(userInfo);
+                newMember.setCallStatus(CallConst.CallStatus.JOIN);
+                newMember.setStartTime(System.currentTimeMillis());
+                mMembers.add(newMember);
+            }
+        }
+        // 主动加入没有回调，最终会在 media 加入成功之后走 usersDidConnect
+    }
+
     public void cameraEnable(String userId, boolean enable) {
         if (mListeners != null) {
             for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
@@ -439,11 +467,11 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     }
 
     public void signalInvite(List<String> userIdList) {
-        mCore.getWebSocket().callInvite(mCallId, mIsMultiCall, mMediaType, userIdList, mEngineType.getValue(), mExtra, new CallAuthCallback() {
+        mCore.getWebSocket().callInvite(mCallId, mIsMultiCall, mMediaType, mConversation, userIdList, mEngineType.getValue(), mExtra, new CallAuthCallback() {
             @Override
             public void onSuccess(String zegoToken) {
                 JLogger.i("Call-Signal", "send invite success");
-                mZegoToken = zegoToken;
+                mToken = zegoToken;
                 sendMessage(CallEvent.INVITE_DONE, userIdList);
             }
 
@@ -474,7 +502,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
             @Override
             public void onSuccess(String zegoToken) {
                 JLogger.i("Call-Signal", "send accept success");
-                mZegoToken = zegoToken;
+                mToken = zegoToken;
                 sendMessage(CallEvent.ACCEPT_DONE);
             }
 
@@ -497,6 +525,37 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
             @Override
             public void onError(int errorCode) {
                 JLogger.e("Call-Signal", "call connected error, code is " + errorCode);
+            }
+        });
+    }
+
+    public void signalJoin() {
+        mCore.getWebSocket().callJoin(mCallId, new RtcRoomListCallback() {
+            @Override
+            public void onSuccess(List<RtcRoom> rooms) {
+                if (!rooms.isEmpty()) {
+                    JLogger.i("Call-Signal", "join success");
+                    RtcRoom room = rooms.get(0);
+                    mOwner = room.getOwner().getUserId();
+                    mExtra = room.getExtra();
+                    for (CallMember member : room.getMembers()) {
+                        if (!member.getUserInfo().getUserId().equals(mCore.getUserId())) {
+                            addMember(member);
+                        }
+                    }
+                    mToken = room.getToken();
+                    mUrl = room.getUrl();
+                    sendMessage(CallEvent.JOIN_DONE);
+                } else {
+                    JLogger.e("Call-Signal", "join error, room is null");
+                    sendMessage(CallEvent.JOIN_FAIL);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("Call-Signal", "join error, code is " + errorCode);
+                sendMessage(CallEvent.JOIN_FAIL);
             }
         });
     }
@@ -564,13 +623,17 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         transitionTo(mOutgoingState);
     }
 
+    public void transitionToJoinState() {
+        transitionTo(mJoinState);
+    }
+
     @Override
     public View viewForUserId(String userId) {
         return mViewMap.get(userId);
     }
 
     @Override
-    public void onUsersJoin(List<String> userIdList) {
+    public void onUsersConnect(List<String> userIdList) {
         sendMessage(CallEvent.PARTICIPANT_JOIN_CHANNEL, userIdList);
     }
 
@@ -662,12 +725,12 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         mSessionLifeCycleListener = sessionLifeCycleListener;
     }
 
-    public String getZegoToken() {
-        return mZegoToken;
+    public String getToken() {
+        return mToken;
     }
 
-    public void setZegoToken(String zegoToken) {
-        mZegoToken = zegoToken;
+    public void setToken(String token) {
+        mToken = token;
     }
 
     @Override
@@ -692,6 +755,14 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         mExtra = extra;
     }
 
+    public String getUrl() {
+        return mUrl;
+    }
+
+    public void setUrl(String url) {
+        mUrl = url;
+    }
+
     public Conversation getConversation() {
         return mConversation;
     }
@@ -705,7 +776,8 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     private ICallSessionLifeCycleListener mSessionLifeCycleListener;
     private ConcurrentHashMap<String, ICallSessionListener> mListeners;
 
-    private String mZegoToken;
+    private String mToken;
+    private String mUrl;
     private String mCallId;
     private boolean mIsMultiCall;
     private CallConst.CallMediaType mMediaType;
@@ -727,4 +799,5 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     private final CallIncomingState mIncomingState;
     private final CallOutgoingState mOutgoingState;
     private final CallConnectedState mConnectedState;
+    private final CallJoinState mJoinState;
 }

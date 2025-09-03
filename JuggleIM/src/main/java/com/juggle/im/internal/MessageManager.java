@@ -5,6 +5,8 @@ import android.text.TextUtils;
 
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
+import com.juggle.im.call.internal.CallManager;
+import com.juggle.im.call.internal.model.CallActiveCallMessage;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
 import com.juggle.im.model.FavoriteMessage;
@@ -84,11 +86,12 @@ import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMessageListener, IChatroomManager.IChatroomListener {
-    public MessageManager(JIMCore core, UserInfoManager userInfoManager, ChatroomManager chatroomManager) {
+    public MessageManager(JIMCore core, UserInfoManager userInfoManager, ChatroomManager chatroomManager, CallManager callManager) {
         this.mCore = core;
         this.mCore.getWebSocket().setMessageListener(this);
         this.mUserInfoManager = userInfoManager;
         this.mChatroomManager = chatroomManager;
+        this.mCallManager = callManager;
         chatroomManager.addListener("MessageManager", this);
         this.mChatroomSyncMap = new ConcurrentHashMap<>();
         ContentTypeCenter.getInstance().registerContentType(TextMessage.class);
@@ -119,6 +122,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(TagAddConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(TagDelConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(TopMsgMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(CallActiveCallMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -2647,6 +2651,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 receiveTime = message.getTimestamp();
             }
 
+            //call related
+            if (message.getContentType().equals(CallActiveCallMessage.CONTENT_TYPE)) {
+                mCallManager.handleActiveCallMessage(message);
+                continue;
+            }
+
             //tag add conversation
             if (message.getContentType().equals(TagAddConvMessage.CONTENT_TYPE)) {
                 if (message.getTimestamp() <= mCore.getConversationSyncTime()) {
@@ -3244,6 +3254,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private final JIMCore mCore;
     private final UserInfoManager mUserInfoManager;
     private final ChatroomManager mChatroomManager;
+    private final CallManager mCallManager;
     private boolean mSyncProcessing = true;
     private long mCachedReceiveTime = -1;
     private long mCachedSendTime = -1;

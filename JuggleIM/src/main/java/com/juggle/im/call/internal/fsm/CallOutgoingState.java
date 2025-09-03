@@ -111,5 +111,5 @@ public class CallOutgoingState extends CallState {
     }
 
     private Timer mOutgoingTimer;
-    private static final int OUTGOING_INTERVAL = 60*1000;
+    private static final int OUTGOING_INTERVAL = 35*1000;
 }

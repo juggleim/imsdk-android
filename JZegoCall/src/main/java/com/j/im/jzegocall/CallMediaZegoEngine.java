@@ -299,7 +299,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
                 userIdList.add(zegoUser.userID);
             }
             if (mListener != null) {
-                mListener.onUsersJoin(userIdList);
+                mListener.onUsersConnect(userIdList);
             }
         } else if (updateType == ZegoUpdateType.DELETE) {
             // 暂不处理

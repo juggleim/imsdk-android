@@ -3,19 +3,26 @@ package com.juggle.im.call.internal;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.juggle.im.JErrorCode;
 import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.ICallManager;
 import com.juggle.im.call.ICallSession;
 import com.juggle.im.call.internal.media.CallMediaManager;
+import com.juggle.im.call.internal.model.CallActiveCallMessage;
 import com.juggle.im.call.internal.model.RtcRoom;
+import com.juggle.im.call.model.CallInfo;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.internal.UserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.JWebSocket;
 import com.juggle.im.internal.core.network.wscallback.RtcRoomListCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.JUtility;
+import com.juggle.im.model.Conversation;
+import com.juggle.im.model.Message;
 import com.juggle.im.model.UserInfo;
 
 import java.util.ArrayList;
@@ -55,17 +62,22 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
             }
             return null;
         }
-        return startCall(Collections.singletonList(userId), false, mediaType, extra, listener);
+        return startCall(Collections.singletonList(userId), false, mediaType, null, extra, listener);
     }
 
     @Override
     public ICallSession startMultiCall(List<String> userIdList, CallConst.CallMediaType mediaType, ICallSession.ICallSessionListener listener) {
-        return startCall(userIdList, true, mediaType, "", listener);
+        return startCall(userIdList, true, mediaType, null, "", listener);
     }
 
     @Override
     public ICallSession startMultiCall(List<String> userIdList, CallConst.CallMediaType mediaType, String extra, ICallSession.ICallSessionListener listener) {
-        return startCall(userIdList, true, mediaType, extra, listener);
+        return startCall(userIdList, true, mediaType, null, extra, listener);
+    }
+
+    @Override
+    public ICallSession startMultiCall(List<String> userIdList, CallConst.CallMediaType mediaType, Conversation conversation, String extra, ICallSession.ICallSessionListener listener) {
+        return startCall(userIdList, true, mediaType, conversation, extra, listener);
     }
 
     @Override
@@ -80,6 +92,92 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
     public void removeReceiveListener(String key) {
         if (!TextUtils.isEmpty(key)) {
             mListenerMap.remove(key);
+        }
+    }
+
+    @Override
+    public ICallSession joinCall(String callId, ICallSession.ICallSessionListener listener) {
+        synchronized (this) {
+            if (!mCallSessionList.isEmpty()) {
+                if (listener != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        listener.onErrorOccur(CallConst.CallErrorCode.CALL_EXIST);
+                    });
+                }
+                return null;
+            }
+        }
+        if (TextUtils.isEmpty(callId)) {
+            if (listener != null) {
+                mCore.getCallbackHandler().post(() -> {
+                    listener.onErrorOccur(CallConst.CallErrorCode.INVALID_PARAMETER);
+                });
+            }
+            return null;
+        }
+        CallSessionImpl callSession = createCallSessionImpl(callId, true);
+        callSession.addListener(callId+"-JIM", listener);
+        callSession.sendMessage(CallEvent.JOIN);
+        addCallSession(callSession);
+        return callSession;
+    }
+
+    @Override
+    public void getConversationCallInfo(Conversation conversation, JIMConst.IResultCallback<CallInfo> callback) {
+        if (conversation == null || TextUtils.isEmpty(conversation.getConversationId())) {
+            JLogger.e("Call-GetConvCall", "error, invalid param");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> {
+                    callback.onError(CallConst.CallErrorCode.INVALID_PARAMETER.getValue());
+                });
+            }
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("Call-GetConvCall", "error, connection unavailable");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> {
+                    callback.onError(errorCode);
+                });
+            }
+            return;
+        }
+        mCore.getWebSocket().getConversationCallInfo(conversation, mCore.getUserId(), new WebSocketDataCallback<CallInfo>() {
+            @Override
+            public void onSuccess(CallInfo data) {
+                JLogger.i("Call-GetConvCall", "success");
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onSuccess(data);
+                    });
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("Call-GetConvCall", "error, code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(errorCode);
+                    });
+                }
+            }
+        });
+    }
+
+    @Override
+    public void addConversationCallListener(String key, IConversationCallListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        mConversationCallListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeConversationCallListener(String key) {
+        if (!TextUtils.isEmpty(key)) {
+            mConversationCallListenerMap.remove(key);
         }
     }
 
@@ -144,6 +242,15 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
                 loopSession.sendMessage(CallEvent.HANGUP);
             }
         }
+    }
+
+    public void handleActiveCallMessage(Message message) {
+        mCore.getCallbackHandler().post(() -> {
+            CallActiveCallMessage activeCallMessage = (CallActiveCallMessage) message.getContent();
+            for (Map.Entry<String, IConversationCallListener> entry : mConversationCallListenerMap.entrySet()) {
+                entry.getValue().onCallInfoUpdate(activeCallMessage.getCallInfo(), message.getConversation(), activeCallMessage.isFinished());
+            }
+        });
     }
 
     @Override
@@ -259,6 +366,20 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
     }
 
     @Override
+    public void onUserJoin(List<CallMember> users, RtcRoom room) {
+        List<UserInfo> userInfoList = new ArrayList<>();
+        for (CallMember member : users) {
+            userInfoList.add(member.getUserInfo());
+        }
+        mUserInfoManager.insertUserInfoList(userInfoList);
+        CallSessionImpl callSession = getCallSessionImpl(room.getRoomId());
+        if (callSession == null) {
+            return;
+        }
+        callSession.sendMessage(CallEvent.RECEIVE_JOIN, userInfoList);
+    }
+
+    @Override
     public void onSessionFinish(CallSessionImpl session) {
         synchronized (this) {
             if (session != null) {
@@ -293,7 +414,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         return needHangupOther;
     }
 
-    private ICallSession startCall(List<String> userIdList, boolean isMulti, CallConst.CallMediaType mediaType, String extra, ICallSession.ICallSessionListener listener) {
+    private ICallSession startCall(List<String> userIdList, boolean isMulti, CallConst.CallMediaType mediaType, Conversation conversation, String extra, ICallSession.ICallSessionListener listener) {
         synchronized (this) {
             if (!mCallSessionList.isEmpty()) {
                 if (listener != null) {
@@ -318,6 +439,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         callSession.setOwner(JIM.getInstance().getCurrentUserId());
         callSession.setMediaType(mediaType);
         callSession.setExtra(extra);
+        callSession.setConversation(conversation);
         CallMediaManager.getInstance().enableCamera(mediaType == CallConst.CallMediaType.VIDEO);
         for (String userId : userIdList) {
             CallMember member = new CallMember();
@@ -386,7 +508,8 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
         }
     }
 
-    private final ConcurrentHashMap<String, ICallReceiveListener> mListenerMap = new ConcurrentHashMap<>();;
+    private final ConcurrentHashMap<String, ICallReceiveListener> mListenerMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, IConversationCallListener> mConversationCallListenerMap = new ConcurrentHashMap<>();
     private final JIMCore mCore;
     private final UserInfoManager mUserInfoManager;
     private final List<CallSessionImpl> mCallSessionList = new ArrayList<>();

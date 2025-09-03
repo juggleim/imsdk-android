@@ -68,8 +68,10 @@ import com.jet.im.kit.utils.TextUtils;
 import com.jet.im.kit.vm.BaseMessageListViewModel;
 import com.jet.im.kit.vm.FileDownloader;
 import com.juggle.im.JIM;
+import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
+import com.juggle.im.call.model.CallInfo;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
@@ -841,7 +843,22 @@ abstract public class BaseMessageListFragment<
             }
             List<String> userIdList = data.getStringArrayListExtra("userIdList");
             assert getViewModel().getConversationInfo() != null;
-            CallCenter.getInstance().startMultiCall(getActivity(), userIdList, mMediaType, "", getViewModel().getConversationInfo().getConversation().getConversationId());
+
+            JIM.getInstance().getCallManager().getConversationCallInfo(getViewModel().getConversationInfo().getConversation(), new JIMConst.IResultCallback<CallInfo>() {
+                @Override
+                public void onSuccess(CallInfo callInfo) {
+                    if (callInfo != null) {
+                        CallCenter.getInstance().joinCall(getActivity(), callInfo.getCallId(), getViewModel().getConversationInfo().getConversation().getConversationId());
+                    } else {
+                        CallCenter.getInstance().startMultiCall(getActivity(), userIdList, mMediaType, "", getViewModel().getConversationInfo().getConversation().getConversationId());
+                    }
+                }
+
+                @Override
+                public void onError(int errorCode) {
+
+                }
+            });
         }
     }
 

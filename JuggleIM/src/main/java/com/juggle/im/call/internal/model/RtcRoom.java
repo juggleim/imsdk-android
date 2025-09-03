@@ -71,6 +71,22 @@ public class RtcRoom {
         mExtra = extra;
     }
 
+    public String getToken() {
+        return mToken;
+    }
+
+    public void setToken(String token) {
+        mToken = token;
+    }
+
+    public String getUrl() {
+        return mUrl;
+    }
+
+    public void setUrl(String url) {
+        mUrl = url;
+    }
+
     private String mRoomId;
     private UserInfo mOwner;
     private boolean mIsMultiCall;
@@ -79,4 +95,6 @@ public class RtcRoom {
     private List<CallMember> mMembers;
     private CallConst.CallMediaType mMediaType;
     private String mExtra;
+    private String mToken;
+    private String mUrl;
 }
