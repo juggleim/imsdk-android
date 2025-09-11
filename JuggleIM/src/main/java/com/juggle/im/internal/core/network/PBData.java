@@ -1628,8 +1628,13 @@ class PBData {
         Rtcroom.RtcAuth rtcAuth = Rtcroom.RtcAuth.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.callAuthAck);
         PBRcvObj.StringAck a = new PBRcvObj.StringAck(body);
-        Rtcroom.ZegoAuth zegoAuth = rtcAuth.getZegoAuth();
-        a.str = zegoAuth.getToken();
+        if (rtcAuth.hasZegoAuth()) {
+            Rtcroom.ZegoAuth zegoAuth = rtcAuth.getZegoAuth();
+            a.str = zegoAuth.getToken();
+        } else if (rtcAuth.hasAgoraAuth()) {
+            Rtcroom.AgoraAuth agoraAuth = rtcAuth.getAgoraAuth();
+            a.str = agoraAuth.getToken();
+        }
         obj.mStringAck = a;
         return obj;
     }
@@ -2149,6 +2154,9 @@ class PBData {
                 Rtcroom.LivekitRtcAuth livekitRtcAuth = auth.getLivekitRtcAuth();
                 result.setToken(livekitRtcAuth.getToken());
                 result.setUrl(livekitRtcAuth.getServiceUrl());
+            } else if (auth.hasAgoraAuth()) {
+                Rtcroom.AgoraAuth agoraAuth = auth.getAgoraAuth();
+                result.setToken(agoraAuth.getToken());
             }
         }
         return result;

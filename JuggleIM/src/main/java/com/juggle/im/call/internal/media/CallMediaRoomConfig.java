@@ -1,12 +1,12 @@
 package com.juggle.im.call.internal.media;
 
 public class CallMediaRoomConfig {
-    public String getZegoToken() {
-        return mZegoToken;
+    public String getToken() {
+        return mToken;
     }
 
-    public void setZegoToken(String zegoToken) {
-        mZegoToken = zegoToken;
+    public void setToken(String token) {
+        mToken = token;
     }
 
     public boolean isUserStatusNotify() {
@@ -18,5 +18,5 @@ public class CallMediaRoomConfig {
     }
 
     private boolean mIsUserStatusNotify;
-    private String mZegoToken;
+    private String mToken;
 }

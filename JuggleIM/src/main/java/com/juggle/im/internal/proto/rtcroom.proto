@@ -35,6 +35,7 @@ message RtcRoom{
 enum RtcChannel {
     Zego = 0;
     LivekitRtc = 1;
+    Agora = 2;
         
     JuggleRtc = 11; //自建音视频，保留
 }
@@ -128,6 +129,7 @@ message RtcMemberRoom{
 message RtcAuth{
     ZegoAuth zegoAuth = 1;
     LivekitRtcAuth livekitRtcAuth = 2;
+    AgoraAuth agoraAuth = 3;
 
     JuggleRtcAuth juggleRtcAuth = 11;
 }
@@ -154,6 +156,10 @@ message RtcAnswer{
 }
 
 message JuggleRtcAuth{
+    string token = 1;
+}
+
+message AgoraAuth{
     string token = 1;
 }
 

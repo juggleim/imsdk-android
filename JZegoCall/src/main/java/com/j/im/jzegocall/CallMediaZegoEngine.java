@@ -68,7 +68,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
         ZegoUser zegoUser = new ZegoUser(user.getUserId());
         ZegoRoomConfig zegoRoomConfig = new ZegoRoomConfig();
         zegoRoomConfig.isUserStatusNotify = config.isUserStatusNotify();
-        zegoRoomConfig.token = config.getZegoToken();
+        zegoRoomConfig.token = config.getToken();
         sEngine.loginRoom(room.getRoomId(), zegoUser, zegoRoomConfig, new IZegoRoomLoginCallback() {
             @Override
             public void onRoomLoginResult(int errorCode, JSONObject extendedData) {

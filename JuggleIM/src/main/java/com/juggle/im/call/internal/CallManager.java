@@ -43,6 +43,15 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
     }
 
     @Override
+    public void initAgoraEngine(String appId, Context context) {
+        if (context == null) {
+            JLogger.e("Call-Init", "context is null");
+        }
+        CallMediaManager.getInstance().initAgoraEngine(appId, context);
+        mEngineType = CallInternalConst.CallEngineType.AGORA;
+    }
+
+    @Override
     public ICallSession startSingleCall(String userId, ICallSession.ICallSessionListener listener) {
         return startSingleCall(userId, CallConst.CallMediaType.VOICE, listener);
     }

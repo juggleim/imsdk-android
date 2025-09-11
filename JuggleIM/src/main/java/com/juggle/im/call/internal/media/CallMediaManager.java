@@ -30,6 +30,17 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
         }
     }
 
+    public void initAgoraEngine(String appId, Context context) {
+        try {
+            Class clazz = Class.forName("com.juggle.im.jagoracall.CallMediaAgoraEngine");
+            Constructor constructor = clazz.getConstructor(String.class, Context.class);
+            mEngine = (ICallMediaEngine) constructor.newInstance(appId, context);
+            mEngine.setListener(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void joinRoom(CallSessionImpl callSession, ICallCompleteCallback callback) {
         CallMediaRoom room = new CallMediaRoom();
         room.setRoomId(callSession.getCallId());
@@ -37,7 +48,7 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
         user.setUserId(JIM.getInstance().getCurrentUserId());
         CallMediaRoomConfig config = new CallMediaRoomConfig();
         config.setUserStatusNotify(true);
-        config.setZegoToken(callSession.getToken());
+        config.setToken(callSession.getToken());
         mEngine.joinRoom(room, user, config, new ICallCompleteCallback() {
             @Override
             public void onComplete(int errorCode, JSONObject data) {

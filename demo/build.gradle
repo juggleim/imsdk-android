@@ -51,6 +51,7 @@ dependencies {
 
     api project (':GooglePlugin')
     api project (":JZegoCall")
+    api project(':JAgoraCall')
 
     implementation 'com.github.bumptech.glide:glide:4.13.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.13.0'
@@ -63,4 +64,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation('im.zego:express-video:3.21.0')
+    implementation('cn.shengwang.rtc:full-sdk:4.6.0')
 }

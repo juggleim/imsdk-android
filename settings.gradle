@@ -40,3 +40,4 @@ include ':OPPOPlugin'
 include ':OPPOPlugin_sdk'
 project(':OPPOPlugin_sdk').projectDir = new File('OPPOPlugin/sdk')
 include ':JZegoCall'
+include ':JAgoraCall'

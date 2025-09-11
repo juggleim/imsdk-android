@@ -24,6 +24,12 @@ public class CallCenter implements ICallManager.ICallReceiveListener, ICallManag
         JIM.getInstance().getCallManager().addConversationCallListener("CallCenter", this);
     }
 
+    public void initAgoraEngine(String appId, Context context) {
+        JIM.getInstance().getCallManager().initAgoraEngine(appId, context);
+        mContext = context;
+        JIM.getInstance().getCallManager().addConversationCallListener("CallCenter", this);
+    }
+
     public void startSingleCall(Context context, String userId, CallConst.CallMediaType mediaType, String extra) {
         if (context == null) return;
         ICallSession callSession = JIM.getInstance().getCallManager().startSingleCall(userId, mediaType, extra, null);
