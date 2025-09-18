@@ -13,7 +13,7 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.juggle.call.zego'
                 artifactId = 'juggle'
-                version = '1.8.21'
+                version = '1.8.21.1'
                 pom {
                     name = 'JuggleCallZego'
                     description = 'JuggleCall Android SDK'
