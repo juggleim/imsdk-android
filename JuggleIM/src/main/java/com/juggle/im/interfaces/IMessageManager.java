@@ -356,10 +356,21 @@ public interface IMessageManager {
                          List<String> messageIds,
                          ISendReadReceiptCallback callback);
 
+    /**
+     * 获取群消息阅读状态
+     * @param conversation 消息所在会话
+     * @param messageId 需要查询的群消息 id
+     * @param callback 结果回调
+     */
     void getGroupMessageReadDetail(Conversation conversation,
                                    String messageId,
                                    IGetGroupMessageReadDetailCallback callback);
 
+    /**
+     * 获取被合并的消息列表
+     * @param containerMsgId 合并消息 id
+     * @param callback 结果回调
+     */
     void getMergedMessageList(String containerMsgId,
                               IGetMessagesCallback callback);
 
@@ -458,10 +469,25 @@ public interface IMessageManager {
      */
     void getTopMessage(Conversation conversation, IGetTopMessageCallback callback);
 
+    /**
+     * 添加消息收藏
+     * @param messageIdList 待收藏的消息 id 列表
+     * @param callback 结果回调
+     */
     void addFavorite(List<String> messageIdList, ISimpleCallback callback);
 
+    /**
+     * 移除消息收藏
+     * @param messageIdList 待移除的消息 id 列表
+     * @param callback 结果回调
+     */
     void removeFavorite(List<String> messageIdList, ISimpleCallback callback);
 
+    /**
+     * 获取收藏的消息
+     * @param option 查询参数
+     * @param callback 结果回调
+     */
     void getFavorite(GetFavoriteMessageOption option, IGetFavoriteMessageCallback callback);
 
     void registerContentType(Class<? extends MessageContent> messageContentClass);

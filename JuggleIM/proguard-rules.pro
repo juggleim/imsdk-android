@@ -36,4 +36,6 @@
 -keep class com.juggle.im.push.** {*;}
 
 -keep class **.zego.**{*;}
-#-keep class com.j.im.jzegocall.CallMediaZegoEngine {*;}
+-keep class com.j.im.jzegocall.CallMediaZegoEngine {*;}
+-keep class com.juggle.im.ultimate.encrypt.DataConverter {*;}
+-keep class com.juggle.im.ultimate.encrypt.EncryptionUtils {*;}

@@ -249,8 +249,11 @@ public class Message {
     private String mSenderUserId;
     /// 消息内容
     private MessageContent mContent;
+    /// 群消息阅读信息（只对群消息生效）
     private GroupMessageReadInfo mGroupMessageReadInfo;
+    /// 引用消息
     private Message mReferredMessage;
+    /// @ 消息
     private MessageMentionInfo mMentionInfo;
     /// 消息本地属性（仅对本端生效，不会同步到服务端）
     private String mLocalAttribute;
