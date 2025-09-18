@@ -153,6 +153,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
     @Override
     public void onRoomStreamUpdate(String roomID, ZegoUpdateType updateType, ArrayList<ZegoStream> streamList, JSONObject extendedData) {
         if (updateType == ZegoUpdateType.ADD) {
+            List <String> userIdList = new ArrayList<>();
             for (ZegoStream stream : streamList) {
                 String streamId = stream.streamID;
                 String userId = userIdWithStreamId(streamId);
@@ -163,6 +164,10 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
                 }
                 sEngine.startPlayingStream(streamId, canvas);
                 sEngine.startSoundLevelMonitor();
+                userIdList.add(userId);
+            }
+            if (mListener != null) {
+                mListener.onUsersConnect(userIdList);
             }
         }
         if (sHandler != null) {
@@ -293,17 +298,17 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
 
     @Override
     public void onRoomUserUpdate(String roomID, ZegoUpdateType updateType, ArrayList<ZegoUser> userList) {
-        if (updateType == ZegoUpdateType.ADD) {
-            List<String> userIdList = new ArrayList<>();
-            for (ZegoUser zegoUser : userList) {
-                userIdList.add(zegoUser.userID);
-            }
-            if (mListener != null) {
-                mListener.onUsersConnect(userIdList);
-            }
-        } else if (updateType == ZegoUpdateType.DELETE) {
-            // 暂不处理
-        }
+//        if (updateType == ZegoUpdateType.ADD) {
+//            List<String> userIdList = new ArrayList<>();
+//            for (ZegoUser zegoUser : userList) {
+//                userIdList.add(zegoUser.userID);
+//            }
+//            if (mListener != null) {
+//                mListener.onUsersConnect(userIdList);
+//            }
+//        } else if (updateType == ZegoUpdateType.DELETE) {
+//            // 暂不处理
+//        }
         if (sHandler != null) {
             sHandler.onRoomUserUpdate(roomID, updateType, userList);
         }
