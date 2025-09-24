@@ -615,6 +615,18 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         });
     }
 
+    public void transitionToIdleStateWithoutMediaQuit() {
+        transitionTo(mIdleState);
+        mCore.getCallbackHandler().post(() -> {
+            if (mListeners != null) {
+                for (Map.Entry<String, ICallSessionListener> entry : mListeners.entrySet()) {
+                    entry.getValue().onCallFinish(mFinishReason);
+                }
+            }
+            destroy();
+        });
+    }
+
     public void transitionToIncomingState() {
         transitionTo(mIncomingState);
     }

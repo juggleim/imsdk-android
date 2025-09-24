@@ -73,7 +73,11 @@ public class CallSuperState extends CallState {
                     callSession.setFinishReason(CallConst.CallFinishReason.HANGUP);
                 }
                 callSession.signalHangup();
-                callSession.transitionToIdleState();
+                if (callSession.getCallStatus() == CallConst.CallStatus.INCOMING) {
+                    callSession.transitionToIdleStateWithoutMediaQuit();
+                } else {
+                    callSession.transitionToIdleState();
+                }
                 break;
 
             case CallEvent.RECEIVE_SELF_QUIT:
