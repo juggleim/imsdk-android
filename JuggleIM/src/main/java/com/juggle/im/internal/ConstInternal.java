@@ -1,7 +1,7 @@
 package com.juggle.im.internal;
 
 public class ConstInternal {
-    public static final String SDK_VERSION = "1.8.13.2";
+    public static final String SDK_VERSION = "1.8.13.3";
     public static final String PLATFORM = "Android";
     public static final String LOG_UPLOAD_HEADER_APP_KEY = "x-appkey";
     public static final String LOG_UPLOAD_HEADER_TOKEN = "x-token";
