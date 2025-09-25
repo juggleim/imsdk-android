@@ -109,6 +109,13 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void deleteConversationInfo(Conversation conversation, ISimpleCallback callback) {
+        if (conversation == null || conversation.getConversationId() == null) {
+            JLogger.e("CONV-Delete", "fail, invalid parameter");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("CONV-Delete", "fail, code is " + errorCode);
