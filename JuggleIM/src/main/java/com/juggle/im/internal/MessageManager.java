@@ -270,9 +270,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     mCore.getDbManager().updateMessageContentWithMessageId(message.getContent(), message.getContentType(), message.getMessageId());
                 }
                 if (message.getConversation().getConversationType() != Conversation.ConversationType.CHATROOM) {
-                    updateMessageSendSyncTime(timestamp);
-                    if (mSendReceiveListener != null) {
-                        mSendReceiveListener.onMessageSend(message);
+                    if ((message.getFlags() & MessageContent.MessageFlag.IS_STATUS.getValue()) == 0) {
+                        updateMessageSendSyncTime(timestamp);
+                    }
+                    if ((message.getFlags() & MessageContent.MessageFlag.IS_SAVE.getValue()) != 0) {
+                        if (mSendReceiveListener != null) {
+                            mSendReceiveListener.onMessageSend(message);
+                        }
                     }
                 }
 
