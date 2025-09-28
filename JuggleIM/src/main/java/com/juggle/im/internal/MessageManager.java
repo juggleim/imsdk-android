@@ -182,6 +182,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     mSendReceiveListener.onMessageSave(message);
                 }
             }
+        } else {
+            message.setClientMsgNo(now);
         }
         //返回消息
         return message;
