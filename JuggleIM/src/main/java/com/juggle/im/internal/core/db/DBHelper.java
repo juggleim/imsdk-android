@@ -3,6 +3,7 @@ package com.juggle.im.internal.core.db;
 import android.content.Context;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
@@ -39,28 +40,28 @@ public class DBHelper extends SQLiteOpenHelper {
         if (oldVersion < 3) {
             try {
                 sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CLIENT_UID_INDEX);
-            } catch (SQLiteConstraintException e) {
+            } catch (SQLiteException e) {
                 e.printStackTrace();
             }
         }
         if (oldVersion < 4) {
             try {
                 sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_CONVERSATION_INDEX);
-            } catch (SQLiteConstraintException e) {
+            } catch (SQLiteException e) {
                 e.printStackTrace();
             }
         }
         if (oldVersion < 5) {
             try {
                 sqLiteDatabase.execSQL(MessageSql.SQL_ALTER_ADD_FLAGS);
-            } catch (SQLiteConstraintException e) {
+            } catch (SQLiteException e) {
                 e.printStackTrace();
             }
         }
         if (oldVersion < 6) {
             try {
                 sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
-            } catch (SQLiteConstraintException e) {
+            } catch (SQLiteException e) {
                 e.printStackTrace();
             }
         }
@@ -68,7 +69,7 @@ public class DBHelper extends SQLiteOpenHelper {
             try {
                 sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_TABLE);
                 sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_INDEX);
-            } catch (SQLiteConstraintException e) {
+            } catch (SQLiteException e) {
                 e.printStackTrace();
             }
         }
@@ -76,14 +77,14 @@ public class DBHelper extends SQLiteOpenHelper {
             try {
                 sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_TABLE);
                 sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX);
-            } catch (SQLiteConstraintException e) {
+            } catch (SQLiteException e) {
                 e.printStackTrace();
             }
         }
         if (oldVersion < 9) {
             try {
                 sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_CONVERSATION_TS_INDEX);
-            } catch (SQLiteConstraintException e) {
+            } catch (SQLiteException e) {
                 e.printStackTrace();
             }
         }
@@ -92,7 +93,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 sqLiteDatabase.execSQL(MessageSql.SQL_ALTER_ADD_LIFE_TIME);
                 sqLiteDatabase.execSQL(MessageSql.SQL_ALTER_ADD_LIFE_TIME_AFTER_READ);
                 sqLiteDatabase.execSQL(MessageSql.SQL_ALTER_ADD_DESTROY_TIME);
-            } catch (SQLiteConstraintException e) {
+            } catch (SQLiteException e) {
                 e.printStackTrace();
             }
         }
@@ -101,7 +102,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 sqLiteDatabase.execSQL(UserInfoSql.SQL_ALTER_USER_ADD_UPDATED_TIME);
                 sqLiteDatabase.execSQL(UserInfoSql.SQL_ALTER_GROUP_ADD_UPDATED_TIME);
                 sqLiteDatabase.execSQL(UserInfoSql.SQL_ALTER_GROUP_MEMBER_ADD_UPDATED_TIME);
-            } catch (SQLiteConstraintException e) {
+            } catch (SQLiteException e) {
                 e.printStackTrace();
             }
         }
