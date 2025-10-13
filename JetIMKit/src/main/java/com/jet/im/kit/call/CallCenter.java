@@ -24,6 +24,12 @@ public class CallCenter implements ICallManager.ICallReceiveListener, ICallManag
         JIM.getInstance().getCallManager().addConversationCallListener("CallCenter", this);
     }
 
+    public void initLiveKitEngine(Context context) {
+        JIM.getInstance().getCallManager().initLiveKitEngine(context);
+        mContext = context;
+        JIM.getInstance().getCallManager().addConversationCallListener("CallCenter", this);
+    }
+
     public void initAgoraEngine(String appId, Context context) {
         JIM.getInstance().getCallManager().initAgoraEngine(appId, context);
         mContext = context;

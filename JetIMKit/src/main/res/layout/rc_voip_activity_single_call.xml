@@ -4,13 +4,13 @@
 	android:background="@color/callkit_black"
     android:layout_height="match_parent">
 
-    <SurfaceView
+    <com.jet.im.kit.call.VideoView
         android:id="@+id/rc_voip_call_large_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
 
-    <SurfaceView
+    <com.jet.im.kit.call.VideoView
         android:id="@+id/rc_voip_call_small_preview"
         android:layout_width="100dp"
         android:layout_height="180dp"

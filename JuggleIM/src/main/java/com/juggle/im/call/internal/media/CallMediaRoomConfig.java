@@ -17,6 +17,15 @@ public class CallMediaRoomConfig {
         mIsUserStatusNotify = userStatusNotify;
     }
 
+    public String getUrl() {
+        return mUrl;
+    }
+
+    public void setUrl(String url) {
+        mUrl = url;
+    }
+
     private boolean mIsUserStatusNotify;
     private String mToken;
+    private String mUrl;
 }

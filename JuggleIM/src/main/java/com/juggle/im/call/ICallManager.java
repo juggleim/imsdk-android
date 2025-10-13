@@ -18,6 +18,7 @@ public interface ICallManager {
     }
 
     void initZegoEngine(int appId, Context context);
+    void initLiveKitEngine(Context context);
     void initAgoraEngine(String appId, Context context);
     ICallSession startSingleCall(String userId, ICallSession.ICallSessionListener listener);
     ICallSession startSingleCall(String userId, CallConst.CallMediaType mediaType, ICallSession.ICallSessionListener listener);

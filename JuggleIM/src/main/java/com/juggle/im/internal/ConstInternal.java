@@ -56,5 +56,8 @@ public class ConstInternal {
 
         public static final int MESSAGE_NOT_EXIST = 22001;
         public static final int MESSAGE_ALREADY_RECALLED = 22002;
+
+        //加入 LiveKit 房间失败
+        public static final int JOIN_LIVEKIT_FAIL = 25001;
     }
 }

@@ -2,6 +2,7 @@ package com.juggle.im.call.internal;
 
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import com.juggle.im.JIM;
@@ -123,14 +124,14 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         if (TextUtils.isEmpty(userId)) {
             return;
         }
+        if (view != null) {
+            mViewMap.put(userId, view);
+        } else {
+            mViewMap.remove(userId);
+        }
         if (userId.equals(JIM.getInstance().getCurrentUserId())) {
             CallMediaManager.getInstance().startPreview(view);
         } else {
-            if (view != null) {
-                mViewMap.put(userId, view);
-            } else {
-                mViewMap.remove(userId);
-            }
             if (mCallStatus == CallConst.CallStatus.CONNECTED) {
                 CallMediaManager.getInstance().setVideoView(mCallId, userId, view);
             }
@@ -140,6 +141,11 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     @Override
     public void startPreview(View view) {
         CallMediaManager.getInstance().startPreview(view);
+        if (view != null) {
+            mViewMap.put(JIM.getInstance().getCurrentUserId(), view);
+        } else {
+            mViewMap.remove(JIM.getInstance().getCurrentUserId());
+        }
     }
 
     @Override
@@ -469,9 +475,10 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     public void signalInvite(List<String> userIdList) {
         mCore.getWebSocket().callInvite(mCallId, mIsMultiCall, mMediaType, mConversation, userIdList, mEngineType.getValue(), mExtra, new CallAuthCallback() {
             @Override
-            public void onSuccess(String zegoToken) {
+            public void onSuccess(String token, String url) {
                 JLogger.i("Call-Signal", "send invite success");
-                mToken = zegoToken;
+                mToken = token;
+                mUrl = url;
                 sendMessage(CallEvent.INVITE_DONE, userIdList);
             }
 
@@ -500,9 +507,10 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     public void signalAccept() {
         mCore.getWebSocket().callAccept(mCallId, new CallAuthCallback() {
             @Override
-            public void onSuccess(String zegoToken) {
+            public void onSuccess(String token, String url) {
                 JLogger.i("Call-Signal", "send accept success");
-                mToken = zegoToken;
+                mToken = token;
+                mUrl = url;
                 sendMessage(CallEvent.ACCEPT_DONE);
             }
 
@@ -642,6 +650,11 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     @Override
     public View viewForUserId(String userId) {
         return mViewMap.get(userId);
+    }
+
+    @Override
+    public View viewForSelf() {
+        return mViewMap.get(JIM.getInstance().getCurrentUserId());
     }
 
     @Override

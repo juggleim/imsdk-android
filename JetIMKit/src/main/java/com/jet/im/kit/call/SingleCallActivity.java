@@ -6,7 +6,6 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -31,8 +30,8 @@ import java.util.Map;
 public class SingleCallActivity extends BaseCallActivity implements ICallSession.ICallSessionListener {
     private static final int LOSS_RATE_ALARM = 20;
     private LayoutInflater inflater;
-    private SurfaceView mLPreviewContainer;
-    private SurfaceView mSPreviewContainer;
+    private VideoView mLPreviewContainer;
+    private VideoView mSPreviewContainer;
     private FrameLayout mButtonContainer;
     private LinearLayout mUserInfoContainer;
     private TextView mConnectionStateTextView;

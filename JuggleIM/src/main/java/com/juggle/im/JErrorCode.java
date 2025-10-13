@@ -72,4 +72,7 @@ public class JErrorCode {
     public static final int FILE_SAVED_FAILED = 23007;
     //批量设置聊天室属性失败
     public static final int CHATROOM_BATCH_SET_ATTRIBUTE_FAIL = 24001;
+
+    //加入 LiveKit 房间失败
+    public static final int JOIN_LIVEKIT_FAIL = 25001;
 }

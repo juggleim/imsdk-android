@@ -21,8 +21,8 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
 
     public void initZegoEngine(int appId, Context context) {
         try {
-            Class clazz = Class.forName("com.j.im.jzegocall.CallMediaZegoEngine");
-            Constructor constructor = clazz.getConstructor(int.class, Context.class);
+            Class<?> clazz = Class.forName("com.j.im.jzegocall.CallMediaZegoEngine");
+            Constructor<?> constructor = clazz.getConstructor(int.class, Context.class);
             mEngine = (ICallMediaEngine) constructor.newInstance(appId, context);
             mEngine.setListener(this);
         } catch (Exception e) {
@@ -32,9 +32,20 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
 
     public void initAgoraEngine(String appId, Context context) {
         try {
-            Class clazz = Class.forName("com.juggle.im.jagoracall.CallMediaAgoraEngine");
-            Constructor constructor = clazz.getConstructor(String.class, Context.class);
+            Class<?> clazz = Class.forName("com.juggle.im.jagoracall.CallMediaAgoraEngine");
+            Constructor<?> constructor = clazz.getConstructor(String.class, Context.class);
             mEngine = (ICallMediaEngine) constructor.newInstance(appId, context);
+            mEngine.setListener(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void initLiveKitEngine(Context context) {
+        try {
+            Class<?> clazz = Class.forName("com.juggle.im.JLiveKitCall.CallMediaLiveKitEngine");
+            Constructor<?> constructor = clazz.getConstructor(Context.class);
+            mEngine = (ICallMediaEngine) constructor.newInstance(context);
             mEngine.setListener(this);
         } catch (Exception e) {
             e.printStackTrace();
@@ -49,6 +60,7 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
         CallMediaRoomConfig config = new CallMediaRoomConfig();
         config.setUserStatusNotify(true);
         config.setToken(callSession.getToken());
+        config.setUrl(callSession.getUrl());
         mEngine.joinRoom(room, user, config, new ICallCompleteCallback() {
             @Override
             public void onComplete(int errorCode, JSONObject data) {
@@ -111,6 +123,14 @@ public class CallMediaManager implements ICallMediaEngine.ICallMediaEngineListen
     public View viewForUserId(String userId) {
         if (mListener != null) {
             return mListener.viewForUserId(userId);
+        }
+        return null;
+    }
+
+    @Override
+    public View viewForSelf() {
+        if (mListener != null) {
+            return mListener.viewForSelf();
         }
         return null;
     }

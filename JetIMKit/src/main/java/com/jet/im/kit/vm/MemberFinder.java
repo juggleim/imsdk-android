@@ -43,6 +43,9 @@ public class MemberFinder {
     MemberFinder(@NonNull UserMentionConfig mentionConfig, String groupId) {
         this.debounceTime = mentionConfig.getDebounceTime();
         this.maxSuggestionCount = mentionConfig.getMaxSuggestionCount();
+        if (sGroupMemberProvider == null) {
+            return;
+        }
         sGroupMemberProvider.getGroupMembers(groupId, new IGroupMemberProvider.GroupMemberCallback() {
             @Override
             public void onMembersFetch(List<UserInfo> members, int code) {

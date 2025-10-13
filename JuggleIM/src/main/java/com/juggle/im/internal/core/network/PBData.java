@@ -1627,15 +1627,19 @@ class PBData {
         PBRcvObj obj = new PBRcvObj();
         Rtcroom.RtcAuth rtcAuth = Rtcroom.RtcAuth.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.callAuthAck);
-        PBRcvObj.StringAck a = new PBRcvObj.StringAck(body);
+        PBRcvObj.RtcAuthAck a = new PBRcvObj.RtcAuthAck(body);
         if (rtcAuth.hasZegoAuth()) {
             Rtcroom.ZegoAuth zegoAuth = rtcAuth.getZegoAuth();
-            a.str = zegoAuth.getToken();
+            a.token = zegoAuth.getToken();
+        } else if (rtcAuth.hasLivekitRtcAuth()) {
+            Rtcroom.LivekitRtcAuth livekitRtcAuth = rtcAuth.getLivekitRtcAuth();
+            a.token = livekitRtcAuth.getToken();
+            a.url = livekitRtcAuth.getServiceUrl();
         } else if (rtcAuth.hasAgoraAuth()) {
             Rtcroom.AgoraAuth agoraAuth = rtcAuth.getAgoraAuth();
-            a.str = agoraAuth.getToken();
+            a.token = agoraAuth.getToken();
         }
-        obj.mStringAck = a;
+        obj.mRtcAuthAck = a;
         return obj;
     }
 

@@ -43,6 +43,15 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
     }
 
     @Override
+    public void initLiveKitEngine(Context context) {
+        if (context == null) {
+            JLogger.e("Call-Init", "context is null");
+        }
+        CallMediaManager.getInstance().initLiveKitEngine(context);
+        mEngineType = CallInternalConst.CallEngineType.LIVEKIT;
+    }
+
+    @Override
     public void initAgoraEngine(String appId, Context context) {
         if (context == null) {
             JLogger.e("Call-Init", "context is null");

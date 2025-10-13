@@ -28,6 +28,7 @@ import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.interfaces.IMessageUploadProvider;
 import com.juggle.im.internal.uploader.FileUtil;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
@@ -38,6 +39,7 @@ import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
+import com.juggle.im.model.MessageOptions;
 import com.juggle.im.model.MessageQueryOptions;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.SearchConversationsResult;
@@ -57,7 +59,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements IChatroomManager.IChatroomListener, IChatroomManager.IChatroomAttributesListener, IConversationManager.IConversationTagListener {
+public class MainActivity extends AppCompatActivity implements IChatroomManager.IChatroomListener, IChatroomManager.IChatroomAttributesListener, IConversationManager.IConversationTagListener, IMessageUploadProvider {
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
@@ -81,6 +83,32 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
                         public void run() {
                             List<ConversationInfo> conversationInfoList = JIM.getInstance().getConversationManager().getConversationInfoList();
                             int i = 0;
+
+                            MessageOptions o = new MessageOptions();
+                            // 单位毫秒，该消息1天后会被自动删除。默认为 0，表示不自动销毁。
+                            o.setLifeTimeAfterRead(24 * 60 * 60 * 1000);
+                            TextMessage textMessage = new TextMessage("Text");
+                            Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "111");
+                            JIM.getInstance().getMessageManager().sendMessage(textMessage, conversation, o, new IMessageManager.ISendMessageCallback() {
+                                @Override
+                                public void onSuccess(Message message) {
+
+                                }
+
+                                @Override
+                                public void onError(Message message, int errorCode) {
+
+                                }
+                            });
+
+                            JIM.getInstance().getMessageManager().addDestroyListener("Main", new IMessageManager.IMessageDestroyListener() {
+                                @Override
+                                public void onMessageDestroyTimeUpdate(String messageId, Conversation conversation, long destroyTime) {
+
+                                }
+                            });
+
+
 //                            GetConversationOptions options = new GetConversationOptions();
 //                            options.setPullDirection(JIMConst.PullDirection.OLDER);
 ////                            options.setTimestamp(0);
@@ -285,6 +313,11 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
             public void onMessageReactionRemove(Conversation conversation, MessageReaction reaction) {
                 Log.d("demo", "onMessageReactionRemove, original messageId is " + reaction.getMessageId());
             }
+
+            @Override
+            public void onMessageSetTop(Message message, UserInfo operator, boolean isTop) {
+                Log.d("demo", "onMessageSetTop, isTop is " + isTop);
+            }
         });
         JIM.getInstance().getConversationManager().addListener("main", new IConversationManager.IConversationListener() {
             @Override
@@ -311,6 +344,7 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
         JIM.getInstance().getChatroomManager().addAttributesListener("main", this);
 
         JIM.getInstance().getConversationManager().addTagListener("main", this);
+        JIM.getInstance().getMessageManager().setMessageUploadProvider(this);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -595,5 +629,32 @@ public class MainActivity extends AppCompatActivity implements IChatroomManager.
     @Override
     public void onConversationsRemoveFromTag(String tagId, List<Conversation> conversations) {
         Log.i("demo", "onConversationsRemoveFromTag, tagId is " + tagId + ", count is " + conversations.size());
+    }
+
+    @Override
+    public void uploadMessage(Message message, UploadCallback uploadCallback) {
+        Handler mH = new Handler(Looper.getMainLooper());
+        mH.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //模拟上传进度回调
+                uploadCallback.onProgress(50);
+            }
+        }, 100);
+        mH.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //上传逻辑
+                if (true) {
+                    //上传成功
+                    MediaMessageContent content = (MediaMessageContent) message.getContent();
+                    content.setUrl("xxxxxx");//上传的文件 url
+                    uploadCallback.onSuccess(message);
+                } else {
+                    uploadCallback.onError();
+                }
+
+            }
+        }, 1000);
     }
 }

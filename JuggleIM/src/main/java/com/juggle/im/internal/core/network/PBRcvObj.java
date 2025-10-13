@@ -180,6 +180,14 @@ class PBRcvObj {
         }
     }
 
+    static class RtcAuthAck extends QryAck {
+        String token;
+        String url;
+        RtcAuthAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
     static class PublishMsgNtf {
         long syncTime;
         String chatroomId;
@@ -343,6 +351,7 @@ class PBRcvObj {
     GetTopMsgAck mGetTopMsgAck;
     GetFavoriteMsgAck mGetFavoriteMsgAck;
     TemplateAck mTemplateAck;
+    RtcAuthAck mRtcAuthAck;
     long timestamp;
 
     private int mRcvType;

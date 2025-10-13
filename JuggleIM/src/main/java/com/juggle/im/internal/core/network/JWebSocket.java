@@ -901,7 +901,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 handleRtcInviteEventNtf(obj.mRtcInviteEventNtf);
                 break;
             case PBRcvObj.PBRcvType.callAuthAck:
-                handleRtcInviteAck(obj.mStringAck);
+                handleRtcInviteAck(obj.mRtcAuthAck);
                 break;
             case PBRcvObj.PBRcvType.qryCallRoomsAck:
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
@@ -1217,7 +1217,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
-    private void handleRtcInviteAck(PBRcvObj.StringAck ack) {
+    private void handleRtcInviteAck(PBRcvObj.RtcAuthAck ack) {
         JLogger.i("WS-Receive", "handleRtcInviteAck");
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) {
@@ -1228,7 +1228,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {
-                callback.onSuccess(ack.str);
+                callback.onSuccess(ack.token, ack.url);
             }
         }
     }
