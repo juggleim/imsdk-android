@@ -2,7 +2,6 @@ package com.juggle.im.JLiveKitCall
 
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import android.view.View
 import androidx.annotation.RequiresApi
 import com.juggle.im.call.internal.media.CallMediaRoom

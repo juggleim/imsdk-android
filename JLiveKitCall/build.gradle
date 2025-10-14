@@ -2,7 +2,7 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
-//apply from: './upload-maven.gradle'
+apply from: './upload-maven.gradle'
 android {
     namespace 'com.juggle.im.JLiveKitCall'
     compileSdk 33
