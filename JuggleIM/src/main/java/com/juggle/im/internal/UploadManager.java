@@ -203,14 +203,6 @@ public class UploadManager implements IMessageUploadProvider {
     private void requestUploadFileCred(UploadFileType fileType, String filePath, QryUploadFileCredCallback callback) {
         //获取文件后缀
         String ext = FileUtil.getFileExtension(filePath);
-        //判空文件后缀
-        if (TextUtils.isEmpty(ext)) {
-            JLogger.e("J-Uploader", "requestUploadFileCred fail, ext is null, filePath = " + filePath);
-            if (callback != null) {
-                callback.onError(ConstInternal.ErrorCode.INVALID_PARAM);
-            }
-            return;
-        }
         //判空WebSocket
         if (mCore.getWebSocket() == null) {
             JLogger.e("J-Uploader", "requestUploadFileCred fail, webSocket is null, path = " + filePath);
