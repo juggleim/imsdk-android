@@ -181,17 +181,15 @@ public class UploadManager implements IMessageUploadProvider {
         boolean needPreUpload = false;
         String preUploadLocalPath = "";
         if (content instanceof ImageMessage) {
-            needPreUpload = true;
             preUploadLocalPath = ((ImageMessage) content).getThumbnailLocalPath();
+            if (!TextUtils.isEmpty(preUploadLocalPath)) {
+                needPreUpload = true;
+            }
         } else if (content instanceof VideoMessage) {
-            needPreUpload = true;
             preUploadLocalPath = ((VideoMessage) content).getSnapshotLocalPath();
-        }
-        //判空封面或缩略图
-        if (needPreUpload && TextUtils.isEmpty(preUploadLocalPath)) {
-            JLogger.e("J-Uploader", "uploadMessage fail, need pre upload but pre upload local path is null, message= " + message.getClientMsgNo());
-            uploadCallback.onError();
-            return;
+            if (!TextUtils.isEmpty(preUploadLocalPath)) {
+                needPreUpload = true;
+            }
         }
         //有缩略图的情况下先上传缩略图
         if (needPreUpload) {
