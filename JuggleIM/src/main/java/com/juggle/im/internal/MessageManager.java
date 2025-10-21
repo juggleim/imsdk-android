@@ -1393,9 +1393,43 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         if (localMessages.size() < count+1) {
             needRemote = true;
         } else {
+            //查询逆向的消息，用于判断是否断档
+            List<Message> fullLocalMessages = new ArrayList<>(localMessages);
+            if (options.getStartTime() != 0) {
+                JIMConst.PullDirection reverseDirection;
+                long reverseTimestamp;
+                if (direction == JIMConst.PullDirection.NEWER) {
+                    reverseDirection = JIMConst.PullDirection.OLDER;
+                    reverseTimestamp = options.getStartTime() + 1;
+                } else {
+                    reverseDirection = JIMConst.PullDirection.NEWER;
+                    reverseTimestamp = options.getStartTime() - 1;
+                }
+                List<Message> exMessages = mCore.getDbManager().getMessages(
+                        5,
+                        reverseTimestamp,
+                        reverseDirection,
+                        null,
+                        null,
+                        options.getContentTypes(),
+                        null,
+                        null,
+                        Collections.singletonList(conversation),
+                        null,
+                        mCore.getCurrentTime()
+                );
+                if (!exMessages.isEmpty()) {
+                    if (direction == JIMConst.PullDirection.NEWER) {
+                        fullLocalMessages.addAll(0, exMessages);
+                    } else {
+                        fullLocalMessages.addAll(exMessages);
+                    }
+                }
+            }
+
             long seqNo = -1;
-            for (int i = 0; i < localMessages.size(); i++) {
-                ConcreteMessage m = (ConcreteMessage) localMessages.get(i);
+            for (int i = 0; i < fullLocalMessages.size(); i++) {
+                ConcreteMessage m = (ConcreteMessage) fullLocalMessages.get(i);
                 if (m.getSeqNo() < 0) {
                     continue;
                 }
