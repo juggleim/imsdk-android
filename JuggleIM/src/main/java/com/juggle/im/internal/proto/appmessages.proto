@@ -172,6 +172,7 @@ enum ChannelType {
   System = 4;
   GroupCast = 5;
   BroadCast = 6;
+  PublicService = 7;
 }
 message Notify{
   NotifyType type = 1;

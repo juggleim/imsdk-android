@@ -254,6 +254,9 @@ class PBData {
                 break;
             case SYSTEM:
                 break;
+            case PUBLIC_SERVICE:
+                topic = PC_MSG;
+                break;
         }
 
         Connect.PublishMsgBody publishMsgBody = Connect.PublishMsgBody.newBuilder()
@@ -2360,6 +2363,9 @@ class PBData {
             case System:
                 result = Conversation.ConversationType.SYSTEM;
                 break;
+            case PublicService:
+                result = Conversation.ConversationType.PUBLIC_SERVICE;
+                break;
             default:
                 break;
         }
@@ -2380,6 +2386,9 @@ class PBData {
                 break;
             case SYSTEM:
                 result = Appmessages.ChannelType.System;
+                break;
+            case PUBLIC_SERVICE:
+                result = Appmessages.ChannelType.PublicService;
                 break;
             default:
                 break;
@@ -2524,6 +2533,7 @@ class PBData {
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
+    private static final String PC_MSG = "pc_msg";
     private static final String NTF = "ntf";
     private static final String MSG = "msg";
     private static final String C_USER_NTF = "c_user_ntf";

@@ -1478,7 +1478,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             boolean hasMore = localMessages.size() >= count + 1;
             completeCallbackForGetMessages(localMessages, count, direction, hasMore, JErrorCode.NONE, startTime, callback);
         }
-
     }
 
     private void completeCallbackForGetMessages(List<Message> messages, int count, JIMConst.PullDirection direction, boolean hasMore, int code, long getMessageTime, IGetMessagesCallbackV3 callback) {

@@ -42,7 +42,9 @@ public class Conversation {
         /// 聊天室
         CHATROOM(3),
         /// 系统会话
-        SYSTEM(4);
+        SYSTEM(4),
+        /// 公众号
+        PUBLIC_SERVICE(7);
 
         ConversationType(int value) {
             this.mValue = value;
