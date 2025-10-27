@@ -650,6 +650,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-FirstUnread", "success");
+                insertRemoteMessages(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(result));
