@@ -6,6 +6,7 @@ import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.GetFavoriteMessageOption;
 import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupMessageReadInfo;
+import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
@@ -104,12 +105,6 @@ public interface IMessageManager {
 
     interface ISendReadReceiptCallback {
         void onSuccess();
-
-        void onError(int errorCode);
-    }
-
-    interface IGetGroupMessageReadDetailCallback {
-        void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers);
 
         void onError(int errorCode);
     }
@@ -362,9 +357,9 @@ public interface IMessageManager {
      * @param messageId 需要查询的群消息 id
      * @param callback 结果回调
      */
-    void getGroupMessageReadDetail(Conversation conversation,
-                                   String messageId,
-                                   IGetGroupMessageReadDetailCallback callback);
+    void getGroupMessageReadInfoDetail(Conversation conversation,
+                                       String messageId,
+                                       JIMConst.IResultCallback<GroupMessageReadInfoDetail> callback);
 
     /**
      * 获取被合并的消息列表

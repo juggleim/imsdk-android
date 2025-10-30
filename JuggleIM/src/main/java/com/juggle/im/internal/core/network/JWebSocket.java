@@ -22,7 +22,6 @@ import com.juggle.im.internal.core.network.wscallback.GetTopMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.IWebSocketCallback;
 import com.juggle.im.internal.core.network.wscallback.MessageReactionListCallback;
 import com.juggle.im.internal.core.network.wscallback.QryHisMsgCallback;
-import com.juggle.im.internal.core.network.wscallback.QryReadDetailCallback;
 import com.juggle.im.internal.core.network.wscallback.QryUploadFileCredCallback;
 import com.juggle.im.internal.core.network.wscallback.RtcRoomListCallback;
 import com.juggle.im.internal.core.network.wscallback.SendMessageCallback;
@@ -37,6 +36,7 @@ import com.juggle.im.internal.model.MergeInfo;
 import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
+import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
@@ -259,7 +259,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public void getGroupMessageReadDetail(Conversation conversation,
                                           String messageId,
-                                          QryReadDetailCallback callback) {
+                                          WebSocketDataCallback<GroupMessageReadInfoDetail> callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.getGroupMessageReadDetail(conversation, messageId, mCmdIndex++);
         mWebSocketCommandManager.putCommand(key, callback);
@@ -704,9 +704,6 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         } else if (callback instanceof SyncConversationsCallback) {
             SyncConversationsCallback sCallback = (SyncConversationsCallback) callback;
             sCallback.onError(errorCode);
-        } else if (callback instanceof QryReadDetailCallback) {
-            QryReadDetailCallback sCallback = (QryReadDetailCallback) callback;
-            sCallback.onError(errorCode);
         } else if (callback instanceof WebSocketSimpleCallback) {
             WebSocketSimpleCallback sCallback = (WebSocketSimpleCallback) callback;
             sCallback.onError(errorCode);
@@ -852,7 +849,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 handleDisconnectMsg(obj.mDisconnectMsg);
                 break;
             case PBRcvObj.PBRcvType.qryReadDetailAck:
-                handleQryReadDetailAck(obj.mQryReadDetailAck);
+                handleQryReadDetailAck(obj.mTemplateAck);
                 break;
             case PBRcvObj.PBRcvType.simpleQryAck:
                 handleSimpleQryAck(obj.mSimpleQryAck);
@@ -1403,16 +1400,16 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
-    private void handleQryReadDetailAck(PBRcvObj.QryReadDetailAck ack) {
+    private void handleQryReadDetailAck(PBRcvObj.TemplateAck<GroupMessageReadInfoDetail> ack) {
         JLogger.i("WS-Receive", "handleQryReadDetailAck, code is " + ack.code);
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) return;
-        if (c instanceof QryReadDetailCallback) {
-            QryReadDetailCallback callback = (QryReadDetailCallback) c;
+        if (c instanceof WebSocketDataCallback) {
+            WebSocketDataCallback<GroupMessageReadInfoDetail> callback = (WebSocketDataCallback<GroupMessageReadInfoDetail>) c;
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {
-                callback.onSuccess(ack.readMembers, ack.unreadMembers);
+                callback.onSuccess(ack.t);
             }
         }
     }
