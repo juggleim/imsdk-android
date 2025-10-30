@@ -76,15 +76,6 @@ class PBRcvObj {
         }
     }
 
-    static class QryReadDetailAck extends QryAck {
-        List<UserInfo> readMembers;
-        List<UserInfo> unreadMembers;
-
-        QryReadDetailAck(Connect.QueryAckMsgBody body) {
-            super(body);
-        }
-    }
-
     static class SimpleQryAck extends QryAck {
         SimpleQryAck(Connect.QueryAckMsgBody body) {
             super(body);
@@ -328,7 +319,6 @@ class PBRcvObj {
     PublishMsgBody mPublishMsgBody;
     PublishMsgNtf mPublishMsgNtf;
     DisconnectMsg mDisconnectMsg;
-    QryReadDetailAck mQryReadDetailAck;
     SimpleQryAck mSimpleQryAck;
     TimestampQryAck mTimestampQryAck;
     QryFileCredAck mQryFileCredAck;

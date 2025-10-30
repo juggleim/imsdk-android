@@ -32,7 +32,9 @@ import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationMentionInfo;
 import com.juggle.im.model.GroupInfo;
+import com.juggle.im.model.GroupMessageMemberReadDetail;
 import com.juggle.im.model.GroupMessageReadInfo;
+import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
@@ -1838,20 +1840,24 @@ class PBData {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.QryReadDetailResp resp = Appmessages.QryReadDetailResp.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.qryReadDetailAck);
-        PBRcvObj.QryReadDetailAck a = new PBRcvObj.QryReadDetailAck(body);
-        List<UserInfo> readMembers = new ArrayList<>();
-        List<UserInfo> unreadMembers = new ArrayList<>();
+        PBRcvObj.TemplateAck<GroupMessageReadInfoDetail> a = new PBRcvObj.TemplateAck<>(body);
+        List<GroupMessageMemberReadDetail> readMembers = new ArrayList<>();
+        List<GroupMessageMemberReadDetail> unreadMembers = new ArrayList<>();
         for (Appmessages.MemberReadDetailItem item : resp.getReadMembersList()) {
-            UserInfo userInfo = userInfoWithMemberReadDetailItem(item);
-            readMembers.add(userInfo);
+            GroupMessageMemberReadDetail d = groupMessageMemberReadDetailWithPbItem(item);
+            readMembers.add(d);
         }
         for (Appmessages.MemberReadDetailItem item : resp.getUnreadMembersList()) {
-            UserInfo userInfo = userInfoWithMemberReadDetailItem(item);
-            unreadMembers.add(userInfo);
+            GroupMessageMemberReadDetail d = groupMessageMemberReadDetailWithPbItem(item);
+            unreadMembers.add(d);
         }
-        a.readMembers = readMembers;
-        a.unreadMembers = unreadMembers;
-        obj.mQryReadDetailAck = a;
+        GroupMessageReadInfoDetail detail = new GroupMessageReadInfoDetail();
+        detail.setReadCount(resp.getReadCount());
+        detail.setMemberCount(resp.getMemberCount());
+        detail.setReadMembers(readMembers);
+        detail.setUnreadMembers(unreadMembers);
+        a.t = detail;
+        obj.mTemplateAck = a;
         return obj;
     }
 
@@ -2174,7 +2180,7 @@ class PBData {
         return callInfo;
     }
 
-    private UserInfo userInfoWithMemberReadDetailItem(Appmessages.MemberReadDetailItem item) {
+    private GroupMessageMemberReadDetail groupMessageMemberReadDetailWithPbItem(Appmessages.MemberReadDetailItem item) {
         UserInfo userInfo = new UserInfo();
         userInfo.setUserId(item.getMember().getUserId());
         userInfo.setUserName(item.getMember().getNickname());
@@ -2187,7 +2193,10 @@ class PBData {
             userInfo.setExtra(extra);
         }
         userInfo.setUpdatedTime(item.getMember().getUpdatedTime());
-        return userInfo;
+        GroupMessageMemberReadDetail detail = new GroupMessageMemberReadDetail();
+        detail.setUserInfo(userInfo);
+        detail.setReadTime(item.getTime());
+        return detail;
     }
 
     private UserInfo userInfoWithPBUserInfo(Appmessages.UserInfo pbUserInfo) {

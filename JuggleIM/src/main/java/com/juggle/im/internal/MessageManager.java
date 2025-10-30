@@ -9,6 +9,7 @@ import com.juggle.im.call.internal.CallManager;
 import com.juggle.im.call.internal.model.CallActiveCallMessage;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
 import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.GetFavoriteMessageOption;
 import com.juggle.im.model.GroupMember;
@@ -21,7 +22,6 @@ import com.juggle.im.internal.core.network.JWebSocket;
 import com.juggle.im.internal.core.network.wscallback.GetTopMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.MessageReactionListCallback;
 import com.juggle.im.internal.core.network.wscallback.QryHisMsgCallback;
-import com.juggle.im.internal.core.network.wscallback.QryReadDetailCallback;
 import com.juggle.im.internal.core.network.wscallback.SendMessageCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketTimestampCallback;
 import com.juggle.im.internal.downloader.MediaDownloadEngine;
@@ -55,6 +55,7 @@ import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfo;
+import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
@@ -1570,7 +1571,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
-    public void getGroupMessageReadDetail(Conversation conversation, String messageId, IGetGroupMessageReadDetailCallback callback) {
+    public void getGroupMessageReadInfoDetail(Conversation conversation, String messageId, JIMConst.IResultCallback<GroupMessageReadInfoDetail> callback) {
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("MSG-GroupReadDetail", "fail, errorCode is " + errorCode);
@@ -1579,20 +1580,20 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
             return;
         }
-        mCore.getWebSocket().getGroupMessageReadDetail(conversation, messageId, new QryReadDetailCallback() {
+        mCore.getWebSocket().getGroupMessageReadDetail(conversation, messageId, new WebSocketDataCallback<GroupMessageReadInfoDetail>() {
             @Override
-            public void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers) {
+            public void onSuccess(GroupMessageReadInfoDetail detail) {
                 JLogger.i("MSG-GroupReadDetail", "success");
                 GroupMessageReadInfo info = new GroupMessageReadInfo();
-                info.setReadCount(readMembers.size());
-                info.setMemberCount(readMembers.size() + unreadMembers.size());
+                info.setReadCount(detail.getReadCount());
+                info.setMemberCount(detail.getMemberCount());
                 mCore.getDbManager().setGroupMessageReadInfo(new HashMap<String, GroupMessageReadInfo>() {
                     {
                         put(messageId, info);
                     }
                 });
                 if (callback != null) {
-                    mCore.getCallbackHandler().post(() -> callback.onSuccess(readMembers, unreadMembers));
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(detail));
                 }
             }
 
