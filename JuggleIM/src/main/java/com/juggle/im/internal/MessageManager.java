@@ -599,6 +599,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(List<ConcreteMessage> remoteMessages, boolean isFinished) {
                 JLogger.i("MSG-Get", "by id, success");
+                insertRemoteMessages(remoteMessages);
                 List<Message> result = new ArrayList<>();
                 for (String messageId : messageIds) {
                     boolean isMatch = false;
