@@ -173,6 +173,15 @@ public class JIMCore {
         mMessageReceiveTime = mDbManager.getMessageReceiveSyncTime();
     }
 
+    public long getTimeDifference() {
+        return mWebSocket.getTimeDifference();
+    }
+
+    public long getCurrentTime() {
+        long now = System.currentTimeMillis();
+        return now + mWebSocket.getTimeDifference();
+    }
+
     public long getConversationSyncTime() {
         return mConversationSyncTime;
     }

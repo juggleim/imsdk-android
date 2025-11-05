@@ -1,5 +1,7 @@
 package com.juggle.im.call.internal.fsm;
 
+import static com.juggle.im.call.internal.CallEvent.SOUND_LEVEL_UPDATE;
+
 import android.os.Message;
 
 import com.juggle.im.call.internal.CallEvent;
@@ -12,7 +14,9 @@ import java.lang.ref.WeakReference;
 public class CallState extends BaseState {
     @Override
     public boolean processMessage(Message msg) {
-        JLogger.i("FSM-Sm", "[" + getName() + "] processMessage : " + CallEvent.nameOfEvent(msg.what));
+        if (msg.what != SOUND_LEVEL_UPDATE) {
+            JLogger.i("FSM-Sm", "[" + getName() + "] processMessage : " + CallEvent.nameOfEvent(msg.what));
+        }
         return super.processMessage(msg);
     }
 

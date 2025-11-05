@@ -24,6 +24,7 @@ public class PermissionUtils {
     public final static String[] CAMERA_PERMISSION = getCameraPermission();
     public final static String[] GET_CONTENT_PERMISSION = getGetContentPermission();
     public final static String[] RECORD_AUDIO_PERMISSION = getRecordAudioPermission();
+    public final static String[] VIDEO_CALL_PERMISSION = getVideoCallPermission();
 
     private PermissionUtils() {
     }
@@ -50,6 +51,12 @@ public class PermissionUtils {
             permissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
         }
         return permissions;
+    }
+
+    private static String[] getVideoCallPermission() {
+        return new String[]{Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
+        };
     }
 
     public static boolean hasPermissions(@NonNull Context context, @NonNull String... permissions) {

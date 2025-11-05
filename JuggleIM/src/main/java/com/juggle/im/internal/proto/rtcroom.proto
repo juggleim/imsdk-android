@@ -9,18 +9,35 @@ message RtcRoomReq{
     string roomId = 2;
     RtcMember joinMember = 3;
     RtcChannel rtcChannel = 4;
+    RtcMediaType rtcMediaType = 5;
+    string ext = 6;
+    ConverIndex attachedConver = 7;
+}
+
+message ConverIndex {
+    string targetId = 1;
+    ChannelType channelType = 2;
+    string subChannel = 3;
 }
 
 message RtcRoom{
     RtcRoomType roomType = 1;
     string roomId = 2;
     UserInfo owner = 3;
+    RtcChannel rtcChannel = 4;
+    RtcMediaType rtcMediaType = 5;
+    string ext = 6;
+    RtcAuth auth= 7;
     
     repeated RtcMember members = 51;
 }
 
 enum RtcChannel {
     Zego = 0;
+    LivekitRtc = 1;
+    Agora = 2;
+        
+    JuggleRtc = 11; //自建音视频，保留
 }
 
 enum RtcRoomType{
@@ -60,9 +77,10 @@ enum RtcState{
 
 message RtcRoomEvent{
     RtcRoomEventType roomEventType = 1;
-    RtcMember member = 2;
+    repeated RtcMember members = 2; //事件相关人的列表
     RtcRoom room = 3;
     RtcRoomQuitReason reason = 4;
+    int64 eventTime = 5;
 }
 
 enum RtcRoomEventType{
@@ -79,11 +97,19 @@ enum RtcRoomQuitReason{
     PingTimeout = 2;
 }
 
+enum RtcMediaType{
+    RtcAudio = 0;
+    RtcVideo = 1;
+}
+
 message RtcInviteReq{
     repeated string targetIds = 1;
     RtcRoomType roomType = 2;
     string roomId = 3;
     RtcChannel rtcChannel = 4;
+    RtcMediaType rtcMediaType = 5;
+    string ext = 6;
+    ConverIndex attachedConver = 7;
 }
 
 message RtcMemberRooms{
@@ -97,10 +123,15 @@ message RtcMemberRoom{
     RtcState rtcState = 4;
     RtcChannel rtcChannel = 5;
     string deviceId = 6;
+    RtcMediaType rtcMediaType = 7;
 }
 
 message RtcAuth{
     ZegoAuth zegoAuth = 1;
+    LivekitRtcAuth livekitRtcAuth = 2;
+    AgoraAuth agoraAuth = 3;
+
+    JuggleRtcAuth juggleRtcAuth = 11;
 }
 
 message ZegoAuth{
@@ -123,3 +154,32 @@ enum InviteType{
 message RtcAnswer{
     string roomId = 1;
 }
+
+message JuggleRtcAuth{
+    string token = 1;
+}
+
+message AgoraAuth{
+    string token = 1;
+}
+
+message LivekitRtcAuth{
+    string token = 1;
+    string serviceUrl = 2;
+}
+
+message ConverConf{
+    ActivedRtcRoom activedRtcRoom = 1;
+}
+
+message ActivedRtcRoom{
+    RtcRoomType roomType = 1;
+    string roomId = 2;
+    UserInfo owner = 3;
+    RtcChannel rtcChannel = 4;
+    RtcMediaType rtcMediaType = 5;
+    string ext = 6;
+
+    repeated RtcMember members = 51;
+}
+

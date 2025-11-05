@@ -413,7 +413,7 @@ class ConversationSql {
     private static String sqlAndConversationTypeIn(int[] conversationTypes) {
         StringBuilder sql = new StringBuilder();
         if (conversationTypes != null && conversationTypes.length > 0) {
-            sql.append(" AND conversation_type in (");
+            sql.append(" AND conversation_info.conversation_type in (");
             for (int i = 0; i < conversationTypes.length; i++) {
                 if (i > 0) {
                     sql.append(", ");

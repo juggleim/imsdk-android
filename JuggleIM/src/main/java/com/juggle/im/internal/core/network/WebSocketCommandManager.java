@@ -1,5 +1,6 @@
 package com.juggle.im.internal.core.network;
 
+import com.juggle.im.internal.core.network.wscallback.IWebSocketCallback;
 import com.juggle.im.internal.util.JSimpleTimer;
 import com.juggle.im.internal.util.JLogger;
 

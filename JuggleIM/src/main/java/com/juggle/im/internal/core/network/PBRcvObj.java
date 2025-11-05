@@ -8,6 +8,7 @@ import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.upload.UploadOssType;
 import com.juggle.im.internal.model.upload.UploadPreSignCred;
 import com.juggle.im.internal.model.upload.UploadQiNiuCred;
+import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.TimePeriod;
@@ -71,15 +72,6 @@ class PBRcvObj {
         List<ConcreteConversationInfo> deletedConvList;
 
         SyncConvAck(Connect.QueryAckMsgBody body) {
-            super(body);
-        }
-    }
-
-    static class QryReadDetailAck extends QryAck {
-        List<UserInfo> readMembers;
-        List<UserInfo> unreadMembers;
-
-        QryReadDetailAck(Connect.QueryAckMsgBody body) {
             super(body);
         }
     }
@@ -155,6 +147,38 @@ class PBRcvObj {
         }
     }
 
+    static class GetTopMsgAck extends QryAck {
+        ConcreteMessage message;
+        UserInfo userInfo;
+        long createdTime;
+        GetTopMsgAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
+    static class GetFavoriteMsgAck extends QryAck {
+        List<FavoriteMessage> favoriteMessages;
+        String offset;
+        GetFavoriteMsgAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
+    static class TemplateAck<T> extends QryAck {
+        T t;
+        TemplateAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
+    static class RtcAuthAck extends QryAck {
+        String token;
+        String url;
+        RtcAuthAck(Connect.QueryAckMsgBody body) {
+            super(body);
+        }
+    }
+
     static class PublishMsgNtf {
         long syncTime;
         String chatroomId;
@@ -170,7 +194,7 @@ class PBRcvObj {
 
     static class RtcRoomEventNtf {
         PBRtcRoomEventType eventType;
-        CallMember member;
+        List<CallMember> members;
         RtcRoom room;
     }
 
@@ -216,6 +240,9 @@ class PBRcvObj {
         static final int qryCallRoomAck = 32;
         static final int qryMsgExtAck = 33;
         static final int getUserInfoAck = 34;
+        static final int getTopMsgAck = 35;
+        static final int getFavoriteMsgAck = 36;
+        static final int getConversationConfAck = 37;
     }
 
     public enum PBChatroomEventType {
@@ -300,7 +327,6 @@ class PBRcvObj {
     PublishMsgBody mPublishMsgBody;
     PublishMsgNtf mPublishMsgNtf;
     DisconnectMsg mDisconnectMsg;
-    QryReadDetailAck mQryReadDetailAck;
     SimpleQryAck mSimpleQryAck;
     TimestampQryAck mTimestampQryAck;
     QryFileCredAck mQryFileCredAck;
@@ -312,6 +338,11 @@ class PBRcvObj {
     StringAck mStringAck;
     RtcQryCallRoomsAck mRtcQryCallRoomsAck;
     QryMsgExtAck mQryMsgExtAck;
+    GetTopMsgAck mGetTopMsgAck;
+    GetFavoriteMsgAck mGetFavoriteMsgAck;
+    TemplateAck mTemplateAck;
+    RtcAuthAck mRtcAuthAck;
+    long timestamp;
 
     private int mRcvType;
 }

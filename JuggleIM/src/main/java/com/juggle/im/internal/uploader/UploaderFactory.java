@@ -18,7 +18,7 @@ public class UploaderFactory {
             case S3:
             case MINIO:
             case OSS:
-                uploader = new PreSignUploader(localPath, uploaderCallback, preSignCred);
+                uploader = new PreSignUploader(localPath, uploaderCallback, preSignCred, ossType);
                 break;
             default:
                 break;

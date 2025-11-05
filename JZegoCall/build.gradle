@@ -38,5 +38,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     api project(':JuggleIM')
-    compileOnly('im.zego:express-video:3.17.3')
+    compileOnly('im.zego:express-video:3.21.0')
 }

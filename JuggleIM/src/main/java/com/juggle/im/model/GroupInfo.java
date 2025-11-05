@@ -35,8 +35,17 @@ public class GroupInfo {
         mExtra = extra;
     }
 
+    public long getUpdatedTime() {
+        return mUpdatedTime;
+    }
+
+    public void setUpdatedTime(long updatedTime) {
+        mUpdatedTime = updatedTime;
+    }
+
     private String mGroupId;
     private String mGroupName;
     private String mPortrait;
     private Map<String, String> mExtra;
+    private long mUpdatedTime;
 }

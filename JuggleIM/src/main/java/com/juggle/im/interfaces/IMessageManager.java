@@ -2,8 +2,11 @@ package com.juggle.im.interfaces;
 
 import com.juggle.im.JIMConst;
 import com.juggle.im.model.Conversation;
+import com.juggle.im.model.FavoriteMessage;
+import com.juggle.im.model.GetFavoriteMessageOption;
 import com.juggle.im.model.GetMessageOptions;
 import com.juggle.im.model.GroupMessageReadInfo;
+import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
@@ -106,12 +109,6 @@ public interface IMessageManager {
         void onError(int errorCode);
     }
 
-    interface IGetGroupMessageReadDetailCallback {
-        void onSuccess(List<UserInfo> readMembers, List<UserInfo> unreadMembers);
-
-        void onError(int errorCode);
-    }
-
     interface IBroadcastMessageCallback {
         void onProgress(Message message, int errorCode, int processCount, int totalCount);
 
@@ -130,6 +127,16 @@ public interface IMessageManager {
 
     interface ISearchConversationWithMessageContentCallback {
         void onComplete(List<SearchConversationsResult> resultList);
+    }
+
+    interface IGetTopMessageCallback {
+        void onSuccess(Message message, UserInfo operator, long timestamp);
+        void onError(int errorCode);
+    }
+
+    interface IGetFavoriteMessageCallback {
+        void onSuccess(List<FavoriteMessage> messageList, String offset);
+        void onError(int errorCode);
     }
 
     Message sendMessage(MessageContent content,
@@ -344,10 +351,27 @@ public interface IMessageManager {
                          List<String> messageIds,
                          ISendReadReceiptCallback callback);
 
-    void getGroupMessageReadDetail(Conversation conversation,
-                                   String messageId,
-                                   IGetGroupMessageReadDetailCallback callback);
+    /**
+     * 获取群消息阅读状态
+     * @param conversation 消息所在会话
+     * @param messageId 需要查询的群消息 id
+     * @param callback 结果回调
+     */
+    void getGroupMessageReadInfoDetail(Conversation conversation,
+                                       String messageId,
+                                       JIMConst.IResultCallback<GroupMessageReadInfoDetail> callback);
 
+    /**
+     * 获取单聊消息阅读时间（群消息阅读状态请使用 getGroupMessageReadInfoDetail）
+     * @param clientMsgNo 本端消息唯一编号
+     */
+    long getMessageReadTime(long clientMsgNo);
+
+    /**
+     * 获取被合并的消息列表
+     * @param containerMsgId 合并消息 id
+     * @param callback 结果回调
+     */
     void getMergedMessageList(String containerMsgId,
                               IGetMessagesCallback callback);
 
@@ -430,6 +454,43 @@ public interface IMessageManager {
 
     void setMessageState(long clientMsgNo, Message.MessageState state);
 
+    /**
+     * 设置置顶
+     * @param messageId 消息 id
+     * @param conversation 消息所属会话标识
+     * @param isTop 是否置顶
+     * @param callback 结果回调
+     */
+    void setTop(String messageId, Conversation conversation, boolean isTop, ISimpleCallback callback);
+
+    /**
+     * 获取置顶消息
+     * @param conversation 会话标识
+     * @param callback 结果回调
+     */
+    void getTopMessage(Conversation conversation, IGetTopMessageCallback callback);
+
+    /**
+     * 添加消息收藏
+     * @param messageIdList 待收藏的消息 id 列表
+     * @param callback 结果回调
+     */
+    void addFavorite(List<String> messageIdList, ISimpleCallback callback);
+
+    /**
+     * 移除消息收藏
+     * @param messageIdList 待移除的消息 id 列表
+     * @param callback 结果回调
+     */
+    void removeFavorite(List<String> messageIdList, ISimpleCallback callback);
+
+    /**
+     * 获取收藏的消息
+     * @param option 查询参数
+     * @param callback 结果回调
+     */
+    void getFavorite(GetFavoriteMessageOption option, IGetFavoriteMessageCallback callback);
+
     void registerContentType(Class<? extends MessageContent> messageContentClass);
 
     void addListener(String key, IMessageListener listener);
@@ -443,6 +504,12 @@ public interface IMessageManager {
     void addReadReceiptListener(String key, IMessageReadReceiptListener listener);
 
     void removeReadReceiptListener(String key);
+
+    void addDestroyListener(String key, IMessageDestroyListener listener);
+
+    void removeDestroyListener(String key);
+
+    void setPreprocessor(IMessagePreprocessor preprocessor);
 
     void setMessageUploadProvider(IMessageUploadProvider uploadProvider);
 
@@ -464,6 +531,9 @@ public interface IMessageManager {
 
         //删除消息回应的回调
         void onMessageReactionRemove(Conversation conversation, MessageReaction reaction);
+
+        //消息置顶的回调
+        void onMessageSetTop(Message message, UserInfo operator, boolean isTop);
     }
 
     interface IMessageSyncListener {
@@ -474,5 +544,37 @@ public interface IMessageManager {
         void onMessagesRead(Conversation conversation, List<String> messageIds);
 
         void onGroupMessagesRead(Conversation conversation, Map<String, GroupMessageReadInfo> messages);
+    }
+
+    interface IMessageDestroyListener {
+        /**
+         * 消息销毁时间更新回调（一般发生在阅后即焚之类的场景）
+         * @param messageId 消息 id
+         * @param conversation 所在会话
+         * @param destroyTime 更新后的销毁时间
+         */
+        void onMessageDestroyTimeUpdate(String messageId, Conversation conversation, long destroyTime);
+    }
+
+    interface IMessagePreprocessor {
+        /**
+         * 消息加密的回调
+         * 回调时机：消息入库之后，发送之前
+         * @param content 待发送的消息内容，已序列化成 byte[]
+         * @param conversation 所在会话
+         * @param contentType 消息类型
+         * @return 处理后的消息内容。
+         */
+        byte[] encryptMessageContent(byte[] content, Conversation conversation, String contentType);
+
+        /**
+         * 消息解密的回调
+         * 回调时机：接收到消息，入库之前
+         * @param content 接收到的消息内容, byte[] 类型，还没反序列化
+         * @param conversation 所在会话
+         * @param contentType 消息类型
+         * @return 处理后的消息内容。
+         */
+        byte[] decryptMessageContent(byte[] content, Conversation conversation, String contentType);
     }
 }

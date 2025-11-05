@@ -31,6 +31,16 @@ public class UnknownMessage extends MessageContent {
         mContent = content;
     }
 
+    @Override
+    public int getFlags() {
+        return mFlags;
+    }
+
+    public void setFlags(int flags) {
+        mFlags = flags;
+    }
+
     private String mMessageType;
     private String mContent;
+    private int mFlags;
 }

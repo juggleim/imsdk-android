@@ -74,6 +74,8 @@ public class Message {
         mLocalAttribute = other.getLocalAttribute();
         mIsDelete = other.isDelete();
         mIsEdit = other.isEdit();
+        mLifeTimeAfterRead = other.getLifeTimeAfterRead();
+        mDestroyTime = other.getDestroyTime();
     }
 
     public Conversation getConversation() {
@@ -212,6 +214,22 @@ public class Message {
         mIsEdit = edit;
     }
 
+    public long getDestroyTime() {
+        return mDestroyTime;
+    }
+
+    public void setDestroyTime(long destroyTime) {
+        mDestroyTime = destroyTime;
+    }
+
+    public long getLifeTimeAfterRead() {
+        return mLifeTimeAfterRead;
+    }
+
+    public void setLifeTimeAfterRead(long lifeTimeAfterRead) {
+        mLifeTimeAfterRead = lifeTimeAfterRead;
+    }
+
     private Conversation mConversation;
     /// 消息类型
     private String mContentType;
@@ -225,14 +243,17 @@ public class Message {
     private MessageState mState;
     /// 是否已读
     private boolean mHasRead;
-    /// 消息发送的时间戳（服务端时间）
+    /// 消息发送的时间戳（服务端时间，单位毫秒）
     private long mTimestamp;
     /// 发送者 userId
     private String mSenderUserId;
     /// 消息内容
     private MessageContent mContent;
+    /// 群消息阅读信息（只对群消息生效）
     private GroupMessageReadInfo mGroupMessageReadInfo;
+    /// 引用消息
     private Message mReferredMessage;
+    /// @ 消息
     private MessageMentionInfo mMentionInfo;
     /// 消息本地属性（仅对本端生效，不会同步到服务端）
     private String mLocalAttribute;
@@ -240,4 +261,11 @@ public class Message {
     private boolean mIsDelete;
     ///是否被编辑
     private boolean mIsEdit;
+    /// 消息销毁时间戳（服务器时间，单位毫秒）。
+    /// 由消息的发送时间，加上发送消息时 JMessageOptions 的 lifeTime 和 lifeTimeAfterRead 共同决定，取其中较小的那个时间戳。
+    /// 默认值为 0，表示不自动销毁。
+    private long mDestroyTime;
+    /// 消息已读后的生存周期，单位毫秒。
+    /// 默认值为 0，表示读后不自动销毁。
+    private long mLifeTimeAfterRead;
 }

@@ -57,6 +57,10 @@ message UpMsg {
   DownMsg referMsg = 7;//被引用的消息
   repeated string toUserIds = 8;//群定向消息，指定接收消息的部分群成员
   MergedMsgs mergedMsgs = 9;
+  string SearchText = 10;
+  int64 lifeTime = 11;   // 消息默认生存周期，单位毫秒，例如：86400000，即该消息1天后会被自动删除
+  int64 lifeTimeAfterRead = 12; // 消息已读后的生存周期，通常小于lifeTime，例如60000，即消息已读1分钟后会被自动删除
+  string subChannel = 13;
   
   int64 msgTime = 51; 
 }
@@ -123,8 +127,14 @@ message DownMsg{
   repeated MsgExtItem msgExSet = 25;
   repeated MsgExtItem msgExts = 26;
   repeated ConverTag converTags = 27;
-  string searchText = 29;
+  string SearchText = 29;
   GrpMemberInfo grpMemberInfo = 30;
+  int64 destroyTime = 31;  // 消息默认的销毁时间点，单位毫秒，如 1752551449037，为0时，表示消息不自动销毁
+  int64 lifeTimeAfterRead = 32; // 消息已读后生存周期，例如60000，即消息已读1分钟后会被自动删除
+  bool isDelete = 33;
+  string subChannel = 34;
+  repeated string toUserIds = 35;
+  int64 readTime = 36;
 }
 
 message GrpMemberInfo{
@@ -165,6 +175,7 @@ enum ChannelType {
   System = 4;
   GroupCast = 5;
   BroadCast = 6;
+  PublicService = 7;
 }
 message Notify{
   NotifyType type = 1;
@@ -332,11 +343,26 @@ message QryMergedMsgsReq{
   int32 order = 3;
 }
 
+message QryMsgExtReq{
+  string targetId = 1;
+  ChannelType channelType = 2;
+  repeated string msgIds = 3;
+}
+
 message MsgExt {
   string targetId = 1;
   ChannelType channelType = 2;
   string msgId = 3;
   MsgExtItem ext = 4;
+}
+
+message MsgExtItemsList{
+  repeated MsgExtItems items = 1;
+}
+
+message MsgExtItems{
+  string msgId = 1;
+  repeated MsgExtItem exts = 2;
 }
 
 message MsgExtItem {
@@ -846,17 +872,46 @@ message OnlineOfflineMsg {
   string instanceId = 9;
 }
 
-message QryMsgExtReq{
+message TopMsgReq{
   string targetId = 1;
   ChannelType channelType = 2;
-  repeated string msgIds = 3;
+  string msgId = 3;
 }
 
-message MsgExtItemsList{
-  repeated MsgExtItems items = 1;
+message GetTopMsgReq{
+  string targetId = 1;
+  ChannelType channelType = 2;
 }
 
-message MsgExtItems{
-  string msgId = 1;
-  repeated MsgExtItem exts = 2;
+message TopMsg{
+  DownMsg msg = 1;
+  UserInfo operator = 2;
+  int64 createdTime = 3;
+}
+
+message FavoriteMsgIds{
+  repeated FavoriteMsgIdItem items = 1;
+}
+
+message FavoriteMsgIdItem{
+  string senderId = 1;
+  string receiverId = 2;
+  ChannelType channelType = 3;
+  string msgId = 4;
+  string subChannel = 5;
+}
+
+message QryFavoriteMsgsReq{
+  int64 limit = 1;
+  string offset = 2;
+}
+
+message FavoriteMsgs{
+  repeated FavoriteMsg items = 1;
+  string offset = 2;
+}
+
+message FavoriteMsg{
+  DownMsg msg = 1;
+  int64 createdTime = 2;
 }

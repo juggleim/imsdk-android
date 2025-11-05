@@ -12,14 +12,16 @@ public class CallConst {
         // 连接中
         CONNECTING(3),
         // 连接成功
-        CONNECTED(4);
+        CONNECTED(4),
+        // 主动加入
+        JOIN(5);
         private final int mValue;
 
         CallStatus(int value) {
             this.mValue = value;
         }
 
-        int getStatus() {
+        public int getStatus() {
             return this.mValue;
         }
 
@@ -30,6 +32,32 @@ public class CallConst {
                 }
             }
             return IDLE;
+        }
+    }
+
+    public enum CallMediaType {
+        // 语音通话
+        VOICE(0),
+        // 视频通话
+        VIDEO(1);
+
+        private final int mValue;
+
+        CallMediaType(int value) {
+            mValue = value;
+        }
+
+        public int getValue() {
+            return mValue;
+        }
+
+        public static CallMediaType setValue(int value) {
+            for (CallMediaType t : CallMediaType.values()) {
+                if (value == t.mValue) {
+                    return t;
+                }
+            }
+            return VOICE;
         }
     }
 
@@ -60,14 +88,18 @@ public class CallConst {
         /// 房间被销毁
         ROOM_DESTROY(11),
         /// 网络出错
-        NETWORK_ERROR(12);
+        NETWORK_ERROR(12),
+        /// 当前用户在其它端接听来电
+        ACCEPT_ON_OTHER_CLIENT(13),
+        /// 当前用户在其它端挂断来电
+        HANGUP_ON_OTHER_CLIENT(14);
         private final int value;
 
         CallFinishReason(int value) {
             this.value = value;
         }
 
-        int getValue() {
+        public int getValue() {
             return this.value;
         }
     }
@@ -77,14 +109,18 @@ public class CallConst {
         CALL_EXIST(1),
         CANT_ACCEPT_WHILE_NOT_INVITED(2),
         ACCEPT_FAIL(3),
-        JOIN_MEDIA_ROOM_FAIL(4);
+        JOIN_MEDIA_ROOM_FAIL(4),
+        INVALID_PARAMETER(5),
+        INVITE_FAIL(6),
+        JOIN_ROOM_FAIL(7);
+
         private final int value;
 
         CallErrorCode(int value) {
             this.value = value;
         }
 
-        int getValue() {
+        public int getValue() {
             return this.value;
         }
     }

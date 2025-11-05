@@ -1,5 +1,7 @@
 package com.juggle.chat.contacts.group.select;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +31,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.jet.im.kit.SendbirdUIKit;
 import com.jet.im.kit.utils.TextUtils;
+import com.juggle.im.JIM;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +46,7 @@ public class SelectGroupMemberFragment
         extends BasePageFragment<AddFriendListViewModel> {
     private final CommonAdapter<SelectFriendBean> adapter = new SelectMemberAdapter();
     private String mGroupId;
-    private int mType;// 0: create; 1: add member; 2: remove member
+    private int mType;// 0: create; 1: add member; 2: remove member; 3: multi call
 
     public SelectGroupMemberFragment(String groupId, int type) {
         mGroupId = groupId;
@@ -80,6 +83,11 @@ public class SelectGroupMemberFragment
             headerComponent.getParams().setRightButtonText(requireContext().getString(com.jet.im.kit.R.string.j_confirm));
             headerComponent.setOnRightButtonClickListener(v -> {
                 removeGroupMember();
+            });
+        } else if (mType == 3) {
+            headerComponent.getParams().setRightButtonText(requireContext().getString(com.jet.im.kit.R.string.j_confirm));
+            headerComponent.setOnRightButtonClickListener(v -> {
+                multiCall();
             });
         }
         headerComponent.setOnLeftButtonClickListener(v -> {
@@ -143,14 +151,16 @@ public class SelectGroupMemberFragment
                     }
                 }
             });
-        } else if (mType == 2) {
+        } else if (mType == 2 || mType == 3) {
             ServiceManager.getGroupsService().getGroupMembers(mGroupId).enqueue(new CustomCallback<HttpResult<ListResult<GroupMemberBean>>, ListResult<GroupMemberBean>>() {
                 @Override
                 public void onSuccess(ListResult<GroupMemberBean> groupMemberBeanListResult) {
                     if (groupMemberBeanListResult.getItems() != null && !groupMemberBeanListResult.getItems().isEmpty()) {
                         List<SelectFriendBean> items = new ArrayList<>();
                         for (GroupMemberBean groupMemberBean : groupMemberBeanListResult.getItems()) {
-                            items.add(new SelectFriendBean(groupMemberBean));
+                            if (!groupMemberBean.getUserId().equals(JIM.getInstance().getCurrentUserId())) {
+                                items.add(new SelectFriendBean(groupMemberBean));
+                            }
                         }
                         adapter.setData(items);
                     }
@@ -275,5 +285,25 @@ public class SelectGroupMemberFragment
                 }
             }
         });
+    }
+
+    private void multiCall() {
+        if (getActivity() == null) {
+            return;
+        }
+        ArrayList<String> userIdList = new ArrayList<>();
+        for (SelectFriendBean selectFriendBean : adapter.getData()) {
+            if (selectFriendBean.isSelected()) {
+                userIdList.add(selectFriendBean.getUser_id());
+            }
+        }
+        if (userIdList.isEmpty()) {
+            Toast.makeText(getContext(), "select member empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent intent = new Intent();
+        intent.putStringArrayListExtra("userIdList", userIdList);
+        getActivity().setResult(Activity.RESULT_OK, intent);
+        getActivity().finish();
     }
 }

@@ -6,10 +6,10 @@ import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.internal.core.JIMCore;
-import com.juggle.im.internal.core.network.AddConversationCallback;
-import com.juggle.im.internal.core.network.SyncConversationsCallback;
-import com.juggle.im.internal.core.network.WebSocketSimpleCallback;
-import com.juggle.im.internal.core.network.WebSocketTimestampCallback;
+import com.juggle.im.internal.core.network.wscallback.AddConversationCallback;
+import com.juggle.im.internal.core.network.wscallback.SyncConversationsCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketTimestampCallback;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.messages.ClearUnreadMessage;
@@ -109,6 +109,13 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void deleteConversationInfo(Conversation conversation, ISimpleCallback callback) {
+        if (conversation == null || conversation.getConversationId() == null) {
+            JLogger.e("CONV-Delete", "fail, invalid parameter");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("CONV-Delete", "fail, code is " + errorCode);
@@ -216,7 +223,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             }
             return;
         }
-        mCore.getWebSocket().setTop(conversation, isTop, mCore.getUserId(), new WebSocketTimestampCallback() {
+        mCore.getWebSocket().setConversationTop(conversation, isTop, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("CONV-Top", "success");
@@ -728,7 +735,8 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void onMessageUpdate(ConcreteMessage message) {
-        ConcreteMessage lastMessage = (ConcreteMessage)mCore.getDbManager().getLastMessage(message.getConversation());
+        long now = mCore.getCurrentTime();
+        ConcreteMessage lastMessage = (ConcreteMessage)mCore.getDbManager().getLastMessage(message.getConversation(), now);
         if (lastMessage.getClientMsgNo() == message.getClientMsgNo()) {
             mCore.getDbManager().updateLastMessageWithoutIndex(lastMessage);
             ConversationInfo info = mCore.getDbManager().getConversationInfo(message.getConversation());

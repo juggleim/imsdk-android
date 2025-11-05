@@ -55,10 +55,46 @@ public class RtcRoom {
         mMembers = members;
     }
 
+    public CallConst.CallMediaType getMediaType() {
+        return mMediaType;
+    }
+
+    public void setMediaType(CallConst.CallMediaType mediaType) {
+        mMediaType = mediaType;
+    }
+
+    public String getExtra() {
+        return mExtra;
+    }
+
+    public void setExtra(String extra) {
+        mExtra = extra;
+    }
+
+    public String getToken() {
+        return mToken;
+    }
+
+    public void setToken(String token) {
+        mToken = token;
+    }
+
+    public String getUrl() {
+        return mUrl;
+    }
+
+    public void setUrl(String url) {
+        mUrl = url;
+    }
+
     private String mRoomId;
     private UserInfo mOwner;
     private boolean mIsMultiCall;
     private String mDeviceId;
     private CallConst.CallStatus mCallStatus;
     private List<CallMember> mMembers;
+    private CallConst.CallMediaType mMediaType;
+    private String mExtra;
+    private String mToken;
+    private String mUrl;
 }

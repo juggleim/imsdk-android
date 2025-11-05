@@ -16,6 +16,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -50,6 +51,8 @@ dependencies {
 
     api project (':GooglePlugin')
     api project (":JZegoCall")
+    api project(':JAgoraCall')
+    api project(':JLiveKitCall')
 
     implementation 'com.github.bumptech.glide:glide:4.13.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.13.0'
@@ -61,5 +64,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
-    implementation('im.zego:express-video:3.17.3')
+    implementation('im.zego:express-video:3.21.0')
+    implementation('cn.shengwang.rtc:full-sdk:4.6.0')
+    implementation('io.livekit:livekit-android:2.20.2')
 }

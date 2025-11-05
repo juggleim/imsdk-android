@@ -26,6 +26,7 @@ import com.juggle.chat.common.widgets.CommonDialog;
 import com.juggle.chat.databinding.FragmentUserDetailBinding;
 import com.juggle.chat.http.CustomCallback;
 import com.juggle.chat.http.ServiceManager;
+import com.juggle.im.call.CallConst;
 import com.juggle.im.model.Conversation;
 
 import java.util.HashMap;
@@ -81,11 +82,15 @@ public class UserDetailFragment extends PermissionFragment {
             requestPermission(PermissionUtils.RECORD_AUDIO_PERMISSION, () -> {
                 if (getContext() == null) return;
 
-                CallCenter.getInstance().startSingleCall(getContext(), mUserId);
+                CallCenter.getInstance().startSingleCall(getContext(), mUserId, CallConst.CallMediaType.VOICE, "");
             });
         });
         mBinding.profileBtnDetailStartVideo.setOnClickListener(v -> {
-            //todo
+            requestPermission(PermissionUtils.VIDEO_CALL_PERMISSION, () -> {
+                if (getContext() == null) return;
+
+                CallCenter.getInstance().startSingleCall(getContext(), mUserId, CallConst.CallMediaType.VIDEO, "");
+            });
         });
         mBinding.profileBtnDetailAddFriend.setOnClickListener(v -> {
             addFriend();
@@ -116,8 +121,7 @@ public class UserDetailFragment extends PermissionFragment {
             mBinding.profileBtnDetailAddFriend.setVisibility(View.GONE);
         } else if (isFriend) {
             mBinding.profileBtnDetailStartChat.setVisibility(View.VISIBLE);
-            mBinding.profileBtnDetailStartVideo.setVisibility(View.GONE);
-//            mBinding.profileBtnDetailStartVideo.setVisibility(View.VISIBLE);
+            mBinding.profileBtnDetailStartVideo.setVisibility(View.VISIBLE);
             mBinding.profileBtnDetailStartVoice.setVisibility(View.VISIBLE);
             mBinding.profileBtnDetailAddFriend.setVisibility(View.GONE);
         } else {

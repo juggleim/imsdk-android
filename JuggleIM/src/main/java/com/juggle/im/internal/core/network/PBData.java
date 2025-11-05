@@ -10,11 +10,15 @@ import androidx.annotation.NonNull;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
+import com.juggle.im.call.model.CallInfo;
 import com.juggle.im.call.model.CallMember;
-import com.juggle.im.interfaces.GroupMember;
+import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.model.FavoriteMessage;
+import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.ContentTypeCenter;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
@@ -28,7 +32,9 @@ import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationMentionInfo;
 import com.juggle.im.model.GroupInfo;
+import com.juggle.im.model.GroupMessageMemberReadDetail;
 import com.juggle.im.model.GroupMessageReadInfo;
+import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
@@ -40,6 +46,7 @@ import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.messages.MergeMessage;
 import com.juggle.im.push.PushChannel;
 
+import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +64,11 @@ import app_messages.Rtcroom;
 class PBData {
     void resetDataConverter() {
         mConverter = new SimpleDataConverter();
+        mConverter2 = fetchUltConverter();
+    }
+
+    void setMessagePreprocessor(IMessageManager.IMessagePreprocessor preprocessor) {
+        mMessagePreprocessor = preprocessor;
     }
 
     byte[] connectData(String appKey,
@@ -119,6 +131,9 @@ class PBData {
             }
         }
 //        builder.setLanguage(language);
+        if (mConverter2 != null) {
+            builder.setSecretNegotiate(ByteString.copyFrom(mConverter2.getPubKey()));
+        }
         Connect.ConnectMsgBody body = builder.build();
         byte[] payload = mConverter.encode(body.toByteArray());
 
@@ -137,7 +152,7 @@ class PBData {
                 .setCode(code)
                 .setTimestamp(System.currentTimeMillis())
                 .build();
-        byte[] payload = mConverter.encode(body.toByteArray());
+        byte[] payload = encodePayload(body.toByteArray());
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.disconnect)
@@ -159,7 +174,13 @@ class PBData {
                            String conversationId,
                            MessageMentionInfo mentionInfo,
                            ConcreteMessage referMsg,
-                           PushData pushData) {
+                           PushData pushData,
+                           long lifeTime,
+                           long lifeTimeAfterRead) {
+        if (mMessagePreprocessor != null) {
+            Conversation conversation = new Conversation(conversationType, conversationId);
+            msgData = mMessagePreprocessor.encryptMessageContent(msgData, conversation, contentType);
+        }
         ByteString byteString = ByteString.copyFrom(msgData);
         Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
         upMsgBuilder.setMsgType(contentType)
@@ -217,6 +238,8 @@ class PBData {
             }
             upMsgBuilder.setPushData(pbPushData);
         }
+        upMsgBuilder.setLifeTime(lifeTime);
+        upMsgBuilder.setLifeTimeAfterRead(lifeTimeAfterRead);
 
         Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
@@ -232,6 +255,9 @@ class PBData {
                 topic = C_MSG;
                 break;
             case SYSTEM:
+                break;
+            case PUBLIC_SERVICE:
+                topic = PC_MSG;
                 break;
         }
 
@@ -537,6 +563,94 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] topMessageData(String messageId, Conversation conversation, boolean isTop, int index) {
+        Appmessages.TopMsgReq req = Appmessages.TopMsgReq.newBuilder()
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setTargetId(conversation.getConversationId())
+                .setMsgId(messageId)
+                .build();
+        String topic;
+        if (isTop) {
+            topic = SET_TOP_MSG;
+        } else {
+            topic = DEL_TOP_MSG;
+        }
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(topic)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getTopMessageData(Conversation conversation, int index) {
+        Appmessages.GetTopMsgReq req = Appmessages.GetTopMsgReq.newBuilder()
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setTargetId(conversation.getConversationId())
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(GET_TOP_MSG)
+                .setTargetId(conversation.getConversationId())
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] favoriteMessagesData(List<Message> messages, boolean isAdd, String userId, int index) {
+        Appmessages.FavoriteMsgIds.Builder builder = Appmessages.FavoriteMsgIds.newBuilder();
+        for (Message message : messages) {
+            String receiverId = message.getConversation().getConversationId();
+            if (message.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE
+            && message.getDirection() == Message.MessageDirection.RECEIVE) {
+                receiverId = userId;
+            }
+            Appmessages.FavoriteMsgIdItem item = Appmessages.FavoriteMsgIdItem.newBuilder()
+                    .setSenderId(message.getSenderUserId())
+                    .setReceiverId(receiverId)
+                    .setChannelTypeValue(message.getConversation().getConversationType().getValue())
+                    .setMsgId(message.getMessageId())
+                    .build();
+            builder.addItems(item);
+        }
+        Appmessages.FavoriteMsgIds ids = builder.build();
+        String topic = isAdd ? ADD_FAVORITE_MSGS : DEL_FAVORITE_MSGS;
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(topic)
+                .setTargetId(userId)
+                .setData(ids.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getFavoriteMessagesData(String userId, int limit, String offset, int index) {
+        if (offset == null) {
+            offset = "";
+        }
+        Appmessages.QryFavoriteMsgsReq req = Appmessages.QryFavoriteMsgsReq.newBuilder()
+                .setLimit(limit)
+                .setOffset(offset)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_FAVORITE_MSGS)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] markUnread(Conversation conversation, String userId, int index) {
         Appmessages.Conversation pbConversation = Appmessages.Conversation.newBuilder()
                 .setChannelTypeValue(conversation.getConversationType().getValue())
@@ -761,7 +875,7 @@ class PBData {
         return m.toByteArray();
     }
 
-    byte[] callInvite(String callId, boolean isMultiCall, List<String> userIdList, int engineType, int index) {
+    byte[] callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, Conversation conversation, List<String> userIdList, int engineType, String extra, int index) {
         Rtcroom.RtcInviteReq.Builder builder = Rtcroom.RtcInviteReq.newBuilder();
         if (isMultiCall) {
             builder.setRoomType(Rtcroom.RtcRoomType.OneMore);
@@ -771,6 +885,17 @@ class PBData {
         builder.addAllTargetIds(userIdList);
         builder.setRoomId(callId);
         builder.setRtcChannelValue(engineType);
+        builder.setRtcMediaTypeValue(mediaType.getValue());
+        if (extra == null) {
+            extra = "";
+        }
+        builder.setExt(extra);
+        if (conversation != null) {
+            Rtcroom.ConverIndex.Builder converIndexBuilder = Rtcroom.ConverIndex.newBuilder();
+            converIndexBuilder.setTargetId(conversation.getConversationId());
+            converIndexBuilder.setChannelTypeValue(conversation.getConversationType().getValue());
+            builder.setAttachedConver(converIndexBuilder);
+        }
         Rtcroom.RtcInviteReq req = builder.build();
 
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
@@ -816,6 +941,38 @@ class PBData {
                 .setTopic(RTC_UPD_STATE)
                 .setTargetId(callId)
                 .setData(member.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] callJoin(String callId, int index) {
+        Rtcroom.RtcRoomReq req = Rtcroom.RtcRoomReq.newBuilder()
+                .setRoomType(Rtcroom.RtcRoomType.OneMore)
+                .setRoomId(callId)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(RTC_JOIN)
+                .setTargetId(callId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getConversationCallInfo(Conversation conversation, String userId, int index) {
+        Rtcroom.ConverIndex converIndex = Rtcroom.ConverIndex.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_CONVER_CONF)
+                .setTargetId(userId)
+                .setData(converIndex.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
@@ -1133,7 +1290,7 @@ class PBData {
         Connect.PublishAckMsgBody body = Connect.PublishAckMsgBody.newBuilder()
                 .setIndex(index)
                 .build();
-        byte[] payload = mConverter.encode(body.toByteArray());
+        byte[] payload = encodePayload(body.toByteArray());
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.publishAck)
@@ -1156,20 +1313,26 @@ class PBData {
                 obj.setRcvType(PBRcvObj.PBRcvType.pong);
                 return obj;
             }
-            byte[] decodeData = mConverter.decode(msg.getPayload().toByteArray());
+            byte[] decodeData;
             switch (msg.getCmd()) {
                 case CmdType.connectAck:
+                    decodeData = mConverter.decode(msg.getPayload().toByteArray());
                     obj.setRcvType(PBRcvObj.PBRcvType.connectAck);
                     PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
                     Connect.ConnectAckMsgBody connectAckMsgBody = Connect.ConnectAckMsgBody.parseFrom(decodeData);
+                    if (mConverter2 != null) {
+                        mConverter2.storeSharedKey(connectAckMsgBody.getSecretNegotiateAck().toByteArray());
+                    }
                     ack.code = connectAckMsgBody.getCode();
                     ack.userId = connectAckMsgBody.getUserId();
                     ack.session = connectAckMsgBody.getSession();
                     ack.extra = connectAckMsgBody.getExt();
                     obj.mConnectAck = ack;
+                    obj.timestamp = connectAckMsgBody.getTimestamp();
                     break;
 
                 case CmdType.publishAck: {
+                    decodeData = decodePayload(msg.getPayload().toByteArray());
                     Connect.PublishAckMsgBody publishAckMsgBody = Connect.PublishAckMsgBody.parseFrom(decodeData);
                     int type = getTypeInCmdMap(publishAckMsgBody.getIndex());
                     obj.setRcvType(type);
@@ -1190,10 +1353,12 @@ class PBData {
                         a.content = modifiedMsg.getContent();
                     }
                     obj.mPublishMsgAck = a;
+                    obj.timestamp = publishAckMsgBody.getTimestamp();
                 }
                 break;
 
                 case CmdType.queryAck:
+                    decodeData = decodePayload(msg.getPayload().toByteArray());
                     Connect.QueryAckMsgBody queryAckMsgBody = Connect.QueryAckMsgBody.parseFrom(decodeData);
                     int type = getTypeInCmdMap(queryAckMsgBody.getIndex());
                     obj.setRcvType(type);
@@ -1262,12 +1427,23 @@ class PBData {
                         case PBRcvObj.PBRcvType.qryMsgExtAck:
                             obj = qryMsgExtAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
+                        case PBRcvObj.PBRcvType.getTopMsgAck:
+                            obj = getTopMsgAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getFavoriteMsgAck:
+                            obj = getFavoriteMsgAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getConversationConfAck:
+                            obj = getConversationConfAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
                         default:
                             break;
                     }
+                    obj.timestamp = queryAckMsgBody.getTimestamp();
                     break;
 
                 case CmdType.publish:
+                    decodeData = decodePayload(msg.getPayload().toByteArray());
                     Connect.PublishMsgBody publishMsgBody = Connect.PublishMsgBody.parseFrom(decodeData);
                     if (publishMsgBody.getTopic().equals(NTF)) {
                         Appmessages.Notify ntf = Appmessages.Notify.parseFrom(publishMsgBody.getData());
@@ -1315,7 +1491,12 @@ class PBData {
                         obj.setRcvType(PBRcvObj.PBRcvType.rtcRoomEventNtf);
                         PBRcvObj.RtcRoomEventNtf n = new PBRcvObj.RtcRoomEventNtf();
                         n.eventType = PBRcvObj.PBRtcRoomEventType.setValue(event.getRoomEventTypeValue());
-                        n.member = callMemberWithPBRtcMember(event.getMember());
+                        List<CallMember> membersList = new ArrayList<>();
+                        for (Rtcroom.RtcMember pbMember : event.getMembersList()) {
+                            CallMember callMember = callMemberWithPBRtcMember(pbMember);
+                            membersList.add(callMember);
+                        }
+                        n.members = membersList;
                         n.room = rtcRoomWithPBRtcRoom(event.getRoom());
                         obj.mRtcRoomEventNtf = n;
                     } else if (publishMsgBody.getTopic().equals(RTC_INVITE_EVENT)) {
@@ -1333,9 +1514,11 @@ class PBData {
                         n.targetUsers = targetUserList;
                         obj.mRtcInviteEventNtf = n;
                     }
+                    obj.timestamp = publishMsgBody.getTimestamp();
                     break;
 
                 case CmdType.disconnect:
+                    decodeData = decodePayload(msg.getPayload().toByteArray());
                     Connect.DisconnectMsgBody disconnectMsgBody = Connect.DisconnectMsgBody.parseFrom(decodeData);
                     obj.setRcvType(PBRcvObj.PBRcvType.disconnectMsg);
                     PBRcvObj.DisconnectMsg m = new PBRcvObj.DisconnectMsg();
@@ -1343,6 +1526,7 @@ class PBData {
                     m.timestamp = disconnectMsgBody.getTimestamp();
                     m.extra = disconnectMsgBody.getExt();
                     obj.mDisconnectMsg = m;
+                    obj.timestamp = disconnectMsgBody.getTimestamp();
                     break;
             }
         } catch (InvalidProtocolBufferException e) {
@@ -1448,10 +1632,19 @@ class PBData {
         PBRcvObj obj = new PBRcvObj();
         Rtcroom.RtcAuth rtcAuth = Rtcroom.RtcAuth.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.callAuthAck);
-        PBRcvObj.StringAck a = new PBRcvObj.StringAck(body);
-        Rtcroom.ZegoAuth zegoAuth = rtcAuth.getZegoAuth();
-        a.str = zegoAuth.getToken();
-        obj.mStringAck = a;
+        PBRcvObj.RtcAuthAck a = new PBRcvObj.RtcAuthAck(body);
+        if (rtcAuth.hasZegoAuth()) {
+            Rtcroom.ZegoAuth zegoAuth = rtcAuth.getZegoAuth();
+            a.token = zegoAuth.getToken();
+        } else if (rtcAuth.hasLivekitRtcAuth()) {
+            Rtcroom.LivekitRtcAuth livekitRtcAuth = rtcAuth.getLivekitRtcAuth();
+            a.token = livekitRtcAuth.getToken();
+            a.url = livekitRtcAuth.getServiceUrl();
+        } else if (rtcAuth.hasAgoraAuth()) {
+            Rtcroom.AgoraAuth agoraAuth = rtcAuth.getAgoraAuth();
+            a.token = agoraAuth.getToken();
+        }
+        obj.mRtcAuthAck = a;
         return obj;
     }
 
@@ -1480,16 +1673,8 @@ class PBData {
         Rtcroom.RtcRoom room = Rtcroom.RtcRoom.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.qryCallRoomAck);
         List<RtcRoom> outRooms = new ArrayList<>();
-        RtcRoom outRoom = new RtcRoom();
-        outRoom.setMultiCall(room.getRoomType() == Rtcroom.RtcRoomType.OneMore);
-        outRoom.setRoomId(room.getRoomId());
-        outRoom.setOwner(userInfoWithPBUserInfo(room.getOwner()));
-        List<CallMember> members = new ArrayList<>();
-        for (Rtcroom.RtcMember member : room.getMembersList()) {
-            CallMember outMember = callMemberWithPBRtcMember(member);
-            members.add(outMember);
-        }
-        outRoom.setMembers(members);
+
+        RtcRoom outRoom = rtcRoomWithPBRtcRoom(room);
         outRooms.add(outRoom);
         //共用 RtcQryCallRoomsAck
         PBRcvObj.RtcQryCallRoomsAck a = new PBRcvObj.RtcQryCallRoomsAck(body);
@@ -1550,6 +1735,56 @@ class PBData {
         PBRcvObj.QryMsgExtAck ack = new PBRcvObj.QryMsgExtAck(body);
         ack.reactionList = reactionList;
         obj.mQryMsgExtAck = ack;
+        return obj;
+    }
+
+    private PBRcvObj getTopMsgAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.getTopMsgAck);
+        Appmessages.TopMsg topMsg = Appmessages.TopMsg.parseFrom(body.getData());
+        ConcreteMessage concreteMessage = messageWithDownMsg(topMsg.getMsg());
+        UserInfo userInfo = userInfoWithPBUserInfo(topMsg.getOperator());
+        long timestamp = topMsg.getCreatedTime();
+        PBRcvObj.GetTopMsgAck ack = new PBRcvObj.GetTopMsgAck(body);
+        if (!topMsg.hasMsg()) {
+            ack.code = JErrorCode.MESSAGE_NOT_EXIST;
+            obj.mGetTopMsgAck = ack;
+            return obj;
+        }
+        ack.message = concreteMessage;
+        ack.userInfo = userInfo;
+        ack.createdTime = timestamp;
+        obj.mGetTopMsgAck = ack;
+        return obj;
+    }
+
+    private PBRcvObj getFavoriteMsgAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.getFavoriteMsgAck);
+        Appmessages.FavoriteMsgs msgs = Appmessages.FavoriteMsgs.parseFrom(body.getData());
+        PBRcvObj.GetFavoriteMsgAck ack = new PBRcvObj.GetFavoriteMsgAck(body);
+        ack.offset = msgs.getOffset();
+        List<FavoriteMessage> list = new ArrayList<>();
+        for (Appmessages.FavoriteMsg msg : msgs.getItemsList()) {
+            FavoriteMessage favoriteMessage = new FavoriteMessage();
+            favoriteMessage.setMessage(messageWithDownMsg(msg.getMsg()));
+            favoriteMessage.setCreatedTime(msg.getCreatedTime());
+            list.add(favoriteMessage);
+        }
+        ack.favoriteMessages = list;
+        obj.mGetFavoriteMsgAck = ack;
+        return obj;
+    }
+
+    private PBRcvObj getConversationConfAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        obj.setRcvType(PBRcvObj.PBRcvType.getConversationConfAck);
+        Rtcroom.ConverConf converConf = Rtcroom.ConverConf.parseFrom(body.getData());
+        PBRcvObj.TemplateAck<CallInfo> ack = new PBRcvObj.TemplateAck<>(body);
+        if (converConf.hasActivedRtcRoom()) {
+            ack.t = callInfoWithPBActiveRtcRoom(converConf.getActivedRtcRoom());
+        }
+        obj.mTemplateAck = ack;
         return obj;
     }
 
@@ -1617,20 +1852,24 @@ class PBData {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.QryReadDetailResp resp = Appmessages.QryReadDetailResp.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.qryReadDetailAck);
-        PBRcvObj.QryReadDetailAck a = new PBRcvObj.QryReadDetailAck(body);
-        List<UserInfo> readMembers = new ArrayList<>();
-        List<UserInfo> unreadMembers = new ArrayList<>();
+        PBRcvObj.TemplateAck<GroupMessageReadInfoDetail> a = new PBRcvObj.TemplateAck<>(body);
+        List<GroupMessageMemberReadDetail> readMembers = new ArrayList<>();
+        List<GroupMessageMemberReadDetail> unreadMembers = new ArrayList<>();
         for (Appmessages.MemberReadDetailItem item : resp.getReadMembersList()) {
-            UserInfo userInfo = userInfoWithMemberReadDetailItem(item);
-            readMembers.add(userInfo);
+            GroupMessageMemberReadDetail d = groupMessageMemberReadDetailWithPbItem(item);
+            readMembers.add(d);
         }
         for (Appmessages.MemberReadDetailItem item : resp.getUnreadMembersList()) {
-            UserInfo userInfo = userInfoWithMemberReadDetailItem(item);
-            unreadMembers.add(userInfo);
+            GroupMessageMemberReadDetail d = groupMessageMemberReadDetailWithPbItem(item);
+            unreadMembers.add(d);
         }
-        a.readMembers = readMembers;
-        a.unreadMembers = unreadMembers;
-        obj.mQryReadDetailAck = a;
+        GroupMessageReadInfoDetail detail = new GroupMessageReadInfoDetail();
+        detail.setReadCount(resp.getReadCount());
+        detail.setMemberCount(resp.getMemberCount());
+        detail.setReadMembers(readMembers);
+        detail.setUnreadMembers(unreadMembers);
+        a.t = detail;
+        obj.mTemplateAck = a;
         return obj;
     }
 
@@ -1701,7 +1940,7 @@ class PBData {
     }
 
     private Connect.ImWebsocketMsg createImWebsocketMsgWithPublishMsg(Connect.PublishMsgBody publishMsgBody) {
-        byte[] payload = mConverter.encode(publishMsgBody.toByteArray());
+        byte[] payload = encodePayload(publishMsgBody.toByteArray());
         return Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.publish)
@@ -1711,7 +1950,7 @@ class PBData {
     }
 
     private Connect.ImWebsocketMsg createImWebsocketMsgWithQueryMsg(Connect.QueryMsgBody body) {
-        byte[] payload = mConverter.encode(body.toByteArray());
+        byte[] payload = encodePayload(body.toByteArray());
         return Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
                 .setCmd(CmdType.query)
@@ -1735,7 +1974,11 @@ class PBData {
         message.setSenderUserId(downMsg.getSenderId());
         message.setSeqNo(downMsg.getMsgSeqNo());
         message.setMsgIndex(downMsg.getUnreadIndex());
-        MessageContent messageContent = ContentTypeCenter.getInstance().getContent(downMsg.getMsgContent().toByteArray(), downMsg.getMsgType());
+        byte[] content = downMsg.getMsgContent().toByteArray();
+        if (mMessagePreprocessor != null) {
+            content = mMessagePreprocessor.decryptMessageContent(content, conversation, message.getContentType());
+        }
+        MessageContent messageContent = ContentTypeCenter.getInstance().getContent(content, downMsg.getMsgType());
         if (messageContent != null) {
             if (messageContent instanceof MergeMessage) {
                 if (TextUtils.isEmpty(((MergeMessage) messageContent).getContainerMsgId())) {
@@ -1768,8 +2011,13 @@ class PBData {
         if (downMsg.hasReferMsg()) {
             ConcreteMessage referMsg = messageWithDownMsg(downMsg.getReferMsg());
             message.setReferredMessage(referMsg);
+            message.setReferMsgId(referMsg.getMessageId());
         }
+        message.setDelete(downMsg.getIsDelete());
         message.setContent(messageContent);
+        message.setDestroyTime(downMsg.getDestroyTime());
+        message.setLifeTimeAfterRead(downMsg.getLifeTimeAfterRead());
+        message.setReadTime(downMsg.getReadTime());
         return message;
     }
 
@@ -1901,10 +2149,54 @@ class PBData {
         result.setRoomId(pbRoom.getRoomId());
         result.setOwner(userInfoWithPBUserInfo(pbRoom.getOwner()));
         result.setMultiCall(pbRoom.getRoomType() == Rtcroom.RtcRoomType.OneMore);
+        result.setMediaType(CallConst.CallMediaType.setValue(pbRoom.getRtcMediaTypeValue()));
+        result.setExtra(pbRoom.getExt());
+
+        List<CallMember> members = new ArrayList<>();
+        for (Rtcroom.RtcMember member : pbRoom.getMembersList()) {
+            CallMember outMember = callMemberWithPBRtcMember(member);
+            members.add(outMember);
+        }
+        result.setMembers(members);
+
+        if (pbRoom.hasAuth()) {
+            Rtcroom.RtcAuth auth = pbRoom.getAuth();
+            if (auth.hasZegoAuth()) {
+                Rtcroom.ZegoAuth zegoAuth = auth.getZegoAuth();
+                result.setToken(zegoAuth.getToken());
+            } else if (auth.hasLivekitRtcAuth()) {
+                Rtcroom.LivekitRtcAuth livekitRtcAuth = auth.getLivekitRtcAuth();
+                result.setToken(livekitRtcAuth.getToken());
+                result.setUrl(livekitRtcAuth.getServiceUrl());
+            } else if (auth.hasAgoraAuth()) {
+                Rtcroom.AgoraAuth agoraAuth = auth.getAgoraAuth();
+                result.setToken(agoraAuth.getToken());
+            }
+        }
         return result;
     }
 
-    private UserInfo userInfoWithMemberReadDetailItem(Appmessages.MemberReadDetailItem item) {
+    private CallInfo callInfoWithPBActiveRtcRoom(Rtcroom.ActivedRtcRoom room) {
+        if (room == null) {
+            return null;
+        }
+        CallInfo callInfo = new CallInfo();
+        callInfo.setCallId(room.getRoomId());
+        callInfo.setMultiCall(room.getRoomType() == Rtcroom.RtcRoomType.OneMore);
+        callInfo.setMediaType(CallConst.CallMediaType.setValue(room.getRtcMediaTypeValue()));
+        callInfo.setOwner(userInfoWithPBUserInfo(room.getOwner()));
+
+        List<CallMember> members = new ArrayList<>();
+        for (Rtcroom.RtcMember member : room.getMembersList()) {
+            CallMember outMember = callMemberWithPBRtcMember(member);
+            members.add(outMember);
+        }
+        callInfo.setMembers(members);
+        callInfo.setExtra(room.getExt());
+        return callInfo;
+    }
+
+    private GroupMessageMemberReadDetail groupMessageMemberReadDetailWithPbItem(Appmessages.MemberReadDetailItem item) {
         UserInfo userInfo = new UserInfo();
         userInfo.setUserId(item.getMember().getUserId());
         userInfo.setUserName(item.getMember().getNickname());
@@ -1916,7 +2208,11 @@ class PBData {
             }
             userInfo.setExtra(extra);
         }
-        return userInfo;
+        userInfo.setUpdatedTime(item.getMember().getUpdatedTime());
+        GroupMessageMemberReadDetail detail = new GroupMessageMemberReadDetail();
+        detail.setUserInfo(userInfo);
+        detail.setReadTime(item.getTime());
+        return detail;
     }
 
     private UserInfo userInfoWithPBUserInfo(Appmessages.UserInfo pbUserInfo) {
@@ -1934,6 +2230,7 @@ class PBData {
             }
             result.setExtra(extra);
         }
+        result.setUpdatedTime(pbUserInfo.getUpdatedTime());
         return result;
     }
 
@@ -1955,6 +2252,7 @@ class PBData {
             }
             result.setExtra(extra);
         }
+        result.setUpdatedTime(pbGroupMember.getUpdatedTime());
         return result;
     }
 
@@ -1994,6 +2292,7 @@ class PBData {
             }
             result.setExtra(extra);
         }
+        result.setUpdatedTime(pbGroupInfo.getUpdatedTime());
         return result;
     }
 
@@ -2031,6 +2330,34 @@ class PBData {
         return result;
     }
 
+    private byte[] encodePayload(byte[] data) {
+        byte[] b = mConverter.encode(data);
+        if (mConverter2 != null) {
+            b = mConverter2.encrypt(b);
+        }
+        return b;
+    }
+
+    private byte[] decodePayload(byte[] data) {
+        if (mConverter2 != null) {
+            data = mConverter2.decrypt(data);
+        }
+        data = mConverter.decode(data);
+        return data;
+    }
+
+    private IUltEncrypt fetchUltConverter() {
+        IUltEncrypt converter = null;
+        try {
+            Class cls = Class.forName("com.juggle.im.ultimate.encrypt.DataConverter");
+            Constructor constructor = cls.getConstructor();
+            converter = (IUltEncrypt) constructor.newInstance();
+        } catch (Exception e) {
+            JLogger.i("CON-Enc", "DataConverter not exist");
+        }
+        return converter;
+    }
+
     private Conversation.ConversationType conversationTypeFromChannelType(Appmessages.ChannelType channelType) {
         Conversation.ConversationType result = Conversation.ConversationType.UNKNOWN;
         switch (channelType) {
@@ -2045,6 +2372,9 @@ class PBData {
                 break;
             case System:
                 result = Conversation.ConversationType.SYSTEM;
+                break;
+            case PublicService:
+                result = Conversation.ConversationType.PUBLIC_SERVICE;
                 break;
             default:
                 break;
@@ -2066,6 +2396,9 @@ class PBData {
                 break;
             case SYSTEM:
                 result = Appmessages.ChannelType.System;
+                break;
+            case PUBLIC_SERVICE:
+                result = Appmessages.ChannelType.PublicService;
                 break;
             default:
                 break;
@@ -2187,6 +2520,8 @@ class PBData {
     private static final String RTC_ACCEPT = "rtc_accept";
     private static final String RTC_QUIT = "rtc_quit";
     private static final String RTC_UPD_STATE = "rtc_upd_state";
+    private static final String RTC_JOIN = "rtc_join";
+    private static final String QRY_CONVER_CONF = "qry_conver_conf";
     private static final String RTC_MEMBER_ROOMS = "rtc_member_rooms";
     private static final String RTC_QRY = "rtc_qry";
     private static final String RTC_PING = "rtc_ping";
@@ -2198,10 +2533,17 @@ class PBData {
     private static final String QRY_MSG_EX_SET = "qry_msg_exset";
     private static final String TAG_ADD_CONVERS = "tag_add_convers";
     private static final String TAG_DEL_CONVERS = "tag_del_convers";
+    private static final String SET_TOP_MSG = "set_top_msg";
+    private static final String DEL_TOP_MSG = "del_top_msg";
+    private static final String GET_TOP_MSG = "get_top_msg";
+    private static final String ADD_FAVORITE_MSGS = "add_favorite_msgs";
+    private static final String DEL_FAVORITE_MSGS = "del_favorite_msgs";
+    private static final String QRY_FAVORITE_MSGS = "qry_favorite_msgs";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
+    private static final String PC_MSG = "pc_msg";
     private static final String NTF = "ntf";
     private static final String MSG = "msg";
     private static final String C_USER_NTF = "c_user_ntf";
@@ -2257,10 +2599,19 @@ class PBData {
             put(MODIFY_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(TAG_ADD_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
             put(TAG_DEL_CONVERS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(SET_TOP_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(DEL_TOP_MSG, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(GET_TOP_MSG, PBRcvObj.PBRcvType.getTopMsgAck);
+            put(ADD_FAVORITE_MSGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(DEL_FAVORITE_MSGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(QRY_FAVORITE_MSGS, PBRcvObj.PBRcvType.getFavoriteMsgAck);
+            put(RTC_JOIN, PBRcvObj.PBRcvType.qryCallRoomAck);
+            put(QRY_CONVER_CONF, PBRcvObj.PBRcvType.getConversationConfAck);
         }
     };
 
     private final ConcurrentHashMap<Integer, String> mMsgCmdMap = new ConcurrentHashMap<>();
     private IDataConverter mConverter = new SimpleDataConverter();
-
+    private IMessageManager.IMessagePreprocessor mMessagePreprocessor;
+    private IUltEncrypt mConverter2 = fetchUltConverter();
 }

@@ -183,7 +183,7 @@ public class MergeMessage extends MessageContent {
     private static final String PREVIEW_LIST = "previewList";
     private static final String CONTENT = "content";
     private static final String USER_ID = "userId";
-    private static final String NAME = "name";
+    private static final String NAME = "userName";
     private static final String PORTRAIT = "portrait";
     private static final String EXTRA = "extra";
     private static final String DIGEST = "[Merge]";

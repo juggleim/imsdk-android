@@ -15,12 +15,12 @@ public abstract class JSimpleTimer {
     public void init() {
         mHandler = new Handler();
         mRunnable = () -> {
+            mHandler.postDelayed(mRunnable, mInterval);
             try {
                 doAction();
             } catch (Exception e) {
                 JLogger.e("J-Timer", "runnable error, exception is " + e);
             }
-            mHandler.postDelayed(mRunnable, mInterval);
         };
     }
 

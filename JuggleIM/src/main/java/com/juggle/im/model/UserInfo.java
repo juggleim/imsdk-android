@@ -41,11 +41,19 @@ public class UserInfo implements Parcelable {
         mExtra = extra;
     }
 
+    public long getUpdatedTime() {
+        return mUpdatedTime;
+    }
+
+    public void setUpdatedTime(long updatedTime) {
+        mUpdatedTime = updatedTime;
+    }
+
     private String mUserId;
     private String mUserName;
     private String mPortrait;
-
     private Map<String, String> mExtra;
+    private long mUpdatedTime;
 
     public UserInfo() {
 

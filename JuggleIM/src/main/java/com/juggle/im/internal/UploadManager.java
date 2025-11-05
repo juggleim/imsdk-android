@@ -6,7 +6,7 @@ import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.interfaces.IMessageUploadProvider;
 import com.juggle.im.internal.core.JIMCore;
-import com.juggle.im.internal.core.network.QryUploadFileCredCallback;
+import com.juggle.im.internal.core.network.wscallback.QryUploadFileCredCallback;
 import com.juggle.im.internal.logger.IJLog;
 import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.model.upload.UploadOssType;
@@ -181,17 +181,15 @@ public class UploadManager implements IMessageUploadProvider {
         boolean needPreUpload = false;
         String preUploadLocalPath = "";
         if (content instanceof ImageMessage) {
-            needPreUpload = true;
             preUploadLocalPath = ((ImageMessage) content).getThumbnailLocalPath();
+            if (!TextUtils.isEmpty(preUploadLocalPath)) {
+                needPreUpload = true;
+            }
         } else if (content instanceof VideoMessage) {
-            needPreUpload = true;
             preUploadLocalPath = ((VideoMessage) content).getSnapshotLocalPath();
-        }
-        //判空封面或缩略图
-        if (needPreUpload && TextUtils.isEmpty(preUploadLocalPath)) {
-            JLogger.e("J-Uploader", "uploadMessage fail, need pre upload but pre upload local path is null, message= " + message.getClientMsgNo());
-            uploadCallback.onError();
-            return;
+            if (!TextUtils.isEmpty(preUploadLocalPath)) {
+                needPreUpload = true;
+            }
         }
         //有缩略图的情况下先上传缩略图
         if (needPreUpload) {
@@ -205,14 +203,6 @@ public class UploadManager implements IMessageUploadProvider {
     private void requestUploadFileCred(UploadFileType fileType, String filePath, QryUploadFileCredCallback callback) {
         //获取文件后缀
         String ext = FileUtil.getFileExtension(filePath);
-        //判空文件后缀
-        if (TextUtils.isEmpty(ext)) {
-            JLogger.e("J-Uploader", "requestUploadFileCred fail, ext is null, filePath = " + filePath);
-            if (callback != null) {
-                callback.onError(ConstInternal.ErrorCode.INVALID_PARAM);
-            }
-            return;
-        }
         //判空WebSocket
         if (mCore.getWebSocket() == null) {
             JLogger.e("J-Uploader", "requestUploadFileCred fail, webSocket is null, path = " + filePath);

@@ -1,7 +1,7 @@
 package com.juggle.im.internal;
 
 public class ConstInternal {
-    public static final String SDK_VERSION = "1.8.13.1";
+    public static final String SDK_VERSION = "1.8.27";
     public static final String PLATFORM = "Android";
     public static final String LOG_UPLOAD_HEADER_APP_KEY = "x-appkey";
     public static final String LOG_UPLOAD_HEADER_TOKEN = "x-token";
@@ -32,6 +32,15 @@ public class ConstInternal {
         //用户注销下线
         public static final int USER_LOG_OUT = 11012;
 
+        //非好友关系
+        public static final int NOT_FRIEND = 12009;
+        //没有操作权限
+        public static final int NO_OPERATION_PERMISSION = 12010;
+        //消息不存在
+        public static final int REMOTE_MESSAGE_NOT_EXIST = 12011;
+        //收藏重复消息
+        public static final int ADD_DUPLICATE_FAVORITE_MESSAGE = 12012;
+
         //群组不存在
         public static final int GROUP_NOT_EXIST = 13001;
         //不是群成员
@@ -47,5 +56,8 @@ public class ConstInternal {
 
         public static final int MESSAGE_NOT_EXIST = 22001;
         public static final int MESSAGE_ALREADY_RECALLED = 22002;
+
+        //加入 LiveKit 房间失败
+        public static final int JOIN_LIVEKIT_FAIL = 25001;
     }
 }

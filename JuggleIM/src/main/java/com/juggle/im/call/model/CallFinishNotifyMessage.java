@@ -1,5 +1,6 @@
 package com.juggle.im.call.model;
 
+import com.juggle.im.call.CallConst;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.MessageContent;
 
@@ -18,8 +19,13 @@ public class CallFinishNotifyMessage extends MessageContent {
     public byte[] encode() {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put(REASON, mFinishNotifyType.getValue());
+            if (mFinishNotifyType != null) {
+                jsonObject.put(REASON, mFinishNotifyType.getValue());
+            }
             jsonObject.put(DURATION, mDuration);
+            if (mMediaType != null) {
+                jsonObject.put(MEDIA_TYPE, mMediaType.getValue());
+            }
         } catch (JSONException e) {
             JLogger.e("MSG-Encode", "CallFinishNotifyMessage JSONException " + e.getMessage());
         }
@@ -42,6 +48,9 @@ public class CallFinishNotifyMessage extends MessageContent {
             }
             if (jsonObject.has(DURATION)) {
                 mDuration = jsonObject.optLong(DURATION);
+            }
+            if (jsonObject.has(MEDIA_TYPE)) {
+                mMediaType = CallConst.CallMediaType.setValue(jsonObject.optInt(MEDIA_TYPE));
             }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "CallFinishNotifyMessage decode JSONException " + e.getMessage());
@@ -94,10 +103,16 @@ public class CallFinishNotifyMessage extends MessageContent {
         return mDuration;
     }
 
+    public CallConst.CallMediaType getMediaType() {
+        return mMediaType;
+    }
+
     private CallFinishNotifyType mFinishNotifyType;
     private long mDuration;
+    private CallConst.CallMediaType mMediaType;
 
     private static final String REASON = "reason";
     private static final String DURATION = "duration";
+    private static final String MEDIA_TYPE = "media_type";
     private static final String CALL = "[Call]";
 }

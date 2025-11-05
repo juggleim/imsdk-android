@@ -14,11 +14,20 @@ public class CallEvent {
     public final static int ACCEPT_DONE= 203;
     public final static int ACCEPT_FAIL = 204;
     public final static int INCOMING_TIMEOUT = 205;
+    public final static int INVITE_DONE = 206;
 
     public final static int RECEIVE_INVITE = 301;
     public final static int RECEIVE_ACCEPT = 302;
     public final static int RECEIVE_HANGUP = 303;
     public final static int ROOM_DESTROY = 304;
+    public final static int RECEIVE_INVITE_OTHERS = 305;
+    public final static int RECEIVE_SELF_QUIT = 306;
+    public final static int RECEIVE_QUIT = 307;
+
+    public final static int JOIN = 351;
+    public final static int JOIN_DONE = 352;
+    public final static int JOIN_FAIL = 353;
+    public final static int RECEIVE_JOIN = 354;
 
     public final static int JOIN_CHANNEL_DONE = 401;
     public final static int JOIN_CHANNEL_FAIL = 402;
@@ -27,6 +36,8 @@ public class CallEvent {
     public final static int PARTICIPANT_LEAVE_CHANNEL = 502;
     public final static int PARTICIPANT_ENABLE_CAMERA = 503;
     public final static int PARTICIPANT_ENABLE_MIC = 504;
+    public final static int SOUND_LEVEL_UPDATE = 505;
+    public final static int VIDEO_FIRST_FRAME_RENDER = 506;
 
     public static String nameOfEvent(int event) {
         return sEventNameMap.get(event);
@@ -43,11 +54,20 @@ public class CallEvent {
        put(ACCEPT_DONE, "accept done");
        put(ACCEPT_FAIL, "accept fail");
        put(INCOMING_TIMEOUT, "incoming timeout");
+       put(INVITE_DONE, "invite done");
 
        put(RECEIVE_INVITE, "receive invite");
        put(RECEIVE_ACCEPT, "receive accept");
        put(RECEIVE_HANGUP, "receive hangup");
        put(ROOM_DESTROY, "room destroy");
+       put(RECEIVE_INVITE_OTHERS, "invite others");
+       put(RECEIVE_SELF_QUIT, "receive self quit");
+       put(RECEIVE_QUIT, "receive quit");
+
+       put(JOIN, "join");
+       put(JOIN_DONE, "join done");
+       put(JOIN_FAIL, "join fail");
+       put(RECEIVE_JOIN, "receive join");
 
        put(JOIN_CHANNEL_DONE, "join channel done");
        put(JOIN_CHANNEL_FAIL, "join channel fail");
@@ -56,6 +76,8 @@ public class CallEvent {
        put(PARTICIPANT_LEAVE_CHANNEL, "participant leave channel");
        put(PARTICIPANT_ENABLE_CAMERA, "participant enable camera");
        put(PARTICIPANT_ENABLE_MIC, "participant enable mic");
+       put(SOUND_LEVEL_UPDATE, "sound level update");
+       put(VIDEO_FIRST_FRAME_RENDER, "video first frame render");
 
     }};
 }

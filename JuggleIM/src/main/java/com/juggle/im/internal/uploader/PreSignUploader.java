@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.juggle.im.internal.model.upload.UploadOssType;
 import com.juggle.im.internal.model.upload.UploadPreSignCred;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.JThreadPoolExecutor;
@@ -36,10 +37,12 @@ public class PreSignUploader extends BaseUploader {
     private final UploadPreSignCred mPreSignCred;
     private volatile boolean mIsCancelled = false;
     private Call currentCall;
+    private UploadOssType mOssType;
 
-    public PreSignUploader(String localPath, UploaderCallback uploaderCallback, UploadPreSignCred preSignCred) {
+    public PreSignUploader(String localPath, UploaderCallback uploaderCallback, UploadPreSignCred preSignCred, UploadOssType ossType) {
         super(localPath, uploaderCallback);
         this.mPreSignCred = preSignCred;
+        this.mOssType = ossType;
     }
 
     @Override
@@ -112,10 +115,13 @@ public class PreSignUploader extends BaseUploader {
                 }
             };
             //构造request
-            Request request = new Request.Builder()
+            Request.Builder builder = new Request.Builder()
                     .url(mPreSignCred.getUrl())
-                    .put(requestBody)
-                    .build();
+                    .put(requestBody);
+            if (mOssType == UploadOssType.S3) {
+                builder.addHeader("x-amz-acl", "public-read");
+            }
+            Request request = builder.build();
             //发起网络请求
             try {
                 currentCall = client.newCall(request);

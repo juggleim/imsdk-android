@@ -113,6 +113,11 @@ public class JIM {
     public String getDeviceId(Context context) {
         return JUtility.getDeviceId(context);
     }
+
+    public long getTimeDifference() {
+        return mCore.getTimeDifference();
+    }
+
     private static class SingletonHolder {
         static final JIM sInstance = new JIM();
     }
@@ -123,10 +128,10 @@ public class JIM {
         JLogger.getInstance().setCore(core);
         mUserInfoManager = new UserInfoManager(core);
         mChatroomManager = new ChatroomManager(core);
-        mMessageManager = new MessageManager(core, mUserInfoManager, mChatroomManager);
+        mCallManager = new CallManager(core, mUserInfoManager);
+        mMessageManager = new MessageManager(core, mUserInfoManager, mChatroomManager, mCallManager);
         mConversationManager = new ConversationManager(core, mUserInfoManager, mMessageManager);
         mMessageManager.setSendReceiveListener(mConversationManager);
-        mCallManager = new CallManager(core, mUserInfoManager);
         mConnectionManager = new ConnectionManager(core, mConversationManager, mMessageManager, mUserInfoManager, mChatroomManager, mCallManager);
         UploadManager uploadManager = new UploadManager(core);
         mMessageManager.setDefaultMessageUploadProvider(uploadManager);
