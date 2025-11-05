@@ -113,6 +113,13 @@ public class ConcreteMessage extends Message {
         mLifeTime = lifeTime;
     }
 
+    public long getReadTime() {
+        return mReadTime;
+    }
+
+    public void setReadTime(long readTime) {
+        mReadTime = readTime;
+    }
 
     private long mSeqNo;
     private long mMsgIndex;
@@ -125,4 +132,5 @@ public class ConcreteMessage extends Message {
     private String mReferMsgId;
     private PushData mPushData;
     private long mLifeTime;
+    private long mReadTime;
 }

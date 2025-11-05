@@ -732,9 +732,13 @@ public class DBManager {
         execSQL(MessageSql.sqlUpdateMessageState(state.getValue(), clientMsgNo));
     }
 
-    public void setMessagesRead(List<String> messageIds) {
-        String[] args = messageIds.toArray(new String[0]);
-        execSQL(MessageSql.sqlSetMessagesRead(messageIds.size()), args);
+    public void setMessagesRead(List<String> messageIds, long readTime) {
+        Object[] args = new Object[messageIds.size()+1];
+        args[0] = readTime;
+        for (int i = 0; i < messageIds.size(); i++) {
+            args[i + 1] = messageIds.get(i);
+        }
+        execSQL(MessageSql.sqlSetMessagesRead(messageIds.size(), readTime), args);
     }
 
     public void setGroupMessageReadInfo(Map<String, GroupMessageReadInfo> messages) {

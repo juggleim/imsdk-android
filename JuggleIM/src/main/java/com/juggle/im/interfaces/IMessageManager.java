@@ -362,6 +362,12 @@ public interface IMessageManager {
                                        JIMConst.IResultCallback<GroupMessageReadInfoDetail> callback);
 
     /**
+     * 获取单聊消息阅读时间（群消息阅读状态请使用 getGroupMessageReadInfoDetail）
+     * @param clientMsgNo 本端消息唯一编号
+     */
+    long getMessageReadTime(long clientMsgNo);
+
+    /**
      * 获取被合并的消息列表
      * @param containerMsgId 合并消息 id
      * @param callback 结果回调

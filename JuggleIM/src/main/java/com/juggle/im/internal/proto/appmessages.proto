@@ -132,6 +132,9 @@ message DownMsg{
   int64 destroyTime = 31;  // 消息默认的销毁时间点，单位毫秒，如 1752551449037，为0时，表示消息不自动销毁
   int64 lifeTimeAfterRead = 32; // 消息已读后生存周期，例如60000，即消息已读1分钟后会被自动删除
   bool isDelete = 33;
+  string subChannel = 34;
+  repeated string toUserIds = 35;
+  int64 readTime = 36;
 }
 
 message GrpMemberInfo{

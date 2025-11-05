@@ -325,6 +325,7 @@ abstract public class BaseMessageListFragment<
                     break;
                 case VIEW_TYPE_USER_MESSAGE_ME:
                 case VIEW_TYPE_USER_MESSAGE_OTHER:
+                    long readTime = JIM.getInstance().getMessageManager().getMessageReadTime(message.getClientMsgNo());
                     if (message.getContent() instanceof CallFinishNotifyMessage) {
                         CallFinishNotifyMessage callFinishNotifyMessage = (CallFinishNotifyMessage) message.getContent();
                         if (callFinishNotifyMessage.getMediaType() == CallConst.CallMediaType.VOICE) {

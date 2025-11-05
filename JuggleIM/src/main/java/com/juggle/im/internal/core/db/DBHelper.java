@@ -114,7 +114,14 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 13) {
+            try {
+                sqLiteDatabase.execSQL(MessageSql.SQL_ALTER_ADD_READ_TIME);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 12;
+    private final static int version = 13;
 }

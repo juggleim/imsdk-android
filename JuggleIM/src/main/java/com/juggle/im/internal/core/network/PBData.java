@@ -2017,6 +2017,7 @@ class PBData {
         message.setContent(messageContent);
         message.setDestroyTime(downMsg.getDestroyTime());
         message.setLifeTimeAfterRead(downMsg.getLifeTimeAfterRead());
+        message.setReadTime(downMsg.getReadTime());
         return message;
     }
 

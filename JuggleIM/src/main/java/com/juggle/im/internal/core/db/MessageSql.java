@@ -71,6 +71,7 @@ class MessageSql {
         message.setLifeTime(CursorHelper.readLong(cursor, COL_LIFE_TIME));
         message.setLifeTimeAfterRead(CursorHelper.readLong(cursor, COL_LIFE_TIME_AFTER_READ));
         message.setDestroyTime(CursorHelper.readLong(cursor, COL_DESTROY_TIME));
+        message.setReadTime(CursorHelper.readLong(cursor, COL_READ_TIME));
         return message;
     }
 
@@ -84,6 +85,8 @@ class MessageSql {
         String clientUid = "";
         int flags = 0;
         long lifeTime = 0;
+        long readTime = 0;
+
         if (message instanceof ConcreteMessage) {
             ConcreteMessage c = (ConcreteMessage) message;
             seqNo = c.getSeqNo();
@@ -91,6 +94,7 @@ class MessageSql {
             clientUid = c.getClientUid();
             flags = c.getFlags();
             lifeTime = c.getLifeTime();
+            readTime = c.getReadTime();
         }
         cv.put(COL_CONVERSATION_TYPE, message.getConversation().getConversationType().getValue());
         cv.put(COL_CONVERSATION_ID, message.getConversation().getConversationId());
@@ -130,6 +134,7 @@ class MessageSql {
         cv.put(COL_LIFE_TIME, lifeTime);
         cv.put(COL_LIFE_TIME_AFTER_READ, message.getLifeTimeAfterRead());
         cv.put(COL_DESTROY_TIME, message.getDestroyTime());
+        cv.put(COL_READ_TIME, readTime);
         return cv;
     }
 
@@ -181,7 +186,8 @@ class MessageSql {
             + "flags INTEGER,"
             + "life_time INTEGER DEFAULT 0,"
             + "life_time_after_read INTEGER DEFAULT 0,"
-            + "destroy_time INTEGER DEFAULT 0"
+            + "destroy_time INTEGER DEFAULT 0,"
+            + "read_time INTEGER"
             + ")";
 
     static final String TABLE = "message";
@@ -194,6 +200,7 @@ class MessageSql {
     static final String SQL_ALTER_ADD_LIFE_TIME = "ALTER TABLE message ADD COLUMN life_time INTEGER DEFAULT 0";
     static final String SQL_ALTER_ADD_LIFE_TIME_AFTER_READ = "ALTER TABLE message ADD COLUMN life_time_after_read INTEGER DEFAULT 0";
     static final String SQL_ALTER_ADD_DESTROY_TIME = "ALTER TABLE message ADD COLUMN destroy_time INTEGER DEFAULT 0";
+    static final String SQL_ALTER_ADD_READ_TIME = "ALTER TABLE message ADD COLUMN read_time INTEGER";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID = "SELECT * FROM message WHERE message_uid = ? AND is_deleted = 0  AND (destroy_time = 0 OR destroy_time > ?)";
     static final String SQL_GET_MESSAGE_WITH_MESSAGE_ID_EVEN_DELETE = "SELECT * FROM message WHERE message_uid = ?";
     static final String SQL_GET_MESSAGE_WITH_CLIENT_UID = "SELECT * FROM message WHERE client_uid = ?";
@@ -347,8 +354,8 @@ class MessageSql {
         return String.format("UPDATE message SET state = %s WHERE id = %s", state, clientMsgNo);
     }
 
-    static String sqlSetMessagesRead(int count) {
-        return "UPDATE message SET has_read = 1 WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
+    static String sqlSetMessagesRead(int count, long readTime) {
+        return "UPDATE message SET has_read = 1, read_time = ? WHERE message_uid in " + CursorHelper.getQuestionMarkPlaceholder(count);
     }
 
     static String sqlSetGroupReadInfo(int readCount, int memberCount, String messageId) {
@@ -445,4 +452,5 @@ class MessageSql {
     static final String COL_LIFE_TIME = "life_time";
     static final String COL_LIFE_TIME_AFTER_READ = "life_time_after_read";
     static final String COL_DESTROY_TIME = "destroy_time";
+    static final String COL_READ_TIME = "read_time";
 }

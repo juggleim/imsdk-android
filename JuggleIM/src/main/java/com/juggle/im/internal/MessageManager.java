@@ -1588,7 +1588,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-ReadReceipt", "sendReadReceipt, success");
                 updateMessageSendSyncTime(timestamp);
-                mCore.getDbManager().setMessagesRead(messageIds);
+                mCore.getDbManager().setMessagesRead(messageIds, timestamp);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
                 }
@@ -1646,6 +1646,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 }
             }
         });
+    }
+
+    @Override
+    public long getMessageReadTime(long clientMsgNo) {
+        List<Message> messages = getMessagesByClientMsgNos(new long[]{clientMsgNo});
+        if (!messages.isEmpty()) {
+            ConcreteMessage m = (ConcreteMessage) messages.get(0);
+            return m.getReadTime();
+        }
+        return 0;
     }
 
     @Override
@@ -2815,7 +2825,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             //read ntf
             if (message.getContentType().equals(ReadNtfMessage.CONTENT_TYPE)) {
                 ReadNtfMessage readNtfMessage = (ReadNtfMessage) message.getContent();
-                mCore.getDbManager().setMessagesRead(readNtfMessage.getMessageIds());
+                mCore.getDbManager().setMessagesRead(readNtfMessage.getMessageIds(), message.getTimestamp());
                 if (mReadReceiptListenerMap != null) {
                     for (Map.Entry<String, IMessageReadReceiptListener> entry : mReadReceiptListenerMap.entrySet()) {
                         mCore.getCallbackHandler().post(() -> entry.getValue().onMessagesRead(message.getConversation(), readNtfMessage.getMessageIds()));
