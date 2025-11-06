@@ -1541,6 +1541,10 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             boolean isContain = false;
             for (Message remoteMessage : mergedList) {
                 if (localMessage.getClientMsgNo() == remoteMessage.getClientMsgNo()) {
+                    isContain = true;
+                    if (localMessage.getContent() == null || remoteMessage.getContent() == null) {
+                        break;
+                    }
                     if (localMessage.getContent().getClass() == remoteMessage.getContent().getClass()) {
                         remoteMessage.setLocalAttribute(localMessage.getLocalAttribute());
                     }
@@ -1562,7 +1566,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                         MediaMessageContent remoteContent = (MediaMessageContent) remoteMessage.getContent();
                         remoteContent.setLocalPath(localContent.getLocalPath());
                     }
-                    isContain = true;
                     break;
                 }
             }
