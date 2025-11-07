@@ -656,6 +656,9 @@ public class DBManager {
                 if (m != null) {
                     message.setClientMsgNo(m.getClientMsgNo());
                     message.setExisted(true);
+                    if (TextUtils.isEmpty(m.getMessageId())) {
+                        updateMessageAfterSend(message.getClientMsgNo(), message.getMessageId(), message.getTimestamp(), message.getSeqNo(), message.getGroupMessageReadInfo().getMemberCount());
+                    }
                 } else {
                     ContentValues cv = MessageSql.getMessageInsertCV(message);
                     long clientMsgNo = insert(MessageSql.TABLE, cv);
