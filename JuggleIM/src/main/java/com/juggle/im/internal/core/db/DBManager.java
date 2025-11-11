@@ -65,11 +65,18 @@ public class DBManager {
         long result = 0;
         String[] args = new String[]{ProfileSql.CONVERSATION_TIME};
         Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                result = CursorHelper.readLong(cursor, ProfileSql.COLUMN_VALUE);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    result = CursorHelper.readLong(cursor, ProfileSql.COLUMN_VALUE);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getConversationSyncTime " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return result;
     }
@@ -78,11 +85,18 @@ public class DBManager {
         long result = 0;
         String[] args = new String[]{ProfileSql.SEND_TIME};
         Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                result = CursorHelper.readLong(cursor, ProfileSql.COLUMN_VALUE);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    result = CursorHelper.readLong(cursor, ProfileSql.COLUMN_VALUE);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getMessageSendSyncTime " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return result;
     }
@@ -91,11 +105,18 @@ public class DBManager {
         long result = 0;
         String[] args = new String[]{ProfileSql.RECEIVE_TIME};
         Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                result = CursorHelper.readLong(cursor, ProfileSql.COLUMN_VALUE);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    result = CursorHelper.readLong(cursor, ProfileSql.COLUMN_VALUE);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getMessageReceiveSyncTime " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return result;
     }
@@ -155,12 +176,19 @@ public class DBManager {
         if (cursor == null) {
             return new ArrayList<>();
         }
-        List<ConversationInfo> list = conversationListFromCursor(cursor);
-        cursor.close();
-        for (ConversationInfo info : list) {
-            if (info instanceof ConcreteConversationInfo) {
-                checkLastMessage((ConcreteConversationInfo) info);
+        List<ConversationInfo> list = new ArrayList<>();
+        try {
+            list = conversationListFromCursor(cursor);
+            for (ConversationInfo info : list) {
+                if (info instanceof ConcreteConversationInfo) {
+                    checkLastMessage((ConcreteConversationInfo) info);
+                }
             }
+            return list;
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getConversationInfoList " + e.getMessage());
+        } finally {
+            cursor.close();
         }
         return list;
     }
@@ -176,12 +204,18 @@ public class DBManager {
         if (cursor == null) {
             return new ArrayList<>();
         }
-        List<ConversationInfo> list = conversationListFromCursor(cursor);
-        cursor.close();
-        for (ConversationInfo info : list) {
-            if (info instanceof ConcreteConversationInfo) {
-                checkLastMessage((ConcreteConversationInfo) info);
+        List<ConversationInfo> list = new ArrayList<>();
+        try {
+            list = conversationListFromCursor(cursor);
+            for (ConversationInfo info : list) {
+                if (info instanceof ConcreteConversationInfo) {
+                    checkLastMessage((ConcreteConversationInfo) info);
+                }
             }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getConversationInfoList " + e.getMessage());
+        } finally {
+            cursor.close();
         }
         return list;
     }
@@ -195,12 +229,18 @@ public class DBManager {
         if (cursor == null) {
             return new ArrayList<>();
         }
-        List<ConversationInfo> list = conversationListFromCursor(cursor);
-        cursor.close();
-        for (ConversationInfo info : list) {
-            if (info instanceof ConcreteConversationInfo) {
-                checkLastMessage((ConcreteConversationInfo) info);
+        List<ConversationInfo> list = new ArrayList<>();
+        try {
+            list = conversationListFromCursor(cursor);
+            for (ConversationInfo info : list) {
+                if (info instanceof ConcreteConversationInfo) {
+                    checkLastMessage((ConcreteConversationInfo) info);
+                }
             }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getConversationInfoList " + e.getMessage());
+        } finally {
+            cursor.close();
         }
         return list;
     }
@@ -213,11 +253,18 @@ public class DBManager {
         String[] args = new String[]{conversation.getConversationId(), subChannel};
         Cursor cursor = rawQuery(ConversationSql.sqlGetConversation(conversation.getConversationType().getValue()), args);
         ConcreteConversationInfo result = null;
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                result = ConversationSql.conversationInfoWithCursor(cursor);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    result = ConversationSql.conversationInfoWithCursor(cursor);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getConversationInfo " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         checkLastMessage(result);
         return result;
@@ -283,11 +330,18 @@ public class DBManager {
     public int getTotalUnreadCount() {
         Cursor cursor = rawQuery(ConversationSql.SQL_GET_TOTAL_UNREAD_COUNT, null);
         int count = 0;
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getTotalUnreadCount " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return count;
     }
@@ -295,11 +349,18 @@ public class DBManager {
     public int getUnreadCountWithTypes(int[] conversationTypes) {
         Cursor cursor = rawQuery(ConversationSql.sqlGetUnreadCountWithTypes(conversationTypes), null);
         int count = 0;
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getUnreadCountWithTypes " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return count;
     }
@@ -307,11 +368,18 @@ public class DBManager {
     public int getUnreadCountWithTag(String tagId) {
         Cursor cursor = rawQuery(ConversationSql.SQL_GET_UNREAD_COUNT_WITH_TAG, new String[]{tagId});
         int count = 0;
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    count = CursorHelper.readInt(cursor, ConversationSql.COL_TOTAL_COUNT);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getUnreadCountWithTag " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return count;
     }
@@ -406,11 +474,18 @@ public class DBManager {
         }
         String[] args = new String[]{messageId, String.valueOf(now)};
         Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID, args);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                message = getMessageWithCursor(cursor);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    message = getMessageWithCursor(cursor);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getMessageWithMessageId " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return message;
     }
@@ -422,11 +497,18 @@ public class DBManager {
         }
         String[] args = new String[]{messageId};
         Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID_EVEN_DELETE, args);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                message = getMessageWithCursor(cursor);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    message = getMessageWithCursor(cursor);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getMessageWithMessageIdEvenDelete " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return message;
     }
@@ -438,11 +520,18 @@ public class DBManager {
         }
         String[] args = new String[]{clientUid};
         Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_CLIENT_UID, args);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                message = getMessageWithCursor(cursor);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    message = getMessageWithCursor(cursor);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getMessageWithClientUid " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return message;
     }
@@ -473,26 +562,30 @@ public class DBManager {
         if (cursor == null) {
             return resultList;
         }
-        //解析查询结果
-        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            int type = CursorHelper.readInt(cursor, MessageSql.COL_CONVERSATION_TYPE);
-            String conversationId = CursorHelper.readString(cursor, MessageSql.COL_CONVERSATION_ID);
-            String subChannel = CursorHelper.readString(cursor, MessageSql.COL_SUB_CHANNEL);
-            if (subChannel == null) {
-                subChannel = "";
+        try {
+            //解析查询结果
+            for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                int type = CursorHelper.readInt(cursor, MessageSql.COL_CONVERSATION_TYPE);
+                String conversationId = CursorHelper.readString(cursor, MessageSql.COL_CONVERSATION_ID);
+                String subChannel = CursorHelper.readString(cursor, MessageSql.COL_SUB_CHANNEL);
+                if (subChannel == null) {
+                    subChannel = "";
+                }
+                Conversation c = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
+                c.setSubChannel(subChannel);
+                ConversationInfo info = new ConcreteConversationInfo();
+                info.setConversation(c);
+
+                SearchConversationsResult result = new SearchConversationsResult();
+                result.setConversationInfo(info);
+                result.setMatchedCount(CursorHelper.readInt(cursor, "match_count"));
+                resultList.add(result);
             }
-            Conversation c = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
-            c.setSubChannel(subChannel);
-            ConversationInfo info = new ConcreteConversationInfo();
-            info.setConversation(c);
-
-            SearchConversationsResult result = new SearchConversationsResult();
-            result.setConversationInfo(info);
-            result.setMatchedCount(CursorHelper.readInt(cursor, "match_count"));
-            resultList.add(result);
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "searchMessageInConversations " + e.getMessage());
+        } finally {
+            cursor.close();
         }
-        cursor.close();
-
         if (!resultList.isEmpty()) {
             for (SearchConversationsResult result : resultList) {
                 ConversationInfo info = getConversationInfo(result.getConversationInfo().getConversation());
@@ -530,9 +623,14 @@ public class DBManager {
         if (cursor == null) {
             return result;
         }
-        //解析查询结果
-        addMessagesFromCursor(result, cursor);
-        cursor.close();
+        try {
+            //解析查询结果
+            addMessagesFromCursor(result, cursor);
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getMessages " + e.getMessage());
+        } finally {
+            cursor.close();
+        }
         //按需反转结果列表
         if (JIMConst.PullDirection.OLDER == pullDirection) {
             Collections.reverse(result);
@@ -552,8 +650,13 @@ public class DBManager {
         if (cursor == null) {
             return result;
         }
-        addMessagesFromCursor(result, cursor);
-        cursor.close();
+        try {
+            addMessagesFromCursor(result, cursor);
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getMessagesByMessageIds " + e.getMessage());
+        } finally {
+            cursor.close();
+        }
         List<Message> messages = new ArrayList<>();
         for (String messageId : messageIds) {
             for (Message message : result) {
@@ -577,8 +680,13 @@ public class DBManager {
         if (cursor == null) {
             return result;
         }
-        addConcreteMessagesFromCursor(result, cursor);
-        cursor.close();
+        try {
+            addConcreteMessagesFromCursor(result, cursor);
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getConcreteMessagesByMessageIds " + e.getMessage());
+        } finally {
+            cursor.close();
+        }
         List<ConcreteMessage> messages = new ArrayList<>();
         for (String messageId : messageIds) {
             for (ConcreteMessage message : result) {
@@ -602,8 +710,13 @@ public class DBManager {
         if (cursor == null) {
             return result;
         }
-        addMessagesFromCursor(result, cursor);
-        cursor.close();
+        try {
+            addMessagesFromCursor(result, cursor);
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getMessagesByClientMsgNos " + e.getMessage());
+        } finally {
+            cursor.close();
+        }
         List<Message> messages = new ArrayList<>();
         for (long clientMsgNo : clientMsgNos) {
             for (Message message : result) {
@@ -625,8 +738,13 @@ public class DBManager {
         if (cursor == null) {
             return null;
         }
-        addMessagesFromCursor(list, cursor);
-        cursor.close();
+        try {
+            addMessagesFromCursor(list, cursor);
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getLastMessage " + e.getMessage());
+        } finally {
+            cursor.close();
+        }
         if (list.isEmpty()) return null;
         return list.get(0);
     }
@@ -641,11 +759,18 @@ public class DBManager {
         String sql = MessageSql.sqlGetLocalAttribute(messageId);
         Cursor cursor = rawQuery(sql, null);
         String result = "";
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                result = CursorHelper.readString(cursor, MessageSql.COL_LOCAL_ATTRIBUTE);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    result = CursorHelper.readString(cursor, MessageSql.COL_LOCAL_ATTRIBUTE);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getLocalAttribute " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return result;
     }
@@ -658,11 +783,18 @@ public class DBManager {
         String sql = MessageSql.sqlGetLocalAttribute(clientMsgNo);
         Cursor cursor = rawQuery(sql, null);
         String result = "";
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                result = CursorHelper.readString(cursor, MessageSql.COL_LOCAL_ATTRIBUTE);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    result = CursorHelper.readString(cursor, MessageSql.COL_LOCAL_ATTRIBUTE);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getLocalAttribute " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return result;
     }
@@ -810,11 +942,18 @@ public class DBManager {
         UserInfo info = null;
         String[] args = new String[]{userId};
         Cursor cursor = rawQuery(UserInfoSql.SQL_GET_USER_INFO, args);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                info = UserInfoSql.userInfoWithCursor(cursor);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    info = UserInfoSql.userInfoWithCursor(cursor);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getUserInfo " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return info;
     }
@@ -839,11 +978,18 @@ public class DBManager {
         GroupInfo info = null;
         String[] args = new String[]{groupId};
         Cursor cursor = rawQuery(UserInfoSql.SQL_GET_GROUP_INFO, args);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                info = UserInfoSql.groupInfoWithCursor(cursor);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    info = UserInfoSql.groupInfoWithCursor(cursor);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getGroupInfo " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return info;
     }
@@ -868,11 +1014,18 @@ public class DBManager {
         GroupMember member = null;
         String[] args = new String[]{groupId, userId};
         Cursor cursor = rawQuery(UserInfoSql.SQL_GET_GROUP_MEMBER, args);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                member = UserInfoSql.groupMemberWithCursor(cursor);
+        try {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    member = UserInfoSql.groupMemberWithCursor(cursor);
+                }
             }
-            cursor.close();
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getGroupMember " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return member;
     }
@@ -901,9 +1054,16 @@ public class DBManager {
         String sql = ReactionSql.sqlGetReaction(messageIds.size());
         String[] args = messageIds.toArray(new String[0]);
         Cursor cursor = rawQuery(sql, args);
-        if (cursor != null) {
-            addReactionsFromCursor(result, cursor);
-            cursor.close();
+        try {
+            if (cursor != null) {
+                addReactionsFromCursor(result, cursor);
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getMessageReactions " + e.getMessage());
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return result;
     }
