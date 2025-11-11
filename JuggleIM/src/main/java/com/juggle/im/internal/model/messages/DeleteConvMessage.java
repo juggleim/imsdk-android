@@ -1,5 +1,7 @@
 package com.juggle.im.internal.model.messages;
 
+import android.text.TextUtils;
+
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.MessageContent;
@@ -47,6 +49,10 @@ public class DeleteConvMessage extends MessageContent {
                     int type = object.optInt(CHANNEL_TYPE);
                     String conversationId = object.optString(TARGET_ID);
                     Conversation c = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
+                    String subChannel = object.optString(SUB_CHANNEL);
+                    if (!TextUtils.isEmpty(subChannel)) {
+                        c.setSubChannel(subChannel);
+                    }
                     conversations.add(c);
                 }
             }
@@ -73,4 +79,5 @@ public class DeleteConvMessage extends MessageContent {
     private static final String CONVERSATIONS = "conversations";
     private static final String TARGET_ID = "target_id";
     private static final String CHANNEL_TYPE = "channel_type";
+    private static final String SUB_CHANNEL = "sub_channel";
 }

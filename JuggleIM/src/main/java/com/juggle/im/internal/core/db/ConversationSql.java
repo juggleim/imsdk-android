@@ -26,6 +26,11 @@ class ConversationSql {
         int type = CursorHelper.readInt(cursor, COL_CONVERSATION_TYPE);
         String id = CursorHelper.readString(cursor, COL_CONVERSATION_ID);
         Conversation c = new Conversation(Conversation.ConversationType.setValue(type), id);
+        String subChannel = CursorHelper.readString(cursor, COL_SUB_CHANNEL);
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        c.setSubChannel(subChannel);
         info.setConversation(c);
         info.setDraft(CursorHelper.readString(cursor, COL_DRAFT));
         info.setSortTime(CursorHelper.readLong(cursor, COL_TIMESTAMP));
@@ -82,7 +87,7 @@ class ConversationSql {
 
     static Object[] argsWithUpdateConcreteConversationInfo(ConcreteConversationInfo info) {
         ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
-        Object[] args = new Object[22];
+        Object[] args = new Object[23];
 
         args[0] = info.getSortTime();
         args[1] = lastMessage == null ? null : lastMessage.getMessageId();
@@ -118,51 +123,62 @@ class ConversationSql {
         args[19] = info.hasUnread();
         args[20] = info.getConversation().getConversationType().getValue();
         args[21] = info.getConversation().getConversationId();
+        if (info.getConversation().getSubChannel() != null) {
+            args[22] = info.getConversation().getSubChannel();
+        } else {
+            args[22] = "";
+        }
         return args;
     }
 
     static Object[] argsWithInsertConcreteConversationInfo(ConcreteConversationInfo info) {
         ConcreteMessage lastMessage = (ConcreteMessage) info.getLastMessage();
-        Object[] args = new Object[22];
-        args[0] = info.getConversation().getConversationType().getValue();
-        args[1] = info.getConversation().getConversationId();
-        args[2] = info.getSortTime();
-        args[3] = lastMessage == null ? null : lastMessage.getMessageId();
-        args[4] = info.getLastReadMessageIndex();
-        args[5] = info.getLastMessageIndex();
-        args[6] = info.isTop();
-        args[7] = info.getTopTime();
-        args[8] = info.isMute();
-        if (info.getMentionInfo() != null) {
-            args[9] = info.getMentionInfo().encodeToJson();
-        } else {
-            args[9] = "";
+        Object[] args = new Object[23];
+        int i = 0;
+        args[i++] = info.getConversation().getConversationType().getValue();
+        args[i++] = info.getConversation().getConversationId();
+        String subChannel = info.getConversation().getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
         }
-        args[10] = lastMessage == null ? null : lastMessage.getContentType();
-        args[11] = lastMessage == null ? null : lastMessage.getClientUid();
-        args[12] = lastMessage == null ? 0 : lastMessage.getClientMsgNo();
-        args[13] = (lastMessage == null || lastMessage.getDirection() == null) ? 0 : lastMessage.getDirection().getValue();
-        args[14] = (lastMessage == null || lastMessage.getState() == null) ? 0 : lastMessage.getState().getValue();
-        args[15] = lastMessage == null ? 0 : lastMessage.isHasRead();
-        args[16] = lastMessage == null ? 0 : lastMessage.getTimestamp();
-        args[17] = lastMessage == null ? null : lastMessage.getSenderUserId();
-        if (lastMessage != null && lastMessage.getContent() != null) {
-            args[18] = new String(lastMessage.getContent().encode());
+        args[i++] = subChannel;
+        args[i++] = info.getSortTime();
+        args[i++] = lastMessage == null ? null : lastMessage.getMessageId();
+        args[i++] = info.getLastReadMessageIndex();
+        args[i++] = info.getLastMessageIndex();
+        args[i++] = info.isTop();
+        args[i++] = info.getTopTime();
+        args[i++] = info.isMute();
+        if (info.getMentionInfo() != null) {
+            args[i++] = info.getMentionInfo().encodeToJson();
         } else {
-            args[18] = "";
+            args[i++] = "";
+        }
+        args[i++] = lastMessage == null ? null : lastMessage.getContentType();
+        args[i++] = lastMessage == null ? null : lastMessage.getClientUid();
+        args[i++] = lastMessage == null ? 0 : lastMessage.getClientMsgNo();
+        args[i++] = (lastMessage == null || lastMessage.getDirection() == null) ? 0 : lastMessage.getDirection().getValue();
+        args[i++] = (lastMessage == null || lastMessage.getState() == null) ? 0 : lastMessage.getState().getValue();
+        args[i++] = lastMessage == null ? 0 : lastMessage.isHasRead();
+        args[i++] = lastMessage == null ? 0 : lastMessage.getTimestamp();
+        args[i++] = lastMessage == null ? null : lastMessage.getSenderUserId();
+        if (lastMessage != null && lastMessage.getContent() != null) {
+            args[i++] = new String(lastMessage.getContent().encode());
+        } else {
+            args[i++] = "";
         }
         if (lastMessage != null && lastMessage.hasMentionInfo()) {
-            args[19] = lastMessage.getMentionInfo().encodeToJson();
+            args[i++] = lastMessage.getMentionInfo().encodeToJson();
         } else {
-            args[19] = "";
+            args[i++] = "";
         }
-        args[20] = lastMessage == null ? 0 : lastMessage.getSeqNo();
-        args[21] = info.hasUnread();
+        args[i++] = lastMessage == null ? 0 : lastMessage.getSeqNo();
+        args[i] = info.hasUnread();
         return args;
     }
 
     static Object[] argsWithUpdateLastMessage(ConcreteMessage message, boolean isUpdateSortTime, boolean isUpdateLastIndex) {
-        int count = 14;
+        int count = 15;
         if (isUpdateSortTime) {
             count++;
         }
@@ -202,24 +218,37 @@ class ConversationSql {
             args[i++] = message.getMsgIndex();
         }
         args[i++] = message.getConversation().getConversationType().getValue();
-        args[i] = message.getConversation().getConversationId();
+        args[i++] = message.getConversation().getConversationId();
+        String subChannel = message.getConversation().getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        args[i] = subChannel;
         return args;
     }
 
     static String sqlGetConversation(int type) {
-        return String.format("SELECT * FROM conversation_info WHERE conversation_type = %s AND conversation_id = ?", type);
+        return String.format("SELECT * FROM conversation_info WHERE conversation_type = %s AND conversation_id = ? AND subchannel = ?", type);
     }
 
     static String sqlDeleteConversation(int type) {
-        return String.format("DELETE FROM conversation_info WHERE conversation_type = %s AND conversation_id = ?", type);
+        return String.format("DELETE FROM conversation_info WHERE conversation_type = %s AND conversation_id = ? AND subchannel = ?", type);
     }
 
     static String sqlSetDraft(Conversation conversation) {
-        return String.format("UPDATE conversation_info SET draft = ? WHERE conversation_type = %s AND conversation_id = '%s'", conversation.getConversationType().getValue(), conversation.getConversationId());
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        return String.format("UPDATE conversation_info SET draft = ? WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s'", conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel);
     }
 
     static String sqlClearUnreadCount(Conversation conversation, long msgIndex) {
-        return String.format("UPDATE conversation_info SET last_read_message_index = %s WHERE conversation_type = %s AND conversation_id = '%s'", msgIndex, conversation.getConversationType().getValue(), conversation.getConversationId());
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        return String.format("UPDATE conversation_info SET last_read_message_index = %s WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s'", msgIndex, conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel);
     }
 
     static String sqlClearTotalUnreadCount() {
@@ -227,41 +256,55 @@ class ConversationSql {
     }
 
     static String sqlUpdateLastMessageHasRead(Conversation conversation, String messageId, boolean isHasRead) {
-        return String.format("UPDATE conversation_info SET last_message_has_read = %s WHERE conversation_type = %s AND conversation_id = '%s' AND last_message_id = '%s'", isHasRead ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId(), messageId);
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        return String.format("UPDATE conversation_info SET last_message_has_read = %s WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s' AND last_message_id = '%s'", isHasRead ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel, messageId);
     }
 
     static String sqlUpdateLastMessageState(Conversation conversation, long clientMsgNo, int state) {
-        return String.format("UPDATE conversation_info SET last_message_state = %s WHERE conversation_type = %s AND conversation_id = '%s' AND last_message_client_msg_no = %s", state, conversation.getConversationType().getValue(), conversation.getConversationId(), clientMsgNo);
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        return String.format("UPDATE conversation_info SET last_message_state = %s WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s' AND last_message_client_msg_no = %s", state, conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel, clientMsgNo);
     }
 
     static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index = last_read_message_index AND unread_tag = 1 THEN 1 WHEN last_message_index - last_read_message_index > 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info WHERE mute = 0";
 
-    static final String SQL_GET_UNREAD_COUNT_WITH_TAG = "SELECT SUM(CASE WHEN last_message_index = last_read_message_index AND unread_tag = 1 THEN 1 WHEN last_message_index - last_read_message_index > 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info INNER JOIN conversation_tag ON conversation_info.conversation_type = conversation_tag.conversation_type AND conversation_info.conversation_id = conversation_tag.conversation_id WHERE tag_id = ?";
+    static final String SQL_GET_UNREAD_COUNT_WITH_TAG = "SELECT SUM(CASE WHEN last_message_index = last_read_message_index AND unread_tag = 1 THEN 1 WHEN last_message_index - last_read_message_index > 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info INNER JOIN conversation_tag ON conversation_info.conversation_type = conversation_tag.conversation_type AND conversation_info.conversation_id = conversation_tag.conversation_id AND conversation_info.subchannel = conversation_tag.subchannel WHERE tag_id = ?";
 
-    static final String SQL_CLEAR_TAG_BY_CONVERSATION = "DELETE FROM conversation_tag WHERE conversation_type = ? AND conversation_id = ?";
+    static final String SQL_CLEAR_TAG_BY_CONVERSATION = "DELETE FROM conversation_tag WHERE conversation_type = ? AND conversation_id = ? AND subchannel = ?";
 
-    static final String SQL_INSERT_CONVERSATION_TAG = "INSERT INTO conversation_tag (tag_id, conversation_type, conversation_id) VALUES ";
+    static final String SQL_INSERT_CONVERSATION_TAG = "INSERT INTO conversation_tag (tag_id, conversation_type, conversation_id, subchannel) VALUES ";
 
     static String sqlAddConversationsToTag(@NonNull List<Conversation> conversations, @NonNull String tagId, @NonNull List<String> args) {
         StringBuilder sql = new StringBuilder(ConversationSql.SQL_INSERT_CONVERSATION_TAG);
         for (int j = 0; j < conversations.size(); j++) {
             Conversation conversation = conversations.get(j);
-            sql.append(CursorHelper.getQuestionMarkPlaceholder(3));
+            sql.append(CursorHelper.getQuestionMarkPlaceholder(4));
             if (j != conversations.size() - 1) {
                 sql.append(", ");
             }
             args.add(tagId);
             args.add(String.valueOf(conversation.getConversationType().getValue()));
             args.add(conversation.getConversationId());
+            String subChannel = conversation.getSubChannel();
+            if (subChannel == null) {
+                subChannel = "";
+            }
+            args.add(subChannel);
         }
         return sql.toString();
     }
 
-    static final String SQL_REMOVE_CONVERSATION_FROM_TAG = "DELETE FROM conversation_tag WHERE conversation_type = ? AND conversation_id = ? AND tag_id = ?";
+    static final String SQL_REMOVE_CONVERSATION_FROM_TAG = "DELETE FROM conversation_tag WHERE conversation_type = ? AND conversation_id = ? AND subchannel = ? AND tag_id = ?";
 
     static final String SQL_GET_CONVERSATIONS_BY_TAG = "SELECT * FROM conversation_info INNER JOIN conversation_tag"
             + " ON conversation_info.conversation_type = conversation_tag.conversation_type"
             + " AND conversation_info.conversation_id = conversation_tag.conversation_id"
+            + " AND conversation_info.subchannel = conversation_tag.subchannel"
             + " WHERE tag_id = ? AND ";
 
     static String sqlGetUnreadCountWithTypes(int[] conversationTypes) {
@@ -269,15 +312,27 @@ class ConversationSql {
     }
 
     static String sqlSetMute(Conversation conversation, boolean isMute) {
-        return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s'", isMute ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        return String.format("UPDATE conversation_info SET mute = %s WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s'", isMute ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel);
     }
 
     static String sqlSetTop(Conversation conversation, boolean isTop, long topTime) {
-        return String.format("UPDATE conversation_info SET is_top = %s, top_time = %s WHERE conversation_type = %s AND conversation_id = '%s'", isTop ? 1 : 0, isTop ? topTime : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        return String.format("UPDATE conversation_info SET is_top = %s, top_time = %s WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s'", isTop ? 1 : 0, isTop ? topTime : 0, conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel);
     }
 
     static String sqlSetUnread(Conversation conversation, boolean isUnread) {
-        return String.format("UPDATE conversation_info SET unread_tag = %s WHERE conversation_type = %s AND conversation_id = '%s'", isUnread ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId());
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        return String.format("UPDATE conversation_info SET unread_tag = %s WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s'", isUnread ? 1 : 0, conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel);
     }
 
     static String sqlClearUnreadTag() {
@@ -289,11 +344,19 @@ class ConversationSql {
     }
 
     static String sqlSetMention(Conversation conversation, String mentionInfoJson) {
-        return String.format("UPDATE conversation_info SET mention_info = '%s' WHERE conversation_type = %s AND conversation_id = '%s'", mentionInfoJson, conversation.getConversationType().getValue(), conversation.getConversationId());
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        return String.format("UPDATE conversation_info SET mention_info = '%s' WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s'", mentionInfoJson, conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel);
     }
 
     static String sqlUpdateSortTime(Conversation conversation, long sortTime) {
-        return String.format("UPDATE conversation_info SET timestamp = %s WHERE conversation_type = %s AND conversation_id = '%s'", sortTime, conversation.getConversationType().getValue(), conversation.getConversationId());
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        return String.format("UPDATE conversation_info SET timestamp = %s WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s'", sortTime, conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel);
     }
 
     static final String SQL_CLEAR_MENTION_INFO = "UPDATE conversation_info SET mention_info = NULL";
@@ -322,30 +385,34 @@ class ConversationSql {
             + "last_message_content TEXT,"
             + "last_message_mention_info TEXT,"
             + "last_message_seq_no INTEGER,"
-            + "unread_tag BOOLEAN"
+            + "unread_tag BOOLEAN,"
+            + "subchannel VARCHAR (64) DEFAULT ''"
             + ")";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation ON conversation_info(conversation_type, conversation_id)";
+    static final String SQL_CREATE_INDEX2 = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation2 ON conversation_info(conversation_type, conversation_id, subchannel)";
     static final String SQL_CREATE_TAG_TABLE = "CREATE TABLE IF NOT EXISTS conversation_tag ("
                                                 + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                                 + "tag_id VARCHAR (64),"
                                                 + "conversation_type SMALLINT,"
-                                                + "conversation_id VARCHAR (64)"
+                                                + "conversation_id VARCHAR (64),"
+                                                + "subchannel VARCHAR (64) DEFAULT ''"
                                                 + ")";
     static final String SQL_CREATE_TAG_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation_tag ON conversation_tag(tag_id, conversation_type, conversation_id)";
+    static final String SQL_CREATE_TAG_INDEX2 = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation_tag2 ON conversation_tag(tag_id, conversation_type, conversation_id, subchannel)";
     static final String SQL_ADD_COLUMN_UNREAD_TAG = "ALTER TABLE conversation_info ADD COLUMN unread_tag BOOLEAN";
     static final String SQL_INSERT_CONVERSATION = "INSERT OR REPLACE INTO conversation_info"
-            + "(conversation_type, conversation_id, timestamp, last_message_id,"
+            + "(conversation_type, conversation_id, subchannel, timestamp, last_message_id,"
             + "last_read_message_index, last_message_index, is_top, top_time, mute, mention_info,"
             + "last_message_type, last_message_client_uid, last_message_client_msg_no, last_message_direction, last_message_state,"
             + "last_message_has_read, last_message_timestamp, last_message_sender, last_message_content, last_message_mention_info,"
             + "last_message_seq_no, unread_tag) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     static final String SQL_UPDATE_CONVERSATION = "UPDATE conversation_info SET timestamp=?, last_message_id=?, last_read_message_index=?, "
             + "last_message_index=?, is_top=?, top_time=?, mute=?, mention_info=?, last_message_type=?,  "
             + "last_message_client_uid=?, last_message_client_msg_no=?, last_message_direction=?, last_message_state=?, "
             + "last_message_has_read=?, last_message_timestamp=?, last_message_sender=?, "
             + "last_message_content=?, last_message_mention_info=?, last_message_seq_no=?, unread_tag=? WHERE conversation_type = ? "
-            + "AND conversation_id = ?";
+            + "AND conversation_id = ? AND subchannel = ?";
     static final String SQL_GET_CONVERSATIONS = "SELECT * FROM conversation_info";
     static final String SQL_ORDER_BY_TOP_TOPTIME_TIME = " ORDER BY is_top DESC, top_time DESC, timestamp DESC";
     static final String SQL_ORDER_BY_TOP_TIME = " ORDER BY is_top DESC, timestamp DESC";
@@ -362,7 +429,11 @@ class ConversationSql {
             + "mention_info=NULL";
     static final String SQL_TIMESTAMP_EQUALS_QUESTION = ", timestamp=?";
     static final String SQL_LAST_MESSAGE_EQUALS_QUESTION = ", last_message_index=?";
-    static final String SQL_WHERE_CONVERSATION_IS = " WHERE conversation_type = ? AND conversation_id = ?";
+    static final String SQL_WHERE_CONVERSATION_IS = " WHERE conversation_type = ? AND conversation_id = ? AND subchannel = ?";
+    static final String SQL_ALTER_CONVERSATION_INFO_ADD_SUB_CHANNEL = "ALTER TABLE conversation_info ADD COLUMN subchannel VARCHAR (64) DEFAULT ''";
+    static final String SQL_ALTER_CONVERSATION_TAG_ADD_SUB_CHANNEL = "ALTER TABLE conversation_tag ADD COLUMN subchannel VARCHAR (64) DEFAULT ''";
+    static final String SQL_DROP_CONVERSATION_INDEX1 = "DROP INDEX IF EXISTS idx_conversation";
+    static final String SQL_DROP_CONVERSATION_TAG_INDEX1 = "DROP INDEX IF EXISTS idx_conversation_tag";
 
     static String sqlGetConversationsWithOptions(GetConversationOptions options, List<String> args, JIMConst.TopConversationsOrderType type) {
         StringBuilder sql;
@@ -449,4 +520,5 @@ class ConversationSql {
     static final String COL_LAST_MESSAGE_MENTION_INFO = "last_message_mention_info";
     static final String COL_TOTAL_COUNT = "total_count";
     static final String COL_UNREAD_TAG = "unread_tag";
+    static final String COL_SUB_CHANNEL = "subchannel";
 }

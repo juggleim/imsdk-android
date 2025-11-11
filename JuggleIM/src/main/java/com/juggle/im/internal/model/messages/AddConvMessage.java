@@ -1,5 +1,7 @@
 package com.juggle.im.internal.model.messages;
 
+import android.text.TextUtils;
+
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
@@ -46,7 +48,12 @@ public class AddConvMessage extends MessageContent {
                 if (convObj.has(CHANNEL_TYPE) && convObj.has(TARGET_ID)) {
                     int type = convObj.optInt(CHANNEL_TYPE);
                     String conversationId = convObj.optString(TARGET_ID);
-                    conversationInfo.setConversation(new Conversation(Conversation.ConversationType.setValue(type), conversationId));
+                    String subChannel = convObj.optString(SUB_CHANNEL);
+                    Conversation conversation = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
+                    if (!TextUtils.isEmpty(subChannel)) {
+                        conversation.setSubChannel(subChannel);
+                    }
+                    conversationInfo.setConversation(conversation);
                 }
                 if (convObj.has(SORT_TIME)) {
                     conversationInfo.setSortTime(convObj.optLong(SORT_TIME));
@@ -153,4 +160,5 @@ public class AddConvMessage extends MessageContent {
     private static final String GROUP_ID = "group_id";
     private static final String GROUP_NAME = "group_name";
     private static final String GROUP_PORTRAIT = "group_portrait";
+    private static final String SUB_CHANNEL = "sub_channel";
 }

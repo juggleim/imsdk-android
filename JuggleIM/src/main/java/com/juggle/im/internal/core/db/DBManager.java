@@ -206,7 +206,11 @@ public class DBManager {
     }
 
     public ConcreteConversationInfo getConversationInfo(Conversation conversation) {
-        String[] args = new String[]{conversation.getConversationId()};
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        String[] args = new String[]{conversation.getConversationId(), subChannel};
         Cursor cursor = rawQuery(ConversationSql.sqlGetConversation(conversation.getConversationType().getValue()), args);
         ConcreteConversationInfo result = null;
         if (cursor != null) {
@@ -222,7 +226,11 @@ public class DBManager {
     public void deleteConversationInfo(List<Conversation> conversations) {
         performTransaction(() -> {
             for (Conversation conversation : conversations) {
-                String[] args = new String[]{conversation.getConversationId()};
+                String subChannel = conversation.getSubChannel();
+                if (subChannel == null) {
+                    subChannel = "";
+                }
+                String[] args = new String[]{conversation.getConversationId(), subChannel};
                 execSQL(ConversationSql.sqlDeleteConversation(conversation.getConversationType().getValue()), args);
             }
         });
@@ -314,12 +322,17 @@ public class DBManager {
         performTransaction(() -> {
             for (ConcreteConversationInfo info : conversationInfos) {
                 if (info.getTagIdList() != null && !info.getTagIdList().isEmpty()) {
-                    execSQL(ConversationSql.SQL_CLEAR_TAG_BY_CONVERSATION, new String[]{String.valueOf(info.getConversation().getConversationType().getValue()), info.getConversation().getConversationId()});
+                    String subChannel = info.getConversation().getSubChannel();
+                    if (subChannel == null) {
+                        subChannel = "";
+                    }
+                    execSQL(ConversationSql.SQL_CLEAR_TAG_BY_CONVERSATION, new String[]{String.valueOf(info.getConversation().getConversationType().getValue()), info.getConversation().getConversationId(), subChannel});
                     for (String tagId : info.getTagIdList()) {
-                        sql.append(CursorHelper.getQuestionMarkPlaceholder(3)).append(", ");
+                        sql.append(CursorHelper.getQuestionMarkPlaceholder(4)).append(", ");
                         argList.add(tagId);
                         argList.add(String.valueOf(info.getConversation().getConversationType().getValue()));
                         argList.add(info.getConversation().getConversationId());
+                        argList.add(subChannel);
                     }
                 }
             }
@@ -352,7 +365,11 @@ public class DBManager {
         }
         performTransaction(() -> {
             for (Conversation conversation : conversations) {
-                execSQL(ConversationSql.SQL_REMOVE_CONVERSATION_FROM_TAG, new String[]{String.valueOf(conversation.getConversationType().getValue()), conversation.getConversationId(), tagId});
+                String subChannel = conversation.getSubChannel();
+                if (subChannel == null) {
+                    subChannel = "";
+                }
+                execSQL(ConversationSql.SQL_REMOVE_CONVERSATION_FROM_TAG, new String[]{String.valueOf(conversation.getConversationType().getValue()), conversation.getConversationId(), subChannel, tagId});
             }
         });
     }
@@ -370,7 +387,11 @@ public class DBManager {
 
     public void clearLastMessage(Conversation conversation) {
         String sql = ConversationSql.SQL_CLEAR_LAST_MESSAGE + ConversationSql.SQL_WHERE_CONVERSATION_IS;
-        Object[] args = new Object[]{conversation.getConversationType().getValue(), conversation.getConversationId()};
+        String subChannel = conversation.getSubChannel();
+        if (subChannel == null) {
+            subChannel = "";
+        }
+        Object[] args = new Object[]{conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel};
         execSQL(sql, args);
     }
 
@@ -456,7 +477,12 @@ public class DBManager {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             int type = CursorHelper.readInt(cursor, MessageSql.COL_CONVERSATION_TYPE);
             String conversationId = CursorHelper.readString(cursor, MessageSql.COL_CONVERSATION_ID);
+            String subChannel = CursorHelper.readString(cursor, MessageSql.COL_SUB_CHANNEL);
+            if (subChannel == null) {
+                subChannel = "";
+            }
             Conversation c = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
+            c.setSubChannel(subChannel);
             ConversationInfo info = new ConcreteConversationInfo();
             info.setConversation(c);
 

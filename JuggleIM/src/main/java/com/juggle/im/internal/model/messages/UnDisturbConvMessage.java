@@ -1,5 +1,7 @@
 package com.juggle.im.internal.model.messages;
 
+import android.text.TextUtils;
+
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
@@ -50,7 +52,12 @@ public class UnDisturbConvMessage extends MessageContent {
                     String conversationId = object.optString(TARGET_ID);
 
                     ConcreteConversationInfo conversation = new ConcreteConversationInfo();
-                    conversation.setConversation(new Conversation(Conversation.ConversationType.setValue(type), conversationId));
+                    Conversation c = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
+                    String subChannel = object.optString(SUB_CHANNEL);
+                    if (!TextUtils.isEmpty(subChannel)) {
+                        c.setSubChannel(subChannel);
+                    }
+                    conversation.setConversation(c);
                     conversation.setMute(unDisturbType == 1);
 
                     conversations.add(conversation);
@@ -80,4 +87,5 @@ public class UnDisturbConvMessage extends MessageContent {
     private static final String TARGET_ID = "target_id";
     private static final String CHANNEL_TYPE = "channel_type";
     private static final String UN_DISTURB_TYPE = "undisturb_type";
+    private static final String SUB_CHANNEL = "sub_channel";
 }

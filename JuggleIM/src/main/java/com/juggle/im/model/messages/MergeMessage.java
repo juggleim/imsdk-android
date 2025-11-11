@@ -44,6 +44,9 @@ public class MergeMessage extends MessageContent {
             if (mConversation != null) {
                 jsonObject.putOpt(CONVERSATION_ID, mConversation.getConversationId());
                 jsonObject.putOpt(CONVERSATION_TYPE, mConversation.getConversationType().getValue());
+                if (!TextUtils.isEmpty(mConversation.getSubChannel())) {
+                    jsonObject.putOpt(SUB_CHANNEL, mConversation.getSubChannel());
+                }
             }
             JSONArray messageIdListJson = new JSONArray();
             if (mMessageIdList != null) {
@@ -92,6 +95,10 @@ public class MergeMessage extends MessageContent {
                 int type = jsonObject.optInt(CONVERSATION_TYPE);
                 String conversationId = jsonObject.optString(CONVERSATION_ID);
                 mConversation = new Conversation(Conversation.ConversationType.setValue(type), conversationId);
+                String subChannel = jsonObject.optString(SUB_CHANNEL);
+                if (!TextUtils.isEmpty(subChannel)) {
+                    mConversation.setSubChannel(subChannel);
+                }
             }
             JSONArray messageIdListJson = jsonObject.optJSONArray(MESSAGE_ID_LIST);
             if (messageIdListJson != null) {
@@ -187,4 +194,5 @@ public class MergeMessage extends MessageContent {
     private static final String PORTRAIT = "portrait";
     private static final String EXTRA = "extra";
     private static final String DIGEST = "[Merge]";
+    private static final String SUB_CHANNEL = "sub_channel";
 }

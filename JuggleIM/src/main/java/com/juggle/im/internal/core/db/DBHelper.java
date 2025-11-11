@@ -15,7 +15,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(ProfileSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TABLE);
-        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_INDEX);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_INDEX2);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CLIENT_UID_INDEX);
@@ -30,7 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_INDEX);
         sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_TABLE);
-        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX2);
     }
 
     @Override
@@ -121,7 +121,21 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 14) {
+            try {
+                sqLiteDatabase.execSQL(MessageSql.SQL_ALTER_ADD_SUB_CHANNEL);
+                sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX2);
+                sqLiteDatabase.execSQL(ConversationSql.SQL_ALTER_CONVERSATION_INFO_ADD_SUB_CHANNEL);
+                sqLiteDatabase.execSQL(ConversationSql.SQL_ALTER_CONVERSATION_TAG_ADD_SUB_CHANNEL);
+                sqLiteDatabase.execSQL(ConversationSql.SQL_DROP_CONVERSATION_INDEX1);
+                sqLiteDatabase.execSQL(ConversationSql.SQL_DROP_CONVERSATION_TAG_INDEX1);
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_INDEX2);
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX2);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 13;
+    private final static int version = 14;
 }
