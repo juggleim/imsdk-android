@@ -17,7 +17,6 @@ import com.juggle.im.model.MessageMentionInfo;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 class ConversationSql {
 

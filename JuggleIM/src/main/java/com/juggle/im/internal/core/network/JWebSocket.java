@@ -1,5 +1,7 @@
 package com.juggle.im.internal.core.network;
 
+import static com.juggle.im.internal.ConstInternal.SDK_VERSION;
+
 import android.os.Build;
 import android.os.Handler;
 
@@ -35,6 +37,7 @@ import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.internal.model.MergeInfo;
 import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.util.JLogger;
+import com.juggle.im.internal.util.JUtility;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.MediaMessageContent;
@@ -692,6 +695,13 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         onCommandError(callback, JErrorCode.OPERATION_TIMEOUT);
     }
 
+    @Override
+    public void onTimeoutCountExceed() {
+        if (mConnectListener != null) {
+            mConnectListener.onTimeOut();
+        }
+    }
+
     private void onCommandError(IWebSocketCallback callback, int errorCode) {
         if (callback == null) return;
         if (callback instanceof SendMessageCallback) {
@@ -934,7 +944,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 if (client != mWebSocketClient) {
                     return;
                 }
-                JLogger.i("WS-Connect", "onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
+                JLogger.i("WS-Connect", "onClose isCompeteFinish, code is " + code + ", reason is " + reason + ", isRemote is " + remote + ", clientIP is " + JUtility.getLocalIPv4Address()  + ", osVersion is " + Build.VERSION.RELEASE + ", networkId is " + mNetworkType + ", carrier is " + mCarrier + ", sdkVersion is " + SDK_VERSION);
                 resetWebSocketClient();
                 if (remote && mConnectListener != null) {
                     mConnectListener.onWebSocketClose();
@@ -955,7 +965,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                     }
                 }
                 if (allFailed && mConnectListener != null) {
-                    JLogger.i("WS-Connect", "onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote);
+                    JLogger.i("WS-Connect", "onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote + ", clientIP is " + JUtility.getLocalIPv4Address()  + ", osVersion is " + Build.VERSION.RELEASE + ", networkId is " + mNetworkType + ", carrier is " + mCarrier + ", sdkVersion is " + SDK_VERSION);
                     resetWebSocketClient();
                     mConnectListener.onWebSocketClose();
                 }
@@ -1003,7 +1013,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 mPushToken,
                 mNetworkType,
                 mCarrier,
-                "",
+                JUtility.getLocalIPv4Address(),
                 mLanguage);
         sendWhenOpen(bytes);
     }

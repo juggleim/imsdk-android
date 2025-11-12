@@ -6,6 +6,7 @@ import com.juggle.im.internal.util.JLogger;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Ye_Guli
@@ -21,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class WebSocketCommandManager {
     private final static String TAG = "WS-Command";
-    private final static int COMMAND_TIME_OUT = 5 * 1000;
-    private final static int COMMAND_DETECTION_INTERVAL = 5 * 1000;
+    private final static int COMMAND_TIME_OUT = 8 * 1000;
+    private final static int COMMAND_DETECTION_INTERVAL = 8 * 1000;
 
     private final CommandTimeoutListener mCommandListener;
     private final ConcurrentHashMap<Integer, Long> mCmdCallbackTimestampMap = new ConcurrentHashMap<>();
@@ -31,6 +32,7 @@ public class WebSocketCommandManager {
     private JSimpleTimer mCommandDetectionTimer = null;
     private boolean mIsInit = false;
     private boolean mIsRunning = false;
+    private final AtomicInteger mTimeoutCount = new AtomicInteger(0);
 
     public WebSocketCommandManager(CommandTimeoutListener mCommandListener) {
         this.mCommandListener = mCommandListener;
@@ -74,6 +76,7 @@ public class WebSocketCommandManager {
         if (mCmdIndex == null) {
             return null;
         }
+        mTimeoutCount.set(0);
         mCmdCallbackTimestampMap.remove(mCmdIndex);
         IWebSocketCallback removedCallback = mCmdCallbackMap.remove(mCmdIndex);
         JLogger.v(TAG, "removeCommand success, mCmdIndex= " + mCmdIndex + ", removedCallback= " + removedCallback);
@@ -81,6 +84,7 @@ public class WebSocketCommandManager {
     }
 
     public synchronized ArrayList<IWebSocketCallback> clearCommand() {
+        mTimeoutCount.set(0);
         ArrayList<IWebSocketCallback> commandList = new ArrayList<>(mCmdCallbackMap.values());
         this.mCmdCallbackMap.clear();
         this.mCmdCallbackTimestampMap.clear();
@@ -99,7 +103,15 @@ public class WebSocketCommandManager {
             @Override
             protected void doAction() {
                 ArrayList<IWebSocketCallback> realTimeoutMessages = doCommandDetection();
-                afterCommandDetection(realTimeoutMessages);
+                if (!realTimeoutMessages.isEmpty()) {
+                    afterCommandDetection(realTimeoutMessages);
+                    mTimeoutCount.addAndGet(realTimeoutMessages.size());
+                    JLogger.i("CMD-Detect", "timeOutCount is " + mTimeoutCount);
+                    if (mTimeoutCount.get() > 3) {
+                        mCommandListener.onTimeoutCountExceed();
+                        mTimeoutCount.set(0);
+                    }
+                }
             }
         };
         mCommandDetectionTimer.init();
@@ -133,7 +145,7 @@ public class WebSocketCommandManager {
     }
 
     private void afterCommandDetection(ArrayList<IWebSocketCallback> timeoutMessages) {
-        if (timeoutMessages != null && timeoutMessages.size() > 0) {
+        if (timeoutMessages != null && !timeoutMessages.isEmpty()) {
             for (int i = 0; i < timeoutMessages.size(); i++) {
                 notifyCommandTimeout(timeoutMessages.get(i));
             }
@@ -148,5 +160,6 @@ public class WebSocketCommandManager {
 
     public interface CommandTimeoutListener {
         void onCommandTimeOut(IWebSocketCallback callback);
+        void onTimeoutCountExceed();
     }
 }

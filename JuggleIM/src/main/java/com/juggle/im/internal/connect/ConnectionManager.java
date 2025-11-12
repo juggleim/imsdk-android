@@ -305,6 +305,14 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
         sendMessage(ConnEvent.NETWORK_AVAILABLE);
     }
 
+    public String getNetworkType() {
+        return mCore.getNetworkType();
+    }
+
+    public String getCarrier() {
+        return mCore.getCarrier();
+    }
+
     private void handleWebsocketFail() {
         sendMessage(ConnEvent.WEBSOCKET_FAIL);
     }
