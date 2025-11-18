@@ -1675,7 +1675,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-GetMerge", "success");
-                insertRemoteMessages(messages);
+                updateUserInfo(messages);
                 if (callback != null) {
                     List<Message> result = new ArrayList<>(messages);
                     mCore.getCallbackHandler().post(() -> callback.onSuccess(result));

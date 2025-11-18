@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.juggle.im.JErrorCode;
+import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
@@ -1996,10 +1997,17 @@ class PBData {
         message.setMessageId(downMsg.getMsgId());
         message.setClientUid(downMsg.getClientUid());
         message.setDirection(downMsg.getIsSend() ? Message.MessageDirection.SEND : Message.MessageDirection.RECEIVE);
+        message.setSenderUserId(downMsg.getSenderId());
+        if (!TextUtils.isEmpty(JIM.getInstance().getCurrentUserId())) {
+            if (JIM.getInstance().getCurrentUserId().equals(message.getSenderUserId())) {
+                message.setDirection(Message.MessageDirection.SEND);
+            } else {
+                message.setDirection(Message.MessageDirection.RECEIVE);
+            }
+        }
         message.setHasRead(downMsg.getIsRead());
         message.setState(Message.MessageState.SENT);
         message.setTimestamp(downMsg.getMsgTime());
-        message.setSenderUserId(downMsg.getSenderId());
         message.setSeqNo(downMsg.getMsgSeqNo());
         message.setMsgIndex(downMsg.getUnreadIndex());
         byte[] content = downMsg.getMsgContent().toByteArray();
