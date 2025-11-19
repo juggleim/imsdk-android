@@ -1,5 +1,7 @@
 package com.juggle.im;
 
+import java.util.List;
+
 public class JIMConst {
     public enum ConnectionStatus {
         IDLE(0),
@@ -37,6 +39,11 @@ public class JIMConst {
 
     public interface IResultCallback<T> {
         void onSuccess(T data);
+        void onError(int errorCode);
+    }
+
+    public interface IResultListCallback<T> {
+        void onSuccess(List<T> data, boolean isFinish);
         void onError(int errorCode);
     }
 }

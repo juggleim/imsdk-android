@@ -97,7 +97,7 @@ public class ConnConnectingState extends ConnBaseState {
 
             case ConnEvent.WEBSOCKET_FAIL:
             case ConnEvent.CONNECTING_TIMEOUT:
-                JLogger.i("CON-Connect", "client address is " + JUtility.getLocalIPv4Address() + ", osVersion is " + Build.VERSION.RELEASE + ", networkId is " + manager.getNetworkType() + ", carrier is " + manager.getCarrier() + ", sdkVersion is " + SDK_VERSION);
+                JLogger.i("CON-Connect", "websocket fail or timeout, client address is " + JUtility.getLocalIPv4Address() + ", osVersion is " + Build.VERSION.RELEASE + ", networkId is " + manager.getNetworkType() + ", carrier is " + manager.getCarrier() + ", sdkVersion is " + SDK_VERSION);
                 manager.transitionToWaitingForConnectState();
                 if (mStoreStatus == ConnectingStoreStatus.CONNECT) {
                     if (mUserToken != null && !mUserToken.isEmpty()) {
