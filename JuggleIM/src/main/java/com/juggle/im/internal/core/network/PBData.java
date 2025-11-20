@@ -1916,6 +1916,7 @@ class PBData {
         if (resp.getPreSignResp() != null) {
             UploadPreSignCred preSignCred = new UploadPreSignCred();
             preSignCred.setUrl(resp.getPreSignResp().getUrl());
+            preSignCred.setDownloadUrl(resp.getPreSignResp().getDownloadUrl());
             a.preSignCred = preSignCred;
         }
         obj.mQryFileCredAck = a;
