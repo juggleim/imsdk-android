@@ -127,10 +127,12 @@ public class PreSignUploader extends BaseUploader {
                 currentCall = client.newCall(request);
                 Response response = currentCall.execute();
                 if (response.isSuccessful()) {
-                    //获取预签名上传地址去除query部分
-                    String modifiedUrl = removeQueryFromUrl(mPreSignCred.getUrl());
+                    String mediaUrl = mPreSignCred.getDownloadUrl();
+                    if (TextUtils.isEmpty(mediaUrl)) {
+                        mediaUrl = removeQueryFromUrl(mPreSignCred.getUrl());
+                    }
                     //回调上传成功
-                    notifySuccess(modifiedUrl);
+                    notifySuccess(mediaUrl);
                 } else {
                     JLogger.e("J-Uploader, PreSignUploader error, responseCode is " + response.code() + ", responseMessage is " + response.message());
                     //回调上传失败
