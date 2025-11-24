@@ -87,7 +87,7 @@ public class MomentManager implements IMomentManager {
     }
 
     @Override
-    public void removeComment(String commentId, IMessageManager.ISimpleCallback callback) {
+    public void removeComment(String commentId, String momentId, IMessageManager.ISimpleCallback callback) {
 
     }
 
