@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
+import com.juggle.im.model.GetMomentOption;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
@@ -25,8 +26,15 @@ import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageQueryOptions;
 import com.juggle.im.model.MessageReaction;
+import com.juggle.im.model.Moment;
+import com.juggle.im.model.MomentComment;
+import com.juggle.im.model.MomentMedia;
+import com.juggle.im.model.MomentReaction;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.UserInfo;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -64,8 +72,7 @@ public class DBManager {
     public long getConversationSyncTime() {
         long result = 0;
         String[] args = new String[]{ProfileSql.CONVERSATION_TIME};
-        Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args);
-        try {
+        try (Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args)) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     result = CursorHelper.readLong(cursor, ProfileSql.COLUMN_VALUE);
@@ -73,10 +80,6 @@ public class DBManager {
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getConversationSyncTime " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return result;
     }
@@ -84,8 +87,7 @@ public class DBManager {
     public long getMessageSendSyncTime() {
         long result = 0;
         String[] args = new String[]{ProfileSql.SEND_TIME};
-        Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args);
-        try {
+        try (Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args)) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     result = CursorHelper.readLong(cursor, ProfileSql.COLUMN_VALUE);
@@ -93,10 +95,6 @@ public class DBManager {
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getMessageSendSyncTime " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return result;
     }
@@ -104,8 +102,7 @@ public class DBManager {
     public long getMessageReceiveSyncTime() {
         long result = 0;
         String[] args = new String[]{ProfileSql.RECEIVE_TIME};
-        Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args);
-        try {
+        try (Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args)) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     result = CursorHelper.readLong(cursor, ProfileSql.COLUMN_VALUE);
@@ -113,10 +110,6 @@ public class DBManager {
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getMessageReceiveSyncTime " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return result;
     }
@@ -473,8 +466,7 @@ public class DBManager {
             return null;
         }
         String[] args = new String[]{messageId, String.valueOf(now)};
-        Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID, args);
-        try {
+        try (Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID, args)) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     message = getMessageWithCursor(cursor);
@@ -482,10 +474,6 @@ public class DBManager {
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getMessageWithMessageId " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return message;
     }
@@ -496,8 +484,7 @@ public class DBManager {
             return null;
         }
         String[] args = new String[]{messageId};
-        Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID_EVEN_DELETE, args);
-        try {
+        try (Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_MESSAGE_ID_EVEN_DELETE, args)) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     message = getMessageWithCursor(cursor);
@@ -505,10 +492,6 @@ public class DBManager {
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getMessageWithMessageIdEvenDelete " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return message;
     }
@@ -519,8 +502,7 @@ public class DBManager {
             return null;
         }
         String[] args = new String[]{clientUid};
-        Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_CLIENT_UID, args);
-        try {
+        try (Cursor cursor = rawQuery(MessageSql.SQL_GET_MESSAGE_WITH_CLIENT_UID, args)) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     message = getMessageWithCursor(cursor);
@@ -528,10 +510,6 @@ public class DBManager {
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getMessageWithClientUid " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return message;
     }
@@ -941,8 +919,7 @@ public class DBManager {
         }
         UserInfo info = null;
         String[] args = new String[]{userId};
-        Cursor cursor = rawQuery(UserInfoSql.SQL_GET_USER_INFO, args);
-        try {
+        try (Cursor cursor = rawQuery(UserInfoSql.SQL_GET_USER_INFO, args)) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     info = UserInfoSql.userInfoWithCursor(cursor);
@@ -950,10 +927,6 @@ public class DBManager {
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getUserInfo " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return info;
     }
@@ -977,8 +950,7 @@ public class DBManager {
         }
         GroupInfo info = null;
         String[] args = new String[]{groupId};
-        Cursor cursor = rawQuery(UserInfoSql.SQL_GET_GROUP_INFO, args);
-        try {
+        try (Cursor cursor = rawQuery(UserInfoSql.SQL_GET_GROUP_INFO, args)) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     info = UserInfoSql.groupInfoWithCursor(cursor);
@@ -986,10 +958,6 @@ public class DBManager {
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getGroupInfo " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return info;
     }
@@ -1013,8 +981,7 @@ public class DBManager {
         }
         GroupMember member = null;
         String[] args = new String[]{groupId, userId};
-        Cursor cursor = rawQuery(UserInfoSql.SQL_GET_GROUP_MEMBER, args);
-        try {
+        try (Cursor cursor = rawQuery(UserInfoSql.SQL_GET_GROUP_MEMBER, args)) {
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
                     member = UserInfoSql.groupMemberWithCursor(cursor);
@@ -1022,10 +989,6 @@ public class DBManager {
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getGroupMember " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return member;
     }
@@ -1053,17 +1016,12 @@ public class DBManager {
         }
         String sql = ReactionSql.sqlGetReaction(messageIds.size());
         String[] args = messageIds.toArray(new String[0]);
-        Cursor cursor = rawQuery(sql, args);
-        try {
+        try (Cursor cursor = rawQuery(sql, args)) {
             if (cursor != null) {
                 addReactionsFromCursor(result, cursor);
             }
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getMessageReactions " + e.getMessage());
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
         return result;
     }
@@ -1083,6 +1041,79 @@ public class DBManager {
                 }
             }
         });
+    }
+
+    public void insertMoments(List<Moment> momentList) {
+        if (momentList == null || momentList.isEmpty()) {
+            return;
+        }
+        performTransaction(() -> {
+            for (Moment moment : momentList) {
+                String mediaArrayStr = "";
+                String reactionArrayStr = "";
+                String commentArrayStr = "";
+                String userInfoStr = "";
+                if (moment.getMediaList() != null && !moment.getMediaList().isEmpty()) {
+                    JSONArray jsonArray = new JSONArray();
+                    for (MomentMedia media : moment.getMediaList()) {
+                        JSONObject object = media.toJson();
+                        if (object != null) {
+                            jsonArray.put(object);
+                        }
+                    }
+                    mediaArrayStr = jsonArray.toString();
+                }
+                if (moment.getReactionList() != null && !moment.getReactionList().isEmpty()) {
+                    JSONArray jsonArray = new JSONArray();
+                    for (MomentReaction reaction : moment.getReactionList()) {
+                        JSONObject object = reaction.toJson();
+                        if (object != null) {
+                            jsonArray.put(object);
+                        }
+                    }
+                    reactionArrayStr = jsonArray.toString();
+                }
+                if (moment.getCommentList() != null && !moment.getCommentList().isEmpty()) {
+                    JSONArray jsonArray = new JSONArray();
+                    for (MomentComment comment : moment.getCommentList()) {
+                        JSONObject object = comment.toJson();
+                        if (object != null) {
+                            jsonArray.put(object);
+                        }
+                    }
+                    commentArrayStr = jsonArray.toString();
+                }
+                if (moment.getUserInfo() != null) {
+                    JSONObject object = moment.getUserInfo().toJson();
+                    userInfoStr = object.toString();
+                }
+                String sql = MomentSql.SQL_UPDATE_MOMENTS;
+                String momentId = moment.getMomentId() != null ? moment.getMomentId() : "";
+                String content = moment.getContent() != null ? moment.getContent() : "";
+                String[] args = new String[]{momentId, content, mediaArrayStr, userInfoStr, reactionArrayStr, commentArrayStr, String.valueOf(moment.getCreateTime())};
+                execSQL(sql, args);
+            }
+        });
+    }
+
+    public void removeMoment(String momentId) {
+        String[] args = new String[]{momentId};
+        execSQL(MomentSql.SQL_DELETE_MOMENT, args);
+    }
+
+    public List<Moment> getCachedMomentList(GetMomentOption option) {
+        List<Moment> result = new ArrayList<>();
+        List<String> argList = new ArrayList<>();
+        String sql = MomentSql.sqlGetMoments(option, argList);
+        String[] args = argList.toArray(new String[0]);
+        try (Cursor cursor = rawQuery(sql, args)) {
+            if (cursor != null) {
+                addMomentsFromCursor(result, cursor);
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getCachedMomentList " + e.getMessage());
+        }
+        return result;
     }
 
     private void checkLastMessage(ConcreteConversationInfo info) {
@@ -1231,6 +1262,13 @@ public class DBManager {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             MessageReaction reaction = ReactionSql.reactionWithCursor(cursor);
             list.add(reaction);
+        }
+    }
+
+    private void addMomentsFromCursor(List<Moment> momentList, Cursor cursor) {
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            Moment moment = MomentSql.momentWithCursor(cursor);
+            momentList.add(moment);
         }
     }
 

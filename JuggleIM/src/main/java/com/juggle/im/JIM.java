@@ -10,8 +10,10 @@ import com.juggle.im.interfaces.IChatroomManager;
 import com.juggle.im.interfaces.IConnectionManager;
 import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.interfaces.IMomentManager;
 import com.juggle.im.interfaces.IUserInfoManager;
 import com.juggle.im.internal.ChatroomManager;
+import com.juggle.im.internal.MomentManager;
 import com.juggle.im.internal.connect.ConnectionManager;
 import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.ConversationManager;
@@ -106,6 +108,10 @@ public class JIM {
         return mCallManager;
     }
 
+    public IMomentManager getMomentManager() {
+        return mMomentManager;
+    }
+
     public String getCurrentUserId() {
         return mCore.getUserId();
     }
@@ -128,6 +134,7 @@ public class JIM {
         JLogger.getInstance().setCore(core);
         mUserInfoManager = new UserInfoManager(core);
         mChatroomManager = new ChatroomManager(core);
+        mMomentManager = new MomentManager(core);
         mCallManager = new CallManager(core, mUserInfoManager);
         mMessageManager = new MessageManager(core, mUserInfoManager, mChatroomManager, mCallManager);
         mConversationManager = new ConversationManager(core, mUserInfoManager, mMessageManager);
@@ -143,6 +150,7 @@ public class JIM {
     private final ConversationManager mConversationManager;
     private final UserInfoManager mUserInfoManager;
     private final CallManager mCallManager;
+    private final MomentManager mMomentManager;
     private final JIMCore mCore;
 
     public static class InitConfig {

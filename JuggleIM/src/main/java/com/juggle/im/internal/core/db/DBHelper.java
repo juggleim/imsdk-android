@@ -31,6 +31,7 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX2);
+        sqLiteDatabase.execSQL(MomentSql.SQL_CREATE_TABLE);
     }
 
     @Override
@@ -135,7 +136,14 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 15) {
+            try {
+                sqLiteDatabase.execSQL(MomentSql.SQL_CREATE_TABLE);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 14;
+    private final static int version = 15;
 }
