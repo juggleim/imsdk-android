@@ -1,32 +1,38 @@
 package com.juggle.im.model;
 
+import android.text.TextUtils;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MomentComment {
-    public JSONObject toJson() throws JSONException {
+    public JSONObject toJson() {
         JSONObject json = new JSONObject();
-        if (mCommentId != null) {
-            json.put("comment_id", mCommentId);
+        try {
+            if (mCommentId != null) {
+                json.put("comment_id", mCommentId);
+            }
+            if (mMomentId != null) {
+                json.put("moment_id", mMomentId);
+            }
+            if (mParentCommentId != null) {
+                json.put("parent_comment_id", mParentCommentId);
+            }
+            JSONObject contentJson = new JSONObject();
+            if (mContent != null) {
+                contentJson.put("text", mContent);
+            }
+            json.put("content", contentJson);
+            if (mUserInfo != null) {
+                json.put("user_info", mUserInfo.toJson());
+            }
+            if (mParentUserInfo != null) {
+                json.put("parent_user_info", mParentUserInfo.toJson());
+            }
+            json.put("comment_time", mCreateTime);
+        } catch (JSONException ignored) {
+
         }
-        if (mMomentId != null) {
-            json.put("moment_id", mMomentId);
-        }
-        if (mParentCommentId != null) {
-            json.put("parent_comment_id", mParentCommentId);
-        }
-        JSONObject contentJson = new JSONObject();
-        if (mContent != null) {
-            contentJson.put("text", mContent);
-        }
-        json.put("content", contentJson);
-        if (mUserInfo != null) {
-            json.put("user_info", mUserInfo.toJson());
-        }
-        if (mParentUserInfo != null) {
-            json.put("parent_user_info", mParentUserInfo.toJson());
-        }
-        json.put("comment_time", mCreateTime);
         return json;
     }
 
@@ -42,8 +48,10 @@ public class MomentComment {
         if (contentJson != null) {
             comment.mContent = contentJson.optString("text");
         }
-        JSONObject parentUserJson = json.optJSONObject("parent_user_info");
-        comment.mParentUserInfo = UserInfo.fromJson(parentUserJson);
+        if (!TextUtils.isEmpty(comment.mParentCommentId)) {
+            JSONObject parentUserJson = json.optJSONObject("parent_user_info");
+            comment.mParentUserInfo = UserInfo.fromJson(parentUserJson);
+        }
         JSONObject userJson = json.optJSONObject("user_info");
         comment.mUserInfo = UserInfo.fromJson(userJson);
         comment.mCreateTime = json.optLong("comment_time");

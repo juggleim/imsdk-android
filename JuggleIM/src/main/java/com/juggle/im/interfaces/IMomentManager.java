@@ -17,7 +17,7 @@ public interface IMomentManager {
     void getMomentList(GetMomentOption option, JIMConst.IResultListCallback<Moment> callback);
     void getMoment(String momentId, JIMConst.IResultCallback<Moment> callback);
     void addComment(String momentId, String parentCommentId, String content, JIMConst.IResultCallback<MomentComment> callback);
-    void removeComment(String commentId, String momentId, IMessageManager.ISimpleCallback callback);
+    void removeComment(String momentId, String commentId, IMessageManager.ISimpleCallback callback);
     void getCommentList(GetMomentCommentOption option, JIMConst.IResultListCallback<MomentComment> callback);
     void addReaction(String momentId, String key, IMessageManager.ISimpleCallback callback);
     void removeReaction(String momentId, String key, IMessageManager.ISimpleCallback callback);

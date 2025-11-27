@@ -25,23 +25,27 @@ public class MomentMedia {
         private final int mValue;
     }
 
-    public JSONObject toJson() throws JSONException {
+    public JSONObject toJson() {
         JSONObject json = new JSONObject();
 
-        if (mUrl != null) {
-            json.put("url", mUrl);
+        try {
+            if (mUrl != null) {
+                json.put("url", mUrl);
+            }
+            if (mSnapshotUrl != null) {
+                json.put("snapshot_url", mSnapshotUrl);
+            }
+            if (mType == MomentMediaType.IMAGE) {
+                json.put("type", "image");
+            } else if (mType == MomentMediaType.VIDEO) {
+                json.put("type", "video");
+            }
+            json.put("height", mHeight);
+            json.put("width", mWidth);
+            json.put("duration", mDuration);
+        } catch (JSONException ignored) {
+
         }
-        if (mSnapshotUrl != null) {
-            json.put("snapshot_url", mSnapshotUrl);
-        }
-        if (mType != null) {
-            json.put("type", mType.getValue());
-        } else {
-            json.put("type", -1); // 异常情况默认值，避免空指针
-        }
-        json.put("height", mHeight);
-        json.put("width", mWidth);
-        json.put("duration", mDuration);
         return json;
     }
 

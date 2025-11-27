@@ -14,22 +14,26 @@ import java.util.Map;
 
 public class UserInfo implements Parcelable {
 
-    public JSONObject toJson() throws JSONException {
+    public JSONObject toJson() {
         JSONObject jsonObject = new JSONObject();
 
-        if (mUserId != null && !mUserId.isEmpty()) {
-            jsonObject.put("user_id", mUserId);
+        try {
+            if (mUserId != null && !mUserId.isEmpty()) {
+                jsonObject.put("user_id", mUserId);
+            }
+            if (mUserName != null && !mUserName.isEmpty()) {
+                jsonObject.put("nickname", mUserName);
+            }
+            if (mPortrait != null && !mPortrait.isEmpty()) {
+                jsonObject.put("avatar", mPortrait);
+            }
+            if (mExtra != null && !mExtra.isEmpty()) {
+                jsonObject.put("ext_fields", new JSONObject(mExtra));
+            }
+            jsonObject.put("updated_time", mUpdatedTime);
+        } catch (JSONException ignored) {
+
         }
-        if (mUserName != null && !mUserName.isEmpty()) {
-            jsonObject.put("nickname", mUserName);
-        }
-        if (mPortrait != null && !mPortrait.isEmpty()) {
-            jsonObject.put("avatar", mPortrait);
-        }
-        if (mExtra != null && !mExtra.isEmpty()) {
-            jsonObject.put("ext_fields", new JSONObject(mExtra));
-        }
-        jsonObject.put("updated_time", mUpdatedTime);
 
         return jsonObject;
     }

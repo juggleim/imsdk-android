@@ -10,22 +10,26 @@ import java.util.List;
 import java.util.Map;
 
 public class MomentReaction {
-    public JSONObject toJson() throws JSONException {
+    public JSONObject toJson() {
         JSONObject json = new JSONObject();
 
-        if (mKey != null) {
-            json.put("key", mKey);
-        }
+        try {
+            if (mKey != null) {
+                json.put("key", mKey);
+            }
 
-        JSONArray userJsonArray = new JSONArray();
-        if (mUserList != null && !mUserList.isEmpty()) {
-            for (UserInfo user : mUserList) {
-                if (user != null) {
-                    userJsonArray.put(user.toJson());
+            JSONArray userJsonArray = new JSONArray();
+            if (mUserList != null && !mUserList.isEmpty()) {
+                for (UserInfo user : mUserList) {
+                    if (user != null) {
+                        userJsonArray.put(user.toJson());
+                    }
                 }
             }
+            json.put("userArray", userJsonArray);
+        } catch (JSONException ignored) {
+
         }
-        json.put("userArray", userJsonArray);
 
         return json;
     }
