@@ -47,7 +47,7 @@ public class MomentManager implements IMomentManager {
         try {
             JSONObject contentJson = new JSONObject();
             contentJson.put("text", content);
-            if (mediaList != null) {
+            if (mediaList != null && !mediaList.isEmpty()) {
                 JSONArray mediaJsonArray = new JSONArray();
                 for (MomentMedia media : mediaList) {
                     JSONObject mediaJson = media.toJson();

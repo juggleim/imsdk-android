@@ -90,6 +90,38 @@ public class MomentMedia {
         mUrl = url;
     }
 
+    public String getSnapshotUrl() {
+        return mSnapshotUrl;
+    }
+
+    public void setSnapshotUrl(String snapshotUrl) {
+        mSnapshotUrl = snapshotUrl;
+    }
+
+    public int getHeight() {
+        return mHeight;
+    }
+
+    public void setHeight(int height) {
+        mHeight = height;
+    }
+
+    public int getWidth() {
+        return mWidth;
+    }
+
+    public void setWidth(int width) {
+        mWidth = width;
+    }
+
+    public int getDuration() {
+        return mDuration;
+    }
+
+    public void setDuration(int duration) {
+        mDuration = duration;
+    }
+
     private String mUrl;
     private MomentMediaType mType;
     private String mSnapshotUrl;
