@@ -56,5 +56,5 @@ public class GetMomentCommentOption {
     private String mMomentId;
     private long mStartTime;
     private int mCount;
-    private JIMConst.PullDirection mDirection;
+    private JIMConst.PullDirection mDirection = JIMConst.PullDirection.OLDER;
 }
