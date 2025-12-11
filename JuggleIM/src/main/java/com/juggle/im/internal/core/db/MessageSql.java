@@ -200,9 +200,12 @@ class MessageSql {
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
     static final String SQL_CREATE_CLIENT_UID_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message_client_uid ON message(client_uid)";
-    static final String SQL_CREATE_MESSAGE_CONVERSATION_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation ON message(conversation_type, conversation_id)";
-    static final String SQL_CREATE_MESSAGE_CONVERSATION_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_ts ON message(conversation_type, conversation_id, timestamp)";
-    static final String SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_ds_conversation_ts ON message(destroy_time, conversation_type, conversation_id, timestamp)";
+    static final String SQL_CREATE_DESTROY_TIME_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_destroy_time ON message(destroy_time)";
+    static final String SQL_CREATE_TIMESTAMP_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_timestamp ON message(timestamp)";
+    static final String SQL_CREATE_CONVERSATION_SUBCHANNEL_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_subchannel ON message(conversation_type, conversation_id, subchannel)";
+    static final String SQL_DROP_INDEX_CONVERSATION = "DROP INDEX IF EXISTS idx_message_conversation";
+    static final String SQL_DROP_INDEX_CONVERSATION_TS = "DROP INDEX IF EXISTS idx_message_conversation_ts";
+    static final String SQL_DROP_INDEX_DS_CONVERSATION_TS = "DROP INDEX IF EXISTS idx_message_ds_conversation_ts";
     static final String SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX2 = "CREATE INDEX IF NOT EXISTS idx_message_ds_conversation_ts2 ON message(destroy_time, conversation_type, conversation_id, subchannel, timestamp)";
     static final String SQL_ALTER_ADD_FLAGS = "ALTER TABLE message ADD COLUMN flags INTEGER";
     static final String SQL_ALTER_ADD_LIFE_TIME = "ALTER TABLE message ADD COLUMN life_time INTEGER DEFAULT 0";
@@ -216,6 +219,11 @@ class MessageSql {
     static final String SQL_SEARCH_MESSAGE_IN_CONVERSATIONS = "SELECT conversation_type, conversation_id, subchannel, count(*) AS match_count FROM message ";
     static final String SQL_SET_MESSAGE_FLAGS = "UPDATE message SET flags = ? WHERE message_uid = ?";
     static final String SQL_UPDATE_DESTROY_TIME = "UPDATE message SET destroy_time = ? WHERE message_uid = ?";
+
+    //deprecated
+    static final String SQL_CREATE_MESSAGE_CONVERSATION_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation ON message(conversation_type, conversation_id)";
+    static final String SQL_CREATE_MESSAGE_CONVERSATION_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_ts ON message(conversation_type, conversation_id, timestamp)";
+    static final String SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_ds_conversation_ts ON message(destroy_time, conversation_type, conversation_id, timestamp)";
 
     static String sqlSearchMessageInConversations(MessageQueryOptions options, long now, List<String> whereArgs) {
         List<String> whereClauses = new ArrayList<>();
