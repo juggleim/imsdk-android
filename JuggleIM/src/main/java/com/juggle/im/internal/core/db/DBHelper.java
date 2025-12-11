@@ -22,6 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_TIMESTAMP_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_DESTROY_TIME_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CONVERSATION_SUBCHANNEL_INDEX);
+        sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX2);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_TABLE);
@@ -151,6 +152,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_TIMESTAMP_INDEX);
                 sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_DESTROY_TIME_INDEX);
                 sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CONVERSATION_SUBCHANNEL_INDEX);
+                sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX2);
             } catch (SQLiteException e) {
                 e.printStackTrace();
             }
