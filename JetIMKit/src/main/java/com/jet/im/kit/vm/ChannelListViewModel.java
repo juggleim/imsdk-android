@@ -175,7 +175,7 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         if (channelList.getValue() != null && !channelList.getValue().isEmpty()) {
             timestamp = channelList.getValue().get(channelList.getValue().size() - 1).getSortTime();
         }
-        int[] types = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue()};
+        int[] types = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue(), Conversation.ConversationType.PUBLIC_SERVICE.getValue()};
         List<ConversationInfo> conversationInfoList = JIM.getInstance().getConversationManager().getConversationInfoList(types, 20, timestamp, JIMConst.PullDirection.OLDER);
         if (conversationInfoList != null && conversationInfoList.size() < 20) {
             mHasNext = false;
