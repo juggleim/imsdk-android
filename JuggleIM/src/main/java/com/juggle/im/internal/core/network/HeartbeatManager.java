@@ -7,9 +7,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class HeartbeatManager {
     private final static String TAG = HeartbeatManager.class.getSimpleName();
-    private final static int HEARTBEAT_INTERVAL = 15 * 1000;
+    private final static int HEARTBEAT_INTERVAL = 10 * 1000;
     private final static int HEARTBEAT_DETECTION_INTERVAL = 10 * 1000;
-    private final static int HEARTBEAT_DETECTION_TIME_OUT = HEARTBEAT_INTERVAL * 3;
+    private final static int HEARTBEAT_DETECTION_TIME_OUT = HEARTBEAT_INTERVAL * 2;
 
     private final JWebSocket mJWebsocket;
     private JSimpleTimer mHeartbeatTimer = null;

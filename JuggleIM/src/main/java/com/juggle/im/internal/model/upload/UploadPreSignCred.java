@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
  */
 public class UploadPreSignCred {
     private String mUrl;
+    private String mDownloadUrl;
 
     public void setUrl(String url) {
         this.mUrl = url;
@@ -17,11 +18,19 @@ public class UploadPreSignCred {
         return mUrl;
     }
 
+    public String getDownloadUrl() {
+        return mDownloadUrl;
+    }
+
+    public void setDownloadUrl(String downloadUrl) {
+        mDownloadUrl = downloadUrl;
+    }
+
     @NonNull
     @Override
     public String toString() {
         return "UploadPreSignCred{" +
-                "mUrl='" + mUrl + '\'' +
+                "mUrl='" + mUrl + '\'' + ", mDownloadUrl='" + mDownloadUrl + '\'' +
                 '}';
     }
 }

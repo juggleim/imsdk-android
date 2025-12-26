@@ -15,6 +15,11 @@ import androidx.annotation.NonNull;
 import com.juggle.im.internal.ConstInternal;
 
 import java.lang.reflect.Method;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.Locale;
 
 public class JUtility {
@@ -126,6 +131,37 @@ public class JUtility {
                 return "";
             }
         }
+    }
+
+    /**
+     * 获取本地 IPv4 地址（非回环地址）
+     * @return IPv4 地址，若未找到则返回 null
+     */
+    public static String getLocalIPv4Address() {
+        try {
+            // 遍历所有网络接口
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface intf = interfaces.nextElement();
+                // 跳过回环接口和未启用的接口
+                if (intf.isLoopback() || !intf.isUp()) {
+                    continue;
+                }
+
+                // 遍历接口的所有 IP 地址
+                Enumeration<InetAddress> addresses = intf.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    // 过滤 IPv4 且非回环地址
+                    if (addr instanceof Inet4Address && !addr.isLoopbackAddress()) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static String getUUID() {

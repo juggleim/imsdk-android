@@ -70,6 +70,7 @@ message MergedMsgs{
   string userId = 2;
   string targetId = 3;
   repeated SimpleMsg msgs = 4;
+  string subChannel = 5;
   // string containerMsgId = 5;
 }
 
@@ -222,6 +223,7 @@ message SimpleConversation {
   ChannelType channelType = 2;
   int64 msgTime = 3;
   int64 msgSeq = 4;
+  string subChannel = 5;
 }
 message AssistantMsgResp{
   string msgId = 1;
@@ -246,11 +248,13 @@ message DelHisMsgsReq{
   ChannelType channelType = 3;
   repeated SimpleMsg msgs = 4;
   int32 delScope = 5;
+  string subChannel = 6;
 }
 
 message QryLatestMsgReq{
   string converId = 1;
   ChannelType channelType = 2;
+  string subChannel = 3;
 }
 message QryLatestMsgResp{
   string converId = 1;
@@ -258,6 +262,7 @@ message QryLatestMsgResp{
   int64 msgSeqNo = 3;
   int64 msgTime = 4;
   string msgId = 5;
+  string subChannel = 6;
 }
 
 message QryHisMsgsReq{
@@ -267,10 +272,12 @@ message QryHisMsgsReq{
   int32 count = 4;
   int32 order = 5;
   repeated string msgTypes = 6;
+  string subChannel = 7;
 }
 message QryFirstUnreadMsgReq{
   string targetId = 1;
   ChannelType channelType = 2;
+  string subChannel = 3;
   // int64 startTime = 3;
   // int32 count = 4;
 }
@@ -279,6 +286,7 @@ message QryHisMsgByIdsReq{
   string targetId = 1;
   ChannelType channelType = 2;
   repeated string msgIds = 3;
+  string subChannel = 4;
 }
 
 message RecallMsgReq{
@@ -287,6 +295,7 @@ message RecallMsgReq{
   string msgId = 3;
   int64 msgTime = 4;
   repeated KvItem exts = 5;
+  string subChannel = 6;
 }
 
 message MarkReadReq{
@@ -294,12 +303,14 @@ message MarkReadReq{
   ChannelType channelType = 2;
   repeated SimpleMsg msgs = 3;
   repeated IndexScope indexScopes = 4;
+  string subChannel = 5;
 }
 
 message MarkGrpMsgReadReq{
   string groupId = 1;
   ChannelType channelType = 2;
   repeated string msgIds = 3;
+  string subChannel = 4;
 }
 
 message CleanHisMsgReq{
@@ -309,6 +320,7 @@ message CleanHisMsgReq{
   int32 cleanScope = 4;
   string senderId = 5;
   int64 cleanTimeOffset = 6;
+  string subChannel = 7;
 }
 
 message SimpleMsg{
@@ -330,11 +342,13 @@ message ModifyMsgReq{
   int64 msgSeqNo = 5;
   bytes msgContent = 6;
   string msgType = 7;
+  string subChannel = 8;
 }
 
 message MergeMsgReq{
   string parentMsgId = 1;
   MergedMsgs mergedMsgs = 2;
+  string subChannel = 3;
 }
 
 message QryMergedMsgsReq{
@@ -347,6 +361,7 @@ message QryMsgExtReq{
   string targetId = 1;
   ChannelType channelType = 2;
   repeated string msgIds = 3;
+  string subChannel = 4;
 }
 
 message MsgExt {
@@ -354,6 +369,7 @@ message MsgExt {
   ChannelType channelType = 2;
   string msgId = 3;
   MsgExtItem ext = 4;
+  string subChannel = 5;
 }
 
 message MsgExtItemsList{
@@ -380,6 +396,7 @@ message QryGlobalConversReq{
   string targetId = 4;
   ChannelType channelType = 5;
   repeated string excludeUserIds = 6;
+  string subChannel = 7;
 }
 message QryGlobalConversResp{
   repeated GlobalConver convers = 1;
@@ -427,6 +444,7 @@ message Conversation{
   string latestReadMsgId = 18;
   int64 latestReadMsgTime = 19;
   repeated ConverTag converTags = 20;
+  string subChannel = 21;
 }
 
 enum UpdLatestMsgAction{
@@ -464,6 +482,7 @@ message QryMentionMsgsReq{
   int32 count = 4;
   int32 order = 5;
   int64 latestReadIndex = 6;
+  string subChannel = 7;
 }
 
 message QryMentionMsgsResp{
@@ -510,6 +529,7 @@ message UndisturbConverItem {
   string targetId = 1;
   ChannelType channelType = 2;
   int32 undisturbType = 3;
+  string subChannel = 4;
 }
 
 message QryTopConversReq{
@@ -531,6 +551,7 @@ message QryReadInfosReq{
   string targetId = 1;
   ChannelType channelType = 2;
   repeated string msgIds = 3;
+  string subChannel = 4;
 }
 
 message QryReadInfosResp{
@@ -547,6 +568,7 @@ message QryReadDetailReq{
   string targetId = 1;
   ChannelType channelType = 2;
   string msgId = 3;
+  string subChannel = 4;
 }
 
 message QryReadDetailResp{
@@ -566,6 +588,7 @@ message QryConverReq{
   ChannelType channelType = 2;
   bool isInner = 3;
   repeated string userIds = 4;
+  string subChannel = 5;
 }
 
 message TagConvers{
@@ -843,6 +866,13 @@ message QiNiuCredResp{
 
 message PreSignResp {
   string url = 1;
+  string objKey = 2;
+  string policy = 3;
+  string signVersion  = 4;
+  string credential = 5;
+  string date = 6;
+  string signature = 7;
+  string downloadUrl = 8;
 }
 
 message UploadLogStatusReq{
@@ -876,11 +906,13 @@ message TopMsgReq{
   string targetId = 1;
   ChannelType channelType = 2;
   string msgId = 3;
+  string subChannel = 4;
 }
 
 message GetTopMsgReq{
   string targetId = 1;
   ChannelType channelType = 2;
+  string subChannel = 3;
 }
 
 message TopMsg{

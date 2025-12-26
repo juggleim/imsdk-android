@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.juggle.im.JErrorCode;
+import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.model.RtcRoom;
@@ -170,15 +171,13 @@ class PBData {
                            boolean isBroadcast,
                            String userId,
                            int index,
-                           Conversation.ConversationType conversationType,
-                           String conversationId,
+                           Conversation conversation,
                            MessageMentionInfo mentionInfo,
                            ConcreteMessage referMsg,
                            PushData pushData,
                            long lifeTime,
                            long lifeTimeAfterRead) {
         if (mMessagePreprocessor != null) {
-            Conversation conversation = new Conversation(conversationType, conversationId);
             msgData = mMessagePreprocessor.encryptMessageContent(msgData, conversation, contentType);
         }
         ByteString byteString = ByteString.copyFrom(msgData);
@@ -197,6 +196,9 @@ class PBData {
             mergedMsgsBuilder.setChannelTypeValue(channelType)
                     .setUserId(userId)
                     .setTargetId(targetId);
+            if (!TextUtils.isEmpty(mergeInfo.getConversation().getSubChannel())) {
+                mergedMsgsBuilder.setSubChannel(mergeInfo.getConversation().getSubChannel());
+            }
             for (ConcreteMessage msg : mergeInfo.getMessages()) {
                 Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
                         .setMsgId(msg.getMessageId())
@@ -240,11 +242,14 @@ class PBData {
         }
         upMsgBuilder.setLifeTime(lifeTime);
         upMsgBuilder.setLifeTimeAfterRead(lifeTimeAfterRead);
+        if (!TextUtils.isEmpty(conversation.getSubChannel())) {
+            upMsgBuilder.setSubChannel(conversation.getSubChannel());
+        }
 
         Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
         String topic = "";
-        switch (conversationType) {
+        switch (conversation.getConversationType()) {
             case PRIVATE:
                 topic = P_MSG;
                 break;
@@ -264,7 +269,7 @@ class PBData {
         Connect.PublishMsgBody publishMsgBody = Connect.PublishMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(topic)
-                .setTargetId(conversationId)
+                .setTargetId(conversation.getConversationId())
                 .setData(upMsg.toByteString())
                 .build();
 
@@ -279,6 +284,7 @@ class PBData {
                 .setMsgId(messageId)
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setMsgTime(timestamp);
         if (extras != null) {
             for (Map.Entry<String, String> entry : extras.entrySet()) {
@@ -310,6 +316,7 @@ class PBData {
                 .setMsgId(messageId)
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setMsgTime(timestamp)
                 .setMsgSeqNo(msgSeqNo)
                 .setMsgContent(ByteString.copyFrom(msgData))
@@ -441,6 +448,7 @@ class PBData {
         Appmessages.MarkReadReq.Builder builder = Appmessages.MarkReadReq.newBuilder();
         builder.setChannelTypeValue(conversation.getConversationType().getValue());
         builder.setTargetId(conversation.getConversationId());
+        builder.setSubChannel(conversation.getSubChannel());
         for (String messageId : messageIds) {
             Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder().setMsgId(messageId).build();
             builder.addMsgs(simpleMsg);
@@ -464,6 +472,7 @@ class PBData {
         Appmessages.QryReadDetailReq req = Appmessages.QryReadDetailReq.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setMsgId(messageId)
                 .build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
@@ -482,6 +491,7 @@ class PBData {
         Appmessages.QryHisMsgsReq.Builder builder = Appmessages.QryHisMsgsReq.newBuilder();
         builder.setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setStartTime(startTime)
                 .setCount(count)
                 .setOrder(order);
@@ -504,7 +514,8 @@ class PBData {
     byte[] queryHisMsgDataByIds(Conversation conversation, List<String> messageIds, int index) {
         Appmessages.QryHisMsgByIdsReq.Builder builder = Appmessages.QryHisMsgByIdsReq.newBuilder();
         builder.setTargetId(conversation.getConversationId())
-                .setChannelTypeValue(conversation.getConversationType().getValue());
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel());
         for (String messageId : messageIds) {
             builder.addMsgIds(messageId);
         }
@@ -524,6 +535,7 @@ class PBData {
         Appmessages.UndisturbConverItem item = Appmessages.UndisturbConverItem.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setUndisturbType(isMute ? 1 : 0)
                 .build();
         Appmessages.UndisturbConversReq req = Appmessages.UndisturbConversReq.newBuilder()
@@ -547,6 +559,7 @@ class PBData {
         Appmessages.Conversation pbConversation = Appmessages.Conversation.newBuilder()
                 .setChannelTypeValue(conversation.getConversationType().getValue())
                 .setTargetId(conversation.getConversationId())
+                .setSubChannel(conversation.getSubChannel())
                 .setIsTop(isTop ? 1 : 0)
                 .build();
         Appmessages.ConversationsReq req = Appmessages.ConversationsReq.newBuilder()
@@ -567,6 +580,7 @@ class PBData {
         Appmessages.TopMsgReq req = Appmessages.TopMsgReq.newBuilder()
                 .setChannelTypeValue(conversation.getConversationType().getValue())
                 .setTargetId(conversation.getConversationId())
+                .setSubChannel(conversation.getSubChannel())
                 .setMsgId(messageId)
                 .build();
         String topic;
@@ -590,6 +604,7 @@ class PBData {
         Appmessages.GetTopMsgReq req = Appmessages.GetTopMsgReq.newBuilder()
                 .setChannelTypeValue(conversation.getConversationType().getValue())
                 .setTargetId(conversation.getConversationId())
+                .setSubChannel(conversation.getSubChannel())
                 .build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
@@ -614,6 +629,7 @@ class PBData {
                     .setSenderId(message.getSenderUserId())
                     .setReceiverId(receiverId)
                     .setChannelTypeValue(message.getConversation().getConversationType().getValue())
+                    .setSubChannel(message.getConversation().getSubChannel())
                     .setMsgId(message.getMessageId())
                     .build();
             builder.addItems(item);
@@ -655,6 +671,7 @@ class PBData {
         Appmessages.Conversation pbConversation = Appmessages.Conversation.newBuilder()
                 .setChannelTypeValue(conversation.getConversationType().getValue())
                 .setTargetId(conversation.getConversationId())
+                .setSubChannel(conversation.getSubChannel())
                 .setUnreadTag(1)
                 .build();
         Appmessages.ConversationsReq req = Appmessages.ConversationsReq.newBuilder()
@@ -727,6 +744,7 @@ class PBData {
         Appmessages.QryMentionMsgsReq req = Appmessages.QryMentionMsgsReq.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setStartTime(timestamp)
                 .setCount(count)
                 .setOrder(order)
@@ -747,6 +765,7 @@ class PBData {
         Appmessages.CleanHisMsgReq req = Appmessages.CleanHisMsgReq.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setCleanMsgTime(time)
                 .setCleanScope(scope)
                 .build();
@@ -768,6 +787,7 @@ class PBData {
         Appmessages.DelHisMsgsReq.Builder builder = Appmessages.DelHisMsgsReq.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setDelScope(scope);
         for (ConcreteMessage msg : msgList) {
             Appmessages.SimpleMsg simpleMsg = Appmessages.SimpleMsg.newBuilder()
@@ -894,6 +914,7 @@ class PBData {
             Rtcroom.ConverIndex.Builder converIndexBuilder = Rtcroom.ConverIndex.newBuilder();
             converIndexBuilder.setTargetId(conversation.getConversationId());
             converIndexBuilder.setChannelTypeValue(conversation.getConversationType().getValue());
+            converIndexBuilder.setSubChannel(conversation.getSubChannel());
             builder.setAttachedConver(converIndexBuilder);
         }
         Rtcroom.RtcInviteReq req = builder.build();
@@ -967,6 +988,7 @@ class PBData {
         Rtcroom.ConverIndex converIndex = Rtcroom.ConverIndex.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
@@ -1091,6 +1113,7 @@ class PBData {
         Appmessages.MsgExt ext = Appmessages.MsgExt.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setMsgId(messageId)
                 .setExt(item)
                 .build();
@@ -1110,6 +1133,7 @@ class PBData {
         Appmessages.MsgExt ext = Appmessages.MsgExt.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
                 .setMsgId(messageId)
                 .setExt(item)
                 .build();
@@ -1127,7 +1151,8 @@ class PBData {
     byte[] queryMsgExSet(List<String> messageIdList, Conversation conversation, int index) {
         Appmessages.QryMsgExtReq.Builder builder = Appmessages.QryMsgExtReq.newBuilder()
                 .setTargetId(conversation.getConversationId())
-                .setChannelTypeValue(conversation.getConversationType().getValue());
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel());
         for (String messageId : messageIdList) {
             if (messageId != null) {
                 builder.addMsgIds(messageId);
@@ -1149,6 +1174,7 @@ class PBData {
         Appmessages.QryFirstUnreadMsgReq req = Appmessages.QryFirstUnreadMsgReq.newBuilder()
                 .setTargetId(conversation.getConversationId())
                 .setChannelType(channelTypeFromConversationType(conversation.getConversationType()))
+                .setSubChannel(conversation.getSubChannel())
                 .build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
@@ -1238,6 +1264,7 @@ class PBData {
             Appmessages.SimpleConversation sc = Appmessages.SimpleConversation.newBuilder()
                     .setTargetId(conversation.getConversationId())
                     .setChannelTypeValue(conversation.getConversationType().getValue())
+                    .setSubChannel(conversation.getSubChannel())
                     .build();
             builder.addConvers(sc);
         }
@@ -1261,6 +1288,7 @@ class PBData {
             Appmessages.SimpleConversation sc = Appmessages.SimpleConversation.newBuilder()
                     .setTargetId(conversation.getConversationId())
                     .setChannelTypeValue(conversation.getConversationType().getValue())
+                    .setSubChannel(conversation.getSubChannel())
                     .build();
             builder.addConvers(sc);
         }
@@ -1888,6 +1916,7 @@ class PBData {
         if (resp.getPreSignResp() != null) {
             UploadPreSignCred preSignCred = new UploadPreSignCred();
             preSignCred.setUrl(resp.getPreSignResp().getUrl());
+            preSignCred.setDownloadUrl(resp.getPreSignResp().getDownloadUrl());
             a.preSignCred = preSignCred;
         }
         obj.mQryFileCredAck = a;
@@ -1963,15 +1992,23 @@ class PBData {
         ConcreteMessage message = new ConcreteMessage();
         Conversation.ConversationType type = conversationTypeFromChannelType(downMsg.getChannelType());
         Conversation conversation = new Conversation(type, downMsg.getTargetId());
+        conversation.setSubChannel(downMsg.getSubChannel());
         message.setConversation(conversation);
         message.setContentType(downMsg.getMsgType());
         message.setMessageId(downMsg.getMsgId());
         message.setClientUid(downMsg.getClientUid());
         message.setDirection(downMsg.getIsSend() ? Message.MessageDirection.SEND : Message.MessageDirection.RECEIVE);
+        message.setSenderUserId(downMsg.getSenderId());
+        if (!TextUtils.isEmpty(JIM.getInstance().getCurrentUserId())) {
+            if (JIM.getInstance().getCurrentUserId().equals(message.getSenderUserId())) {
+                message.setDirection(Message.MessageDirection.SEND);
+            } else {
+                message.setDirection(Message.MessageDirection.RECEIVE);
+            }
+        }
         message.setHasRead(downMsg.getIsRead());
         message.setState(Message.MessageState.SENT);
         message.setTimestamp(downMsg.getMsgTime());
-        message.setSenderUserId(downMsg.getSenderId());
         message.setSeqNo(downMsg.getMsgSeqNo());
         message.setMsgIndex(downMsg.getUnreadIndex());
         byte[] content = downMsg.getMsgContent().toByteArray();
@@ -2044,6 +2081,9 @@ class PBData {
 //                .setUndisturbType()
                 .setUnreadIndex(message.getMsgIndex());
 
+        if (!TextUtils.isEmpty(message.getConversation().getSubChannel())) {
+            downMsgBuilder.setSubChannel(message.getConversation().getSubChannel());
+        }
         if (message.getGroupMessageReadInfo() != null) {
             downMsgBuilder
                     .setReadCount(message.getGroupMessageReadInfo().getReadCount())
@@ -2078,6 +2118,7 @@ class PBData {
     private ConcreteConversationInfo conversationInfoWithPBConversation(Appmessages.Conversation conversation) {
         ConcreteConversationInfo info = new ConcreteConversationInfo();
         Conversation c = new Conversation(conversationTypeFromChannelType(conversation.getChannelType()), conversation.getTargetId());
+        c.setSubChannel(conversation.getSubChannel());
         info.setConversation(c);
         info.setUnreadCount((int) conversation.getUnreadCount());
         info.setSortTime(conversation.getSortTime());
@@ -2445,7 +2486,8 @@ class PBData {
     private Appmessages.Conversation.Builder pbConversationFromConversation(Conversation conversation) {
         return Appmessages.Conversation.newBuilder()
                 .setTargetId(conversation.getConversationId())
-                .setChannelTypeValue(conversation.getConversationType().getValue());
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel());
     }
 
     private int getTypeInCmdMap(Integer index) {

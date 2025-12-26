@@ -5,9 +5,61 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class UserInfo implements Parcelable {
+
+    public JSONObject toJson() {
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+            if (mUserId != null && !mUserId.isEmpty()) {
+                jsonObject.put("user_id", mUserId);
+            }
+            if (mUserName != null && !mUserName.isEmpty()) {
+                jsonObject.put("nickname", mUserName);
+            }
+            if (mPortrait != null && !mPortrait.isEmpty()) {
+                jsonObject.put("avatar", mPortrait);
+            }
+            if (mExtra != null && !mExtra.isEmpty()) {
+                jsonObject.put("ext_fields", new JSONObject(mExtra));
+            }
+            jsonObject.put("updated_time", mUpdatedTime);
+        } catch (JSONException ignored) {
+
+        }
+
+        return jsonObject;
+    }
+
+    public static UserInfo fromJson(JSONObject json) {
+        if (json == null || json.length() == 0) {
+            return null;
+        }
+
+        UserInfo userInfo = new UserInfo();
+        userInfo.mUserId = json.optString("user_id");
+        userInfo.mUserName = json.optString("nickname");
+        userInfo.mPortrait = json.optString("avatar");
+        JSONObject extraObject = json.optJSONObject("ext_fields");
+        if (extraObject != null) {
+            Map<String, String> extraMap = new HashMap<>();
+            for (Iterator<String> it = extraObject.keys(); it.hasNext(); ) {
+                String key = it.next();
+                String value = extraObject.optString(key);
+                extraMap.put(key, value);
+            }
+            userInfo.mExtra = extraMap;
+        }
+        userInfo.mUpdatedTime = json.optLong("updated_time");
+        return userInfo;
+    }
 
     public String getUserId() {
         return mUserId;

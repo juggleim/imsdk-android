@@ -12,7 +12,7 @@ public class Conversation {
             return false;
         }
         Conversation that = (Conversation) o;
-        return Objects.equals(mConversationId, that.mConversationId) && mConversationType == that.mConversationType;
+        return Objects.equals(mConversationId, that.getConversationId()) && (mConversationType == that.getConversationType()) && Objects.equals(mSubChannel, that.getSubChannel()) ;
     }
 
     @Override
@@ -70,6 +70,15 @@ public class Conversation {
         return mConversationType;
     }
 
+    public String getSubChannel() {
+        return mSubChannel;
+    }
+
+    public void setSubChannel(String subChannel) {
+        mSubChannel = subChannel;
+    }
+
     private final String mConversationId;
     private final ConversationType mConversationType;
+    private String mSubChannel = "";
 }

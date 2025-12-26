@@ -1,10 +1,14 @@
 package com.juggle.im.internal.connect.fsm;
 
+import static com.juggle.im.internal.ConstInternal.SDK_VERSION;
+
+import android.os.Build;
 import android.os.Message;
 
 import com.juggle.im.internal.connect.ConnectionManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.util.JLogger;
+import com.juggle.im.internal.util.JUtility;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -93,6 +97,7 @@ public class ConnConnectingState extends ConnBaseState {
 
             case ConnEvent.WEBSOCKET_FAIL:
             case ConnEvent.CONNECTING_TIMEOUT:
+                JLogger.i("CON-Connect", "websocket fail or timeout, client address is " + JUtility.getLocalIPv4Address() + ", osVersion is " + Build.VERSION.RELEASE + ", networkId is " + manager.getNetworkType() + ", carrier is " + manager.getCarrier() + ", sdkVersion is " + SDK_VERSION);
                 manager.transitionToWaitingForConnectState();
                 if (mStoreStatus == ConnectingStoreStatus.CONNECT) {
                     if (mUserToken != null && !mUserToken.isEmpty()) {
