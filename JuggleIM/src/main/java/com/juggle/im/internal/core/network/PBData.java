@@ -1737,7 +1737,7 @@ class PBData {
             MessageReaction reaction = new MessageReaction();
             reaction.setMessageId(pbItems.getMsgId());
             List<MessageReactionItem> itemList = new ArrayList<>();
-            boolean isUpdate = false;
+            boolean isUpdate;
             for (Appmessages.MsgExtItem pbItem : pbItems.getExtsList()) {
                 UserInfo user = userInfoWithPBUserInfo(pbItem.getUserInfo());
                 isUpdate = false;
