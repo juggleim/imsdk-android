@@ -871,6 +871,10 @@ public class DBManager {
         execSQL(MessageSql.sqlUpdateMessageState(state.getValue(), clientMsgNo));
     }
 
+    public void batchSetMessageStateFail() {
+        execSQL(MessageSql.SQL_BATCH_SET_STATE_FAIL);
+    }
+
     public void setMessagesRead(List<String> messageIds, long readTime) {
         Object[] args = new Object[messageIds.size()+1];
         args[0] = readTime;

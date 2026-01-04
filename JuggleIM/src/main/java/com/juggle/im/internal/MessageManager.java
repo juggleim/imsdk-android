@@ -2548,6 +2548,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         mSyncNotifyTime = 0;
         setChatroomSyncProcessing(false);
         clearChatroomSyncMap();
+        mCore.getDbManager().batchSetMessageStateFail();
     }
 
     private void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {

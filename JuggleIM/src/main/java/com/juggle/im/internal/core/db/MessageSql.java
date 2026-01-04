@@ -207,6 +207,7 @@ class MessageSql {
     static final String SQL_DROP_INDEX_CONVERSATION_TS = "DROP INDEX IF EXISTS idx_message_conversation_ts";
     static final String SQL_DROP_INDEX_DS_CONVERSATION_TS = "DROP INDEX IF EXISTS idx_message_ds_conversation_ts";
     static final String SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX2 = "CREATE INDEX IF NOT EXISTS idx_message_ds_conversation_ts2 ON message(destroy_time, conversation_type, conversation_id, subchannel, timestamp)";
+    static final String SQL_CREATE_STATE_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_state ON message(state)";
     static final String SQL_ALTER_ADD_FLAGS = "ALTER TABLE message ADD COLUMN flags INTEGER";
     static final String SQL_ALTER_ADD_LIFE_TIME = "ALTER TABLE message ADD COLUMN life_time INTEGER DEFAULT 0";
     static final String SQL_ALTER_ADD_LIFE_TIME_AFTER_READ = "ALTER TABLE message ADD COLUMN life_time_after_read INTEGER DEFAULT 0";
@@ -397,6 +398,7 @@ class MessageSql {
         return sql.toString();
     }
 
+    static final String SQL_BATCH_SET_STATE_FAIL = "UPDATE message set state = 3 WHERE state = 1 OR state = 4";
     static final String SQL_ORDER_BY_TIMESTAMP = " ORDER BY timestamp";
     static final String SQL_DESC = " DESC";
     static final String SQL_LIMIT = " LIMIT ";
