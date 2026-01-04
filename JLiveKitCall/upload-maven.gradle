@@ -13,7 +13,7 @@ afterEvaluate {
                 // You can then customize attributes of the publication as shown below.
                 groupId = 'com.juggle.call.livekit'
                 artifactId = 'juggle'
-                version = '1.8.28.1'
+                version = '1.8.32'
                 pom {
                     name = 'JuggleCallLiveKit'
                     description = 'JuggleCall Android SDK'
