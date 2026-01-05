@@ -114,6 +114,8 @@ public class UserInfoSql {
     static final String SQL_INSERT_USER_INFO = "INSERT OR REPLACE INTO user (user_id, name, portrait, extension, updated_time) VALUES (?, ?, ?, ?, ?)";
     static final String SQL_INSERT_GROUP_INFO = "INSERT OR REPLACE INTO group_info (group_id, name, portrait, extension, updated_time) VALUES (?, ?, ?, ?, ?)";
     static final String SQL_INSERT_GROUP_MEMBER = "INSERT OR REPLACE INTO group_member (group_id, user_id, display_name, extension, updated_time) VALUES (?, ?, ?, ?, ?)";
+    static final String SQL_GET_USER_INFO_LIST = "SELECT * FROM user WHERE user_id IN ";
+    static final String SQL_GET_GROUP_LIST = "SELECT * FROM group_info WHERE group_id IN ";
 
     static final String COL_USER_ID = "user_id";
     static final String COL_GROUP_ID = "group_id";

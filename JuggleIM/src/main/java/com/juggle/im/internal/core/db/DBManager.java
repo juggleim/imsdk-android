@@ -935,6 +935,26 @@ public class DBManager {
         return info;
     }
 
+    public List<UserInfo> getUserInfoList(List<String> userIdList) {
+        List<UserInfo> userList = new ArrayList<>();
+        if (userIdList == null || userIdList.isEmpty()) {
+            return userList;
+        }
+        String sql = UserInfoSql.SQL_GET_USER_INFO_LIST + CursorHelper.getQuestionMarkPlaceholder(userIdList.size());
+        String[] args = userIdList.toArray(new String[0]);
+        try (Cursor cursor = rawQuery(sql, args)) {
+            if (cursor != null) {
+                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                    UserInfo userInfo = UserInfoSql.userInfoWithCursor(cursor);
+                    userList.add(userInfo);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getUserInfoList " + e.getMessage());
+        }
+        return userList;
+    }
+
     public void insertUserInfoList(List<UserInfo> userInfoList) {
         performTransaction(() -> {
             for (UserInfo info : userInfoList) {
@@ -964,6 +984,26 @@ public class DBManager {
             JLogger.w("DB-Exception", "getGroupInfo " + e.getMessage());
         }
         return info;
+    }
+
+    public List<GroupInfo> getGroupInfoList(List<String> groupIdList) {
+        List<GroupInfo> groupList = new ArrayList<>();
+        if (groupIdList == null || groupIdList.isEmpty()) {
+            return groupList;
+        }
+        String sql = UserInfoSql.SQL_GET_GROUP_LIST + CursorHelper.getQuestionMarkPlaceholder(groupIdList.size());
+        String[] args = groupIdList.toArray(new String[0]);
+        try (Cursor cursor = rawQuery(sql, args)) {
+            if (cursor != null) {
+                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                    GroupInfo groupInfo = UserInfoSql.groupInfoWithCursor(cursor);
+                    groupList.add(groupInfo);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getGroupInfoList " + e.getMessage());
+        }
+        return groupList;
     }
 
     public void insertGroupInfoList(List<GroupInfo> groupInfoList) {

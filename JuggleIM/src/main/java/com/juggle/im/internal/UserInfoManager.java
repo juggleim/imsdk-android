@@ -8,6 +8,7 @@ import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.UserInfo;
 
+import java.util.Collections;
 import java.util.List;
 
 public class UserInfoManager implements IUserInfoManager {
@@ -36,6 +37,15 @@ public class UserInfoManager implements IUserInfoManager {
     }
 
     @Override
+    public List<UserInfo> getUserInfoList(List<String> userIdList) {
+        List<UserInfo> userInfoList = mCore.getDbManager().getUserInfoList(userIdList);
+        for (UserInfo userInfo : userInfoList) {
+            mUserInfoCache.insertUserInfo(userInfo);
+        }
+        return userInfoList;
+    }
+
+    @Override
     public GroupInfo getGroupInfo(String groupId) {
         //判空
         if (TextUtils.isEmpty(groupId)) {
@@ -53,6 +63,15 @@ public class UserInfoManager implements IUserInfoManager {
         mUserInfoCache.insertGroupInfo(groupInfoDB);
         //返回数据
         return groupInfoDB;
+    }
+
+    @Override
+    public List<GroupInfo> getGroupInfoList(List<String> groupIdList) {
+        List<GroupInfo> groupList = mCore.getDbManager().getGroupInfoList(groupIdList);
+        for (GroupInfo group : groupList) {
+            mUserInfoCache.insertGroupInfo(group);
+        }
+        return groupList;
     }
 
     @Override
