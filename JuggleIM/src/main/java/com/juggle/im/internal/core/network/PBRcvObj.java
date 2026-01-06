@@ -239,10 +239,12 @@ class PBRcvObj {
         static final int qryCallRoomsAck = 31;
         static final int qryCallRoomAck = 32;
         static final int qryMsgExtAck = 33;
-        static final int getUserInfoAck = 34;
+        static final int getUserSettingAck = 34;
         static final int getTopMsgAck = 35;
         static final int getFavoriteMsgAck = 36;
         static final int getConversationConfAck = 37;
+        static final int getUserInfoAck = 38;
+        static final int getGroupInfoAck = 39;
     }
 
     public enum PBChatroomEventType {

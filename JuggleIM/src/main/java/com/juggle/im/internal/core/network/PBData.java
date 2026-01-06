@@ -1305,6 +1305,32 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] fetchUserInfo(String userId, int index) {
+        Appmessages.UserIdReq req = Appmessages.UserIdReq.newBuilder().setUserId(userId).build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_USER_INFO)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] fetchGroupInfo(String groupId, int index) {
+        Appmessages.GroupInfoReq req = Appmessages.GroupInfoReq.newBuilder().setGroupId(groupId).build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_GROUP_INFO)
+                .setTargetId(groupId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -1449,8 +1475,8 @@ class PBData {
                         case PBRcvObj.PBRcvType.qryCallRoomAck:
                             obj = qryCallRoomAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
-                        case PBRcvObj.PBRcvType.getUserInfoAck:
-                            obj = getUserInfoAckWithImWebsocketMsg(queryAckMsgBody);
+                        case PBRcvObj.PBRcvType.getUserSettingAck:
+                            obj = getUserSettingAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.qryMsgExtAck:
                             obj = qryMsgExtAckWithImWebsocketMsg(queryAckMsgBody);
@@ -1464,6 +1490,13 @@ class PBData {
                         case PBRcvObj.PBRcvType.getConversationConfAck:
                             obj = getConversationConfAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
+                        case PBRcvObj.PBRcvType.getUserInfoAck:
+                            obj = getUserInfoAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getGroupInfoAck:
+                            obj = getGroupInfoAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+
                         default:
                             break;
                     }
@@ -1711,10 +1744,10 @@ class PBData {
         return obj;
     }
 
-    private PBRcvObj getUserInfoAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+    private PBRcvObj getUserSettingAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.UserInfo userInfo = Appmessages.UserInfo.parseFrom(body.getData());
-        obj.setRcvType(PBRcvObj.PBRcvType.getUserInfoAck);
+        obj.setRcvType(PBRcvObj.PBRcvType.getUserSettingAck);
         String s = "";
         for (Appmessages.KvItem item : userInfo.getSettingsList()) {
             if (item.getKey().equals(LANGUAGE)) {
@@ -1725,6 +1758,28 @@ class PBData {
         PBRcvObj.StringAck a = new PBRcvObj.StringAck(body);
         a.str = s;
         obj.mStringAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getUserInfoAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.UserInfo pbUserInfo = Appmessages.UserInfo.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getUserInfoAck);
+        UserInfo userInfo = userInfoWithPBUserInfo(pbUserInfo);
+        PBRcvObj.TemplateAck<UserInfo> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = userInfo;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getGroupInfoAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.GroupInfo pbGroupInfo = Appmessages.GroupInfo.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getGroupInfoAck);
+        GroupInfo groupInfo = groupInfoWithPBGroupInfo(pbGroupInfo);
+        PBRcvObj.TemplateAck<GroupInfo> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = groupInfo;
+        obj.mTemplateAck = a;
         return obj;
     }
 
@@ -2581,6 +2636,8 @@ class PBData {
     private static final String ADD_FAVORITE_MSGS = "add_favorite_msgs";
     private static final String DEL_FAVORITE_MSGS = "del_favorite_msgs";
     private static final String QRY_FAVORITE_MSGS = "qry_favorite_msgs";
+    private static final String QRY_USER_INFO = "qry_user_info";
+    private static final String QRY_GROUP_INFO = "qry_group_info";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
@@ -2634,7 +2691,7 @@ class PBData {
             put(RTC_MEMBER_ROOMS, PBRcvObj.PBRcvType.qryCallRoomsAck);
             put(RTC_QRY, PBRcvObj.PBRcvType.qryCallRoomAck);
             put(SET_USER_SETTINGS, PBRcvObj.PBRcvType.simpleQryAck);
-            put(GET_USER_SETTINGS, PBRcvObj.PBRcvType.getUserInfoAck);
+            put(GET_USER_SETTINGS, PBRcvObj.PBRcvType.getUserSettingAck);
             put(MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(DEL_MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_MSG_EX_SET, PBRcvObj.PBRcvType.qryMsgExtAck);
@@ -2649,6 +2706,8 @@ class PBData {
             put(QRY_FAVORITE_MSGS, PBRcvObj.PBRcvType.getFavoriteMsgAck);
             put(RTC_JOIN, PBRcvObj.PBRcvType.qryCallRoomAck);
             put(QRY_CONVER_CONF, PBRcvObj.PBRcvType.getConversationConfAck);
+            put(QRY_USER_INFO, PBRcvObj.PBRcvType.getUserInfoAck);
+            put(QRY_GROUP_INFO, PBRcvObj.PBRcvType.getGroupInfoAck);
         }
     };
 

@@ -1,5 +1,6 @@
 package com.juggle.im.interfaces;
 
+import com.juggle.im.JIMConst;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.UserInfo;
@@ -17,4 +18,8 @@ public interface IUserInfoManager {
     List<GroupInfo> getGroupInfoList(List<String> groupIdList);
 
     GroupMember getGroupMember(String groupId, String userId);
+
+    void fetchUserInfo(String userId, JIMConst.IResultCallback<UserInfo> callback);
+
+    void fetchGroupInfo(String groupId, JIMConst.IResultCallback<GroupInfo> callback);
 }

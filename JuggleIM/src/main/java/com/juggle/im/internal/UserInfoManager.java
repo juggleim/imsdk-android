@@ -2,6 +2,9 @@ package com.juggle.im.internal;
 
 import android.text.TextUtils;
 
+import com.juggle.im.JErrorCode;
+import com.juggle.im.JIMConst;
+import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.interfaces.IUserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
@@ -92,6 +95,72 @@ public class UserInfoManager implements IUserInfoManager {
         mUserInfoCache.insertGroupMember(groupMember);
         //返回数据
         return groupMember;
+    }
+
+    @Override
+    public void fetchUserInfo(String userId, JIMConst.IResultCallback<UserInfo> callback) {
+        if (TextUtils.isEmpty(userId)) {
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(JErrorCode.INVALID_PARAM);
+                }
+            });
+            return;
+        }
+        mCore.getWebSocket().fetchUserInfo(userId, new WebSocketDataCallback<UserInfo>() {
+            @Override
+            public void onSuccess(UserInfo userInfo) {
+                mUserInfoCache.insertUserInfo(userInfo);
+                mCore.getDbManager().insertUserInfoList(Collections.singletonList(userInfo));
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess(userInfo);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void fetchGroupInfo(String groupId, JIMConst.IResultCallback<GroupInfo> callback) {
+        if (TextUtils.isEmpty(groupId)) {
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(JErrorCode.INVALID_PARAM);
+                }
+            });
+            return;
+        }
+        mCore.getWebSocket().fetchGroupInfo(groupId, new WebSocketDataCallback<GroupInfo>() {
+            @Override
+            public void onSuccess(GroupInfo groupInfo) {
+                mUserInfoCache.insertGroupInfo(groupInfo);
+                mCore.getDbManager().insertGroupInfoList(Collections.singletonList(groupInfo));
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess(groupInfo);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                });
+            }
+        });
     }
 
     public void clearCache() {
