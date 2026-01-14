@@ -389,6 +389,7 @@ class ConversationSql {
             + ")";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation ON conversation_info(conversation_type, conversation_id)";
     static final String SQL_CREATE_INDEX2 = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation2 ON conversation_info(conversation_type, conversation_id, subchannel)";
+    static final String SQL_CREATE_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_conversation_timestamp ON conversation_info(timestamp)";
     static final String SQL_CREATE_TAG_TABLE = "CREATE TABLE IF NOT EXISTS conversation_tag ("
                                                 + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                                 + "tag_id VARCHAR (64),"

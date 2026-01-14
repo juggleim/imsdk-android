@@ -16,6 +16,7 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(ProfileSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_INDEX2);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TS_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CLIENT_UID_INDEX);
@@ -165,7 +166,14 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 18) {
+            try {
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TS_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 17;
+    private final static int version = 18;
 }
