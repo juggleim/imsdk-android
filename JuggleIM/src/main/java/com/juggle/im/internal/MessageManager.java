@@ -430,19 +430,32 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 || !TextUtils.isEmpty(message.getMessageId())//已发送的消息不允许重发
                 || message.getContent() == null
                 || message.getConversation() == null
-                || message.getConversation().getConversationId() == null
-                || !(message instanceof ConcreteMessage)) {
+                || message.getConversation().getConversationId() == null) {
             if (callback != null) {
-                mCore.getCallbackHandler().post(() -> callback.onError(message, ConstInternal.ErrorCode.INVALID_PARAM));
+                Message finalMessage = message;
+                mCore.getCallbackHandler().post(() -> callback.onError(finalMessage, ConstInternal.ErrorCode.INVALID_PARAM));
             }
             return message;
         }
         if (message.getClientMsgNo() > 0) {
             if (message.getState() == Message.MessageState.SENT) {
                 if (callback != null) {
-                    mCore.getCallbackHandler().post(() -> callback.onSuccess(message));
+                    Message finalMessage1 = message;
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(finalMessage1));
                 }
                 return message;
+            }
+            if (!(message instanceof ConcreteMessage)) {
+                List<Message> messageList = getMessagesByClientMsgNos(new long[]{message.getClientMsgNo()});
+                if (!messageList.isEmpty()) {
+                    message = messageList.get(0);
+                } else {
+                    if (callback != null) {
+                        Message finalMessage2 = message;
+                        mCore.getCallbackHandler().post(() -> callback.onSuccess(finalMessage2));
+                    }
+                    return message;
+                }
             }
             if (message.getState() != Message.MessageState.SENDING) {
                 message.setState(Message.MessageState.SENDING);
@@ -470,18 +483,31 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 || m.getContent() == null
                 || !(m.getContent() instanceof MediaMessageContent)
                 || m.getConversation() == null
-                || m.getConversation().getConversationId() == null
-                || !(m instanceof ConcreteMessage)) {
+                || m.getConversation().getConversationId() == null) {
             if (callback != null) {
-                mCore.getCallbackHandler().post(() -> callback.onError(m, ConstInternal.ErrorCode.INVALID_PARAM));
+                Message finalM = m;
+                mCore.getCallbackHandler().post(() -> callback.onError(finalM, ConstInternal.ErrorCode.INVALID_PARAM));
             }
             return m;
         }
         if (m.getState() == Message.MessageState.SENT) {
             if (callback != null) {
-                mCore.getCallbackHandler().post(() -> callback.onSuccess(m));
+                Message finalM1 = m;
+                mCore.getCallbackHandler().post(() -> callback.onSuccess(finalM1));
             }
             return m;
+        }
+        if (!(m instanceof ConcreteMessage)) {
+            List<Message> messageList = getMessagesByClientMsgNos(new long[]{m.getClientMsgNo()});
+            if (!messageList.isEmpty()) {
+                m = messageList.get(0);
+            } else {
+                if (callback != null) {
+                    Message finalM2 = m;
+                    mCore.getCallbackHandler().post(() -> callback.onSuccess(finalM2));
+                }
+                return m;
+            }
         }
         ConcreteMessage message = new ConcreteMessage((ConcreteMessage) m);
         if (message.getState() != Message.MessageState.SENDING) {
