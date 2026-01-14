@@ -134,12 +134,12 @@ public class PreSignUploader extends BaseUploader {
                     //回调上传成功
                     notifySuccess(mediaUrl);
                 } else {
-                    JLogger.e("J-Uploader, PreSignUploader error, responseCode is " + response.code() + ", responseMessage is " + response.message());
+                    JLogger.e("J-Uploader", "PreSignUploader error, responseCode is " + response.code() + ", responseMessage is " + response.message());
                     //回调上传失败
                     notifyFail();
                 }
             } catch (Exception e) {
-                JLogger.e("J-Uploader, PreSignUploader error, exception is " + e.getMessage());
+                JLogger.e("J-Uploader", "PreSignUploader error, exception is " + e.getMessage());
                 e.printStackTrace();
                 notifyFail();
             }
