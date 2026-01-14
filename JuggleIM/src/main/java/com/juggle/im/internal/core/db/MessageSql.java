@@ -434,6 +434,15 @@ class MessageSql {
         return sql;
     }
 
+    static String sqlPurgeMessages(int conversationTypeSize) {
+        String sql = "DELETE FROM message WHERE timestamp < ? ";
+
+        if (conversationTypeSize > 0) {
+            sql += "AND conversation_type IN " + CursorHelper.getQuestionMarkPlaceholder(conversationTypeSize);
+        }
+        return sql;
+    }
+
     static String sqlClearChatroomMessagesExclude(int count) {
         return "DELETE FROM message WHERE conversation_type = 3 AND conversation_id NOT IN " + CursorHelper.getQuestionMarkPlaceholder(count);
     }

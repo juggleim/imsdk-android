@@ -906,6 +906,22 @@ public class DBManager {
         execSQL(MessageSql.sqlClearMessages(conversation, startTime, senderId));
     }
 
+    public void purgeMessages(long timestamp, List<Conversation.ConversationType> conversationTypes) {
+        int conversationTypeSize = 0;
+        if (conversationTypes != null && !conversationTypes.isEmpty()) {
+            conversationTypeSize = conversationTypes.size();
+        }
+        String[] args = new String[conversationTypeSize+1];
+        args[0] = String.valueOf(timestamp);
+        if (conversationTypeSize > 0) {
+            int i = 1;
+            for (Conversation.ConversationType type : conversationTypes) {
+                args[i++] = String.valueOf(type.getValue());
+            }
+        }
+        execSQL(MessageSql.sqlPurgeMessages(conversationTypeSize), args);
+    }
+
     public void clearChatroomMessageExclude(List<String> chatroomIds) {
         String[] args = chatroomIds.toArray(new String[0]);
         execSQL(MessageSql.sqlClearChatroomMessagesExclude(chatroomIds.size()), args);

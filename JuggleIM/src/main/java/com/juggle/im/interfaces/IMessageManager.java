@@ -313,6 +313,13 @@ public interface IMessageManager {
      */
     void clearMessages(Conversation conversation, long startTime, boolean forAllUsers, ISimpleCallback callback);
 
+    /**
+     * 物理删除指定时间之前的所有消息（只删除本地消息，可用于释放本地存储空间）
+     * @param timestamp 时间戳，传 0 表示当前时间
+     * @param conversationTypes 待删除的会话类型列表，传 null 表示删除所有会话类型的消息。
+     */
+    void purgeMessages(long timestamp, List<Conversation.ConversationType> conversationTypes);
+
     void recallMessage(String messageId, Map<String, String> extras, IRecallMessageCallback callback);
 
     void updateMessage(String messageId, MessageContent content, Conversation conversation, IMessageCallback callback);

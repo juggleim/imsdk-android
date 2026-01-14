@@ -1055,6 +1055,14 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void purgeMessages(long timestamp, List<Conversation.ConversationType> conversationTypes) {
+        if (timestamp == 0) {
+            timestamp = System.currentTimeMillis();
+        }
+        mCore.getDbManager().purgeMessages(timestamp, conversationTypes);
+    }
+
+    @Override
     public void recallMessage(String messageId, Map<String, String> extras, IRecallMessageCallback callback) {
         if (messageId == null || messageId.isEmpty()) {
             if (callback != null) {
