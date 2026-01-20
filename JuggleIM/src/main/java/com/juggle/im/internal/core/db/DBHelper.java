@@ -1,7 +1,6 @@
 package com.juggle.im.internal.core.db;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -25,6 +24,7 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CONVERSATION_SUBCHANNEL_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX2);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_STATE_INDEX);
+        sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_SENDER_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_TABLE);
@@ -173,7 +173,14 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 19) {
+            try {
+                sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_SENDER_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 18;
+    private final static int version = 19;
 }
