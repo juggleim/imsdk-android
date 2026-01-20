@@ -55,6 +55,8 @@ public interface ICallSession {
     void setVideoView(String userId, View view);
     // 开始预览
     void startPreview(View view);
+    // 结束预览
+    void stopPreview();
     // 设置麦克风静音
     void muteMicrophone(boolean isMute);
     // 设置扬声器静音

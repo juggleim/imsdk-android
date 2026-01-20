@@ -149,6 +149,12 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     }
 
     @Override
+    public void stopPreview() {
+        CallMediaManager.getInstance().stopPreview();
+        mViewMap.remove(JIM.getInstance().getCurrentUserId());
+    }
+
+    @Override
     public void muteMicrophone(boolean isMute) {
         CallMediaManager.getInstance().muteMicrophone(isMute);
     }
