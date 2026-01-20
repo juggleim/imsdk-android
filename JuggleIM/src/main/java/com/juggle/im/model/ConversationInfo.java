@@ -1,5 +1,7 @@
 package com.juggle.im.model;
 
+import com.juggle.im.JIM;
+
 public class ConversationInfo {
     public Conversation getConversation() {
         return mConversation;
@@ -77,8 +79,66 @@ public class ConversationInfo {
         return mMentionInfo;
     }
 
+    public String getDisplayName() {
+        String displayName = "";
+        if (mConversation == null) {
+            return displayName;
+        }
+        if (mConversation.getConversationType() == Conversation.ConversationType.GROUP
+        || mConversation.getConversationType() == Conversation.ConversationType.PUBLIC_SERVICE) {
+            GroupInfo groupInfo = getGroupInfo();
+            if (groupInfo != null) {
+                displayName = groupInfo.getGroupName();
+            }
+        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE) {
+            UserInfo userInfo = getUserInfo();
+            if (userInfo != null) {
+                displayName = userInfo.getUserName();
+            }
+        }
+        return displayName;
+    }
+
+    public String getPortrait() {
+        String portrait = "";
+        if (mConversation == null) {
+            return portrait;
+        }
+        if (mConversation.getConversationType() == Conversation.ConversationType.GROUP
+                || mConversation.getConversationType() == Conversation.ConversationType.PUBLIC_SERVICE) {
+            GroupInfo groupInfo = getGroupInfo();
+            if (groupInfo != null) {
+                portrait = groupInfo.getPortrait();
+            }
+        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE) {
+            UserInfo userInfo = getUserInfo();
+            if (userInfo != null) {
+                portrait = userInfo.getPortrait();
+            }
+        }
+        return portrait;
+    }
+
     public void setMentionInfo(ConversationMentionInfo mentionInfo) {
         this.mMentionInfo = mentionInfo;
+    }
+
+    private GroupInfo getGroupInfo() {
+        if (mGroupInfo == null) {
+            if (mConversation != null) {
+                mGroupInfo = JIM.getInstance().getUserInfoManager().getGroupInfo(mConversation.getConversationId());
+            }
+        }
+        return mGroupInfo;
+    }
+
+    private UserInfo getUserInfo() {
+        if (mUserInfo == null) {
+            if (mConversation != null) {
+                mUserInfo = JIM.getInstance().getUserInfoManager().getUserInfo(mConversation.getConversationId());
+            }
+        }
+        return mUserInfo;
     }
 
     private Conversation mConversation;
@@ -91,4 +151,6 @@ public class ConversationInfo {
     private boolean mMute;
     private String mDraft;
     private ConversationMentionInfo mMentionInfo;
+    private GroupInfo mGroupInfo;
+    private UserInfo mUserInfo;
 }

@@ -1,5 +1,9 @@
 package com.juggle.im.model;
 
+import android.text.TextUtils;
+
+import com.juggle.im.JIM;
+
 public class Message {
     /// 消息方向，发送/接收
     public enum MessageDirection {
@@ -230,6 +234,45 @@ public class Message {
         mLifeTimeAfterRead = lifeTimeAfterRead;
     }
 
+    public String getSenderDisplayName() {
+        String userName = "";
+        if (mConversation != null) {
+            if (mConversation.getConversationType() == Conversation.ConversationType.GROUP) {
+                GroupMember member = JIM.getInstance().getUserInfoManager().getGroupMember(mConversation.getConversationId(), mSenderUserId);
+                if (member != null) {
+                    userName = member.getGroupDisplayName();
+                }
+                if (TextUtils.isEmpty(userName)) {
+                    UserInfo userInfo = getUserInfo();
+                    if (userInfo != null) {
+                        userName = userInfo.getUserName();
+                    }
+                }
+            } else {
+                UserInfo userInfo = getUserInfo();
+                if (userInfo != null) {
+                    userName = userInfo.getUserName();
+                }
+            }
+        }
+        return userName;
+    }
+
+    public String getSenderPortrait() {
+        UserInfo userInfo = getUserInfo();
+        if (userInfo != null) {
+            return userInfo.getPortrait();
+        }
+        return "";
+    }
+
+    private UserInfo getUserInfo() {
+        if (mUserInfo == null) {
+            mUserInfo = JIM.getInstance().getUserInfoManager().getUserInfo(mSenderUserId);
+        }
+        return mUserInfo;
+    }
+
     private Conversation mConversation;
     /// 消息类型
     private String mContentType;
@@ -268,4 +311,5 @@ public class Message {
     /// 消息已读后的生存周期，单位毫秒。
     /// 默认值为 0，表示读后不自动销毁。
     private long mLifeTimeAfterRead;
+    private UserInfo mUserInfo;
 }
