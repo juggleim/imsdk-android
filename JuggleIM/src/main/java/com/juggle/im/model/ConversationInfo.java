@@ -88,7 +88,7 @@ public class ConversationInfo {
         }
         if (mConversation.getConversationType() == Conversation.ConversationType.GROUP
         || mConversation.getConversationType() == Conversation.ConversationType.PUBLIC_SERVICE) {
-            GroupInfo groupInfo = getGroupInfo();
+            GroupInfo groupInfo = getGInfo();
             if (groupInfo != null) {
                 displayName = groupInfo.getGroupName();
             }
@@ -114,7 +114,7 @@ public class ConversationInfo {
         }
         if (mConversation.getConversationType() == Conversation.ConversationType.GROUP
         || mConversation.getConversationType() == Conversation.ConversationType.PUBLIC_SERVICE) {
-            GroupInfo groupInfo = getGroupInfo();
+            GroupInfo groupInfo = getGInfo();
             if (groupInfo != null) {
                 alias = groupInfo.getGroupName();
             }
@@ -134,7 +134,7 @@ public class ConversationInfo {
         }
         if (mConversation.getConversationType() == Conversation.ConversationType.GROUP
                 || mConversation.getConversationType() == Conversation.ConversationType.PUBLIC_SERVICE) {
-            GroupInfo groupInfo = getGroupInfo();
+            GroupInfo groupInfo = getGInfo();
             if (groupInfo != null) {
                 name = groupInfo.getGroupName();
             }
@@ -154,7 +154,7 @@ public class ConversationInfo {
         }
         if (mConversation.getConversationType() == Conversation.ConversationType.GROUP
                 || mConversation.getConversationType() == Conversation.ConversationType.PUBLIC_SERVICE) {
-            GroupInfo groupInfo = getGroupInfo();
+            GroupInfo groupInfo = getGInfo();
             if (groupInfo != null) {
                 portrait = groupInfo.getPortrait();
             }
@@ -171,13 +171,13 @@ public class ConversationInfo {
         this.mMentionInfo = mentionInfo;
     }
 
-    private GroupInfo getGroupInfo() {
-        if (mGroupInfo == null) {
+    private GroupInfo getGInfo() {
+        if (mGInfo == null) {
             if (mConversation != null) {
-                mGroupInfo = JIM.getInstance().getUserInfoManager().getGroupInfo(mConversation.getConversationId());
+                mGInfo = JIM.getInstance().getUserInfoManager().getGroupInfo(mConversation.getConversationId());
             }
         }
-        return mGroupInfo;
+        return mGInfo;
     }
 
     private UserInfo getUserInfo() {
@@ -199,6 +199,6 @@ public class ConversationInfo {
     private boolean mMute;
     private String mDraft;
     private ConversationMentionInfo mMentionInfo;
-    private GroupInfo mGroupInfo;
+    private GroupInfo mGInfo;
     private UserInfo mUserInfo;
 }
