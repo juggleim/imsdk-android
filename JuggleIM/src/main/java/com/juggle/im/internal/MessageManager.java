@@ -11,6 +11,7 @@ import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
 import com.juggle.im.model.FavoriteMessage;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GetFavoriteMessageOption;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.interfaces.IChatroomManager;
@@ -3260,6 +3261,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         Map<String, GroupInfo> groupInfoMap = new HashMap<>();
         Map<String, UserInfo> userInfoMap = new HashMap<>();
         Map<String, GroupMember> groupMemberMap = new HashMap<>();
+        Map<String, FriendInfo> friendInfoMap = new HashMap<>();
         for (ConcreteMessage message : messages) {
             if (message.getGroupInfo() != null && !TextUtils.isEmpty(message.getGroupInfo().getGroupId())) {
                 groupInfoMap.put(message.getGroupInfo().getGroupId(), message.getGroupInfo());
@@ -3272,6 +3274,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 String key = message.getGroupMemberInfo().getGroupId() + "xxx" + message.getGroupMemberInfo().getUserId();
                 groupMemberMap.put(key, message.getGroupMemberInfo());
             }
+            if (message.getFriendInfo() != null && !TextUtils.isEmpty(message.getFriendInfo().getUserId())) {
+                friendInfoMap.put(message.getFriendInfo().getUserId(), message.getFriendInfo());
+            }
             if (message.hasMentionInfo() && message.getMentionInfo().getTargetUsers() != null) {
                 for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
                     if (!TextUtils.isEmpty(userInfo.getUserId())) {
@@ -3283,6 +3288,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
         mUserInfoManager.insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
         mUserInfoManager.insertGroupMemberList(new ArrayList<>(groupMemberMap.values()));
+        mUserInfoManager.insertFriendInfoList(new ArrayList<>(friendInfoMap.values()));
     }
 
     private void insertRemoteMessages(List<ConcreteMessage> messages) {

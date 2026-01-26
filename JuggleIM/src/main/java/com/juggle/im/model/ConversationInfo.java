@@ -1,5 +1,7 @@
 package com.juggle.im.model;
 
+import android.text.TextUtils;
+
 import com.juggle.im.JIM;
 
 public class ConversationInfo {
@@ -91,12 +93,58 @@ public class ConversationInfo {
                 displayName = groupInfo.getGroupName();
             }
         } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE) {
-            UserInfo userInfo = getUserInfo();
-            if (userInfo != null) {
-                displayName = userInfo.getUserName();
+            FriendInfo friendInfo = JIM.getInstance().getUserInfoManager().getFriendInfo(mConversation.getConversationId());
+            if (friendInfo != null) {
+                displayName = friendInfo.getAlias();
+            }
+            if (TextUtils.isEmpty(displayName)) {
+                UserInfo userInfo = getUserInfo();
+                if (userInfo != null) {
+                    displayName = userInfo.getUserName();
+                }
             }
         }
         return displayName;
+    }
+
+    public String getAlias() {
+        String alias = "";
+        if (mConversation == null) {
+            return alias;
+        }
+        if (mConversation.getConversationType() == Conversation.ConversationType.GROUP
+        || mConversation.getConversationType() == Conversation.ConversationType.PUBLIC_SERVICE) {
+            GroupInfo groupInfo = getGroupInfo();
+            if (groupInfo != null) {
+                alias = groupInfo.getGroupName();
+            }
+        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE) {
+            FriendInfo friendInfo = JIM.getInstance().getUserInfoManager().getFriendInfo(mConversation.getConversationId());
+            if (friendInfo != null) {
+                alias = friendInfo.getAlias();
+            }
+        }
+        return alias;
+    }
+
+    public String getName() {
+        String name = "";
+        if (mConversation == null) {
+            return name;
+        }
+        if (mConversation.getConversationType() == Conversation.ConversationType.GROUP
+                || mConversation.getConversationType() == Conversation.ConversationType.PUBLIC_SERVICE) {
+            GroupInfo groupInfo = getGroupInfo();
+            if (groupInfo != null) {
+                name = groupInfo.getGroupName();
+            }
+        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE) {
+            UserInfo userInfo = getUserInfo();
+            if (userInfo != null) {
+                name = userInfo.getUserName();
+            }
+        }
+        return name;
     }
 
     public String getPortrait() {

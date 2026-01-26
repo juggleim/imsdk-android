@@ -3,6 +3,7 @@ package com.juggle.im.internal;
 import android.text.TextUtils;
 import android.util.LruCache;
 
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.UserInfo;
@@ -17,6 +18,7 @@ public class UserInfoCache {
     private final LruCache<String, UserInfo> mUserInfoCache = new LruCache<>(MAX_CACHED_COUNT);
     private final LruCache<String, GroupInfo> mGroupInfoCache = new LruCache<>(MAX_CACHED_COUNT);
     private final LruCache<String, GroupMember> mGroupMemberCache = new LruCache<>(MAX_CACHED_COUNT);
+    private final LruCache<String, FriendInfo> mFriendInfoLruCache = new LruCache<>(MAX_CACHED_COUNT);
 
     //清空缓存
     public void clearCache() {
@@ -25,6 +27,7 @@ public class UserInfoCache {
             mUserInfoCache.evictAll();
             mGroupInfoCache.evictAll();
             mGroupMemberCache.evictAll();
+            mFriendInfoLruCache.evictAll();
         } finally {
             mLock.unlock();
         }
@@ -179,6 +182,56 @@ public class UserInfoCache {
                 GroupMember old = mGroupMemberCache.get(keyForGroupMember(member.getGroupId(), member.getUserId()));
                 if (old == null || member.getUpdatedTime() >= old.getUpdatedTime()) {
                     mGroupMemberCache.put(keyForGroupMember(member.getGroupId(), member.getUserId()), member);
+                }
+            }
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    public FriendInfo getFriendInfo(String userId) {
+        mLock.lock();
+        try {
+            //判空
+            if (TextUtils.isEmpty(userId)) {
+                return null;
+            }
+            //从缓存中查找
+            return mFriendInfoLruCache.get(userId);
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    public void insertFriendInfo(FriendInfo friendInfo) {
+        mLock.lock();
+        try {
+            //判空
+            if (friendInfo == null || TextUtils.isEmpty(friendInfo.getUserId())) {
+                return;
+            }
+            //更新缓存
+            FriendInfo old = mFriendInfoLruCache.get(friendInfo.getUserId());
+            if (old == null || friendInfo.getUpdatedTime() >= old.getUpdatedTime()) {
+                mFriendInfoLruCache.put(friendInfo.getUserId(), friendInfo);
+            }
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    public void insertFriendInfoList(List<FriendInfo> friendInfoList) {
+        mLock.lock();
+        try {
+            //判空
+            if (friendInfoList == null || friendInfoList.isEmpty()) {
+                return;
+            }
+            //更新缓存
+            for (FriendInfo friendInfo : friendInfoList) {
+                FriendInfo old = mFriendInfoLruCache.get(friendInfo.getUserId());
+                if (old == null || friendInfo.getUpdatedTime() >= old.getUpdatedTime()) {
+                    mFriendInfoLruCache.put(friendInfo.getUserId(), friendInfo);
                 }
             }
         } finally {

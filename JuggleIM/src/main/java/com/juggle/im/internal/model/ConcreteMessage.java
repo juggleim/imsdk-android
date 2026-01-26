@@ -1,5 +1,6 @@
 package com.juggle.im.internal.model;
 
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.Message;
@@ -20,9 +21,11 @@ public class ConcreteMessage extends Message {
         mGroupInfo = other.getGroupInfo();
         mTargetUserInfo = other.getTargetUserInfo();
         mGroupMemberInfo = other.getGroupMemberInfo();
+        mFriendInfo = other.getFriendInfo();
         mReferMsgId = other.getReferMsgId();
         mPushData = other.getPushData();
         mLifeTime = other.getLifeTime();
+        mReadTime = other.getReadTime();
     }
 
     public long getSeqNo() {
@@ -89,6 +92,14 @@ public class ConcreteMessage extends Message {
         mGroupMemberInfo = groupMemberInfo;
     }
 
+    public FriendInfo getFriendInfo() {
+        return mFriendInfo;
+    }
+
+    public void setFriendInfo(FriendInfo friendInfo) {
+        mFriendInfo = friendInfo;
+    }
+
     public String getReferMsgId() {
         return mReferMsgId;
     }
@@ -129,6 +140,7 @@ public class ConcreteMessage extends Message {
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;
     private GroupMember mGroupMemberInfo;
+    private FriendInfo mFriendInfo;
     private String mReferMsgId;
     private PushData mPushData;
     private long mLifeTime;

@@ -236,6 +236,12 @@ public class Message {
 
     public String getSenderDisplayName() {
         String userName = "";
+
+        userName = getFriendAlias();
+        if (!TextUtils.isEmpty(userName)) {
+            return userName;
+        }
+
         if (mConversation != null) {
             if (mConversation.getConversationType() == Conversation.ConversationType.GROUP) {
                 GroupMember member = JIM.getInstance().getUserInfoManager().getGroupMember(mConversation.getConversationId(), mSenderUserId);
@@ -256,6 +262,38 @@ public class Message {
             }
         }
         return userName;
+    }
+
+    public String getFriendAlias() {
+        String alias = "";
+        if (TextUtils.isEmpty(mSenderUserId)) {
+            return alias;
+        }
+        FriendInfo friendInfo = JIM.getInstance().getUserInfoManager().getFriendInfo(mSenderUserId);
+        if (friendInfo != null) {
+            alias = friendInfo.getAlias();
+        }
+        return alias;
+    }
+
+    public String getGroupMemberAlias() {
+        String alias = "";
+        if (mConversation == null || TextUtils.isEmpty(mConversation.getConversationId()) || TextUtils.isEmpty(mSenderUserId)) {
+            return alias;
+        }
+        GroupMember member = JIM.getInstance().getUserInfoManager().getGroupMember(mConversation.getConversationId(), mSenderUserId);
+        if (member != null) {
+            alias = member.getGroupDisplayName();
+        }
+        return alias;
+    }
+
+    public String getSenderName() {
+        UserInfo userInfo = getUserInfo();
+        if (userInfo != null) {
+            return userInfo.getUserName();
+        }
+        return "";
     }
 
     public String getSenderPortrait() {

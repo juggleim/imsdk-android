@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import com.juggle.im.JErrorCode;
 import com.juggle.im.JIMConst;
 import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.interfaces.IUserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
@@ -95,6 +96,20 @@ public class UserInfoManager implements IUserInfoManager {
         mUserInfoCache.insertGroupMember(groupMember);
         //返回数据
         return groupMember;
+    }
+
+    @Override
+    public FriendInfo getFriendInfo(String userId) {
+        if (TextUtils.isEmpty(userId)) {
+            return null;
+        }
+        FriendInfo friendInfo = mUserInfoCache.getFriendInfo(userId);
+        if (friendInfo != null) {
+            return friendInfo;
+        }
+        friendInfo = mCore.getDbManager().getFriendInfo(userId);
+        mUserInfoCache.insertFriendInfo(friendInfo);
+        return friendInfo;
     }
 
     @Override
@@ -198,6 +213,14 @@ public class UserInfoManager implements IUserInfoManager {
         mCore.getDbManager().insertGroupMembers(list);
         //更新缓存
         mUserInfoCache.insertGroupMemberList(list);
+    }
+
+    void insertFriendInfoList(List<FriendInfo> list) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        mCore.getDbManager().insertFriendInfoList(list);
+        mUserInfoCache.insertFriendInfoList(list);
     }
 
     private final JIMCore mCore;

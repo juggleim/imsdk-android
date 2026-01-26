@@ -19,6 +19,7 @@ import com.juggle.im.call.model.CallInfo;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.interfaces.IMessageManager;
 import com.juggle.im.model.FavoriteMessage;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.ContentTypeCenter;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
@@ -2087,6 +2088,7 @@ class PBData {
         message.setGroupInfo(groupInfoWithPBGroupInfo(downMsg.getGroupInfo()));
         message.setTargetUserInfo(userInfoWithPBUserInfo(downMsg.getTargetUserInfo()));
         message.setGroupMemberInfo(groupMemberWithPBGroupMember(downMsg.getGrpMemberInfo(), message.getGroupInfo().getGroupId(), message.getTargetUserInfo().getUserId()));
+        message.setFriendInfo(friendInfoWithPBFriendInfo(downMsg.getFriendInfo(), message.getTargetUserInfo().getUserId()));
         if (downMsg.hasMentionInfo() && Appmessages.MentionType.MentionDefault != downMsg.getMentionInfo().getMentionType()) {
             MessageMentionInfo mentionInfo = new MessageMentionInfo();
             mentionInfo.setType(mentionTypeFromPbMentionType(downMsg.getMentionInfo().getMentionType()));
@@ -2186,6 +2188,7 @@ class PBData {
         info.setTopTime(conversation.getTopUpdatedTime());
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
         info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
+        info.setFriendInfo(friendInfoWithPBFriendInfo(conversation.getFriendInfo(), info.getTargetUserInfo().getUserId()));
         if (conversation.getMentions() != null && conversation.getMentions().getIsMentioned()) {
             ConversationMentionInfo mentionInfo = new ConversationMentionInfo();
             //解析@消息列表
@@ -2350,6 +2353,18 @@ class PBData {
         }
         result.setUpdatedTime(pbGroupMember.getUpdatedTime());
         return result;
+    }
+
+    private FriendInfo friendInfoWithPBFriendInfo(Appmessages.FriendInfo pbFriendInfo, String userId) {
+        if (pbFriendInfo == null || pbFriendInfo.getUpdatedTime() == 0 || TextUtils.isEmpty(userId)) {
+            return null;
+        }
+        FriendInfo friendInfo = new FriendInfo();
+        friendInfo.setUserId(userId);
+        friendInfo.setFriend(pbFriendInfo.getIsFriend());
+        friendInfo.setAlias(pbFriendInfo.getFriendDisplayName());
+        friendInfo.setUpdatedTime(pbFriendInfo.getUpdatedTime());
+        return friendInfo;
     }
 
     private Appmessages.UserInfo pbUserInfoWithUserInfo(UserInfo userInfo) {

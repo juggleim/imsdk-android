@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GetMomentOption;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
@@ -1064,6 +1065,36 @@ public class DBManager {
                     String extra = UserInfoSql.stringFromMap(member.getExtra());
                     String[] args = new String[]{member.getGroupId(), member.getUserId(), member.getGroupDisplayName(), extra, String.valueOf(member.getUpdatedTime())};
                     execSQL(UserInfoSql.SQL_INSERT_GROUP_MEMBER, args);
+                }
+            }
+        });
+    }
+
+    public FriendInfo getFriendInfo(String userId) {
+        if (TextUtils.isEmpty(userId)) {
+            return null;
+        }
+        FriendInfo friendInfo = null;
+        String[] args = new String[]{userId};
+        try (Cursor cursor = rawQuery(UserInfoSql.SQL_GET_FRIEND_INFO, args)) {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    friendInfo = UserInfoSql.friendInfoWithCursor(cursor);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getFriendInfo " + e.getMessage());
+        }
+        return friendInfo;
+    }
+
+    public void insertFriendInfoList(List<FriendInfo> friendInfoList) {
+        performTransaction(() -> {
+            for (FriendInfo info : friendInfoList) {
+                FriendInfo old = getFriendInfo(info.getUserId());
+                if (old == null || info.getUpdatedTime() > old.getUpdatedTime()) {
+                    Object[] args = new Object[]{info.getUserId(), info.isFriend(), info.getAlias(), info.getUpdatedTime()};
+                    execSQL(UserInfoSql.SQL_INSERT_FRIEND, args);
                 }
             }
         });

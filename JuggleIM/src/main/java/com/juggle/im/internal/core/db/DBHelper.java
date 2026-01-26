@@ -28,9 +28,11 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_TABLE);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_FRIEND_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_INDEX);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_FRIEND_INDEX);
         sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX2);
@@ -180,7 +182,15 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 20) {
+            try {
+                sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_FRIEND_TABLE);
+                sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_FRIEND_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 19;
+    private final static int version = 20;
 }

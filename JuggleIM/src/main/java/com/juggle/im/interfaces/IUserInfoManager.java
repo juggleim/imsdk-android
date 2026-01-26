@@ -1,6 +1,7 @@
 package com.juggle.im.interfaces;
 
 import com.juggle.im.JIMConst;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.UserInfo;
@@ -44,6 +45,13 @@ public interface IUserInfoManager {
      * @return 群成员信息
      */
     GroupMember getGroupMember(String groupId, String userId);
+
+    /**
+     * 获取好友信息
+     * @param userId 用户 id
+     * @return 好友信息
+     */
+    FriendInfo getFriendInfo(String userId);
 
     /**
      * 从服务端获取最新的用户信息

@@ -20,6 +20,7 @@ import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.ConversationMentionInfo;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GetConversationOptions;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.Message;
@@ -1164,12 +1165,16 @@ public class ConversationManager implements IConversationManager, MessageManager
     private void updateUserInfo(List<ConcreteConversationInfo> conversationInfoList) {
         Map<String, GroupInfo> groupInfoMap = new HashMap<>();
         Map<String, UserInfo> userInfoMap = new HashMap<>();
+        Map<String, FriendInfo> friendInfoMap = new HashMap<>();
         for (ConcreteConversationInfo info : conversationInfoList) {
             if (info.getGroupInfo() != null && !TextUtils.isEmpty(info.getGroupInfo().getGroupId())) {
                 groupInfoMap.put(info.getGroupInfo().getGroupId(), info.getGroupInfo());
             }
             if (info.getTargetUserInfo() != null && !TextUtils.isEmpty(info.getTargetUserInfo().getUserId())) {
                 userInfoMap.put(info.getTargetUserInfo().getUserId(), info.getTargetUserInfo());
+            }
+            if (info.getFriendInfo() != null && !TextUtils.isEmpty(info.getFriendInfo().getUserId())) {
+                friendInfoMap.put(info.getFriendInfo().getUserId(), info.getFriendInfo());
             }
             if (info.getMentionUserList() != null) {
                 for (UserInfo mentionUserInfo : info.getMentionUserList()) {
@@ -1181,6 +1186,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         }
         mUserInfoManager.insertUserInfoList(new ArrayList<>(userInfoMap.values()));
         mUserInfoManager.insertGroupInfoList(new ArrayList<>(groupInfoMap.values()));
+        mUserInfoManager.insertFriendInfoList(new ArrayList<>(friendInfoMap.values()));
     }
 
     private void noticeTotalUnreadCountChange() {
