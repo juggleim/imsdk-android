@@ -178,6 +178,47 @@ public class UserInfoManager implements IUserInfoManager {
         });
     }
 
+    @Override
+    public void fetchFriendInfo(String userId, JIMConst.IResultCallback<FriendInfo> callback) {
+        if (TextUtils.isEmpty(userId)) {
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(JErrorCode.INVALID_PARAM);
+                }
+            });
+            return;
+        }
+        mCore.getWebSocket().fetchFriendInfo(userId, mCore.getUserId(), new WebSocketDataCallback<FriendInfo>() {
+            @Override
+            public void onSuccess(FriendInfo friendInfo) {
+                if (friendInfo == null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        if (callback != null) {
+                            callback.onError(JErrorCode.FRIEND_NOT_EXIST);
+                        }
+                    });
+                    return;
+                }
+                mUserInfoCache.insertFriendInfo(friendInfo);
+                mCore.getDbManager().insertFriendInfoList(Collections.singletonList(friendInfo));
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess(friendInfo);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                });
+            }
+        });
+    }
+
     public void clearCache() {
         mUserInfoCache.clearCache();
     }

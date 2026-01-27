@@ -137,12 +137,14 @@ message DownMsg{
   repeated string toUserIds = 35;
   int64 readTime = 36;
   FriendInfo friendInfo = 37;
+  UserInfo senderInfo = 38;
 }
 
 message FriendInfo{
-  bool isFriend = 1;
-  string friendDisplayName = 2;
-  int64 updatedTime = 3;
+  string friendId = 1;
+  bool isFriend = 2;
+  string friendDisplayName = 3;
+  int64 updatedTime = 4;
 }
 
 message GrpMemberInfo{
@@ -772,6 +774,12 @@ message GroupMuteReq {
 message GroupInfoReq{
   string groupId = 1;
   repeated string careFields = 2;
+}
+message FriendIdsReq {
+  repeated string friendIds = 1;
+}
+message FriendInfos{
+  repeated FriendInfo items = 1;
 }
 message GroupIdsReq{
   repeated string groupIds = 1;

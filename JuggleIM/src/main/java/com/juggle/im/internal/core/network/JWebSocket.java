@@ -39,6 +39,7 @@ import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.JUtility;
 import com.juggle.im.model.Conversation;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.MediaMessageContent;
@@ -674,6 +675,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void fetchFriendInfo(String userId, String currentUserId, WebSocketDataCallback<FriendInfo> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.fetchFriendInfo(userId, currentUserId, mCmdIndex++);
+        JLogger.i("WS-Send", "fetch friend info, userId is " + userId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void rtcPing(String callId) {
         JLogger.v("WS-Send", "rtc ping");
         byte[] bytes = mPbData.rtcPingData(callId, mCmdIndex++);
@@ -956,6 +965,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.getGroupInfoAck:
                 //noinspection unchecked
                 handleGetGroupInfoAck(obj.mTemplateAck);
+                break;
+            case PBRcvObj.PBRcvType.getFriendInfosAck:
+                //noinspection unchecked
+                handleGetFriendInfoAck(obj.mTemplateAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -1389,6 +1402,23 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         if (c instanceof WebSocketDataCallback) {
             @SuppressWarnings("unchecked")
             WebSocketDataCallback<GroupInfo> callback = (WebSocketDataCallback<GroupInfo>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.t);
+            }
+        }
+    }
+
+    private void handleGetFriendInfoAck(PBRcvObj.TemplateAck<FriendInfo> ack) {
+        JLogger.i("WS-Receive", "handleGetFriendInfoAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof WebSocketDataCallback) {
+            @SuppressWarnings("unchecked")
+            WebSocketDataCallback<FriendInfo> callback = (WebSocketDataCallback<FriendInfo>) c;
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {

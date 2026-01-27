@@ -66,4 +66,11 @@ public interface IUserInfoManager {
      * @param callback 结果回调
      */
     void fetchGroupInfo(String groupId, JIMConst.IResultCallback<GroupInfo> callback);
+
+    /**
+     * 从服务端获取最新的好友信息
+     * @param userId 用户 id
+     * @param callback 结果回调
+     */
+    void fetchFriendInfo(String userId, JIMConst.IResultCallback<FriendInfo> callback);
 }

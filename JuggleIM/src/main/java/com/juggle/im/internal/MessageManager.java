@@ -3269,6 +3269,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             if (message.getTargetUserInfo() != null && !TextUtils.isEmpty(message.getTargetUserInfo().getUserId())) {
                 userInfoMap.put(message.getTargetUserInfo().getUserId(), message.getTargetUserInfo());
             }
+            if (message.getSenderUserInfo() != null && !TextUtils.isEmpty(message.getSenderUserInfo().getUserId())) {
+                userInfoMap.put(message.getSenderUserInfo().getUserId(), message.getSenderUserInfo());
+            }
             if (message.getGroupMemberInfo() != null && !TextUtils.isEmpty(message.getGroupMemberInfo().getGroupId()) && !TextUtils
                     .isEmpty(message.getGroupMemberInfo().getUserId())) {
                 String key = message.getGroupMemberInfo().getGroupId() + "xxx" + message.getGroupMemberInfo().getUserId();

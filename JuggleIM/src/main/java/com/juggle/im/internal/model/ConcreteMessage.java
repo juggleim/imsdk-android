@@ -84,6 +84,14 @@ public class ConcreteMessage extends Message {
         mTargetUserInfo = targetUserInfo;
     }
 
+    public UserInfo getSenderUserInfo() {
+        return mSenderUserInfo;
+    }
+
+    public void setSenderUserInfo(UserInfo senderUserInfo) {
+        mSenderUserInfo = senderUserInfo;
+    }
+
     public GroupMember getGroupMemberInfo() {
         return mGroupMemberInfo;
     }
@@ -139,6 +147,7 @@ public class ConcreteMessage extends Message {
     private boolean mExisted;
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;
+    private UserInfo mSenderUserInfo;
     private GroupMember mGroupMemberInfo;
     private FriendInfo mFriendInfo;
     private String mReferMsgId;

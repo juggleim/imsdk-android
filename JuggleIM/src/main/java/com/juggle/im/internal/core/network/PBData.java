@@ -1332,6 +1332,22 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] fetchFriendInfo(String userId, String currentUserId, int index) {
+        Appmessages.FriendIdsReq.Builder builder = Appmessages.FriendIdsReq.newBuilder();
+        builder.addFriendIds(userId);
+        Appmessages.FriendIdsReq req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_FRIEND_INFOS)
+                .setTargetId(currentUserId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -1496,6 +1512,9 @@ class PBData {
                             break;
                         case PBRcvObj.PBRcvType.getGroupInfoAck:
                             obj = getGroupInfoAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getFriendInfosAck:
+                            obj = getFriendInfosAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
 
                         default:
@@ -1780,6 +1799,20 @@ class PBData {
         GroupInfo groupInfo = groupInfoWithPBGroupInfo(pbGroupInfo);
         PBRcvObj.TemplateAck<GroupInfo> a = new PBRcvObj.TemplateAck<>(body);
         a.t = groupInfo;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getFriendInfosAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.FriendInfos pbFriendInfos = Appmessages.FriendInfos.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getFriendInfosAck);
+        FriendInfo friendInfo = null;
+        if (pbFriendInfos != null && pbFriendInfos.getItemsCount() > 0) {
+            friendInfo = friendInfoWithPBFriendInfo(pbFriendInfos.getItems(0));
+        }
+        PBRcvObj.TemplateAck<FriendInfo> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = friendInfo;
         obj.mTemplateAck = a;
         return obj;
     }
@@ -2088,7 +2121,8 @@ class PBData {
         message.setGroupInfo(groupInfoWithPBGroupInfo(downMsg.getGroupInfo()));
         message.setTargetUserInfo(userInfoWithPBUserInfo(downMsg.getTargetUserInfo()));
         message.setGroupMemberInfo(groupMemberWithPBGroupMember(downMsg.getGrpMemberInfo(), message.getGroupInfo().getGroupId(), message.getTargetUserInfo().getUserId()));
-        message.setFriendInfo(friendInfoWithPBFriendInfo(downMsg.getFriendInfo(), message.getTargetUserInfo().getUserId()));
+        message.setSenderUserInfo(userInfoWithPBUserInfo(downMsg.getSenderInfo()));
+        message.setFriendInfo(friendInfoWithPBFriendInfo(downMsg.getFriendInfo()));
         if (downMsg.hasMentionInfo() && Appmessages.MentionType.MentionDefault != downMsg.getMentionInfo().getMentionType()) {
             MessageMentionInfo mentionInfo = new MessageMentionInfo();
             mentionInfo.setType(mentionTypeFromPbMentionType(downMsg.getMentionInfo().getMentionType()));
@@ -2188,7 +2222,7 @@ class PBData {
         info.setTopTime(conversation.getTopUpdatedTime());
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
         info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
-        info.setFriendInfo(friendInfoWithPBFriendInfo(conversation.getFriendInfo(), info.getTargetUserInfo().getUserId()));
+        info.setFriendInfo(friendInfoWithPBFriendInfo(conversation.getFriendInfo()));
         if (conversation.getMentions() != null && conversation.getMentions().getIsMentioned()) {
             ConversationMentionInfo mentionInfo = new ConversationMentionInfo();
             //解析@消息列表
@@ -2355,12 +2389,12 @@ class PBData {
         return result;
     }
 
-    private FriendInfo friendInfoWithPBFriendInfo(Appmessages.FriendInfo pbFriendInfo, String userId) {
-        if (pbFriendInfo == null || pbFriendInfo.getUpdatedTime() == 0 || TextUtils.isEmpty(userId)) {
+    private FriendInfo friendInfoWithPBFriendInfo(Appmessages.FriendInfo pbFriendInfo) {
+        if (pbFriendInfo == null || pbFriendInfo.getUpdatedTime() == 0) {
             return null;
         }
         FriendInfo friendInfo = new FriendInfo();
-        friendInfo.setUserId(userId);
+        friendInfo.setUserId(pbFriendInfo.getFriendId());
         friendInfo.setFriend(pbFriendInfo.getIsFriend());
         friendInfo.setAlias(pbFriendInfo.getFriendDisplayName());
         friendInfo.setUpdatedTime(pbFriendInfo.getUpdatedTime());
@@ -2653,6 +2687,7 @@ class PBData {
     private static final String QRY_FAVORITE_MSGS = "qry_favorite_msgs";
     private static final String QRY_USER_INFO = "qry_user_info";
     private static final String QRY_GROUP_INFO = "qry_group_info";
+    private static final String QRY_FRIEND_INFOS = "qry_friend_infos";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
@@ -2723,6 +2758,7 @@ class PBData {
             put(QRY_CONVER_CONF, PBRcvObj.PBRcvType.getConversationConfAck);
             put(QRY_USER_INFO, PBRcvObj.PBRcvType.getUserInfoAck);
             put(QRY_GROUP_INFO, PBRcvObj.PBRcvType.getGroupInfoAck);
+            put(QRY_FRIEND_INFOS, PBRcvObj.PBRcvType.getFriendInfosAck);
         }
     };
 
