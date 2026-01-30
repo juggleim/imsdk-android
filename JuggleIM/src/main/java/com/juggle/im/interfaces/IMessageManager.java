@@ -518,6 +518,10 @@ public interface IMessageManager {
 
     void setPreprocessor(IMessagePreprocessor preprocessor);
 
+    void addStreamMessageListener(String key, IStreamMessageListener listener);
+
+    void removeStreamMessageListener(String key);
+
     void setMessageUploadProvider(IMessageUploadProvider uploadProvider);
 
     interface IMessageListener {
@@ -583,5 +587,20 @@ public interface IMessageManager {
          * @return 处理后的消息内容。
          */
         byte[] decryptMessageContent(byte[] content, Conversation conversation, String contentType);
+    }
+
+    interface IStreamMessageListener {
+        /**
+         * 流式消息分片追加的回调
+         * @param messageId 流式消息的消息 id
+         * @param content 分片追加的内容，开发者可以在界面上把 content 追加到 JStreamTextMessage 的 content 尾部
+         */
+        void onStreamTextMessageAppend(String messageId, String content);
+
+        /**
+         * 流式消息完成的回调
+         * @param message 追加完成的流式消息，开发者可以根据 messageId 找到界面上对应的流式消息进行界面刷新
+         */
+        void onStreamTextMessageComplete(Message message);
     }
 }

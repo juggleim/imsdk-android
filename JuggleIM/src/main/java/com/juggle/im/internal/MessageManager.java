@@ -10,6 +10,7 @@ import com.juggle.im.call.internal.model.CallActiveCallMessage;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
+import com.juggle.im.internal.model.messages.StreamAppendMessage;
 import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GetFavoriteMessageOption;
@@ -72,6 +73,7 @@ import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.MergeMessage;
 import com.juggle.im.model.messages.RecallInfoMessage;
 import com.juggle.im.model.messages.SnapshotPackedVideoMessage;
+import com.juggle.im.model.messages.StreamTextMessage;
 import com.juggle.im.model.messages.TextMessage;
 import com.juggle.im.model.messages.ThumbnailPackedImageMessage;
 import com.juggle.im.model.messages.UnknownMessage;
@@ -125,6 +127,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(TagDelConvMessage.class);
         ContentTypeCenter.getInstance().registerContentType(TopMsgMessage.class);
         ContentTypeCenter.getInstance().registerContentType(CallActiveCallMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(StreamTextMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(StreamAppendMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -1468,6 +1472,14 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             long seqNo = -1;
             for (int i = 0; i < fullLocalMessages.size(); i++) {
                 ConcreteMessage m = (ConcreteMessage) fullLocalMessages.get(i);
+                if (m.getContentType().equals(StreamTextMessage.CONTENT_TYPE)) {
+                    StreamTextMessage streamTextMessage = (StreamTextMessage) m.getContent();
+                    if (!streamTextMessage.isFinished()) {
+                        needRemote = true;
+                        break;
+                    }
+                }
+
                 if (m.getSeqNo() < 0) {
                     continue;
                 }
@@ -2430,6 +2442,24 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public void addStreamMessageListener(String key, IStreamMessageListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mStreamMessageListenerMap == null) {
+            mStreamMessageListenerMap = new ConcurrentHashMap<>();
+        }
+        mStreamMessageListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeStreamMessageListener(String key) {
+        if (!TextUtils.isEmpty(key) && mStreamMessageListenerMap != null) {
+            mStreamMessageListenerMap.remove(key);
+        }
+    }
+
+    @Override
     public void setPreprocessor(IMessagePreprocessor preprocessor) {
         mCore.getWebSocket().setMessagePreprocessor(preprocessor);
     }
@@ -2740,6 +2770,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 sendTime = message.getTimestamp();
             } else if (message.getDirection() == Message.MessageDirection.RECEIVE && !isStatusMessage) {
                 receiveTime = message.getTimestamp();
+            }
+
+            // stream append
+            if (message.getContentType().equals(StreamAppendMessage.CONTENT_TYPE)) {
+                handleStreamAppend(message);
+                continue;
             }
 
             //call related
@@ -3323,6 +3359,45 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
+    private void handleStreamAppend(ConcreteMessage message) {
+        StreamAppendMessage appendMessage = (StreamAppendMessage) message.getContent();
+        String streamId = appendMessage.getStreamId();
+        List<Message> messageList = getMessagesByMessageIds(Collections.singletonList(streamId));
+        if (messageList == null || messageList.isEmpty()) {
+            return;
+        }
+        ConcreteMessage streamMessage = (ConcreteMessage) messageList.get(0);
+        StreamTextMessage streamText = (StreamTextMessage) streamMessage.getContent();
+        String content = streamText.getContent();
+        if (appendMessage.isFinished()) {
+            streamText.setFinished(true);
+            streamText.setContent(appendMessage.getContent());
+        } else {
+            streamText.setContent(content + appendMessage.getContent());
+        }
+        mCore.getDbManager().updateMessageContentWithMessageId(streamText, StreamTextMessage.CONTENT_TYPE, streamId);
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onMessageUpdate(streamMessage);
+        }
+        if (appendMessage.isFinished()) {
+            mCore.getCallbackHandler().post(() -> {
+               if (mStreamMessageListenerMap != null) {
+                   for (Map.Entry<String, IStreamMessageListener> entry : mStreamMessageListenerMap.entrySet()) {
+                       entry.getValue().onStreamTextMessageComplete(streamMessage);
+                   }
+               }
+            });
+        } else {
+            mCore.getCallbackHandler().post(() -> {
+                if (mStreamMessageListenerMap != null) {
+                    for (Map.Entry<String, IStreamMessageListener> entry : mStreamMessageListenerMap.entrySet()) {
+                        entry.getValue().onStreamTextMessageAppend(streamId, appendMessage.getContent());
+                    }
+                }
+            });
+        }
+    }
+
     private synchronized void setTimeForChatroomSyncMap(String chatroomId, long timestamp) {
         mChatroomSyncMap.put(chatroomId, timestamp);
     }
@@ -3364,6 +3439,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private ConcurrentHashMap<String, IMessageSyncListener> mSyncListenerMap;
     private ConcurrentHashMap<String, IMessageReadReceiptListener> mReadReceiptListenerMap;
     private ConcurrentHashMap<String, IMessageDestroyListener> mDestroyListenerMap;
+    private ConcurrentHashMap<String, IStreamMessageListener> mStreamMessageListenerMap;
     private IMessageUploadProvider mMessageUploadProvider;
     private IMessageUploadProvider mDefaultMessageUploadProvider;
     private ISendReceiveListener mSendReceiveListener;

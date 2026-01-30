@@ -33,6 +33,7 @@ import com.juggle.im.model.MomentMedia;
 import com.juggle.im.model.MomentReaction;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.messages.StreamTextMessage;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -781,19 +782,26 @@ public class DBManager {
     public void insertMessages(List<ConcreteMessage> list) {
         performTransaction(() -> {
             for (ConcreteMessage message : list) {
-                ConcreteMessage m = null;
+                ConcreteMessage old = null;
                 //messageId 排重
                 if (!TextUtils.isEmpty(message.getMessageId())) {
-                    m = getMessageWithMessageId(message.getMessageId(), 0);
+                    old = getMessageWithMessageId(message.getMessageId(), 0);
                 }
                 //clientUid 排重
-                if (m == null && !TextUtils.isEmpty(message.getClientUid())) {
-                    m = getMessageWithClientUid(message.getClientUid());
+                if (old == null && !TextUtils.isEmpty(message.getClientUid())) {
+                    old = getMessageWithClientUid(message.getClientUid());
                 }
-                if (m != null) {
-                    message.setClientMsgNo(m.getClientMsgNo());
+                if (old != null) {
+                    message.setClientMsgNo(old.getClientMsgNo());
                     message.setExisted(true);
-                    if (TextUtils.isEmpty(m.getMessageId())) {
+                    if (old.getContentType().equals(StreamTextMessage.CONTENT_TYPE)) {
+                        StreamTextMessage oldStreamText = (StreamTextMessage) old.getContent();
+                        StreamTextMessage newStreamText = (StreamTextMessage) message.getContent();
+                        if (!oldStreamText.isFinished() && newStreamText.isFinished()) {
+                            updateMessageContentWithMessageId(newStreamText, StreamTextMessage.CONTENT_TYPE, message.getMessageId());
+                        }
+                    }
+                    if (TextUtils.isEmpty(old.getMessageId())) {
                         updateMessageAfterSend(message.getClientMsgNo(), message.getMessageId(), message.getTimestamp(), message.getSeqNo(), message.getGroupMessageReadInfo().getMemberCount());
                     }
                 } else {
