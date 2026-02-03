@@ -3368,12 +3368,21 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         ConcreteMessage streamMessage = (ConcreteMessage) messageList.get(0);
         StreamTextMessage streamText = (StreamTextMessage) streamMessage.getContent();
+        if (streamText.isFinished()) {
+            return;
+        }
         String content = streamText.getContent();
         if (appendMessage.isFinished()) {
             streamText.setFinished(true);
             streamText.setContent(appendMessage.getContent());
+            streamText.setSeq(appendMessage.getSeq());
         } else {
-            streamText.setContent(content + appendMessage.getContent());
+            if (appendMessage.getSeq() > streamText.getSeq()) {
+                streamText.setContent(content + appendMessage.getContent());
+                streamText.setSeq(appendMessage.getSeq());
+            } else {
+                return;
+            }
         }
         mCore.getDbManager().updateMessageContentWithMessageId(streamText, StreamTextMessage.CONTENT_TYPE, streamId);
         if (mSendReceiveListener != null) {

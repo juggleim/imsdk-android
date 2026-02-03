@@ -48,7 +48,7 @@ public class StreamAppendMessage extends MessageContent {
 
     @Override
     public int getFlags() {
-        return MessageFlag.IS_STATUS.getValue();
+        return MessageFlag.NONE.getValue();
     }
 
     public String getStreamId() {

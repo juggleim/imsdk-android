@@ -800,6 +800,9 @@ public class DBManager {
                         if (!oldStreamText.isFinished() && newStreamText.isFinished()) {
                             updateMessageContentWithMessageId(newStreamText, StreamTextMessage.CONTENT_TYPE, message.getMessageId());
                         }
+                        if (oldStreamText.getSeq() > newStreamText.getSeq()) {
+                            message.setContent(oldStreamText);
+                        }
                     }
                     if (TextUtils.isEmpty(old.getMessageId())) {
                         updateMessageAfterSend(message.getClientMsgNo(), message.getMessageId(), message.getTimestamp(), message.getSeqNo(), message.getGroupMessageReadInfo().getMemberCount());

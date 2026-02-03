@@ -23,6 +23,7 @@ public class StreamTextMessage extends MessageContent {
                 jsonObject.put(CONTENT, mContent);
             }
             jsonObject.put(IS_FINISHED, mIsFinished);
+            jsonObject.put(SEQ, mSeq);
         } catch (JSONException e) {
             JLogger.e("MSG-Encode", "StreamTextMessage JSONException " + e.getMessage());
         }
@@ -44,6 +45,9 @@ public class StreamTextMessage extends MessageContent {
             }
             if (jsonObject.has(IS_FINISHED)) {
                 mIsFinished = jsonObject.optBoolean(IS_FINISHED);
+            }
+            if (jsonObject.has(SEQ)) {
+                mSeq = jsonObject.optInt(SEQ);
             }
         } catch (JSONException e) {
             JLogger.e("MSG-Decode", "StreamTextMessage decode JSONException " + e.getMessage());
@@ -79,10 +83,20 @@ public class StreamTextMessage extends MessageContent {
         mContent = content;
     }
 
+    public int getSeq() {
+        return mSeq;
+    }
+
+    public void setSeq(int seq) {
+        mSeq = seq;
+    }
+
     public static final String CONTENT_TYPE = "jg:streamtext";
     private String mContent;
     private boolean mIsFinished;
+    private int mSeq;
 
     private static final String CONTENT = "content";
     private static final String IS_FINISHED = "is_finished";
+    private static final String SEQ = "seq";
 }
