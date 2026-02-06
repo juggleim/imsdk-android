@@ -203,6 +203,7 @@ class MessageSql {
     static final String SQL_CREATE_DESTROY_TIME_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_destroy_time ON message(destroy_time)";
     static final String SQL_CREATE_TIMESTAMP_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_timestamp ON message(timestamp)";
     static final String SQL_CREATE_CONVERSATION_SUBCHANNEL_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_subchannel ON message(conversation_type, conversation_id, subchannel)";
+    static final String SQL_CREATE_CONVERSATION_SUBCHANNEL_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_subchannel_ts ON message(conversation_type, conversation_id, subchannel, timestamp)";
     static final String SQL_DROP_INDEX_CONVERSATION = "DROP INDEX IF EXISTS idx_message_conversation";
     static final String SQL_DROP_INDEX_CONVERSATION_TS = "DROP INDEX IF EXISTS idx_message_conversation_ts";
     static final String SQL_DROP_INDEX_DS_CONVERSATION_TS = "DROP INDEX IF EXISTS idx_message_ds_conversation_ts";

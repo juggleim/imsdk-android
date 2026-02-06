@@ -22,6 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_TIMESTAMP_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_DESTROY_TIME_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CONVERSATION_SUBCHANNEL_INDEX);
+        sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CONVERSATION_SUBCHANNEL_TS_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX2);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_STATE_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_SENDER_INDEX);
@@ -190,7 +191,14 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 21) {
+            try {
+                sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CONVERSATION_SUBCHANNEL_TS_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 20;
+    private final static int version = 21;
 }
