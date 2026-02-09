@@ -35,6 +35,7 @@ import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.GetMessageOptions;
+import com.juggle.im.model.GroupMessageReadInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.MessageReactionItem;
@@ -56,6 +57,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -154,6 +156,33 @@ public class ChannelViewModel extends BaseMessageListViewModel {
         this.messageListParams = messageListParams;
         this.sendbirdChatContract = sendbirdChatContract;
         this.channelConfig = channelConfig;
+
+        JIM.getInstance().getMessageManager().addReadReceiptListener(ID_CHANNEL_EVENT_HANDLER, new IMessageManager.IMessageReadReceiptListener() {
+            @Override
+            public void onMessagesRead(Conversation conv, List<String> messageIds) {
+                if (!conv.equals(conversation)) {
+                    return;
+                }
+                List<Message> messages = JIM.getInstance().getMessageManager().getMessagesByMessageIds(messageIds);
+                if (messages != null && !messages.isEmpty()) {
+                    cachedMessages.addAll(messages);
+                    notifyDataSetChanged("onMessagesRead");
+                }
+            }
+
+            @Override
+            public void onGroupMessagesRead(Conversation conv, Map<String, GroupMessageReadInfo> messageReadInfoMap) {
+                if (!conv.equals(conversation)) {
+                    return;
+                }
+                List<String> messageIds = new ArrayList<>(messageReadInfoMap.keySet());
+                List<Message> messages = JIM.getInstance().getMessageManager().getMessagesByMessageIds(messageIds);
+                if (messages != null && !messages.isEmpty()) {
+                    cachedMessages.addAll(messages);
+                    notifyDataSetChanged("onMessagesRead");
+                }
+            }
+        });
 
         this.sendbirdChatContract.addChannelHandler(ID_CHANNEL_EVENT_HANDLER, new IMessageManager.IMessageListener() {
             @Override
