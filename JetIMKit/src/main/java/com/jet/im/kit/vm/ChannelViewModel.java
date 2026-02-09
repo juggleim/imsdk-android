@@ -165,7 +165,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                 }
                 List<Message> messages = JIM.getInstance().getMessageManager().getMessagesByMessageIds(messageIds);
                 if (messages != null && !messages.isEmpty()) {
-                    cachedMessages.addAll(messages);
+                    cachedMessages.updateAll(messages);
                     notifyDataSetChanged("onMessagesRead");
                 }
             }
@@ -178,7 +178,7 @@ public class ChannelViewModel extends BaseMessageListViewModel {
                 List<String> messageIds = new ArrayList<>(messageReadInfoMap.keySet());
                 List<Message> messages = JIM.getInstance().getMessageManager().getMessagesByMessageIds(messageIds);
                 if (messages != null && !messages.isEmpty()) {
-                    cachedMessages.addAll(messages);
+                    cachedMessages.updateAll(messages);
                     notifyDataSetChanged("onMessagesRead");
                 }
             }
