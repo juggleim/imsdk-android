@@ -34,6 +34,7 @@ import im.zego.zegoexpress.constants.ZegoRemoteDeviceState;
 import im.zego.zegoexpress.constants.ZegoRoomState;
 import im.zego.zegoexpress.constants.ZegoRoomStateChangedReason;
 import im.zego.zegoexpress.constants.ZegoScenario;
+import im.zego.zegoexpress.constants.ZegoScreenCaptureExceptionType;
 import im.zego.zegoexpress.constants.ZegoStreamQualityLevel;
 import im.zego.zegoexpress.constants.ZegoUpdateType;
 import im.zego.zegoexpress.constants.ZegoVideoDenoiseMode;
@@ -346,6 +347,20 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
     public void onRoomTokenWillExpire(String roomID, int remainTimeInSecond) {
         if (sHandler != null) {
             sHandler.onRoomTokenWillExpire(roomID, remainTimeInSecond);
+        }
+    }
+
+    @Override
+    public void onScreenCaptureStart() {
+        if (sHandler != null) {
+            sHandler.onScreenCaptureStart();
+        }
+    }
+
+    @Override
+    public void onScreenCaptureExceptionOccurred(ZegoScreenCaptureExceptionType exceptionType) {
+        if (sHandler != null) {
+            sHandler.onScreenCaptureExceptionOccurred(exceptionType);
         }
     }
 
