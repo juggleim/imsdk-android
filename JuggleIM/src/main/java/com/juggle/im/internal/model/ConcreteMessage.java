@@ -140,6 +140,14 @@ public class ConcreteMessage extends Message {
         mReadTime = readTime;
     }
 
+    public boolean isMute() {
+        return mIsMute;
+    }
+
+    public void setMute(boolean mute) {
+        mIsMute = mute;
+    }
+
     private long mSeqNo;
     private long mMsgIndex;
     private String mClientUid;
@@ -154,4 +162,5 @@ public class ConcreteMessage extends Message {
     private PushData mPushData;
     private long mLifeTime;
     private long mReadTime;
+    private boolean mIsMute;
 }

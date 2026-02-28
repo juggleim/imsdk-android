@@ -2146,6 +2146,7 @@ class PBData {
         message.setDestroyTime(downMsg.getDestroyTime());
         message.setLifeTimeAfterRead(downMsg.getLifeTimeAfterRead());
         message.setReadTime(downMsg.getReadTime());
+        message.setMute(downMsg.getUndisturbType() != 0);
         return message;
     }
 

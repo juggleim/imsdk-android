@@ -949,6 +949,7 @@ public class ConversationManager implements IConversationManager, MessageManager
             if (mentionInfo != null) {
                 info.setMentionInfo(mentionInfo);
             }
+            info.setMute(message.isMute());
             conversationInfoMap.put(message.getConversation(), info);
             return;
         }
