@@ -5,6 +5,7 @@ import android.content.Context;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.push.IPush;
 import com.juggle.im.push.PushConfig;
 import com.juggle.im.push.PushChannel;
@@ -15,6 +16,7 @@ public class GooglePush implements IPush {
     @Override
     public void getToken(Context context, PushConfig config, Callback callback) {
         sCallback = callback;
+        JLogger.i("CON-Push", "google get token");
 
         try {
             // 检验是否正确配置，如果配置有问题，不再往下执行

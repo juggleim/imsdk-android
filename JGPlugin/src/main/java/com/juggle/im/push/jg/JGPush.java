@@ -3,6 +3,7 @@ package com.juggle.im.push.jg;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.push.IPush;
 import com.juggle.im.push.PushChannel;
 import com.juggle.im.push.PushConfig;
@@ -16,6 +17,7 @@ public class JGPush implements IPush {
     @Override
     public void getToken(Context context, PushConfig config, IPush.Callback callback) {
         sCallback = callback;
+        JLogger.i("CON-Push", "JG get token, jgConfig null is " + (config.getJGConfig() == null));
         if (config.getJGConfig() == null) {
             return;
         }

@@ -71,10 +71,12 @@ public class PushManager implements IPush.Callback {
         for (Map.Entry<PushChannel, IPush> item : iPushMap.entrySet()) {
             if (item.getKey() == PushChannel.JIGUANG || item.getKey() == PushChannel.GOOGLE) {
                 result.add(item.getValue());
+                JLogger.i(TAG, "add channel " + item.getKey().getName());
                 continue;
             }
             String pushTypeOs = item.getKey().getOs();
             if (pushTypeOs.contains(os)) {
+                JLogger.i(TAG, "add channel " + item.getKey().getName());
                 result.add(item.getValue());
             }
         }
