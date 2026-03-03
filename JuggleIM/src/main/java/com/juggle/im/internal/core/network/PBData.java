@@ -233,6 +233,9 @@ class PBData {
         }
         if (pushData != null) {
             Appmessages.PushData.Builder pbPushData = Appmessages.PushData.newBuilder();
+            if (pushData.getTitle() != null) {
+                pbPushData.setTitle(pushData.getTitle());
+            }
             if (pushData.getContent() != null) {
                 pbPushData.setPushText(pushData.getContent());
             }
