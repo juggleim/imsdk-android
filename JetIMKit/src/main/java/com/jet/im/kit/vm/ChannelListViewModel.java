@@ -343,6 +343,10 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         }
         ConversationInfo toBeRemove;
         for (ConversationInfo newInfo : newList) {
+            if (newInfo == null || newInfo.getConversation() == null) {
+                continue;
+            }
+
             if (newInfo.getConversation().getConversationType() == Conversation.ConversationType.SYSTEM
             && newInfo.getConversation().getConversationId().equals(SendbirdUIKit.FRIEND_CONVERSATION_ID)) {
                 continue;

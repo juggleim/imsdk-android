@@ -741,7 +741,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (lastMessage.getClientMsgNo() == message.getClientMsgNo()) {
             mCore.getDbManager().updateLastMessageWithoutIndex(lastMessage);
             ConversationInfo info = mCore.getDbManager().getConversationInfo(message.getConversation());
-            if (mListenerMap != null) {
+            if (info != null && mListenerMap != null) {
                 List<ConversationInfo> l = new ArrayList<>(Collections.singleton(info));
                 for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
                     mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(l));
