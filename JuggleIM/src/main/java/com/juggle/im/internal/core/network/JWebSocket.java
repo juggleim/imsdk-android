@@ -1052,7 +1052,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 mPushToken,
                 mNetworkType,
                 mCarrier,
-                JUtility.getLocalIPv4Address(),
+                JUtility.getLocalIPv4Address() == null ? "" : JUtility.getLocalIPv4Address(),
                 mLanguage);
         sendWhenOpen(bytes);
     }
