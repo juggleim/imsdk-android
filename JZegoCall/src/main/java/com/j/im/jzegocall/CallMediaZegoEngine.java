@@ -220,6 +220,20 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
     }
 
     @Override
+    public void onPlayerRenderCameraVideoFirstFrame(String streamID) {
+        if (sHandler != null) {
+            sHandler.onPlayerRenderCameraVideoFirstFrame(streamID);
+        }
+    }
+
+    @Override
+    public void onPlayerRecvVideoFirstFrame(String streamID) {
+        if (sHandler != null) {
+            sHandler.onPlayerRecvVideoFirstFrame(streamID);
+        }
+    }
+
+    @Override
     public void onPlayerStateUpdate(String streamID, ZegoPlayerState state, int errorCode, JSONObject extendedData) {
         if (sHandler != null) {
             sHandler.onPlayerStateUpdate(streamID, state, errorCode, extendedData);

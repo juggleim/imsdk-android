@@ -733,6 +733,31 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     @Override
+    public List<Message> searchMessageInConversation(Conversation conversation, String searchContent, int count, long timestamp, JIMConst.PullDirection direction, List<String> contentTypes) {
+        return getMessages(
+                count, timestamp, direction,
+                new MessageQueryOptions
+                        .Builder()
+                        .setSearchContent(searchContent)
+                        .setConversations(Collections.singletonList(conversation))
+                        .setContentTypes(contentTypes)
+                        .build());
+    }
+
+    @Override
+    public List<Message> searchMessageInConversation(Conversation conversation, String searchContent, int count, long timestamp, JIMConst.PullDirection direction, List<String> contentTypes, List<String> senderUserIds) {
+        return getMessages(
+                count, timestamp, direction,
+                new MessageQueryOptions
+                        .Builder()
+                        .setSearchContent(searchContent)
+                        .setConversations(Collections.singletonList(conversation))
+                        .setContentTypes(contentTypes)
+                        .setSenderUserIds(senderUserIds)
+                        .build());
+    }
+
+    @Override
     public void searchConversationsWithMessageContent(MessageQueryOptions options, ISearchConversationWithMessageContentCallback callback) {
         JThreadPoolExecutor.runInBackground(new Runnable() {
             @Override
@@ -835,18 +860,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     public void cancelDownloadMediaMessage(String messageId) {
         MediaDownloadEngine.getInstance().cancel(messageId);
-    }
-
-    @Override
-    public List<Message> searchMessageInConversation(Conversation conversation, String searchContent, int count, long timestamp, JIMConst.PullDirection direction, List<String> contentTypes) {
-        return getMessages(
-                count, timestamp, direction,
-                new MessageQueryOptions
-                        .Builder()
-                        .setSearchContent(searchContent)
-                        .setConversations(Collections.singletonList(conversation))
-                        .setContentTypes(contentTypes)
-                        .build());
     }
 
     @Override

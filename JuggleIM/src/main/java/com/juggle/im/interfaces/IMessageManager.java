@@ -235,6 +235,23 @@ public interface IMessageManager {
             long timestamp,
             JIMConst.PullDirection direction);
 
+    List<Message> searchMessageInConversation(
+            Conversation conversation,
+            String searchContent,
+            int count,
+            long timestamp,
+            JIMConst.PullDirection direction,
+            List<String> contentTypes);
+
+    List<Message> searchMessageInConversation(
+            Conversation conversation,
+            String searchContent,
+            int count,
+            long timestamp,
+            JIMConst.PullDirection direction,
+            List<String> contentTypes,
+            List<String> senderUserIds);
+
     /**
      * 根据消息中的关键字搜索会话。
      *
@@ -253,14 +270,6 @@ public interface IMessageManager {
             final String messageId, final IDownloadMediaMessageCallback callback);
 
     void cancelDownloadMediaMessage(String messageId);
-
-    List<Message> searchMessageInConversation(
-            Conversation conversation,
-            String searchContent,
-            int count,
-            long timestamp,
-            JIMConst.PullDirection direction,
-            List<String> contentTypes);
 
     /**
      * 在同一个会话里，根据消息 id 批量删除消息

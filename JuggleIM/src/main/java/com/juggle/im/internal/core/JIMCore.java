@@ -120,7 +120,10 @@ public class JIMCore {
     }
 
     public String getUserId() {
-        return mUserId;
+        if (mUserId == null) {
+            return "";
+        }
+        return mUserId ;
     }
 
     public void setUserId(@NonNull String userId) {

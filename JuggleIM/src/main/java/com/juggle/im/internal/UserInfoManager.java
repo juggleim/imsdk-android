@@ -188,6 +188,15 @@ public class UserInfoManager implements IUserInfoManager {
             });
             return;
         }
+        if (TextUtils.isEmpty(mCore.getUserId())) {
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(JErrorCode.CONNECTION_UNAVAILABLE);
+                }
+            });
+            return;
+        }
+
         mCore.getWebSocket().fetchFriendInfo(userId, mCore.getUserId(), new WebSocketDataCallback<FriendInfo>() {
             @Override
             public void onSuccess(FriendInfo friendInfo) {
