@@ -2771,6 +2771,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private void handleReceiveMessages(List<ConcreteMessage> messages, boolean isSync) {
         List<ConcreteMessage> messagesToSave = messagesToSave(messages);
         insertRemoteMessages(messagesToSave);
+        if (mSendReceiveListener != null) {
+            mSendReceiveListener.onMessageReceive(messagesToSave);
+        }
 
         //合并同一类型不同会话的cmd消息列表
         Map<String, Map<Conversation, List<ConcreteMessage>>> mergeSameTypeMessages = new HashMap<>();
@@ -3050,10 +3053,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 }
             }
         }
-        //处理合并的普通消息
-        if (mSendReceiveListener != null) {
-            mSendReceiveListener.onMessageReceive(messagesToSave);
-        }
+
         //处理合并的cmd消息
         for (Map.Entry<String, Map<Conversation, List<ConcreteMessage>>> conversationEntry : mergeSameTypeMessages.entrySet()) {
             String contentType = conversationEntry.getKey();
