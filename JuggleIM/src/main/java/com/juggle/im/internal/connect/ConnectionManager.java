@@ -163,6 +163,11 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     @Override
+    public void setConnectHeaders(Map<String, String> headers) {
+        mConnectHeaders = headers;
+    }
+
+    @Override
     public void addConnectionStatusListener(String key, IConnectionStatusListener listener) {
         if (listener == null || TextUtils.isEmpty(key)) {
             return;
@@ -327,7 +332,8 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
                 || errorCode == ConstInternal.ErrorCode.APP_PROHIBITED
                 || errorCode == ConstInternal.ErrorCode.USER_PROHIBITED
                 || errorCode == ConstInternal.ErrorCode.USER_KICKED_BY_OTHER_CLIENT
-                || errorCode == ConstInternal.ErrorCode.USER_LOG_OUT;
+                || errorCode == ConstInternal.ErrorCode.USER_LOG_OUT
+                || errorCode == ConstInternal.ErrorCode.CONNECT_FORBIDDEN;
     }
 
     private void dbStatusNotice(boolean isOpen) {
@@ -419,7 +425,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     public void connect() {
         openDB();
-        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getSystemLanguage(), mCore.getServers());
+        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getSystemLanguage(), mCore.getServers(), mConnectHeaders);
     }
 
     public void enterConnected() {
@@ -514,6 +520,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     private boolean mIsForeground;
     private Activity mTopForegroundActivity;
     private final NetworkChangeReceiver mNetworkChangeReceiver;
+    private Map<String, String> mConnectHeaders;
 
     private ConnSuperState mSuperState;
     private ConnIdleState mIdleState;

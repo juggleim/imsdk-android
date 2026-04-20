@@ -76,7 +76,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mCompeteStatusList = new ArrayList<>();
     }
 
-    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, String language, List<String> servers) {
+    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, String language, List<String> servers, Map<String, String> headers) {
         JLogger.i("WS-Connect", "appKey is " + appKey + ", token is " + token + ", servers is " + servers);
         mSendHandler.post(() -> {
             mAppKey = appKey;
@@ -88,6 +88,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             mNetworkType = networkType;
             mCarrier = carrier;
             mLanguage = language;
+            mConnectHeaders = headers;
 
             resetWebSocketClient();
             ExecutorService executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_COUNT);
@@ -95,6 +96,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             for (String server : servers) {
                 URI uri = createWebSocketUri(server);
                 JWebSocketClient wsc = new JWebSocketClient(uri, JWebSocket.this);
+                addConnectHeader(wsc);
                 mCompeteWSCList.add(wsc);
                 mCompeteStatusList.add(WebSocketStatus.IDLE);
                 executorService.execute(wsc::connect);
@@ -985,8 +987,15 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 }
                 JLogger.i("WS-Connect", "onClose isCompeteFinish, code is " + code + ", reason is " + reason + ", isRemote is " + remote + ", clientIP is " + JUtility.getLocalIPv4Address()  + ", osVersion is " + Build.VERSION.RELEASE + ", networkId is " + mNetworkType + ", carrier is " + mCarrier + ", sdkVersion is " + SDK_VERSION);
                 resetWebSocketClient();
-                if (remote && mConnectListener != null) {
-                    mConnectListener.onWebSocketClose();
+                if (reason.contains("403")) {
+                    JLogger.e("WS-Connect", "webSocket 403");
+                    if (mConnectListener != null) {
+                        mConnectListener.onConnectComplete(ConstInternal.ErrorCode.CONNECT_FORBIDDEN, "", "", "");
+                    }
+                } else {
+                    if (remote && mConnectListener != null) {
+                        mConnectListener.onWebSocketClose();
+                    }
                 }
             } else {
                 for (int i = 0; i < mCompeteWSCList.size(); i++) {
@@ -1003,10 +1012,19 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                         break;
                     }
                 }
-                if (allFailed && mConnectListener != null) {
+                if (allFailed) {
                     JLogger.i("WS-Connect", "onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote + ", clientIP is " + JUtility.getLocalIPv4Address()  + ", osVersion is " + Build.VERSION.RELEASE + ", networkId is " + mNetworkType + ", carrier is " + mCarrier + ", sdkVersion is " + SDK_VERSION);
                     resetWebSocketClient();
-                    mConnectListener.onWebSocketClose();
+                    if (reason.contains("403")) {
+                        JLogger.e("WS-Connect", "webSocket 403");
+                        if (mConnectListener != null) {
+                            mConnectListener.onConnectComplete(ConstInternal.ErrorCode.CONNECT_FORBIDDEN, "", "", "");
+                        }
+                    } else {
+                        if (mConnectListener != null) {
+                            mConnectListener.onWebSocketClose();
+                        }
+                    }
                 }
             }
         });
@@ -1598,6 +1616,20 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mCompeteStatusList.clear();
         mIsCompeteFinish = false;
     }
+    
+    private void addConnectHeader(JWebSocketClient c) {
+        if (mConnectHeaders != null && !mConnectHeaders.isEmpty()) {
+            for (Map.Entry<String, String> entry : mConnectHeaders.entrySet()) {
+                c.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+        c.addHeader("x-appkey", mAppKey);
+        c.addHeader("x-token", mToken);
+        c.addHeader("x-platform", ConstInternal.PLATFORM);
+        c.addHeader("x-version", SDK_VERSION);
+        c.addHeader("x-device", Build.MODEL);
+        c.addHeader("x-device_id", mDeviceId);
+    }
 
     private URI createWebSocketUri(String server) {
         String webSocketUrl;
@@ -1634,6 +1666,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private final List<JWebSocketClient> mCompeteWSCList;
     private final List<WebSocketStatus> mCompeteStatusList;
     private final Handler mSendHandler;
+    private Map<String, String> mConnectHeaders;
+
     private static final String PROTOCOL_HEAD = "://";
     private static final String WS_HEAD_PREFIX = "ws://";
     private static final String WSS_HEAD_PREFIX = "wss://";

@@ -51,7 +51,8 @@ public class JErrorCode {
     public static final int CHATROOM_NOT_EXIST = 14005;
     //聊天室已销毁
     public static final int CHATROOM_DESTROYED = 14006;
-
+    //禁止连接
+    public static final int CONNECT_FORBIDDEN = 21000;
     public static final int INVALID_PARAM = 21003;
     public static final int OPERATION_TIMEOUT = 21004;
     public static final int CONNECTION_UNAVAILABLE = 21005;

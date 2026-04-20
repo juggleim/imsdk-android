@@ -45,7 +45,8 @@ public class ConstInternal {
         public static final int GROUP_NOT_EXIST = 13001;
         //不是群成员
         public static final int NOT_GROUP_MEMBER = 13002;
-
+        //禁止连接
+        public static final int CONNECT_FORBIDDEN = 21000;
         public static final int WEB_SOCKET_FAILURE = 21001;
         public static final int NAVI_FAILURE = 21002;
         public static final int INVALID_PARAM = 21003;

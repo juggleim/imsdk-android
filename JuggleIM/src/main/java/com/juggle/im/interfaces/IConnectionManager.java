@@ -3,6 +3,8 @@ package com.juggle.im.interfaces;
 import com.juggle.im.JIMConst;
 import com.juggle.im.push.PushChannel;
 
+import java.util.Map;
+
 public interface IConnectionManager {
     void connect(String token);
 
@@ -24,6 +26,8 @@ public interface IConnectionManager {
     void getLanguage(JIMConst.IResultCallback<String> callback);
 
     JIMConst.ConnectionStatus getConnectionStatus();
+
+    void setConnectHeaders(Map<String, String> headers);
 
     void addConnectionStatusListener(String key, IConnectionStatusListener listener);
 
