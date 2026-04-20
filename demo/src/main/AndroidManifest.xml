@@ -101,6 +101,9 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/primary_300" />
+        <meta-data
+            android:name="com.hihonor.push.app_id"
+            android:value="104555891" />
     </application>
 
 </manifest>

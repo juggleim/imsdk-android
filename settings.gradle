@@ -4,6 +4,9 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven { url 'https://jitpack.io' }
+        maven {
+            url 'https://developer.hihonor.com/repo'
+        }
     }
 }
 dependencyResolutionManagement {
@@ -16,6 +19,9 @@ dependencyResolutionManagement {
         maven { url 'https://storage.zego.im/maven' }
         google()
         mavenCentral()
+        maven {
+            url 'https://developer.hihonor.com/repo'
+        }
     }
 }
 
@@ -42,3 +48,4 @@ project(':OPPOPlugin_sdk').projectDir = new File('OPPOPlugin/sdk')
 include ':JZegoCall'
 include ':JAgoraCall'
 include ':JLiveKitCall'
+include ':HonorPlugin'

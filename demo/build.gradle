@@ -1,7 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.gms.google-services'
+//    id 'com.google.gms.google-services'
+    id 'com.hihonor.mcs.asplugin'
 }
 
 android {
@@ -18,11 +19,25 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
+    signingConfigs {
+        config {
+            // 根据您实际的签名信息，替换以下参数中的xxxx
+            keyAlias 'key0'
+            keyPassword '123456'
+            storeFile file('jugglechat')
+            storePassword '123456'
+        }
+    }
 
     buildTypes {
+        debug {
+            signingConfig signingConfigs.config
+        }
         release {
+            signingConfig signingConfigs.config
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
     compileOptions {
@@ -48,11 +63,13 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     api "com.google.zxing:core:3.3.2"
+    implementation 'com.hihonor.mcs:push:10.0.13.305'
 
-    api project (':GooglePlugin')
+//    api project (':GooglePlugin')
     api project (":JZegoCall")
     api project(':JAgoraCall')
     api project(':JLiveKitCall')
+    api project(':HonorPlugin')
 
     implementation 'com.github.bumptech.glide:glide:4.13.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.13.0'

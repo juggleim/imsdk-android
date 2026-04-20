@@ -42,6 +42,7 @@ public class PushManager implements IPush.Callback {
                 init("com.juggle.im.push.oppo.OPPOPush");
                 init("com.juggle.im.push.jg.JGPush");
                 init("com.juggle.im.push.google.GooglePush");
+                init("com.juggle.im.push.honor.HonorPush");
             }
         });
     }
