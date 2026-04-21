@@ -163,7 +163,8 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     @Override
-    public void setConnectHeaders(Map<String, String> headers) {
+    public void setConnectParams(String signKey, Map<String, String> headers) {
+        mSignKey = signKey;
         mConnectHeaders = headers;
     }
 
@@ -425,7 +426,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     public void connect() {
         openDB();
-        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getSystemLanguage(), mCore.getServers(), mConnectHeaders);
+        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getSystemLanguage(), mCore.getServers(), mSignKey, mConnectHeaders);
     }
 
     public void enterConnected() {
@@ -521,6 +522,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     private Activity mTopForegroundActivity;
     private final NetworkChangeReceiver mNetworkChangeReceiver;
     private Map<String, String> mConnectHeaders;
+    private String mSignKey;
 
     private ConnSuperState mSuperState;
     private ConnIdleState mIdleState;

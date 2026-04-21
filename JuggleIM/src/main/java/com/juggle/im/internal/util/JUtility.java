@@ -19,8 +19,12 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.Locale;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 public class JUtility {
     public static Bitmap generateThumbnail(Bitmap image, int targetWidth, int targetHeight) {
@@ -190,6 +194,42 @@ public class JUtility {
             e.printStackTrace();
         }
         return buildVersion;
+    }
+
+    public static String createSignature(String nonce, String timestamp, String signKey) {
+        // 1. 空值处理：null 转为空字符串（对应 OC 的 nonce ?: @""）
+        nonce = (nonce == null) ? "" : nonce;
+        timestamp = (timestamp == null) ? "" : timestamp;
+        signKey = (signKey == null) ? "" : signKey;
+
+        // 2. 拼接字符串：nonce + timestamp + signKey（和 OC 拼接规则完全一致）
+        String raw = nonce + timestamp + signKey;
+
+        // 3. 编码为 UTF-8 字节数组（对应 OC dataUsingEncoding:NSUTF8StringEncoding）
+        byte[] rawData = raw.getBytes(StandardCharsets.UTF_8);
+        byte[] keyData = signKey.getBytes(StandardCharsets.UTF_8);
+
+        // 4. 初始化 HMAC-SHA256 加密（对应 OC CCHmac）
+        Mac mac;
+        try {
+            mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(keyData, "HmacSHA256");
+            mac.init(secretKey);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+
+        byte[] digest = mac.doFinal(rawData);
+
+        // 5. 转换为小写十六进制字符串（对应 OC %02x 格式）
+        StringBuilder signature = new StringBuilder();
+        for (byte b : digest) {
+            // 两位小写十六进制，不足补0（和OC输出完全一致）
+            signature.append(String.format("%02x", b));
+        }
+
+        return signature.toString();
     }
 
     private static final String SP_NAME = "j_im_core";

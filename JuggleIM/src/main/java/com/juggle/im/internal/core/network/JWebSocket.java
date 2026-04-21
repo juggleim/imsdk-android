@@ -2,6 +2,7 @@ package com.juggle.im.internal.core.network;
 
 import static com.juggle.im.internal.ConstInternal.SDK_VERSION;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Handler;
 
@@ -62,6 +63,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -76,7 +78,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mCompeteStatusList = new ArrayList<>();
     }
 
-    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, String language, List<String> servers, Map<String, String> headers) {
+    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, String language, List<String> servers, String signKey, Map<String, String> headers) {
         JLogger.i("WS-Connect", "appKey is " + appKey + ", token is " + token + ", servers is " + servers);
         mSendHandler.post(() -> {
             mAppKey = appKey;
@@ -88,6 +90,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             mNetworkType = networkType;
             mCarrier = carrier;
             mLanguage = language;
+            mSignKey = signKey;
             mConnectHeaders = headers;
 
             resetWebSocketClient();
@@ -1627,8 +1630,17 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         c.addHeader("x-token", mToken);
         c.addHeader("x-platform", ConstInternal.PLATFORM);
         c.addHeader("x-version", SDK_VERSION);
-        c.addHeader("x-device", Build.MODEL);
+        c.addHeader("x-device", Build.BRAND + "-" + Build.MODEL);
         c.addHeader("x-device_id", mDeviceId);
+
+        Random random = new Random();
+        int randomNum = random.nextInt(100000);
+        @SuppressLint("DefaultLocale") String nonce = String.format("%05d", randomNum);
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String signature = JUtility.createSignature(nonce, timestamp, mSignKey);
+        c.addHeader("X-Nonce", nonce);
+        c.addHeader("X-Timestamp", timestamp);
+        c.addHeader("X-Signature", signature);
     }
 
     private URI createWebSocketUri(String server) {
@@ -1666,6 +1678,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private final List<JWebSocketClient> mCompeteWSCList;
     private final List<WebSocketStatus> mCompeteStatusList;
     private final Handler mSendHandler;
+    private String mSignKey;
     private Map<String, String> mConnectHeaders;
 
     private static final String PROTOCOL_HEAD = "://";
