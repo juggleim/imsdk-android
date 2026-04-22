@@ -20,6 +20,7 @@ import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
 import com.juggle.im.model.ConversationMentionInfo;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GetConversationOptions;
 import com.juggle.im.model.GroupInfo;
@@ -408,6 +409,127 @@ public class ConversationManager implements IConversationManager, MessageManager
     }
 
     @Override
+    public void createConversationTag(String tagId, String tagName, ISimpleCallback callback) {
+        if (TextUtils.isEmpty(tagId)) {
+            JLogger.e("CONV-CreateTag", "invalid param");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-CreateTag", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        if (tagName == null) {
+            tagName = "";
+        }
+        String finalTagName = tagName;
+        mCore.getWebSocket().createConversationTag(tagId, tagName, mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                JLogger.i("CONV-CreateTag", "success");
+                ConversationTagInfo tagInfo = new ConversationTagInfo();
+                tagInfo.setTagId(tagId);
+                tagInfo.setName(finalTagName);
+                tagInfo.setType(ConversationTagInfo.TagType.USER);
+                mCore.getDbManager().createConversationTag(tagInfo);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+                if (mTagListenerMap != null) {
+                    for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onTagCreate(tagInfo));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-CreateTag", "error code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(errorCode);
+                    });
+                }
+            }
+        });
+
+    }
+
+    @Override
+    public void destroyConversationTag(String tagId, ISimpleCallback callback) {
+        if (TextUtils.isEmpty(tagId)) {
+            JLogger.e("CONV-DestroyTag", "invalid param");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-DestroyTag", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        mCore.getWebSocket().destroyConversationTag(tagId, mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                JLogger.i("CONV-DestroyTag", "success");
+                mCore.getDbManager().destroyConversationTag(tagId);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+                if (mTagListenerMap != null) {
+                    for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onTagDestroy(tagId));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-DestroyTag", "error code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(errorCode);
+                    });
+                }
+            }
+        });
+
+    }
+
+    @Override
+    public void updateConversationTagName(String tagId, String tagName, ISimpleCallback callback) {
+        //TODO tag
+    }
+
+    @Override
+    public List<ConversationTagInfo> getCachedConversationTagList() {
+        return mCore.getDbManager().getConversationTagInfoList();
+    }
+
+    @Override
+    public void getConversationTagList(JIMConst.IResultListCallback<ConversationTagInfo> callback) {
+        //TODO tag
+    }
+
+    @Override
+    public List<ConversationTagInfo> getTagsForConversation(Conversation conversation) {
+        if (conversation == null || TextUtils.isEmpty(conversation.getConversationId())) {
+            return new ArrayList<>();
+        }
+        return mCore.getDbManager().getTagsForConversation(conversation);
+    }
+
+    @Override
     public void addConversationsToTag(List<Conversation> conversations, String tagId, ISimpleCallback callback) {
         if (conversations == null
         || conversations.isEmpty()
@@ -764,6 +886,15 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (mTagListenerMap != null) {
             for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
                 mCore.getCallbackHandler().post(() -> entry.getValue().onConversationsRemoveFromTag(tagId, conversations));
+            }
+        }
+    }
+
+    @Override
+    public void onConversationTagDestroy(String tagId) {
+        if (mTagListenerMap != null) {
+            for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> entry.getValue().onTagDestroy(tagId));
             }
         }
     }

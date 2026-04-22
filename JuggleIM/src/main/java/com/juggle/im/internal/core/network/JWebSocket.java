@@ -584,6 +584,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void createConversationTag(String tagId, String tagName, String userId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.createConversationTag(tagId, tagName, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "create conversation tag, tagId is " + tagId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void destroyConversationTag(String tagId, String userId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.destroyConversationTag(tagId, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "destroy conversation tag, tagId is " + tagId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void addConversationsToTag(List<Conversation> conversations, String tagId, String userId, WebSocketSimpleCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.addConversationsToTag(conversations, tagId, userId, mCmdIndex++);

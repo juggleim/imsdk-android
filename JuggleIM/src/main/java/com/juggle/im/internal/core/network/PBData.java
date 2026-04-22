@@ -1261,6 +1261,38 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] createConversationTag(String tagId, String tagName, String userId, int index) {
+        Appmessages.TagConvers tagConvers = Appmessages.TagConvers.newBuilder()
+                .setTag(tagId)
+                .setTagName(tagName)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(TAG_ADD_CONVERS)
+                .setTargetId(userId)
+                .setData(tagConvers.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] destroyConversationTag(String tagId, String userId, int index) {
+        Appmessages.UserConverTags.Builder builder = Appmessages.UserConverTags.newBuilder();
+        Appmessages.ConverTag converTag = Appmessages.ConverTag.newBuilder().setTag(tagId).build();
+        builder.addTags(converTag);
+        Appmessages.UserConverTags userConverTags = builder.build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(DEL_USER_CONVER_TAGS)
+                .setTargetId(userId)
+                .setData(userConverTags.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] addConversationsToTag(List<Conversation> conversations, String tagId, String userId, int index) {
         Appmessages.TagConvers.Builder builder = Appmessages.TagConvers.newBuilder();
         builder.setTag(tagId);
@@ -2683,6 +2715,7 @@ class PBData {
     private static final String QRY_MSG_EX_SET = "qry_msg_exset";
     private static final String TAG_ADD_CONVERS = "tag_add_convers";
     private static final String TAG_DEL_CONVERS = "tag_del_convers";
+    private static final String DEL_USER_CONVER_TAGS = "del_user_conver_tags";
     private static final String SET_TOP_MSG = "set_top_msg";
     private static final String DEL_TOP_MSG = "del_top_msg";
     private static final String GET_TOP_MSG = "get_top_msg";

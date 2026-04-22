@@ -3,6 +3,7 @@ package com.juggle.im.interfaces;
 import com.juggle.im.JIMConst;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.GetConversationOptions;
 
 import java.util.List;
@@ -89,6 +90,48 @@ public interface IConversationManager {
     void setUnread(Conversation conversation, ISimpleCallback callback);
 
     /**
+     * 添加会话标签
+     * @param tagId 标签 id
+     * @param tagName 标签名称
+     * @param callback 结果回调
+     */
+    void createConversationTag(String tagId, String tagName, ISimpleCallback callback);
+
+    /**
+     * 删除会话标签
+     * @param tagId 标签 id
+     * @param callback 结果回调
+     */
+    void destroyConversationTag(String tagId, ISimpleCallback callback);
+
+    /**
+     * 更新会话标签名称
+     * @param tagId 标签 id
+     * @param tagName 标签名称
+     * @param callback 结果回调
+     */
+    void updateConversationTagName(String tagId, String tagName, ISimpleCallback callback);
+
+    /**
+     * 获取缓存的会话标签列表
+     * @return 会话标签列表
+     */
+    List<ConversationTagInfo> getCachedConversationTagList();
+
+    /**
+     * 获取会话标签列表
+     * @param callback 结果回调
+     */
+    void getConversationTagList(JIMConst.IResultListCallback<ConversationTagInfo> callback);
+
+    /**
+     * 获取特定会话的所有标签
+     * @param conversation 会话标识
+     * @return 特定会话的标签列表
+     */
+    List<ConversationTagInfo> getTagsForConversation(Conversation conversation);
+
+    /**
      * 将会话添加到标签
      * @param conversations 会话列表
      * @param tagId 标签 id
@@ -133,6 +176,9 @@ public interface IConversationManager {
     }
 
     interface IConversationTagListener {
+        void onTagCreate(ConversationTagInfo tagInfo);
+        void onTagDestroy(String tagId);
+        void onTagNameUpdate(String tagId, String tagName);
         void onConversationsAddToTag(String tagId, List<Conversation> conversations);
         void onConversationsRemoveFromTag(String tagId, List<Conversation> conversations);
     }

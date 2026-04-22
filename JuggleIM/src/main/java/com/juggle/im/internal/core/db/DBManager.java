@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GetMomentOption;
 import com.juggle.im.model.GroupMember;
@@ -377,6 +378,50 @@ public class DBManager {
             }
         }
         return count;
+    }
+
+    public void createConversationTag(ConversationTagInfo tagInfo) {
+        String sql = ConversationSql.SQL_INSERT_CONVERSATION_TAG_INFO;
+        String tagId = tagInfo.getTagId() == null ? "" : tagInfo.getTagId();
+        String tagName = tagInfo.getName() == null ? "" : tagInfo.getName();
+        execSQL(sql, new String[]{tagId, tagName, String.valueOf(tagInfo.getType())});
+    }
+
+    public void destroyConversationTag(String tagId) {
+        String sql = ConversationSql.SQL_REMOVE_CONVERSATION_TAG_INFO;
+        execSQL(sql, new String[]{tagId});
+    }
+
+    public void updateConversationTagName(String tagId, String tagName) {
+        String sql = ConversationSql.SQL_UPDATE_TAG_NAME;
+        execSQL(sql, new String[]{tagName == null ? "" : tagName, tagId == null ? "" : tagId});
+    }
+
+    public List<ConversationTagInfo> getConversationTagInfoList() {
+        String sql = ConversationSql.SQL_GET_TAG_LIST;
+        List<ConversationTagInfo> list = new ArrayList<>();
+        try (Cursor cursor = rawQuery(sql, null)) {
+            if (cursor != null) {
+                addConversationTagsFromCursor(list, cursor);
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getConversationTagInfoList " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<ConversationTagInfo> getTagsForConversation(Conversation conversation) {
+        String sql = ConversationSql.SQL_GET_TAGS_FOR_CONVERSATION;
+        List<ConversationTagInfo> list = new ArrayList<>();
+        String[] args = new String[]{String.valueOf(conversation.getConversationType().getValue()), conversation.getConversationId(), conversation.getSubChannel()};
+        try (Cursor cursor = rawQuery(sql, args)) {
+            if (cursor != null) {
+                addConversationTagsFromCursor(list, cursor);
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getTagsForConversation " + e.getMessage());
+        }
+        return list;
     }
 
     public void updateConversationTag(List<ConcreteConversationInfo> conversationInfos) {
@@ -1371,6 +1416,13 @@ public class DBManager {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             Moment moment = MomentSql.momentWithCursor(cursor);
             momentList.add(moment);
+        }
+    }
+
+    private void addConversationTagsFromCursor(List<ConversationTagInfo> list, Cursor cursor) {
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            ConversationTagInfo info = ConversationSql.tagInfoWithCursor(cursor);
+            list.add(info);
         }
     }
 
