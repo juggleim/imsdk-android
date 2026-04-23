@@ -27,7 +27,6 @@ public interface IConnectionManager {
 
     JIMConst.ConnectionStatus getConnectionStatus();
 
-
     void setConnectParams(String signKey, Map<String, String> headers);
 
     void addConnectionStatusListener(String key, IConnectionStatusListener listener);
