@@ -2796,6 +2796,7 @@ class PBData {
             put(QRY_USER_INFO, PBRcvObj.PBRcvType.getUserInfoAck);
             put(QRY_GROUP_INFO, PBRcvObj.PBRcvType.getGroupInfoAck);
             put(QRY_FRIEND_INFOS, PBRcvObj.PBRcvType.getFriendInfosAck);
+            put(DEL_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAck);
         }
     };
 
