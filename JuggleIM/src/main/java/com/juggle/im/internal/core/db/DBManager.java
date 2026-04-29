@@ -453,6 +453,11 @@ public class DBManager {
         });
     }
 
+    public void clearConversationTags() {
+        String sql = ConversationSql.SQL_CLEAR_CONVERSATION_TAGS;
+        execSQL(sql);
+    }
+
     public void addConversationsToTag(List<Conversation> conversations, String tagId) {
         if (conversations == null || conversations.isEmpty() || TextUtils.isEmpty(tagId)) {
             return;

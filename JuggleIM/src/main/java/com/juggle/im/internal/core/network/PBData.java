@@ -18,6 +18,7 @@ import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallInfo;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupMember;
@@ -1262,15 +1263,18 @@ class PBData {
     }
 
     byte[] createConversationTag(String tagId, String tagName, String userId, int index) {
-        Appmessages.TagConvers tagConvers = Appmessages.TagConvers.newBuilder()
+        Appmessages.ConverTag converTag = Appmessages.ConverTag.newBuilder()
                 .setTag(tagId)
                 .setTagName(tagName)
                 .build();
+        Appmessages.UserConverTags userConverTags = Appmessages.UserConverTags.newBuilder()
+                .addTags(converTag)
+                .build();
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
-                .setTopic(TAG_ADD_CONVERS)
+                .setTopic(CREATE_USER_CONVER_TAGS)
                 .setTargetId(userId)
-                .setData(tagConvers.toByteString())
+                .setData(userConverTags.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
@@ -1287,6 +1291,17 @@ class PBData {
                 .setTopic(DEL_USER_CONVER_TAGS)
                 .setTargetId(userId)
                 .setData(userConverTags.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getConversationTagList(String userId, int index) {
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_USER_CONVER_TAGS)
+                .setTargetId(userId)
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
@@ -1550,6 +1565,9 @@ class PBData {
                             break;
                         case PBRcvObj.PBRcvType.getFriendInfosAck:
                             obj = getFriendInfosAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getConversationTagListAck:
+                            obj = getConversationTagListAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
 
                         default:
@@ -1848,6 +1866,23 @@ class PBData {
         }
         PBRcvObj.TemplateAck<FriendInfo> a = new PBRcvObj.TemplateAck<>(body);
         a.t = friendInfo;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getConversationTagListAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.UserConverTags userConverTags = Appmessages.UserConverTags.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getConversationTagListAck);
+        List<ConversationTagInfo> tagList = new ArrayList<>();
+        if (userConverTags != null && userConverTags.getTagsCount() > 0) {
+            for (Appmessages.ConverTag converTag : userConverTags.getTagsList()) {
+                ConversationTagInfo tagInfo = conversationTagInfoWithConverTag(converTag);
+                tagList.add(tagInfo);
+            }
+        }
+        PBRcvObj.TemplateAck<List<ConversationTagInfo>> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = tagList;
         obj.mTemplateAck = a;
         return obj;
     }
@@ -2437,6 +2472,14 @@ class PBData {
         return friendInfo;
     }
 
+    private ConversationTagInfo conversationTagInfoWithConverTag(Appmessages.ConverTag converTag) {
+        ConversationTagInfo tagInfo = new ConversationTagInfo();
+        tagInfo.setTagId(converTag.getTag());
+        tagInfo.setName(converTag.getTagName());
+        tagInfo.setType(ConversationTagInfo.TagType.setValue(converTag.getTagType().getNumber()));
+        return tagInfo;
+    }
+
     private Appmessages.UserInfo pbUserInfoWithUserInfo(UserInfo userInfo) {
         if (userInfo == null) {
             return null;
@@ -2716,6 +2759,8 @@ class PBData {
     private static final String TAG_ADD_CONVERS = "tag_add_convers";
     private static final String TAG_DEL_CONVERS = "tag_del_convers";
     private static final String DEL_USER_CONVER_TAGS = "del_user_conver_tags";
+    private static final String CREATE_USER_CONVER_TAGS = "create_user_conver_tags";
+    private static final String QRY_USER_CONVER_TAGS = "qry_user_conver_tags";
     private static final String SET_TOP_MSG = "set_top_msg";
     private static final String DEL_TOP_MSG = "del_top_msg";
     private static final String GET_TOP_MSG = "get_top_msg";
@@ -2797,6 +2842,8 @@ class PBData {
             put(QRY_GROUP_INFO, PBRcvObj.PBRcvType.getGroupInfoAck);
             put(QRY_FRIEND_INFOS, PBRcvObj.PBRcvType.getFriendInfosAck);
             put(DEL_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(CREATE_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(QRY_USER_CONVER_TAGS, PBRcvObj.PBRcvType.getConversationTagListAck);
         }
     };
 

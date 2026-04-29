@@ -40,6 +40,7 @@ import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.JUtility;
 import com.juggle.im.model.Conversation;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfoDetail;
@@ -600,6 +601,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void updateConversationTagName(String tagId, String name, String userId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.createConversationTag(tagId, name, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "update conversation tag name, tagId is " + tagId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getConversationTagList(String userId, WebSocketDataCallback<List<ConversationTagInfo>> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getConversationTagList(userId, mCmdIndex++);
+        JLogger.i("WS-Send", "get conversation tag list");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void addConversationsToTag(List<Conversation> conversations, String tagId, String userId, WebSocketSimpleCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.addConversationsToTag(conversations, tagId, userId, mCmdIndex++);
@@ -990,6 +1007,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.getFriendInfosAck:
                 //noinspection unchecked
                 handleGetFriendInfoAck(obj.mTemplateAck);
+                break;
+            case PBRcvObj.PBRcvType.getConversationTagListAck:
+                //noinspection unchecked
+                handleGetConversationTagListAck(obj.mTemplateAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -1456,6 +1477,23 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         if (c instanceof WebSocketDataCallback) {
             @SuppressWarnings("unchecked")
             WebSocketDataCallback<FriendInfo> callback = (WebSocketDataCallback<FriendInfo>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.t);
+            }
+        }
+    }
+
+    private void handleGetConversationTagListAck(PBRcvObj.TemplateAck<List<ConversationTagInfo>> ack) {
+        JLogger.i("WS-Receive", "handleGetConversationTagListAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof WebSocketDataCallback) {
+            @SuppressWarnings("unchecked")
+            WebSocketDataCallback<List<ConversationTagInfo>> callback = (WebSocketDataCallback<List<ConversationTagInfo>>) c;
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {

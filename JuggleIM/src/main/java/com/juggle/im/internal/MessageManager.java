@@ -10,8 +10,10 @@ import com.juggle.im.call.internal.model.CallActiveCallMessage;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
+import com.juggle.im.internal.model.messages.CreateConversationTagMessage;
 import com.juggle.im.internal.model.messages.DeleteConversationTagMessage;
 import com.juggle.im.internal.model.messages.StreamAppendMessage;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GetFavoriteMessageOption;
@@ -131,6 +133,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(StreamTextMessage.class);
         ContentTypeCenter.getInstance().registerContentType(StreamAppendMessage.class);
         ContentTypeCenter.getInstance().registerContentType(DeleteConversationTagMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(CreateConversationTagMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -2586,6 +2589,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         void onMessageUpdate(ConcreteMessage message);
         void onConversationsAddToTag(String tagId, List<Conversation> conversations);
         void onConversationsRemoveFromTag(String tagId, List<Conversation> conversations);
+        void onConversationTagCreate(ConversationTagInfo tagInfo);
         void onConversationTagDestroy(String tagId);
     }
 
@@ -2801,6 +2805,18 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             if (message.getContentType().equals(CallActiveCallMessage.CONTENT_TYPE)) {
                 mCallManager.handleActiveCallMessage(message);
                 continue;
+            }
+
+            //create conversation tag
+            if (message.getContentType().equals(CreateConversationTagMessage.CONTENT_TYPE)) {
+                CreateConversationTagMessage cmd = (CreateConversationTagMessage) message.getContent();
+                if (cmd.getTagList() == null || cmd.getTagList().isEmpty()) {
+                    continue;
+                }
+                for (ConversationTagInfo tagInfo : cmd.getTagList()) {
+                    mCore.getDbManager().createConversationTag(tagInfo);
+                    mSendReceiveListener.onConversationTagCreate(tagInfo);
+                }
             }
 
             //delete conversation tag

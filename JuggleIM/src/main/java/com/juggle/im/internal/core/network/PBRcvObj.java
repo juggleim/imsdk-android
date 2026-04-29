@@ -246,6 +246,7 @@ class PBRcvObj {
         static final int getUserInfoAck = 38;
         static final int getGroupInfoAck = 39;
         static final int getFriendInfosAck = 40;
+        static final int getConversationTagListAck = 41;
     }
 
     public enum PBChatroomEventType {

@@ -8,6 +8,7 @@ import com.juggle.im.interfaces.IConversationManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.internal.core.network.wscallback.AddConversationCallback;
 import com.juggle.im.internal.core.network.wscallback.SyncConversationsCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketTimestampCallback;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
@@ -508,7 +509,50 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void updateConversationTagName(String tagId, String tagName, ISimpleCallback callback) {
-        //TODO tag
+        if (TextUtils.isEmpty(tagId)) {
+            JLogger.e("CONV-UpdateTag", "invalid param");
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-UpdateTag", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        if (tagName == null) {
+            tagName = "";
+        }
+        String finalTagName = tagName;
+        mCore.getWebSocket().updateConversationTagName(tagId, tagName, mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                JLogger.i("CONV-UpdateTag", "success");
+                mCore.getDbManager().updateConversationTagName(tagId, finalTagName);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(callback::onSuccess);
+                }
+                if (mTagListenerMap != null) {
+                    for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                        mCore.getCallbackHandler().post(() -> entry.getValue().onTagNameUpdate(tagId, finalTagName));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-UpdateTag", "error code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(errorCode);
+                    });
+                }
+            }
+        });
     }
 
     @Override
@@ -518,7 +562,42 @@ public class ConversationManager implements IConversationManager, MessageManager
 
     @Override
     public void getConversationTagList(JIMConst.IResultListCallback<ConversationTagInfo> callback) {
-        //TODO tag
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("CONV-FetchTag", "fail, code is " + errorCode);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(errorCode));
+            }
+            return;
+        }
+        mCore.getWebSocket().getConversationTagList(mCore.getUserId(), new WebSocketDataCallback<List<ConversationTagInfo>>() {
+            @Override
+            public void onSuccess(List<ConversationTagInfo> data) {
+                JLogger.i("CONV-FetchTag", "success");
+                mCore.getDbManager().clearConversationTags();
+                for (ConversationTagInfo tagInfo : data) {
+                    mCore.getDbManager().createConversationTag(tagInfo);
+                }
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onSuccess(data, true);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("CONV-FetchTag", "error code is " + errorCode);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> {
+                        callback.onError(errorCode);
+                    });
+                }
+            }
+        });
     }
 
     @Override
@@ -886,6 +965,15 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (mTagListenerMap != null) {
             for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
                 mCore.getCallbackHandler().post(() -> entry.getValue().onConversationsRemoveFromTag(tagId, conversations));
+            }
+        }
+    }
+
+    @Override
+    public void onConversationTagCreate(ConversationTagInfo tagInfo) {
+        if (mTagListenerMap != null) {
+            for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> entry.getValue().onTagCreate(tagInfo));
             }
         }
     }

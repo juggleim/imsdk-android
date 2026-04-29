@@ -288,6 +288,7 @@ class ConversationSql {
     static final String SQL_UPDATE_TAG_NAME = "UPDATE conversation_tag_info SET name = ? WHERE tag_id = ?";
     static final String SQL_GET_TAG_LIST = "SELECT * FROM conversation_tag_info ORDER BY id";
     static final String SQL_GET_TAGS_FOR_CONVERSATION = "SELECT DISTINCT cti.* FROM conversation_tag ct INNER JOIN conversation_tag_info cti ON ct.tag_id = cti.tag_id WHERE ct.conversation_type = ? AND ct.conversation_id = ? AND ct.subchannel = ?";
+    static final String SQL_CLEAR_CONVERSATION_TAGS = "DELETE FROM conversation_tag_info";
 
     static String sqlAddConversationsToTag(@NonNull List<Conversation> conversations, @NonNull String tagId, @NonNull List<String> args) {
         StringBuilder sql = new StringBuilder(ConversationSql.SQL_INSERT_CONVERSATION_TAG);
