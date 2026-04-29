@@ -585,7 +585,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void createConversationTag(String tagId, String tagName, String userId, WebSocketSimpleCallback callback) {
+    public void createConversationTag(String tagId, String tagName, String userId, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.createConversationTag(tagId, tagName, userId, mCmdIndex++);
         JLogger.i("WS-Send", "create conversation tag, tagId is " + tagId);
@@ -593,7 +593,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void destroyConversationTag(String tagId, String userId, WebSocketSimpleCallback callback) {
+    public void destroyConversationTag(String tagId, String userId, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.destroyConversationTag(tagId, userId, mCmdIndex++);
         JLogger.i("WS-Send", "destroy conversation tag, tagId is " + tagId);
@@ -601,7 +601,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
-    public void updateConversationTagName(String tagId, String name, String userId, WebSocketSimpleCallback callback) {
+    public void updateConversationTagName(String tagId, String name, String userId, WebSocketTimestampCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.createConversationTag(tagId, name, userId, mCmdIndex++);
         JLogger.i("WS-Send", "update conversation tag name, tagId is " + tagId);

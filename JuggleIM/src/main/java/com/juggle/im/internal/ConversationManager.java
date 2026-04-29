@@ -430,10 +430,11 @@ public class ConversationManager implements IConversationManager, MessageManager
             tagName = "";
         }
         String finalTagName = tagName;
-        mCore.getWebSocket().createConversationTag(tagId, tagName, mCore.getUserId(), new WebSocketSimpleCallback() {
+        mCore.getWebSocket().createConversationTag(tagId, tagName, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("CONV-CreateTag", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
                 ConversationTagInfo tagInfo = new ConversationTagInfo();
                 tagInfo.setTagId(tagId);
                 tagInfo.setName(finalTagName);
@@ -479,10 +480,11 @@ public class ConversationManager implements IConversationManager, MessageManager
             }
             return;
         }
-        mCore.getWebSocket().destroyConversationTag(tagId, mCore.getUserId(), new WebSocketSimpleCallback() {
+        mCore.getWebSocket().destroyConversationTag(tagId, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("CONV-DestroyTag", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().destroyConversationTag(tagId);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
@@ -528,10 +530,11 @@ public class ConversationManager implements IConversationManager, MessageManager
             tagName = "";
         }
         String finalTagName = tagName;
-        mCore.getWebSocket().updateConversationTagName(tagId, tagName, mCore.getUserId(), new WebSocketSimpleCallback() {
+        mCore.getWebSocket().updateConversationTagName(tagId, tagName, mCore.getUserId(), new WebSocketTimestampCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(long timestamp) {
                 JLogger.i("CONV-UpdateTag", "success");
+                mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().updateConversationTagName(tagId, finalTagName);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
@@ -983,6 +986,15 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (mTagListenerMap != null) {
             for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
                 mCore.getCallbackHandler().post(() -> entry.getValue().onTagDestroy(tagId));
+            }
+        }
+    }
+
+    @Override
+    public void onConversationTagNameUpdate(String tagId, String name) {
+        if (mTagListenerMap != null) {
+            for (Map.Entry<String, IConversationTagListener> entry : mTagListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> entry.getValue().onTagNameUpdate(tagId, name));
             }
         }
     }

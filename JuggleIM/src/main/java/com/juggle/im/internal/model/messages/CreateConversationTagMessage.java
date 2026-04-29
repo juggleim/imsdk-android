@@ -34,7 +34,7 @@ public class CreateConversationTagMessage extends MessageContent {
         try {
             JSONObject jsonObject = new JSONObject(jsonStr);
             if (jsonObject.has(TAGS)) {
-                List<ConversationTagInfo> tagList = new ArrayList<>();
+                List<ConversationTagInfoContainer> tagList = new ArrayList<>();
                 JSONArray jsonArray = jsonObject.optJSONArray(TAGS);
                 if (jsonArray == null) {
                     return;
@@ -48,7 +48,10 @@ public class CreateConversationTagMessage extends MessageContent {
                     info.setTagId(object.optString(TAG));
                     info.setName(object.optString(TAG_NAME));
                     info.setType(ConversationTagInfo.TagType.USER);
-                    tagList.add(info);
+                    ConversationTagInfoContainer container = new ConversationTagInfoContainer();
+                    container.setConversationTagInfo(info);
+                    container.setAdd(object.optBoolean(IS_ADD));
+                    tagList.add(container);
                 }
                 mTagList = tagList;
             }
@@ -62,14 +65,15 @@ public class CreateConversationTagMessage extends MessageContent {
         return MessageFlag.IS_CMD.getValue();
     }
 
-    public List<ConversationTagInfo> getTagList() {
+    public List<ConversationTagInfoContainer> getTagList() {
         return mTagList;
     }
 
-    private List<ConversationTagInfo> mTagList;
+    private List<ConversationTagInfoContainer> mTagList;
     private Boolean mIsAdd;
     public static final String CONTENT_TYPE = "jg:createconvertags";
     private static final String TAGS = "tags";
     private static final String TAG = "tag";
     private static final String TAG_NAME = "tag_name";
+    private static final String IS_ADD = "is_add";
 }

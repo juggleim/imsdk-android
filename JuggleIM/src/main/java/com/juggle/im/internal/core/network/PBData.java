@@ -2841,8 +2841,8 @@ class PBData {
             put(QRY_USER_INFO, PBRcvObj.PBRcvType.getUserInfoAck);
             put(QRY_GROUP_INFO, PBRcvObj.PBRcvType.getGroupInfoAck);
             put(QRY_FRIEND_INFOS, PBRcvObj.PBRcvType.getFriendInfosAck);
-            put(DEL_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAck);
-            put(CREATE_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAck);
+            put(DEL_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(CREATE_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_USER_CONVER_TAGS, PBRcvObj.PBRcvType.getConversationTagListAck);
         }
     };

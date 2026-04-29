@@ -10,6 +10,7 @@ import com.juggle.im.call.internal.model.CallActiveCallMessage;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
+import com.juggle.im.internal.model.messages.ConversationTagInfoContainer;
 import com.juggle.im.internal.model.messages.CreateConversationTagMessage;
 import com.juggle.im.internal.model.messages.DeleteConversationTagMessage;
 import com.juggle.im.internal.model.messages.StreamAppendMessage;
@@ -2591,6 +2592,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         void onConversationsRemoveFromTag(String tagId, List<Conversation> conversations);
         void onConversationTagCreate(ConversationTagInfo tagInfo);
         void onConversationTagDestroy(String tagId);
+        void onConversationTagNameUpdate(String tagId, String name);
     }
 
     public void setSendReceiveListener(ISendReceiveListener sendReceiveListener) {
@@ -2813,9 +2815,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 if (cmd.getTagList() == null || cmd.getTagList().isEmpty()) {
                     continue;
                 }
-                for (ConversationTagInfo tagInfo : cmd.getTagList()) {
-                    mCore.getDbManager().createConversationTag(tagInfo);
-                    mSendReceiveListener.onConversationTagCreate(tagInfo);
+                for (ConversationTagInfoContainer tagInfo : cmd.getTagList()) {
+                    mCore.getDbManager().createConversationTag(tagInfo.getConversationTagInfo());
+                    if (tagInfo.isAdd()) {
+                        mSendReceiveListener.onConversationTagCreate(tagInfo.getConversationTagInfo());
+                    } else {
+                        mSendReceiveListener.onConversationTagNameUpdate(tagInfo.getConversationTagInfo().getTagId(), tagInfo.getConversationTagInfo().getName());
+                    }
                 }
             }
 
