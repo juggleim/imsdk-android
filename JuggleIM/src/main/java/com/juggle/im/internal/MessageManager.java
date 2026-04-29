@@ -10,7 +10,7 @@ import com.juggle.im.call.internal.model.CallActiveCallMessage;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
 import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
-import com.juggle.im.internal.model.messages.ConversationTagInfoContainer;
+import com.juggle.im.internal.model.ConversationTagInfoContainer;
 import com.juggle.im.internal.model.messages.CreateConversationTagMessage;
 import com.juggle.im.internal.model.messages.DeleteConversationTagMessage;
 import com.juggle.im.internal.model.messages.StreamAppendMessage;

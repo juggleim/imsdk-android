@@ -1,5 +1,6 @@
 package com.juggle.im.internal.model.messages;
 
+import com.juggle.im.internal.model.ConversationTagInfoContainer;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.MessageContent;
