@@ -227,6 +227,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
                                 CallSessionImpl callSession = createCallSessionImpl(singleRoom.getRoomId(), singleRoom.isMultiCall());
                                 callSession.setOwner(singleRoom.getOwner().getUserId());
                                 callSession.setExtra(singleRoom.getExtra());
+                                callSession.setMediaType(singleRoom.getMediaType());
                                 Map<String, UserInfo> userInfoMap = new HashMap<>();
                                 for (CallMember member : singleRoom.getMembers()) {
                                     userInfoMap.put(member.getUserInfo().getUserId(), member.getUserInfo());
