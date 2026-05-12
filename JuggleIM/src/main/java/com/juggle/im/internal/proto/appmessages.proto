@@ -186,6 +186,7 @@ enum ChannelType {
   GroupCast = 5;
   BroadCast = 6;
   PublicService = 7;
+  SubStatus = 8; 
 }
 message Notify{
   NotifyType type = 1;
@@ -962,4 +963,13 @@ message FavoriteMsgs{
 message FavoriteMsg{
   DownMsg msg = 1;
   int64 createdTime = 2;
+}
+
+message UserStatusList{
+  repeated UserStatus items = 1;
+}
+
+message UserStatus{
+  string userId = 1;
+  UserOnlineItem onlineStatus = 2;
 }

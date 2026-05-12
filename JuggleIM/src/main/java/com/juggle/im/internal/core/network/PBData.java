@@ -46,6 +46,7 @@ import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.UserStatus;
 import com.juggle.im.model.messages.MergeMessage;
 import com.juggle.im.push.PushChannel;
 
@@ -1398,6 +1399,22 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] getUserStatus(List<String> userIdList, String currentUserId, int index) {
+        Appmessages.UserIdsReq.Builder builder = Appmessages.UserIdsReq.newBuilder();
+        builder.addAllUserIds(userIdList);
+        Appmessages.UserIdsReq req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_USER_STATUS)
+                .setTargetId(currentUserId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -1568,6 +1585,9 @@ class PBData {
                             break;
                         case PBRcvObj.PBRcvType.getConversationTagListAck:
                             obj = getConversationTagListAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getUserStatusAck:
+                            obj = getUserStatusAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
 
                         default:
@@ -1883,6 +1903,21 @@ class PBData {
         }
         PBRcvObj.TemplateAck<List<ConversationTagInfo>> a = new PBRcvObj.TemplateAck<>(body);
         a.t = tagList;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getUserStatusAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.UserStatusList userStatusList = Appmessages.UserStatusList.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getUserStatusAck);
+        List<UserStatus> statusList = new ArrayList<>();
+        for (Appmessages.UserStatus pbUserStatus : userStatusList.getItemsList()) {
+            UserStatus userStatus = userStatusWithPBUserStatus(pbUserStatus);
+            statusList.add(userStatus);
+        }
+        PBRcvObj.TemplateAck<List<UserStatus>> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = statusList;
         obj.mTemplateAck = a;
         return obj;
     }
@@ -2444,6 +2479,20 @@ class PBData {
         return result;
     }
 
+    private UserStatus userStatusWithPBUserStatus(Appmessages.UserStatus pbUserStatus) {
+        if (pbUserStatus == null) {
+            return null;
+        }
+        UserStatus userStatus = new UserStatus();
+        userStatus.setUserId(pbUserStatus.getUserId());
+        if (pbUserStatus.hasOnlineStatus() && pbUserStatus.getOnlineStatus().getIsOnline()) {
+            userStatus.setStatusType(UserStatus.UserStatusType.ONLINE);
+        } else {
+            userStatus.setStatusType(UserStatus.UserStatusType.OFFLINE);
+        }
+        return userStatus;
+    }
+
     private GroupMember groupMemberWithPBGroupMember(Appmessages.GrpMemberInfo pbGroupMember, String groupId, String userId) {
         if (pbGroupMember == null) {
             return null;
@@ -2605,6 +2654,9 @@ class PBData {
                 break;
             case PublicService:
                 result = Conversation.ConversationType.PUBLIC_SERVICE;
+                break;
+            case SubStatus:
+                result = Conversation.ConversationType.SUB_STATUS;
                 break;
             default:
                 break;
@@ -2776,6 +2828,7 @@ class PBData {
     private static final String QRY_USER_INFO = "qry_user_info";
     private static final String QRY_GROUP_INFO = "qry_group_info";
     private static final String QRY_FRIEND_INFOS = "qry_friend_infos";
+    private static final String QRY_USER_STATUS = "qry_user_status";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
@@ -2850,6 +2903,7 @@ class PBData {
             put(DEL_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(CREATE_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_USER_CONVER_TAGS, PBRcvObj.PBRcvType.getConversationTagListAck);
+            put(QRY_USER_STATUS, PBRcvObj.PBRcvType.getUserStatusAck);
         }
     };
 

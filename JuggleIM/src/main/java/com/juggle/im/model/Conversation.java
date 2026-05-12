@@ -44,7 +44,9 @@ public class Conversation {
         /// 系统会话
         SYSTEM(4),
         /// 公众号
-        PUBLIC_SERVICE(7);
+        PUBLIC_SERVICE(7),
+        /// 状态变更
+        SUB_STATUS(8);
 
         ConversationType(int value) {
             this.mValue = value;

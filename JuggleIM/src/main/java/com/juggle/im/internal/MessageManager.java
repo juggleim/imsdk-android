@@ -14,6 +14,7 @@ import com.juggle.im.internal.model.ConversationTagInfoContainer;
 import com.juggle.im.internal.model.messages.CreateConversationTagMessage;
 import com.juggle.im.internal.model.messages.DeleteConversationTagMessage;
 import com.juggle.im.internal.model.messages.StreamAppendMessage;
+import com.juggle.im.internal.model.messages.UserStatusChangeMessage;
 import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.FriendInfo;
@@ -72,6 +73,7 @@ import com.juggle.im.model.MessageReactionItem;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.UserStatus;
 import com.juggle.im.model.messages.FileMessage;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.MergeMessage;
@@ -135,6 +137,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ContentTypeCenter.getInstance().registerContentType(StreamAppendMessage.class);
         ContentTypeCenter.getInstance().registerContentType(DeleteConversationTagMessage.class);
         ContentTypeCenter.getInstance().registerContentType(CreateConversationTagMessage.class);
+        ContentTypeCenter.getInstance().registerContentType(UserStatusChangeMessage.class);
     }
 
     private ConcreteMessage saveMessageWithContent(MessageContent content,
@@ -2795,6 +2798,20 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 sendTime = message.getTimestamp();
             } else if (message.getDirection() == Message.MessageDirection.RECEIVE && !isStatusMessage) {
                 receiveTime = message.getTimestamp();
+            }
+
+            // user status change
+            if (message.getContentType().equals(UserStatusChangeMessage.CONTENT_TYPE)) {
+                UserStatus userStatus = new UserStatus();
+                userStatus.setUserId(message.getConversation().getConversationId());
+                UserStatusChangeMessage cmd = (UserStatusChangeMessage) message.getContent();
+                if (cmd.isOnline()) {
+                    userStatus.setStatusType(UserStatus.UserStatusType.ONLINE);
+                } else {
+                    userStatus.setStatusType(UserStatus.UserStatusType.OFFLINE);
+                }
+                mUserInfoManager.userStatusChange(userStatus);
+                continue;
             }
 
             // stream append

@@ -5,6 +5,7 @@ import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.UserStatus;
 
 import java.util.List;
 
@@ -73,4 +74,19 @@ public interface IUserInfoManager {
      * @param callback 结果回调
      */
     void fetchFriendInfo(String userId, JIMConst.IResultCallback<FriendInfo> callback);
+
+    /**
+     * 查询用户状态
+     * @param userIdList 需要获取的用户 id 列表
+     * @param callback 结果回调
+     */
+    void getUserStatus(List<String> userIdList, JIMConst.IResultListCallback<UserStatus> callback);
+
+    interface IUserStatusListener {
+        void onUserStatusChange(UserStatus userStatus);
+    }
+
+    void addUserStatusListener(String key, IUserStatusListener listener);
+    void removeUserStatusListener(String key);
+
 }

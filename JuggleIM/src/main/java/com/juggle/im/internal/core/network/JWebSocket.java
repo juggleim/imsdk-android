@@ -51,6 +51,7 @@ import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.UserStatus;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.UnknownMessage;
 import com.juggle.im.model.messages.VideoMessage;
@@ -721,6 +722,14 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void getUserStatus(List<String> userIdList, String currentUserId, WebSocketDataCallback<List<UserStatus>> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getUserStatus(userIdList, currentUserId, mCmdIndex++);
+        JLogger.i("WS-Send", "get user status, count is " + userIdList.size());
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void rtcPing(String callId) {
         JLogger.v("WS-Send", "rtc ping");
         byte[] bytes = mPbData.rtcPingData(callId, mCmdIndex++);
@@ -1011,6 +1020,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             case PBRcvObj.PBRcvType.getConversationTagListAck:
                 //noinspection unchecked
                 handleGetConversationTagListAck(obj.mTemplateAck);
+                break;
+            case PBRcvObj.PBRcvType.getUserStatusAck:
+                handleTemplateAck(obj.mTemplateAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -1494,6 +1506,20 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         if (c instanceof WebSocketDataCallback) {
             @SuppressWarnings("unchecked")
             WebSocketDataCallback<List<ConversationTagInfo>> callback = (WebSocketDataCallback<List<ConversationTagInfo>>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.t);
+            }
+        }
+    }
+
+    private void handleTemplateAck(PBRcvObj.TemplateAck ack) {
+        JLogger.i("WS-Receive", "handleTemplateAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof WebSocketDataCallback) {
+            WebSocketDataCallback callback = (WebSocketDataCallback) c;
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {

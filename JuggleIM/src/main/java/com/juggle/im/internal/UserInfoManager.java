@@ -11,9 +11,12 @@ import com.juggle.im.interfaces.IUserInfoManager;
 import com.juggle.im.internal.core.JIMCore;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.UserStatus;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UserInfoManager implements IUserInfoManager {
     public UserInfoManager(JIMCore core) {
@@ -228,6 +231,63 @@ public class UserInfoManager implements IUserInfoManager {
         });
     }
 
+    @Override
+    public void getUserStatus(List<String> userIdList, JIMConst.IResultListCallback<UserStatus> callback) {
+        if (userIdList == null || userIdList.isEmpty()) {
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(JErrorCode.INVALID_PARAM);
+                }
+            });
+            return;
+        }
+        if (TextUtils.isEmpty(mCore.getUserId()) || mCore.getWebSocket() == null) {
+            mCore.getCallbackHandler().post(() -> {
+                if (callback != null) {
+                    callback.onError(JErrorCode.CONNECTION_UNAVAILABLE);
+                }
+            });
+            return;
+        }
+        mCore.getWebSocket().getUserStatus(userIdList, mCore.getUserId(), new WebSocketDataCallback<List<UserStatus>>() {
+            @Override
+            public void onSuccess(List<UserStatus> data) {
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onSuccess(data, true);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                mCore.getCallbackHandler().post(() -> {
+                    if (callback != null) {
+                        callback.onError(errorCode);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void addUserStatusListener(String key, IUserStatusListener listener) {
+        if (listener == null || TextUtils.isEmpty(key)) {
+            return;
+        }
+        if (mUserStatusListenerMap == null) {
+            mUserStatusListenerMap = new ConcurrentHashMap<>();
+        }
+        mUserStatusListenerMap.put(key, listener);
+    }
+
+    @Override
+    public void removeUserStatusListener(String key) {
+        if (!TextUtils.isEmpty(key) && mUserStatusListenerMap != null) {
+            mUserStatusListenerMap.remove(key);
+        }
+    }
+
     public void clearCache() {
         mUserInfoCache.clearCache();
     }
@@ -273,6 +333,18 @@ public class UserInfoManager implements IUserInfoManager {
         mUserInfoCache.insertFriendInfoList(list);
     }
 
+    void userStatusChange(UserStatus userStatus) {
+        if (mUserStatusListenerMap != null) {
+            for (Map.Entry<String, IUserStatusListener> entry : mUserStatusListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> {
+                    entry.getValue().onUserStatusChange(userStatus);
+                });
+            }
+        }
+
+    }
+
     private final JIMCore mCore;
     private final UserInfoCache mUserInfoCache = new UserInfoCache();
+    private ConcurrentHashMap<String, IUserStatusListener> mUserStatusListenerMap;
 }
