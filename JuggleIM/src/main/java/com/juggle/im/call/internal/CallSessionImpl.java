@@ -491,7 +491,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
             @Override
             public void onError(int errorCode) {
                 JLogger.e("Call-Signal", "send invite error, code is " + errorCode);
-                sendMessage(CallEvent.INVITE_FAIL);
+                sendMessage(CallEvent.INVITE_FAIL, errorCode);
             }
         });
     }

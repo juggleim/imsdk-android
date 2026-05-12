@@ -45,6 +45,9 @@ public class ConstInternal {
         public static final int GROUP_NOT_EXIST = 13001;
         //不是群成员
         public static final int NOT_GROUP_MEMBER = 13002;
+
+        //会话中有通话未结束
+        public static final int CALL_CONVERSATION_BOUND = 16011;
         //禁止连接
         public static final int CONNECT_FORBIDDEN = 21000;
         public static final int WEB_SOCKET_FAILURE = 21001;
