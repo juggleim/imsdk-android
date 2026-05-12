@@ -4,6 +4,7 @@ import android.view.View;
 
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.call.model.CallVideoDenoiseParams;
+import com.juggle.im.model.Conversation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -99,4 +100,6 @@ public interface ICallSession {
     CallMember getCurrentCallMember();
     // 扩展字段
     String getExtra();
+    // 所属会话
+    Conversation getConversation();
 }

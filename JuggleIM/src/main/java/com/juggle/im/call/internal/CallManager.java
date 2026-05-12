@@ -228,6 +228,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
                                 callSession.setOwner(singleRoom.getOwner().getUserId());
                                 callSession.setExtra(singleRoom.getExtra());
                                 callSession.setMediaType(singleRoom.getMediaType());
+                                callSession.setConversation(singleRoom.getConversation());
                                 Map<String, UserInfo> userInfoMap = new HashMap<>();
                                 for (CallMember member : singleRoom.getMembers()) {
                                     userInfoMap.put(member.getUserInfo().getUserId(), member.getUserInfo());
@@ -308,6 +309,7 @@ public class CallManager implements ICallManager, JWebSocket.IWebSocketCallListe
                         callSession.addMember(member);
                     }
                 }
+                callSession.setConversation(room.getConversation());
                 addCallSession(callSession);
                 callSession.sendMessage(CallEvent.RECEIVE_INVITE);
             }

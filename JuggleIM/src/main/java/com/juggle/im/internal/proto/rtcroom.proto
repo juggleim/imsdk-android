@@ -28,6 +28,7 @@ message RtcRoom{
     RtcMediaType rtcMediaType = 5;
     string ext = 6;
     RtcAuth auth= 7;
+    ConverIndex attachedConver = 8;
     
     repeated RtcMember members = 51;
 }
@@ -182,4 +183,3 @@ message ActivedRtcRoom{
 
     repeated RtcMember members = 51;
 }
-

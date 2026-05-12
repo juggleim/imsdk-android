@@ -2377,6 +2377,12 @@ class PBData {
                 result.setToken(agoraAuth.getToken());
             }
         }
+        if (pbRoom.hasAttachedConver()) {
+            Rtcroom.ConverIndex converIndex = pbRoom.getAttachedConver();
+            Conversation conversation = new Conversation(conversationTypeFromChannelType(converIndex.getChannelType()), converIndex.getTargetId());
+            conversation.setSubChannel(conversation.getSubChannel());
+            result.setConversation(conversation);
+        }
         return result;
     }
 

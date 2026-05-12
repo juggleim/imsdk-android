@@ -2,6 +2,7 @@ package com.juggle.im.call.internal.model;
 
 import com.juggle.im.call.CallConst;
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.model.Conversation;
 import com.juggle.im.model.UserInfo;
 
 import java.util.List;
@@ -87,6 +88,14 @@ public class RtcRoom {
         mUrl = url;
     }
 
+    public Conversation getConversation() {
+        return mConversation;
+    }
+
+    public void setConversation(Conversation conversation) {
+        mConversation = conversation;
+    }
+
     private String mRoomId;
     private UserInfo mOwner;
     private boolean mIsMultiCall;
@@ -97,4 +106,5 @@ public class RtcRoom {
     private String mExtra;
     private String mToken;
     private String mUrl;
+    private Conversation mConversation;
 }

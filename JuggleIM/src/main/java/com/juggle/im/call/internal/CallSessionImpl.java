@@ -794,6 +794,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         mUrl = url;
     }
 
+    @Override
     public Conversation getConversation() {
         return mConversation;
     }
