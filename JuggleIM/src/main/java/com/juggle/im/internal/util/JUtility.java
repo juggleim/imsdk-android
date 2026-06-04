@@ -232,6 +232,51 @@ public class JUtility {
         return signature.toString();
     }
 
+    public static String maskAppKey(String string) {
+        if (string == null || string.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder result = new StringBuilder(string);
+        int length = result.length();
+
+        if (length > 3) {
+            result.replace(0, 4, "****");
+        }
+
+        if (length > 11) {
+            result.replace(8, 12, "****");
+        }
+
+        return result.toString();
+    }
+
+    public static String maskToken(String string) {
+        if (string == null || string.isEmpty()) {
+            return "";
+        }
+
+        int length = string.length();
+        StringBuilder result = new StringBuilder(string);
+
+        for (int i = 0; i < length; i++) {
+            boolean needKeep = false;
+
+            if (i >= length - 10) {
+                needKeep = true;
+            }
+            else if (i >= length - 30 && i <= length - 21) {
+                needKeep = true;
+            }
+
+            if (!needKeep) {
+                result.setCharAt(i, '*');
+            }
+        }
+
+        return result.toString();
+    }
+
     private static final String SP_NAME = "j_im_core";
     private static final String UUID = "UUID";
 }

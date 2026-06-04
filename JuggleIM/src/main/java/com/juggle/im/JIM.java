@@ -63,7 +63,7 @@ public class JIM {
         //初始化push
         PushManager.getInstance().init(initConfig.getPushConfig());
         //初始化appKey
-        JLogger.i("J-Init", "appKey is " + appKey);
+        JLogger.i("J-Init", "appKey is " + JUtility.maskAppKey(appKey));
         if (appKey.equals(mCore.getAppKey())) {
             return;
         }

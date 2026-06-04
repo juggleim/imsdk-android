@@ -32,6 +32,7 @@ import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.IntervalGenerator;
 import com.juggle.im.internal.util.JLogger;
+import com.juggle.im.internal.util.JUtility;
 import com.juggle.im.internal.util.NetworkChangeReceiver;
 import com.juggle.im.internal.util.statemachine.StateMachine;
 import com.juggle.im.push.PushChannel;
@@ -43,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager extends StateMachine implements IConnectionManager, JWebSocket.IWebSocketConnectListener, Application.ActivityLifecycleCallbacks, NetworkChangeReceiver.INetworkChangeReceiverListener {
     @Override
     public void connect(String token) {
-        JLogger.i("CON-Connect", "token is " + token);
+        JLogger.i("CON-Connect", "token is " + JUtility.maskToken(token));
         sendMessage(ConnEvent.USER_CONNECT, token);
     }
 

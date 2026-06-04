@@ -81,7 +81,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     }
 
     public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, String language, List<String> servers, String signKey, Map<String, String> headers) {
-        JLogger.i("WS-Connect", "appKey is " + appKey + ", token is " + token + ", servers is " + servers);
+        JLogger.i("WS-Connect", "appKey is " + JUtility.maskAppKey(appKey) + ", token is " + JUtility.maskToken(token) + ", servers is " + servers);
         mSendHandler.post(() -> {
             mAppKey = appKey;
             mToken = token;
