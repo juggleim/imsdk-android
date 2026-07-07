@@ -14,7 +14,9 @@ public abstract class MessageContent {
         IS_MODIFIED(16),
         IS_MERGED(32),
         IS_MUTE(64),
-        IS_BROADCAST(128);
+        IS_BROADCAST(128),
+        // 是否为加密消息
+        IS_E2EE(2048);
 
         public int getValue() {
             return mValue;

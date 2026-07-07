@@ -46,7 +46,9 @@ public class Conversation {
         /// 公众号
         PUBLIC_SERVICE(7),
         /// 状态变更
-        SUB_STATUS(8);
+        SUB_STATUS(8),
+        /// 端对端加密单聊
+        PRIVATE_E2EE(11);
 
         ConversationType(int value) {
             this.mValue = value;

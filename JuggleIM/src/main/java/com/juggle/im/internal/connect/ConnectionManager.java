@@ -221,7 +221,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
             mChatroomManager.connectSuccess();
             mCallManager.connectSuccess();
             sendMessage(ConnEvent.CONNECT_DONE, extra);
-            mConversationManager.syncConversations(mMessageManager::syncMessage);
+            mMessageManager.checkAndUploadPubKey(() -> mConversationManager.syncConversations(mMessageManager::syncMessage));
             PushManager.getInstance().getToken(mCore.getContext());
         } else {
             if (checkConnectionFailure(errorCode)) {

@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
+import com.juggle.im.internal.model.E2EEInfo;
 import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GetMomentOption;
@@ -117,6 +118,38 @@ public class DBManager {
         return result;
     }
 
+    public byte[] getE2EEPubKey() {
+        byte[] result = new byte[0];
+        String[] args = new String[]{ProfileSql.PUBLIC_KEY};
+        try (Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args)) {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    String str = CursorHelper.readString(cursor, ProfileSql.COLUMN_VALUE);
+                    result = E2EESql.hexToBytes(str);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getE2EEPubKey " + e.getMessage());
+        }
+        return result;
+    }
+
+    public byte[] getE2EEPriKey() {
+        byte[] result = new byte[0];
+        String[] args = new String[]{ProfileSql.PRIVATE_KEY};
+        try (Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args)) {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    String str = CursorHelper.readString(cursor, ProfileSql.COLUMN_VALUE);
+                    result = E2EESql.hexToBytes(str);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getE2EEPriKey " + e.getMessage());
+        }
+        return result;
+    }
+
     public void setConversationSyncTime(long time) {
         String[] args = new String[]{ProfileSql.CONVERSATION_TIME, String.valueOf(time)};
         execSQL(ProfileSql.SQL_SET_VALUE, args);
@@ -129,6 +162,13 @@ public class DBManager {
 
     public void setMessageReceiveSyncTime(long time) {
         String[] args = new String[]{ProfileSql.RECEIVE_TIME, String.valueOf(time)};
+        execSQL(ProfileSql.SQL_SET_VALUE, args);
+    }
+
+    public void setE2EEKeys(byte[] pubKey, byte[] priKey) {
+        String[] args = new String[]{ProfileSql.PUBLIC_KEY, E2EESql.bytesToHex(pubKey)};
+        execSQL(ProfileSql.SQL_SET_VALUE, args);
+        args = new String[]{ProfileSql.PRIVATE_KEY, E2EESql.bytesToHex(priKey)};
         execSQL(ProfileSql.SQL_SET_VALUE, args);
     }
 
@@ -1268,6 +1308,36 @@ public class DBManager {
         return result;
     }
 
+    public List<E2EEInfo> getE2EEInfo(String userId) {
+        List<E2EEInfo> result = new ArrayList<>();
+        if (TextUtils.isEmpty(userId)) {
+            return result;
+        }
+        String sql = E2EESql.SQL_GET_E2EE_INFO;
+        String[] args = new String[]{userId};
+        try (Cursor cursor = rawQuery(sql, args)) {
+            if (cursor != null) {
+                addE2EEInfoFromCursor(result, cursor);
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getE2EEInfo " + e.getMessage());
+        }
+        return result;
+    }
+
+    public void updateE2EEInfo(List<E2EEInfo> infoList) {
+        if (infoList == null || infoList.isEmpty()) {
+            return;
+        }
+        performTransaction(() -> {
+            for (E2EEInfo info : infoList) {
+                String sql = E2EESql.SQL_UPDATE_E2EE_INFO;
+                Object[] args = new Object[]{info.getUserId(), info.getDeviceId(), info.getPubKey()};
+                execSQL(sql, args);
+            }
+        });
+    }
+
     private void checkLastMessage(ConcreteConversationInfo info) {
         if (info == null) {
             return;
@@ -1421,6 +1491,13 @@ public class DBManager {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             Moment moment = MomentSql.momentWithCursor(cursor);
             momentList.add(moment);
+        }
+    }
+
+    private void addE2EEInfoFromCursor(List<E2EEInfo> e2EEInfoList, Cursor cursor) {
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            E2EEInfo info = E2EESql.e2EEInfoWithCursor(cursor);
+            e2EEInfoList.add(info);
         }
     }
 

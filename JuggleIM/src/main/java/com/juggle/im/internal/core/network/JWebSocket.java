@@ -35,6 +35,7 @@ import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketTimestampCallback;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteMessage;
+import com.juggle.im.internal.model.E2EEInfo;
 import com.juggle.im.internal.model.MergeInfo;
 import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.util.JLogger;
@@ -134,42 +135,39 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mPbData.setMessagePreprocessor(preprocessor);
     }
 
-    public void sendIMMessage(MessageContent content,
-                              Conversation conversation,
-                              String clientUid,
+    public void setE2EEProvider(IE2EEProvider provider) {
+        mPbData.setE2EEProvider(provider);
+    }
+
+    public void sendIMMessage(ConcreteMessage message,
                               MergeInfo mergeInfo,
-                              MessageMentionInfo mentionInfo,
-                              ConcreteMessage referMsg,
-                              PushData pushData,
                               boolean isBroadcast,
                               String userId,
-                              long lifeTime,
-                              long lifeTimeAfterRead,
+                              byte[] currentPubKey,
+                              byte[] currentPriKey,
+                              List<E2EEInfo> e2EEInfoList,
                               SendMessageCallback callback) {
         Integer key = mCmdIndex;
-        byte[] encodeBytes = encodeContentData(content);
+        byte[] encodeBytes = encodeContentData(message.getContent());
         String contentType;
-        if (content instanceof UnknownMessage) {
-            UnknownMessage unknown = (UnknownMessage) content;
+        if (message.getContent() instanceof UnknownMessage) {
+            UnknownMessage unknown = (UnknownMessage) message.getContent();
             contentType = unknown.getMessageType();
         } else {
-            contentType = content.getContentType();
+            contentType = message.getContent().getContentType();
         }
 
         byte[] bytes = mPbData.sendMessageData(contentType,
                 encodeBytes,
-                content.getFlags(),
-                clientUid,
+                message.getContent().getFlags(),
+                message,
                 mergeInfo,
                 isBroadcast,
                 userId,
                 mCmdIndex++,
-                conversation,
-                mentionInfo,
-                referMsg,
-                pushData,
-                lifeTime,
-                lifeTimeAfterRead);
+                currentPubKey,
+                currentPriKey,
+                e2EEInfoList);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "send message");
         sendWhenOpen(bytes);
@@ -730,6 +728,22 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void getPubKeys(String userId, String currentUserId, WebSocketDataCallback<List<E2EEInfo>> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getPubKeys(userId, currentUserId, mCmdIndex++);
+        JLogger.i("WS-Send", "get pub keys");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void uploadPubKey(byte[] pubKey, String deviceId, String currentUserId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.uploadPubKey(pubKey, deviceId, currentUserId, mCmdIndex++);
+        JLogger.i("WS-Send", "upload pub key");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void rtcPing(String callId) {
         JLogger.v("WS-Send", "rtc ping");
         byte[] bytes = mPbData.rtcPingData(callId, mCmdIndex++);
@@ -1022,6 +1036,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 handleGetConversationTagListAck(obj.mTemplateAck);
                 break;
             case PBRcvObj.PBRcvType.getUserStatusAck:
+            case PBRcvObj.PBRcvType.qryPubKeysAck:
                 handleTemplateAck(obj.mTemplateAck);
                 break;
             default:

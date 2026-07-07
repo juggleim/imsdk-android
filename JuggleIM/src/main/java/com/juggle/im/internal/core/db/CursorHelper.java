@@ -28,6 +28,14 @@ class CursorHelper {
         }
     }
 
+    public static byte[] readBytes(Cursor cursor, String key) {
+        try {
+            return cursor.getBlob(cursor.getColumnIndexOrThrow(key));
+        } catch (IllegalArgumentException e) {
+            return new byte[0];
+        }
+    }
+
     public static String getQuestionMarkPlaceholder(int size) {
         StringBuilder s = new StringBuilder();
         s.append("(");

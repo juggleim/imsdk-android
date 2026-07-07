@@ -39,7 +39,9 @@ public class ContentTypeCenter {
         Class<? extends MessageContent> cls = mContentTypeMap.get(type);
         if (cls == null) {
             UnknownMessage unknownMessage = new UnknownMessage();
-            unknownMessage.decode(data);
+            if (data != null) {
+                unknownMessage.decode(data);
+            }
             unknownMessage.setMessageType(type);
             return unknownMessage;
         }
@@ -47,7 +49,9 @@ public class ContentTypeCenter {
         try {
             Constructor<? extends MessageContent> constructor = cls.getDeclaredConstructor();
             content = constructor.newInstance();
-            content.decode(data);
+            if (data != null) {
+                content.decode(data);
+            }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException |
                  InstantiationException e) {
             JLogger.e("MSG-Register", "getContent error, type is " + type + ", exception is " + e.getMessage());

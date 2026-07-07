@@ -61,6 +61,7 @@ message UpMsg {
   int64 lifeTime = 11;   // 消息默认生存周期，单位毫秒，例如：86400000，即该消息1天后会被自动删除
   int64 lifeTimeAfterRead = 12; // 消息已读后的生存周期，通常小于lifeTime，例如60000，即消息已读1分钟后会被自动删除
   string subChannel = 13;
+  E2ESuite e2eSuite = 14;
   
   int64 msgTime = 51; 
 }
@@ -138,6 +139,8 @@ message DownMsg{
   int64 readTime = 36;
   FriendInfo friendInfo = 37;
   UserInfo senderInfo = 38;
+  DownMsg originalMsg = 39;
+  E2ESuite e2eSuite = 40;
 }
 
 message FriendInfo{
@@ -186,7 +189,8 @@ enum ChannelType {
   GroupCast = 5;
   BroadCast = 6;
   PublicService = 7;
-  SubStatus = 8; 
+  SubStatus = 8;
+  PrivateE2EE = 11;
 }
 message Notify{
   NotifyType type = 1;
@@ -972,4 +976,36 @@ message UserStatusList{
 message UserStatus{
   string userId = 1;
   UserOnlineItem onlineStatus = 2;
+}
+
+message PublicKeyData {
+  string userId = 1;
+  string deviceId = 2;
+  bytes publicKey = 3;
+}
+
+message PublicKeys {
+  string userId = 1;
+  repeated PublicKeyData publicKeys = 2;
+}
+
+message MultiPublicKeys {
+  repeated PublicKeys items = 1;
+}
+
+message E2ESuite{
+  bytes senderPubKey = 1;
+  string pubKeysHash = 2;
+  bytes nonce = 3;
+  bytes tag = 4;
+  E2ECiphers ciphers = 5;
+}
+
+message E2ECiphers{
+  repeated E2ECipher items = 1;
+}
+
+message E2ECipher{
+  string deviceId = 1;
+  bytes cipher = 2;
 }

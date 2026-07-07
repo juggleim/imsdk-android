@@ -148,6 +148,10 @@ public class ConcreteMessage extends Message {
         mIsMute = mute;
     }
 
+    public int getHashCountAndIncrement() {
+        return mHashCount++;
+    }
+
     private long mSeqNo;
     private long mMsgIndex;
     private String mClientUid;
@@ -163,4 +167,6 @@ public class ConcreteMessage extends Message {
     private long mLifeTime;
     private long mReadTime;
     private boolean mIsMute;
+    // 加密消息 hash 重试次数
+    private int mHashCount;
 }

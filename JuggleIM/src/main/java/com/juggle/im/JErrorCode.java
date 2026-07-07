@@ -31,6 +31,8 @@ public class JErrorCode {
     public static final int REMOTE_MESSAGE_NOT_EXIST = 12011;
     //收藏重复消息
     public static final int ADD_DUPLICATE_FAVORITE_MESSAGE = 12012;
+    //密聊 hash 不匹配
+    public static final int PUB_KEYS_HASH_MISMATCH = 12013;
 
     //群组不存在
     public static final int GROUP_NOT_EXIST = 13001;
@@ -64,6 +66,11 @@ public class JErrorCode {
     public static final int MESSAGE_NOT_EXIST = 22001;
     public static final int MESSAGE_ALREADY_RECALLED = 22002;
     public static final int MESSAGE_UPLOAD_ERROR = 22003;
+    //未找到对端公钥
+    public static final int OTHER_SIDE_E2EE_INVALID = 22006;
+    //本地公钥未生成
+    public static final int LOCAL_PUBLIC_KEY_INVALID = 22007;
+
     //不是媒体消息
     public static final int MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE = 23001;
     //媒体消息url 为空

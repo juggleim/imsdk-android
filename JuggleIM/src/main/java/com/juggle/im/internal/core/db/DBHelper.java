@@ -40,6 +40,8 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(MomentSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INFO_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INFO_INDEX);
+        sqLiteDatabase.execSQL(E2EESql.SQL_CREATE_PUBLIC_KEY_TABLE);
+        sqLiteDatabase.execSQL(E2EESql.SQL_CREATE_PUBLIC_KEY_INDEX);
     }
 
     @Override
@@ -208,7 +210,15 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 23) {
+            try {
+                sqLiteDatabase.execSQL(E2EESql.SQL_CREATE_PUBLIC_KEY_TABLE);
+                sqLiteDatabase.execSQL(E2EESql.SQL_CREATE_PUBLIC_KEY_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 22;
+    private final static int version = 23;
 }

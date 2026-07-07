@@ -8,13 +8,18 @@ import com.juggle.im.JIMConst;
 import com.juggle.im.call.internal.CallManager;
 import com.juggle.im.call.internal.model.CallActiveCallMessage;
 import com.juggle.im.call.model.CallFinishNotifyMessage;
+import com.juggle.im.internal.core.network.IE2EEProvider;
 import com.juggle.im.internal.core.network.wscallback.GetFavoriteMsgCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
+import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
 import com.juggle.im.internal.model.ConversationTagInfoContainer;
+import com.juggle.im.internal.model.E2EEInfo;
 import com.juggle.im.internal.model.messages.CreateConversationTagMessage;
 import com.juggle.im.internal.model.messages.DeleteConversationTagMessage;
 import com.juggle.im.internal.model.messages.StreamAppendMessage;
 import com.juggle.im.internal.model.messages.UserStatusChangeMessage;
+import com.juggle.im.internal.util.EncryptUtility;
+import com.juggle.im.internal.util.IntervalGenerator;
 import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.FriendInfo;
@@ -93,12 +98,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMessageListener, IChatroomManager.IChatroomListener {
+public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMessageListener, IChatroomManager.IChatroomListener, IE2EEProvider {
     public MessageManager(JIMCore core, UserInfoManager userInfoManager, ChatroomManager chatroomManager, CallManager callManager) {
         this.mCore = core;
         this.mCore.getWebSocket().setMessageListener(this);
+        this.mCore.getWebSocket().setE2EEProvider(this);
         this.mUserInfoManager = userInfoManager;
         this.mChatroomManager = chatroomManager;
         this.mCallManager = callManager;
@@ -233,12 +241,21 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return null;
         }
         ConcreteMessage message = saveMessageWithContent(content, conversation, options, Message.MessageState.SENDING, Message.MessageDirection.SEND, isBroadcast);
-        sendWebSocketMessage(message, isBroadcast, callback);
+        prepareAndSendWebSocketMessage(message, isBroadcast, callback);
         return message;
     }
 
-    private void sendWebSocketMessage(ConcreteMessage m, boolean isBroadcast, ISendMessageCallback callback) {
+    private void prepareAndSendWebSocketMessage(ConcreteMessage m, boolean isBroadcast, ISendMessageCallback callback) {
         ConcreteMessage message = new ConcreteMessage(m);
+        MessageContent content = message.getContent();
+        if (content == null || TextUtils.isEmpty(message.getConversation().getConversationId())) {
+            message.setState(Message.MessageState.FAIL);
+            setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.INVALID_PARAM));
+            }
+            return;
+        }
         MergeInfo mergeInfo = null;
         if (message.getContent() instanceof MergeMessage) {
             MergeMessage mergeMessage = (MergeMessage) message.getContent();
@@ -247,14 +264,105 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             mergeInfo.setContainerMsgId(mergeMessage.getContainerMsgId());
             mergeInfo.setMessages(mCore.getDbManager().getConcreteMessagesByMessageIds(mergeMessage.getMessageIdList()));
         }
-        MessageContent content = message.getContent();
-        if (content == null) {
+        if (message.getConversation().getConversationType() == Conversation.ConversationType.PRIVATE_E2EE) {
+            List<E2EEInfo> list1 = mCore.getDbManager().getE2EEInfo(message.getConversation().getConversationId());
+            if (list1.isEmpty()) {
+                getPubKeyAndSendMessage(message, mergeInfo, isBroadcast, callback);
+                return;
+            }
+            List<E2EEInfo> list2 = mCore.getDbManager().getE2EEInfo(mCore.getUserId());
+            list1.addAll(list2);
+            if (mPubKey == null || mPriKey == null) {
+                JLogger.e("MSG-E2EE", "local public key invalid");
+                message.setState(Message.MessageState.FAIL);
+                setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.LOCAL_PUBLIC_KEY_INVALID));
+                }
+                return;
+            }
+            sendWebSocketMessage(message, mergeInfo, isBroadcast, mPubKey, mPriKey, list1, callback);
+            return;
+        }
+        sendWebSocketMessage(message, mergeInfo, isBroadcast, null, null, null, callback);
+    }
+
+    private void getPubKeyAndSendMessage(ConcreteMessage message, MergeInfo mergeInfo, boolean isBroadcast, ISendMessageCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-GetPubK", "fail, errorCode is " + errorCode);
+            message.setState(Message.MessageState.FAIL);
+            setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
             if (callback != null) {
-                mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.INVALID_PARAM));
+                mCore.getCallbackHandler().post(() -> callback.onError(message, errorCode));
             }
             return;
         }
+        mCore.getWebSocket().getPubKeys(message.getConversation().getConversationId(), mCore.getUserId(), new WebSocketDataCallback<List<E2EEInfo>>() {
+            @Override
+            public void onSuccess(List<E2EEInfo> infoList) {
+                JLogger.i("MSG-GetPubK", "success");
+                mCore.getDbManager().updateE2EEInfo(infoList);
+                if (!checkOtherSideE2EEList(infoList)) {
+                    JLogger.e("MSG-GetPubK", "other side E2EE is empty");
+                    message.setState(Message.MessageState.FAIL);
+                    setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                    if (callback != null) {
+                        mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.OTHER_SIDE_E2EE_INVALID));
+                    }
+                    return;
+                }
+                if (mPubKey == null || mPriKey == null) {
+                    JLogger.e("MSG-E2EE", "local public key invalid");
+                    message.setState(Message.MessageState.FAIL);
+                    setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                    if (callback != null) {
+                        mCore.getCallbackHandler().post(() -> callback.onError(message, JErrorCode.LOCAL_PUBLIC_KEY_INVALID));
+                    }
+                    return;
+                }
+                sendWebSocketMessage(message, mergeInfo, isBroadcast, mPubKey, mPriKey, infoList, callback);
+            }
 
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-GetPubK", "error, code is " + errorCode);
+                message.setState(Message.MessageState.FAIL);
+                setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+                if (callback != null) {
+                    mCore.getCallbackHandler().post(() -> callback.onError(message, errorCode));
+                }
+            }
+        });
+    }
+
+    private boolean checkOtherSideE2EEList(List<E2EEInfo> infoList) {
+        for (E2EEInfo info : infoList) {
+            if (!TextUtils.isEmpty(info.getUserId())
+            && !info.getUserId().equals(mCore.getUserId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void sendWebSocketMessage(ConcreteMessage message,
+                                      MergeInfo mergeInfo,
+                                      boolean isBroadcast,
+                                      byte[] pubKey,
+                                      byte[] priKey,
+                                      List<E2EEInfo> e2EEInfoList,
+                                      ISendMessageCallback callback) {
+        if (mCore.getWebSocket() == null) {
+            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
+            JLogger.e("MSG-Send", "fail, clientMsgNo is " + message.getClientMsgNo() + ", errorCode is " + errorCode);
+            message.setState(Message.MessageState.FAIL);
+            setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
+            if (callback != null) {
+                mCore.getCallbackHandler().post(() -> callback.onError(message, errorCode));
+            }
+            return;
+        }
         SendMessageCallback messageCallback = new SendMessageCallback(message.getClientMsgNo()) {
             @Override
             public void onSuccess(long clientMsgNo, String msgId, long timestamp, long seqNo, String contentType, MessageContent content, int groupMemberCount) {
@@ -305,6 +413,10 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             @Override
             public void onError(int errorCode, long clientMsgNo) {
                 JLogger.e("MSG-Send", "fail, clientMsgNo is " + clientMsgNo + ", errorCode is " + errorCode);
+                if (errorCode == ConstInternal.ErrorCode.PUB_KEYS_HASH_MISMATCH && message.getHashCountAndIncrement() < 3) {
+                    getPubKeyAndSendMessage(message, mergeInfo, isBroadcast, callback);
+                    return;
+                }
                 message.setState(Message.MessageState.FAIL);
                 setMessageState(clientMsgNo, Message.MessageState.FAIL);
                 if (callback != null) {
@@ -313,28 +425,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 }
             }
         };
-        if (mCore.getWebSocket() == null) {
-            int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
-            JLogger.e("MSG-Send", "fail, clientMsgNo is " + message.getClientMsgNo() + ", errorCode is " + errorCode);
-            message.setState(Message.MessageState.FAIL);
-            setMessageState(message.getClientMsgNo(), Message.MessageState.FAIL);
-            if (callback != null) {
-                mCore.getCallbackHandler().post(() -> callback.onError(message, errorCode));
-            }
-            return;
-        }
+
         mCore.getWebSocket().sendIMMessage(
-                content,
-                message.getConversation(),
-                message.getClientUid(),
+                message,
                 mergeInfo,
-                message.hasMentionInfo() ? message.getMentionInfo() : null,
-                (ConcreteMessage) message.getReferredMessage(),
-                message.getPushData(),
                 isBroadcast,
                 mCore.getUserId(),
-                message.getLifeTime(),
-                message.getLifeTimeAfterRead(),
+                pubKey,
+                priKey,
+                e2EEInfoList,
                 messageCallback
         );
     }
@@ -389,7 +488,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 mCore.getDbManager().updateMessageContentWithClientMsgNo(cm.getContent(), cm.getContentType(), cm.getClientMsgNo());
                 cm.setState(Message.MessageState.SENDING);
                 setMessageState(cm.getClientMsgNo(), Message.MessageState.SENDING);
-                sendWebSocketMessage(cm, false, new ISendMessageCallback() {
+                prepareAndSendWebSocketMessage(cm, false, new ISendMessageCallback() {
                     @Override
                     public void onSuccess(Message message1) {
                         if (callback != null) {
@@ -476,7 +575,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 setMessageState(message.getClientMsgNo(), Message.MessageState.SENDING);
             }
             updateMessageWithContent((ConcreteMessage) message);
-            sendWebSocketMessage((ConcreteMessage) message, false, callback);
+            prepareAndSendWebSocketMessage((ConcreteMessage) message, false, callback);
             return message;
         } else {
             MessageOptions options = new MessageOptions();
@@ -2577,6 +2676,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     }
 
+    @Override
+    public byte[] getPriKey() {
+        return mPriKey;
+    }
+
     public interface ISendReceiveListener {
         void onMessageSave(ConcreteMessage message);
         void onMessageSend(ConcreteMessage message);
@@ -2639,6 +2743,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         setChatroomSyncProcessing(false);
         clearChatroomSyncMap();
         mCore.getDbManager().batchSetMessageStateFail();
+        mPubKey = null;
+        mPriKey = null;
     }
 
     private void onMessageReceive(List<ConcreteMessage> messages, boolean isFinished) {
@@ -3426,6 +3532,76 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
+    public void checkAndUploadPubKey(ConversationManager.ICompleteCallback callback) {
+        if (mPubKey != null && mPubKey.length > 0
+                && mPriKey != null && mPriKey.length > 0) {
+            if (callback != null) {
+                callback.onComplete();
+            }
+            return;
+        }
+        byte[] pubKey = mCore.getDbManager().getE2EEPubKey();
+        byte[] priKey = mCore.getDbManager().getE2EEPriKey();
+        if (pubKey != null && pubKey.length > 0
+                && priKey != null && priKey.length > 0) {
+            mPubKey = pubKey;
+            mPriKey = priKey;
+            if (callback != null) {
+                callback.onComplete();
+            }
+            return;
+        }
+        priKey = EncryptUtility.generateX25519PrivateKey();
+        pubKey = EncryptUtility.generateX25519PublicKey(priKey);
+        byte[] finalPubKey = pubKey;
+        byte[] finalPriKey = priKey;
+        if (mCore.getWebSocket() == null) {
+            JLogger.e("MSG-UploadPubKey", "fail, websocket is null");
+            uploadPubKeyFailHandle(callback);
+            return;
+        }
+        mCore.getWebSocket().uploadPubKey(pubKey, mCore.getDeviceId(), mCore.getUserId(), new WebSocketSimpleCallback() {
+            @Override
+            public void onSuccess() {
+                JLogger.i("MSG-UploadPubKey", "success");
+                mIntervalGenerator.reset();
+                mCore.getDbManager().setE2EEKeys(finalPubKey, finalPriKey);
+                mPubKey = finalPubKey;
+                mPriKey = finalPriKey;
+                if (callback != null) {
+                    callback.onComplete();
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                JLogger.e("MSG-UploadPubKey", "error, code is " + errorCode);
+                uploadPubKeyFailHandle(callback);
+            }
+        });
+    }
+
+    private void uploadPubKeyFailHandle(ConversationManager.ICompleteCallback callback) {
+        if (mUploadPubKeyTimer != null) {
+            return;
+        }
+        mUploadPubKeyTimer = new Timer();
+        mUploadPubKeyTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                stopUploadPubKeyTimer();
+                checkAndUploadPubKey(callback);
+            }
+        }, mIntervalGenerator.getNextInterval());
+    }
+
+    private void stopUploadPubKeyTimer() {
+        if (mUploadPubKeyTimer != null) {
+            mUploadPubKeyTimer.cancel();
+            mUploadPubKeyTimer = null;
+        }
+    }
+
     private void handleStreamAppend(ConcreteMessage message) {
         StreamAppendMessage appendMessage = (StreamAppendMessage) message.getContent();
         String streamId = appendMessage.getStreamId();
@@ -3519,4 +3695,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private IMessageUploadProvider mMessageUploadProvider;
     private IMessageUploadProvider mDefaultMessageUploadProvider;
     private ISendReceiveListener mSendReceiveListener;
+    private final IntervalGenerator mIntervalGenerator = new IntervalGenerator();
+    private Timer mUploadPubKeyTimer;
+    private byte[] mPubKey;
+    private byte[] mPriKey;
 }

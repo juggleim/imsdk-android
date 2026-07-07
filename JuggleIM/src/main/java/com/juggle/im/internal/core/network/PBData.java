@@ -18,6 +18,8 @@ import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallInfo;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.internal.model.E2EEInfo;
+import com.juggle.im.internal.util.EncryptUtility;
 import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FavoriteMessage;
 import com.juggle.im.model.FriendInfo;
@@ -43,7 +45,6 @@ import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.MessageReactionItem;
-import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.UserStatus;
@@ -53,6 +54,7 @@ import com.juggle.im.push.PushChannel;
 import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +75,10 @@ class PBData {
 
     void setMessagePreprocessor(IMessageManager.IMessagePreprocessor preprocessor) {
         mMessagePreprocessor = preprocessor;
+    }
+
+    void setE2EEProvider(IE2EEProvider provider) {
+        mE2EEProvider = provider;
     }
 
     byte[] connectData(String appKey,
@@ -169,26 +175,23 @@ class PBData {
     byte[] sendMessageData(String contentType,
                            byte[] msgData,
                            int flags,
-                           String clientUid,
+                           ConcreteMessage message,
                            MergeInfo mergeInfo,
                            boolean isBroadcast,
                            String userId,
                            int index,
-                           Conversation conversation,
-                           MessageMentionInfo mentionInfo,
-                           ConcreteMessage referMsg,
-                           PushData pushData,
-                           long lifeTime,
-                           long lifeTimeAfterRead) {
+                           byte[] pubKey,
+                           byte[] priKey,
+                           List<E2EEInfo> e2EEInfoList) {
         if (mMessagePreprocessor != null) {
-            msgData = mMessagePreprocessor.encryptMessageContent(msgData, conversation, contentType);
+            msgData = mMessagePreprocessor.encryptMessageContent(msgData, message.getConversation(), contentType);
         }
         ByteString byteString = ByteString.copyFrom(msgData);
         Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
         upMsgBuilder.setMsgType(contentType)
                 .setMsgContent(byteString)
                 .setFlags(flags)
-                .setClientUid(clientUid);
+                .setClientUid(message.getClientUid());
         if (mergeInfo != null && TextUtils.isEmpty(mergeInfo.getContainerMsgId()) && mergeInfo.getMessages() != null) {
             flags |= MessageContent.MessageFlag.IS_MERGED.getValue();
             upMsgBuilder.setFlags(flags);
@@ -216,11 +219,11 @@ class PBData {
             flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
             upMsgBuilder.setFlags(flags);
         }
-        if (mentionInfo != null) {
+        if (message.getMentionInfo() != null) {
             Appmessages.MentionInfo.Builder pbMentionBuilder = Appmessages.MentionInfo.newBuilder();
-            pbMentionBuilder.setMentionTypeValue(mentionInfo.getType().getValue());
-            if (mentionInfo.getTargetUsers() != null) {
-                for (UserInfo userInfo : mentionInfo.getTargetUsers()) {
+            pbMentionBuilder.setMentionTypeValue(message.getMentionInfo().getType().getValue());
+            if (message.getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
                     Appmessages.UserInfo pbUser = Appmessages.UserInfo.newBuilder()
                             .setUserId(userInfo.getUserId())
                             .build();
@@ -229,33 +232,70 @@ class PBData {
             }
             upMsgBuilder.setMentionInfo(pbMentionBuilder);
         }
-        if (referMsg != null) {
-            Appmessages.DownMsg downMsg = downMsgWithMessage(referMsg);
+        if (message.getReferredMessage() != null) {
+            Appmessages.DownMsg downMsg = downMsgWithMessage((ConcreteMessage) message.getReferredMessage());
             upMsgBuilder.setReferMsg(downMsg);
         }
-        if (pushData != null) {
+        if (message.getPushData() != null) {
             Appmessages.PushData.Builder pbPushData = Appmessages.PushData.newBuilder();
-            if (pushData.getTitle() != null) {
-                pbPushData.setTitle(pushData.getTitle());
+            if (message.getPushData().getTitle() != null) {
+                pbPushData.setTitle(message.getPushData().getTitle());
             }
-            if (pushData.getContent() != null) {
-                pbPushData.setPushText(pushData.getContent());
+            if (message.getPushData().getContent() != null) {
+                pbPushData.setPushText(message.getPushData().getContent());
             }
-            if (pushData.getExtra() != null) {
-                pbPushData.setPushExtraData(pushData.getExtra());
+            if (message.getPushData().getExtra() != null) {
+                pbPushData.setPushExtraData(message.getPushData().getExtra());
             }
             upMsgBuilder.setPushData(pbPushData);
         }
-        upMsgBuilder.setLifeTime(lifeTime);
-        upMsgBuilder.setLifeTimeAfterRead(lifeTimeAfterRead);
-        if (!TextUtils.isEmpty(conversation.getSubChannel())) {
-            upMsgBuilder.setSubChannel(conversation.getSubChannel());
+        upMsgBuilder.setLifeTime(message.getLifeTime());
+        upMsgBuilder.setLifeTimeAfterRead(message.getLifeTimeAfterRead());
+        if (!TextUtils.isEmpty(message.getConversation().getSubChannel())) {
+            upMsgBuilder.setSubChannel(message.getConversation().getSubChannel());
+        }
+
+        if (pubKey != null) {
+            flags |= MessageContent.MessageFlag.IS_E2EE.getValue();
+            upMsgBuilder.setFlags(flags);
+
+            String sha256 = EncryptUtility.calcPubKeysSHA256Base64WithInfoList(e2EEInfoList);
+            byte[] aesKey = EncryptUtility.generateAes256GcmKey();
+            byte[] aesNonce = EncryptUtility.generateAes256GcmNonce();
+            byte[] aesTag = new byte[16];
+
+            byte[] encryptData = EncryptUtility.encryptAes256Gcm(aesKey, aesNonce, null, msgData, aesTag);
+            upMsgBuilder.setMsgContent(ByteString.copyFrom(encryptData));
+
+            Appmessages.E2ESuite.Builder suiteBuilder = Appmessages.E2ESuite.newBuilder()
+                    .setSenderPubKey(ByteString.copyFrom(pubKey))
+                    .setPubKeysHash(sha256)
+                    .setNonce(ByteString.copyFrom(aesNonce))
+                    .setTag(ByteString.copyFrom(aesTag));
+
+            Appmessages.E2ECiphers.Builder ciphersBuilder = Appmessages.E2ECiphers.newBuilder();
+            for (E2EEInfo e2EEInfo : e2EEInfoList) {
+                Appmessages.E2ECipher.Builder cipherBuilder = Appmessages.E2ECipher.newBuilder();
+                cipherBuilder.setDeviceId(e2EEInfo.getDeviceId());
+
+                byte[] sharedSecret = EncryptUtility.calculateX25519SharedSecret(priKey, e2EEInfo.getPubKey());
+                byte[] hkdf = EncryptUtility.deriveAES256KeyFromSharedSecret(sharedSecret);
+                byte[] cipherNonce = EncryptUtility.generateAes256GcmNonce();
+                byte[] cipherTag = new byte[16];
+                byte[] encryptKey = EncryptUtility.encryptAes256Gcm(hkdf, cipherNonce, null, aesKey, cipherTag);
+                byte[] cipherData = buildWrappedKey(cipherNonce, encryptKey, cipherTag);
+
+                cipherBuilder.setCipher(ByteString.copyFrom(cipherData));
+                ciphersBuilder.addItems(cipherBuilder);
+            }
+            suiteBuilder.setCiphers(ciphersBuilder);
+            upMsgBuilder.setE2ESuite(suiteBuilder);
         }
 
         Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
         String topic = "";
-        switch (conversation.getConversationType()) {
+        switch (message.getConversation().getConversationType()) {
             case PRIVATE:
                 topic = P_MSG;
                 break;
@@ -270,12 +310,15 @@ class PBData {
             case PUBLIC_SERVICE:
                 topic = PC_MSG;
                 break;
+            case PRIVATE_E2EE:
+                topic = S_P_MSG;
+                break;
         }
 
         Connect.PublishMsgBody publishMsgBody = Connect.PublishMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(topic)
-                .setTargetId(conversation.getConversationId())
+                .setTargetId(message.getConversation().getConversationId())
                 .setData(upMsg.toByteString())
                 .build();
 
@@ -1415,6 +1458,42 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] getPubKeys(String userId, String currentUserId, int index) {
+        userId = TextUtils.isEmpty(userId) ? "" : userId;
+        currentUserId = TextUtils.isEmpty(currentUserId) ? "" : userId;
+        Appmessages.UserIdsReq.Builder builder = Appmessages.UserIdsReq.newBuilder();
+        builder.addUserIds(userId);
+        builder.addUserIds(currentUserId);
+        Appmessages.UserIdsReq req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(BATCH_QRY_PUBKEYS)
+                .setTargetId(currentUserId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] uploadPubKey(byte[] pubKey, String deviceId, String currentUserId, int index) {
+        Appmessages.PublicKeyData key = Appmessages.PublicKeyData.newBuilder()
+                .setUserId(currentUserId)
+                .setDeviceId(deviceId)
+                .setPublicKey(ByteString.copyFrom(pubKey))
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(UPLOAD_PUBKEY)
+                .setTargetId(currentUserId)
+                .setData(key.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] pingData() {
         Connect.ImWebsocketMsg msg = Connect.ImWebsocketMsg.newBuilder()
                 .setVersion(PROTOCOL_VERSION)
@@ -1588,6 +1667,9 @@ class PBData {
                             break;
                         case PBRcvObj.PBRcvType.getUserStatusAck:
                             obj = getUserStatusAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.qryPubKeysAck:
+                            obj = qryPubKeysAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
 
                         default:
@@ -1922,6 +2004,23 @@ class PBData {
         return obj;
     }
 
+    private PBRcvObj qryPubKeysAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.MultiPublicKeys multiPublicKeys = Appmessages.MultiPublicKeys.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.qryPubKeysAck);
+        List <E2EEInfo> infoList = new ArrayList<>();
+        for (Appmessages.PublicKeys publicKeys : multiPublicKeys.getItemsList()) {
+            for (Appmessages.PublicKeyData publicKey : publicKeys.getPublicKeysList()) {
+                E2EEInfo info = e2eeInfoWithPublicKeyData(publicKey);
+                infoList.add(info);
+            }
+        }
+        PBRcvObj.TemplateAck<List<E2EEInfo>> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = infoList;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
     private PBRcvObj qryMsgExtAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.MsgExtItemsList list = Appmessages.MsgExtItemsList.parseFrom(body.getData());
@@ -2206,6 +2305,38 @@ class PBData {
         message.setSeqNo(downMsg.getMsgSeqNo());
         message.setMsgIndex(downMsg.getUnreadIndex());
         byte[] content = downMsg.getMsgContent().toByteArray();
+
+        if ((downMsg.getFlags() & MessageContent.MessageFlag.IS_E2EE.getValue()) != 0) {
+            Appmessages.E2ESuite suite = downMsg.getE2ESuite();
+            byte[] senderPubKey = suite.getSenderPubKey().toByteArray();
+            byte[] nonce = suite.getNonce().toByteArray();
+            byte[] tag = suite.getTag().toByteArray();
+            Appmessages.E2ECiphers ciphers = suite.getCiphers();
+            byte[] cipherData = null;
+            for (Appmessages.E2ECipher cipher : ciphers.getItemsList()) {
+                if (cipher.getDeviceId().equals(JIM.getInstance().getDeviceId())) {
+                    cipherData = cipher.getCipher().toByteArray();
+                    break;
+                }
+            }
+            byte[] priKey = mE2EEProvider.getPriKey();
+            if (cipherData != null && priKey != null) {
+                int cipherLength = cipherData.length - 12 - 16;
+                byte[] cipherNonce = new byte[12];
+                byte[] encryptedCEK = new byte[cipherLength];
+                byte[] cipherTag = new byte[16];
+                System.arraycopy(cipherData, 0, cipherNonce, 0, 12);
+                System.arraycopy(cipherData, 12, encryptedCEK, 0, cipherLength);
+                System.arraycopy(cipherData, 12 + cipherLength, cipherTag, 0, 16);
+
+                byte[] sharedSecret = EncryptUtility.calculateX25519SharedSecret(priKey, senderPubKey);
+                byte[] hkdf = EncryptUtility.deriveAES256KeyFromSharedSecret(sharedSecret);
+                byte[] aesKey = EncryptUtility.decryptAes256Gcm(hkdf, cipherNonce, null, encryptedCEK, cipherTag);
+                content = EncryptUtility.decryptAes256Gcm(aesKey, nonce, null, content, tag);
+                JLogger.i("lifei", "aesKey is " + Arrays.toString(aesKey) + ", aesNonce is " + Arrays.toString(nonce) + ", aesTag is " + Arrays.toString(tag) + ", deviceId is " + JIM.getInstance().getDeviceId() +
+                        ", sharedSecret is " + Arrays.toString(sharedSecret) + ", hkdf is " + Arrays.toString(hkdf) + ", cipherNonce is " + Arrays.toString(cipherNonce) + ", cipherTag is " + Arrays.toString(cipherTag) + ", encryptedCEK is " + Arrays.toString(encryptedCEK));
+            }
+        }
         if (mMessagePreprocessor != null) {
             content = mMessagePreprocessor.decryptMessageContent(content, conversation, message.getContentType());
         }
@@ -2535,6 +2666,14 @@ class PBData {
         return tagInfo;
     }
 
+    private E2EEInfo e2eeInfoWithPublicKeyData(Appmessages.PublicKeyData publicKey) {
+        E2EEInfo info = new E2EEInfo();
+        info.setUserId(publicKey.getUserId());
+        info.setDeviceId(publicKey.getDeviceId());
+        info.setPubKey(publicKey.getPublicKey().toByteArray());
+        return info;
+    }
+
     private Appmessages.UserInfo pbUserInfoWithUserInfo(UserInfo userInfo) {
         if (userInfo == null) {
             return null;
@@ -2658,6 +2797,9 @@ class PBData {
             case SubStatus:
                 result = Conversation.ConversationType.SUB_STATUS;
                 break;
+            case PrivateE2EE:
+                result = Conversation.ConversationType.PRIVATE_E2EE;
+                break;
             default:
                 break;
         }
@@ -2681,6 +2823,12 @@ class PBData {
                 break;
             case PUBLIC_SERVICE:
                 result = Appmessages.ChannelType.PublicService;
+                break;
+            case SUB_STATUS:
+                result = Appmessages.ChannelType.SubStatus;
+                break;
+            case PRIVATE_E2EE:
+                result = Appmessages.ChannelType.PrivateE2EE;
                 break;
             default:
                 break;
@@ -2743,6 +2891,50 @@ class PBData {
             return PBRcvObj.PBRcvType.cmdMatchError;
         }
         return type;
+    }
+
+    private byte[] buildWrappedKey(
+            byte[] nonce,
+            byte[] encryptedCEK,
+            byte[] tag) {
+
+        if (nonce == null || encryptedCEK == null || tag == null) {
+            return null;
+        }
+
+        byte[] result = new byte[
+                nonce.length +
+                        encryptedCEK.length +
+                        tag.length];
+
+        int offset = 0;
+
+        System.arraycopy(
+                nonce,
+                0,
+                result,
+                offset,
+                nonce.length);
+
+        offset += nonce.length;
+
+        System.arraycopy(
+                encryptedCEK,
+                0,
+                result,
+                offset,
+                encryptedCEK.length);
+
+        offset += encryptedCEK.length;
+
+        System.arraycopy(
+                tag,
+                0,
+                result,
+                offset,
+                tag.length);
+
+        return result;
     }
 
     private static class CmdType {
@@ -2829,11 +3021,14 @@ class PBData {
     private static final String QRY_GROUP_INFO = "qry_group_info";
     private static final String QRY_FRIEND_INFOS = "qry_friend_infos";
     private static final String QRY_USER_STATUS = "qry_user_status";
+    private static final String BATCH_QRY_PUBKEYS = "batch_qry_pubkeys";
+    private static final String UPLOAD_PUBKEY = "upload_pubkey";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
     private static final String PC_MSG = "pc_msg";
+    private static final String S_P_MSG = "s_p_msg";
     private static final String NTF = "ntf";
     private static final String MSG = "msg";
     private static final String C_USER_NTF = "c_user_ntf";
@@ -2904,11 +3099,15 @@ class PBData {
             put(CREATE_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_USER_CONVER_TAGS, PBRcvObj.PBRcvType.getConversationTagListAck);
             put(QRY_USER_STATUS, PBRcvObj.PBRcvType.getUserStatusAck);
+            put(BATCH_QRY_PUBKEYS, PBRcvObj.PBRcvType.qryPubKeysAck);
+            put(UPLOAD_PUBKEY, PBRcvObj.PBRcvType.simpleQryAck);
+            put(S_P_MSG, PBRcvObj.PBRcvType.publishMsgAck);
         }
     };
 
     private final ConcurrentHashMap<Integer, String> mMsgCmdMap = new ConcurrentHashMap<>();
     private IDataConverter mConverter = new SimpleDataConverter();
     private IMessageManager.IMessagePreprocessor mMessagePreprocessor;
+    private IE2EEProvider mE2EEProvider;
     private IUltEncrypt mConverter2 = fetchUltConverter();
 }

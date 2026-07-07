@@ -116,8 +116,8 @@ public class JIM {
         return mCore.getUserId();
     }
 
-    public String getDeviceId(Context context) {
-        return JUtility.getDeviceId(context);
+    public String getDeviceId() {
+        return mCore.getDeviceId();
     }
 
     public long getTimeDifference() {
