@@ -276,6 +276,7 @@ class PBData {
             Appmessages.E2ECiphers.Builder ciphersBuilder = Appmessages.E2ECiphers.newBuilder();
             for (E2EEInfo e2EEInfo : e2EEInfoList) {
                 Appmessages.E2ECipher.Builder cipherBuilder = Appmessages.E2ECipher.newBuilder();
+                cipherBuilder.setUserId(e2EEInfo.getUserId());
                 cipherBuilder.setDeviceId(e2EEInfo.getDeviceId());
 
                 byte[] sharedSecret = EncryptUtility.calculateX25519SharedSecret(priKey, e2EEInfo.getPubKey());
@@ -1460,7 +1461,7 @@ class PBData {
 
     byte[] getPubKeys(String userId, String currentUserId, int index) {
         userId = TextUtils.isEmpty(userId) ? "" : userId;
-        currentUserId = TextUtils.isEmpty(currentUserId) ? "" : userId;
+        currentUserId = TextUtils.isEmpty(currentUserId) ? "" : currentUserId;
         Appmessages.UserIdsReq.Builder builder = Appmessages.UserIdsReq.newBuilder();
         builder.addUserIds(userId);
         builder.addUserIds(currentUserId);
@@ -2314,7 +2315,8 @@ class PBData {
             Appmessages.E2ECiphers ciphers = suite.getCiphers();
             byte[] cipherData = null;
             for (Appmessages.E2ECipher cipher : ciphers.getItemsList()) {
-                if (cipher.getDeviceId().equals(JIM.getInstance().getDeviceId())) {
+                if (cipher.getUserId().equals(JIM.getInstance().getCurrentUserId())
+                && cipher.getDeviceId().equals(JIM.getInstance().getDeviceId())) {
                     cipherData = cipher.getCipher().toByteArray();
                     break;
                 }

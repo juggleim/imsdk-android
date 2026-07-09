@@ -1006,6 +1006,7 @@ message E2ECiphers{
 }
 
 message E2ECipher{
-  string deviceId = 1;
-  bytes cipher = 2;
+  string userId = 1;
+  string deviceId = 2;
+  bytes cipher = 3;
 }
