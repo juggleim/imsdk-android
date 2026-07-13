@@ -12,11 +12,11 @@ import java.util.List;
 public class MessageMentionInfo {
     public enum MentionType {
         DEFAULT(0),
-        /// @ 所有人
+        /// Mentions everyone.
         ALL(1),
-        /// @ 指定用户
+        /// Mentions specified users.
         SOMEONE(2),
-        /// @ 所有人和指定用户
+        /// Mentions everyone and specified users.
         ALL_AND_SOMEONE(3);
 
         MentionType(int value) {

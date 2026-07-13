@@ -25,10 +25,10 @@ public class JLogger implements IJLog {
     private JLogger() {
     }
 
-    private static final long DEFAULT_EXPIRED_TIME = 7 * 24 * 60 * 60 * 1000;//默认日志过期时间，7天
-    private static final long DEFAULT_LOG_FILE_CREATE_INTERVAL = 60 * 60 * 1000;//默认新日志文件创建间隔，1小时
+    private static final long DEFAULT_EXPIRED_TIME = 7 * 24 * 60 * 60 * 1000;//Default log expiration time: 7 days
+    private static final long DEFAULT_LOG_FILE_CREATE_INTERVAL = 60 * 60 * 1000;//Default new log file creation interval: 1 hour
     private static final String TAG = "JLogger";
-    private static final String DEFAULT_LOG_FILE_DIR = "jet_im/jlog";//默认日志保存目录
+    private static final String DEFAULT_LOG_FILE_DIR = "jet_im/jlog";//Default log storage directory
 
     private JLogConfig mJLogConfig;
     private ActionManager mActionManager;
@@ -74,12 +74,12 @@ public class JLogger implements IJLog {
         getInstance().write(JLogLevel.JLogLevelVerbose, tag, msg);
     }
 
-    //构造日志打印tag
+    //Build the log tag
     private static String generateLogTag(String tag) {
         return String.format("[%s:%s]", TAG, tag == null ? "" : tag);
     }
 
-    //构造控制台日志打印内容
+    //Build console log output
     private static String generateLogContent(String... msg) {
         if (msg == null) return "";
         StringBuilder builder = new StringBuilder();
@@ -147,12 +147,12 @@ public class JLogger implements IJLog {
         mActionManager.addWriteAction(level, tag, Arrays.asList(keys));
     }
 
-    //检查当前是否允许在控制台打印日志
+    //Check whether console logging is currently allowed
     private boolean canPrintConsole(JLogLevel printLevel) {
         return mJLogConfig != null && printLevel.getCode() <= mJLogConfig.getLogConsoleLevel().getCode();
     }
 
-    //构造默认日志保存目录
+    // Build the default log storage directory
     private String getDefaultJLogDir(Context context) {
         File file = context.getFilesDir();
         String path = file.getAbsolutePath();
@@ -160,7 +160,7 @@ public class JLogger implements IJLog {
         return path;
     }
 
-    //初始化日志目录
+    //Initialize the log directory
     private void createJLogDir(String dirPath) {
         try {
             File file = new File(dirPath);

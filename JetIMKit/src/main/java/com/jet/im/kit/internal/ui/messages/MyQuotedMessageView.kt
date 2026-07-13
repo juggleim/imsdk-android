@@ -111,7 +111,7 @@ internal class MyQuotedMessageView @JvmOverloads constructor(
         when (val content = parentMessage.content) {
             is TextMessage -> {
                 binding.quoteReplyMessagePanel.visibility = VISIBLE
-                val text = content.content
+                val text = content.content ?: ""
                 binding.tvQuoteReplyMessage.text = textUIConfig?.apply(context, text) ?: text
                 binding.tvQuoteReplyMessage.isSingleLine = false
                 binding.tvQuoteReplyMessage.maxLines = 2

@@ -6,64 +6,64 @@ import java.util.Map;
 public interface IChatroomManager {
 
     /**
-     * 加入聊天室
+     * Joins a chatroom.
      *
-     * @param chatroomId 聊天室 id
+     * @param chatroomId Chatroom ID.
      */
     void joinChatroom(String chatroomId);
 
     /**
-     * 加入聊天室
+     * Joins a chatroom.
      *
-     * @param chatroomId 聊天室 id
-     * @param prevMessageCount 加入聊天室时获取的历史消息数量
+     * @param chatroomId Chatroom ID.
+     * @param prevMessageCount Number of historical messages to fetch when joining the chatroom.
      */
     void joinChatroom(String chatroomId, int prevMessageCount);
 
     /**
-     * 加入聊天室
+     * Joins a chatroom.
      *
-     * @param chatroomId 聊天室 id
-     * @param prevMessageCount 加入聊天室时获取的历史消息数量
-     * @param isAutoCreate 当聊天室不存在时是否自动创建（默认不创建）
+     * @param chatroomId Chatroom ID.
+     * @param prevMessageCount Number of historical messages to fetch when joining the chatroom.
+     * @param isAutoCreate Whether to automatically create the chatroom when it does not exist. Not created by default.
      */
     void joinChatroom(String chatroomId, int prevMessageCount, boolean isAutoCreate);
 
     /**
-     * 退出聊天室
+     * Quits a chatroom.
      *
-     * @param chatroomId 聊天室 id
+     * @param chatroomId Chatroom ID.
      */
     void quitChatroom(String chatroomId);
 
     /**
-     * 设置聊天室属性
+     * Sets chatroom attributes.
      *
-     * @param chatroomId 聊天室 id
-     * @param attributes 聊天室属性，key 和 value 都是字符串，最多支持设置 100 个不同的属性。
-     *                   非当前用户设置的 key 在客户端不能进行操作（返回 JErrorCode.CHATROOM_KEY_UNAUTHORIZED）。
-     * @param callback 完成回调
-     *                 code 返回 JErrorCode.NONE 时表示所有属性都设置成功。
-     *                 其它 code 表示存在设置失败的 key，所有设置失败的 key 都会回调，并返回对应的错误码，可以从 JErrorCode 的定义中找到对应的错误码。
+     * @param chatroomId Chatroom ID.
+     * @param attributes Chatroom attributes. Both keys and values are strings. Up to 100 different attributes are supported.
+     *                   Keys not set by the current user cannot be operated on by the client and return JErrorCode.CHATROOM_KEY_UNAUTHORIZED.
+     * @param callback Completion callback.
+     *                 When code returns JErrorCode.NONE, all attributes were set successfully.
+     *                 Other codes indicate that some keys failed to be set. All failed keys are returned in the callback with the corresponding error codes, which can be found in the JErrorCode definitions.
      */
     void setAttributes(String chatroomId, Map<String, String> attributes, IChatroomAttributesUpdateCallback callback);
 
     /**
-     * 删除聊天室属性
+     * Removes chatroom attributes.
      *
-     * @param chatroomId 聊天室 id
-     * @param keys 待删除的属性 key 列表。非当前用户设置的 key 不能删除。
-     * @param callback 完成回调。
-     *                 code 返回 JErrorCode.NONE 时表示所有属性都删除成功。
-     *                 其它 code 表示存在删除失败的 key，所有删除失败的 key 都会回调，并返回对应的错误码，可以从 JErrorCode 的定义中找到对应的错误码。
+     * @param chatroomId Chatroom ID.
+     * @param keys List of attribute keys to delete. Keys not set by the current user cannot be deleted.
+     * @param callback Completion callback.
+     *                 When code returns JErrorCode.NONE, all attributes were deleted successfully.
+     *                 Other codes indicate that some keys failed to be deleted. All failed keys are returned in the callback with the corresponding error codes, which can be found in the JErrorCode definitions.
      */
     void removeAttributes(String chatroomId, List<String> keys, IChatroomAttributesUpdateCallback callback);
 
     /**
-     * 获取聊天室所有属性
+     * Gets all chatroom attributes.
      *
-     * @param chatroomId 聊天室 id
-     * @param callback 完成回调
+     * @param chatroomId Chatroom ID.
+     * @param callback Completion callback.
      */
     void getAllAttributes(String chatroomId, IChatroomAttributesCallback callback);
 
@@ -77,44 +77,44 @@ public interface IChatroomManager {
 
     interface IChatroomAttributesUpdateCallback {
         /**
-         * 完成回调
+         * Completion callback.
          *
-         * @param errorCode 返回 JErrorCode.NONE 时表示所有属性设置成功
-         *             其它 code 表示存在设置失败的 key，所有失败的 key 都会在 failedKeys 中回调。
-         * @param failedKeys key 表示 chatroomId，value 表示对应的错误码
+         * @param errorCode Returns JErrorCode.NONE when all attributes are set successfully.
+         *             Other codes indicate that some keys failed to be set. All failed keys are returned in failedKeys.
+         * @param failedKeys The key indicates the chatroomId, and the value indicates the corresponding error code.
          */
         void onComplete(int errorCode, Map<String, Integer> failedKeys);
     }
 
     interface IChatroomAttributesCallback {
         /**
-         * 完成回调
+         * Completion callback.
          *
-         * @param errorCode 返回 JErrorCode.NONE 时表示获取成功
-         * @param attributes 获取回来的属性列表
+         * @param errorCode Returns JErrorCode.NONE when the fetch succeeds.
+         * @param attributes Fetched attribute list.
          */
         void onComplete(int errorCode, Map<String, String> attributes);
     }
 
     interface IChatroomListener {
-        /// 当前用户加入聊天室
+        /// Current user joined the chatroom.
         void onChatroomJoin(String chatroomId);
-        /// 当前用户退出聊天室
+        /// Current user quit the chatroom.
         void onChatroomQuit(String chatroomId);
-        /// 加入聊天室失败
+        /// Failed to join the chatroom.
         void onChatroomJoinFail(String chatroomId, int errorCode);
-        /// 退出聊天室失败
+        /// Failed to quit the chatroom.
         void onChatroomQuitFail(String chatroomId, int errorCode);
-        /// 当前用户被踢出聊天室
+        /// Current user was kicked out of the chatroom.
         void onChatroomKick(String chatroomId);
-        /// 聊天室被销毁
+        /// The chatroom was destroyed.
         void onChatroomDestroy(String chatroomId);
     }
 
     interface IChatroomAttributesListener {
-        /// 聊天室属性更新（新增或者 value 有变化）
+        /// Chatroom attributes were updated, either added or with changed values.
         void onAttributesUpdate(String chatroomId, Map<String, String> attributes);
-        /// 聊天室属性删除
+        /// Chatroom attributes were deleted.
         void onAttributesDelete(String chatroomId, Map<String, String> attributes);
     }
 }

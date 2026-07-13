@@ -3,6 +3,8 @@ package com.juggle.im.interfaces;
 import com.juggle.im.JIMConst;
 import com.juggle.im.push.PushChannel;
 
+import java.util.Map;
+
 public interface IConnectionManager {
     void connect(String token);
 
@@ -11,19 +13,23 @@ public interface IConnectionManager {
     void registerPushToken(PushChannel channel, String token);
 
     /**
-     * 设置语言（主要影响内置消息的推送语言，目前支持中/英文）
-     * @param language 语言，例 “en”、“zh”
-     * @param callback 结果回调
+     * Sets the language. This mainly affects the push language for built-in messages.
+     * Currently supports English and Chinese.
+     * @param language Language, for example "en" or "zh".
+     * @param callback Result callback.
      */
     void setLanguage(String language, ISimpleCallback callback);
 
     /**
-     * 获取语言（主要影响内置消息的推送语言，目前支持中/英文）
-     * @param callback 结果回调
+     * Gets the language. This mainly affects the push language for built-in messages.
+     * Currently supports English and Chinese.
+     * @param callback Result callback.
      */
     void getLanguage(JIMConst.IResultCallback<String> callback);
 
     JIMConst.ConnectionStatus getConnectionStatus();
+
+    void setConnectParams(String signKey, Map<String, String> headers);
 
     void addConnectionStatusListener(String key, IConnectionStatusListener listener);
 
@@ -43,5 +49,4 @@ public interface IConnectionManager {
         void onError(int errorCode);
     }
 }
-
 

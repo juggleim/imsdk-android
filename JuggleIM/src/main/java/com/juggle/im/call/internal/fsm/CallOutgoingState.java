@@ -6,6 +6,7 @@ import com.juggle.im.call.CallConst;
 import com.juggle.im.call.internal.CallEvent;
 import com.juggle.im.call.internal.CallSessionImpl;
 import com.juggle.im.call.model.CallMember;
+import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.util.JLogger;
 
 import java.util.Timer;
@@ -47,7 +48,8 @@ public class CallOutgoingState extends CallState {
                 break;
 
             case CallEvent.INVITE_FAIL:
-                inviteFail();
+                int errorCode = msg.arg1;
+                inviteFail(errorCode);
                 callSession.transitionToIdleState();
                 break;
 
@@ -92,13 +94,17 @@ public class CallOutgoingState extends CallState {
         }
     }
 
-    private void inviteFail() {
+    private void inviteFail(int errorCode) {
         CallSessionImpl callSession = getCallSessionImpl();
         if (callSession == null) {
             return;
         }
         callSession.setFinishTime(System.currentTimeMillis());
-        callSession.setFinishReason(CallConst.CallFinishReason.NETWORK_ERROR);
+        if (errorCode == ConstInternal.ErrorCode.CALL_CONVERSATION_BOUND) {
+            callSession.setFinishReason(CallConst.CallFinishReason.OTHER_SIDE_BUSY);
+        } else {
+            callSession.setFinishReason(CallConst.CallFinishReason.NETWORK_ERROR);
+        }
     }
 
     private void inviteTimeout() {

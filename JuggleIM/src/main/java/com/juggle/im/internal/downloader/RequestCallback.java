@@ -3,29 +3,29 @@ package com.juggle.im.internal.downloader;
 /** @author lvhongzhen */
 public interface RequestCallback {
     /**
-     * 下载成功的回调
+     * Callback for successful download
      *
-     * @param savePath 媒体存放地址
+     * @param savePath Media storage path
      */
     void onSuccess(String savePath);
 
     /**
-     * 下载文件异常回调
+     * Callback for download file exceptions
      *
-     * @param request 本地下载任务
-     * @param e 出错原因
+     * @param request Local download task
+     * @param e Error reason
      */
     void onError(BaseDownloadRequest request, Throwable e);
 
     /**
-     * 下载文件进度
+     * Download file progress
      *
-     * @param progress 进度值
+     * @param progress Progress value
      */
     void onProgress(int progress);
 
     /**
-     * 取消任务
+     * Cancel the task
      *
      * @param tag
      */

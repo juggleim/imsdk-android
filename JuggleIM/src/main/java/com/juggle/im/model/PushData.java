@@ -18,8 +18,18 @@ public class PushData {
         mExtra = extra;
     }
 
-    // 推送内容，用于通知栏的展示
+    public String getTitle() {
+        return mTitle;
+    }
+
+    public void setTitle(String title) {
+        mTitle = title;
+    }
+
+    // Push title used for notification display.
+    private String mTitle;
+    // Push content used for notification display.
     private String mContent;
-    // 扩展字段，可以携带自定义 json
+    // Extra field that can carry custom JSON.
     private String mExtra;
 }

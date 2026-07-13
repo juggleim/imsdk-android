@@ -2,6 +2,7 @@ package com.juggle.im.internal.core.network;
 
 import static com.juggle.im.internal.ConstInternal.SDK_VERSION;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Handler;
 
@@ -34,11 +35,15 @@ import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketTimestampCallback;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
 import com.juggle.im.internal.model.ConcreteMessage;
+import com.juggle.im.internal.model.E2EEInfo;
 import com.juggle.im.internal.model.MergeInfo;
 import com.juggle.im.internal.model.upload.UploadFileType;
 import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.internal.util.JUtility;
 import com.juggle.im.model.Conversation;
+import com.juggle.im.model.ConversationTagInfo;
+import com.juggle.im.model.FriendInfo;
+import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
@@ -47,6 +52,7 @@ import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.UserStatus;
 import com.juggle.im.model.messages.ImageMessage;
 import com.juggle.im.model.messages.UnknownMessage;
 import com.juggle.im.model.messages.VideoMessage;
@@ -60,6 +66,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -74,8 +81,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mCompeteStatusList = new ArrayList<>();
     }
 
-    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, String language, List<String> servers) {
-        JLogger.i("WS-Connect", "appKey is " + appKey + ", token is " + token + ", servers is " + servers);
+    public void connect(String appKey, String token, String deviceId, String packageName, String networkType, String carrier, PushChannel pushChannel, String pushToken, String language, List<String> servers, String signKey, Map<String, String> headers) {
+        JLogger.i("WS-Connect", "appKey is " + JUtility.maskAppKey(appKey) + ", token is " + JUtility.maskToken(token) + ", servers is " + servers);
         mSendHandler.post(() -> {
             mAppKey = appKey;
             mToken = token;
@@ -86,6 +93,8 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             mNetworkType = networkType;
             mCarrier = carrier;
             mLanguage = language;
+            mSignKey = signKey;
+            mConnectHeaders = headers;
 
             resetWebSocketClient();
             ExecutorService executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_COUNT);
@@ -93,6 +102,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             for (String server : servers) {
                 URI uri = createWebSocketUri(server);
                 JWebSocketClient wsc = new JWebSocketClient(uri, JWebSocket.this);
+                addConnectHeader(wsc);
                 mCompeteWSCList.add(wsc);
                 mCompeteStatusList.add(WebSocketStatus.IDLE);
                 executorService.execute(wsc::connect);
@@ -125,42 +135,39 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mPbData.setMessagePreprocessor(preprocessor);
     }
 
-    public void sendIMMessage(MessageContent content,
-                              Conversation conversation,
-                              String clientUid,
+    public void setE2EEProvider(IE2EEProvider provider) {
+        mPbData.setE2EEProvider(provider);
+    }
+
+    public void sendIMMessage(ConcreteMessage message,
                               MergeInfo mergeInfo,
-                              MessageMentionInfo mentionInfo,
-                              ConcreteMessage referMsg,
-                              PushData pushData,
                               boolean isBroadcast,
                               String userId,
-                              long lifeTime,
-                              long lifeTimeAfterRead,
+                              byte[] currentPubKey,
+                              byte[] currentPriKey,
+                              List<E2EEInfo> e2EEInfoList,
                               SendMessageCallback callback) {
         Integer key = mCmdIndex;
-        byte[] encodeBytes = encodeContentData(content);
+        byte[] encodeBytes = encodeContentData(message.getContent());
         String contentType;
-        if (content instanceof UnknownMessage) {
-            UnknownMessage unknown = (UnknownMessage) content;
+        if (message.getContent() instanceof UnknownMessage) {
+            UnknownMessage unknown = (UnknownMessage) message.getContent();
             contentType = unknown.getMessageType();
         } else {
-            contentType = content.getContentType();
+            contentType = message.getContent().getContentType();
         }
 
         byte[] bytes = mPbData.sendMessageData(contentType,
                 encodeBytes,
-                content.getFlags(),
-                clientUid,
+                message.getContent().getFlags(),
+                message,
                 mergeInfo,
                 isBroadcast,
                 userId,
                 mCmdIndex++,
-                conversation,
-                mentionInfo,
-                referMsg,
-                pushData,
-                lifeTime,
-                lifeTimeAfterRead);
+                currentPubKey,
+                currentPriKey,
+                e2EEInfoList);
         mWebSocketCommandManager.putCommand(key, callback);
         JLogger.i("WS-Send", "send message");
         sendWhenOpen(bytes);
@@ -577,6 +584,38 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         sendWhenOpen(bytes);
     }
 
+    public void createConversationTag(String tagId, String tagName, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.createConversationTag(tagId, tagName, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "create conversation tag, tagId is " + tagId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void destroyConversationTag(String tagId, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.destroyConversationTag(tagId, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "destroy conversation tag, tagId is " + tagId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void updateConversationTagName(String tagId, String name, String userId, WebSocketTimestampCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.createConversationTag(tagId, name, userId, mCmdIndex++);
+        JLogger.i("WS-Send", "update conversation tag name, tagId is " + tagId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getConversationTagList(String userId, WebSocketDataCallback<List<ConversationTagInfo>> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getConversationTagList(userId, mCmdIndex++);
+        JLogger.i("WS-Send", "get conversation tag list");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
     public void addConversationsToTag(List<Conversation> conversations, String tagId, String userId, WebSocketSimpleCallback callback) {
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.addConversationsToTag(conversations, tagId, userId, mCmdIndex++);
@@ -653,6 +692,54 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         Integer key = mCmdIndex;
         byte[] bytes = mPbData.queryCallRoom(roomId, mCmdIndex++);
         JLogger.i("WS-Send", "query call room");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void fetchUserInfo(String userId, WebSocketDataCallback<UserInfo> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.fetchUserInfo(userId, mCmdIndex++);
+        JLogger.i("WS-Send", "fetch user info, userId is " + userId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void fetchGroupInfo(String groupId, WebSocketDataCallback<GroupInfo> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.fetchGroupInfo(groupId, mCmdIndex++);
+        JLogger.i("WS-Send", "fetch group info, groupId is " + groupId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void fetchFriendInfo(String userId, String currentUserId, WebSocketDataCallback<FriendInfo> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.fetchFriendInfo(userId, currentUserId, mCmdIndex++);
+        JLogger.i("WS-Send", "fetch friend info, userId is " + userId);
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getUserStatus(List<String> userIdList, String currentUserId, WebSocketDataCallback<List<UserStatus>> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getUserStatus(userIdList, currentUserId, mCmdIndex++);
+        JLogger.i("WS-Send", "get user status, count is " + userIdList.size());
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void getPubKeys(String userId, String currentUserId, WebSocketDataCallback<List<E2EEInfo>> callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.getPubKeys(userId, currentUserId, mCmdIndex++);
+        JLogger.i("WS-Send", "get pub keys");
+        mWebSocketCommandManager.putCommand(key, callback);
+        sendWhenOpen(bytes);
+    }
+
+    public void uploadPubKey(byte[] pubKey, String deviceId, String currentUserId, WebSocketSimpleCallback callback) {
+        Integer key = mCmdIndex;
+        byte[] bytes = mPbData.uploadPubKey(pubKey, deviceId, currentUserId, mCmdIndex++);
+        JLogger.i("WS-Send", "upload pub key");
         mWebSocketCommandManager.putCommand(key, callback);
         sendWhenOpen(bytes);
     }
@@ -781,9 +868,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public interface IWebSocketCallListener {
         void onCallInvite(RtcRoom room, UserInfo inviter, List<UserInfo> targetUsers);
-        // 用户主动挂断
+        // User hung up actively
         void onCallHangup(RtcRoom room, UserInfo user);
-        // 用户掉线或者被踢出通话
+        // User went offline or was kicked out of the call
         void onCallQuit(RtcRoom room, List<CallMember> members);
         void onCallAccept(RtcRoom room, UserInfo user);
         void onRoomDestroy(RtcRoom room);
@@ -913,11 +1000,11 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
                 break;
             case PBRcvObj.PBRcvType.qryCallRoomAck:
-                //复用 mRtcQryCallRoomsAck
+                //Reuse mRtcQryCallRoomsAck
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
                 break;
-            case PBRcvObj.PBRcvType.getUserInfoAck:
-                handleGetUserInfoAck(obj.mStringAck);
+            case PBRcvObj.PBRcvType.getUserSettingAck:
+                handleGetUserSettingAck(obj.mStringAck);
                 break;
             case PBRcvObj.PBRcvType.qryMsgExtAck:
                 handleQryMsgExtAck(obj.mQryMsgExtAck);
@@ -929,7 +1016,28 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 handleGetFavoriteMsgAck(obj.mGetFavoriteMsgAck);
                 break;
             case PBRcvObj.PBRcvType.getConversationConfAck:
+                //noinspection unchecked
                 handleGetConversationConfAck(obj.mTemplateAck);
+                break;
+            case PBRcvObj.PBRcvType.getUserInfoAck:
+                //noinspection unchecked
+                handleGetUserInfoAck(obj.mTemplateAck);
+                break;
+            case PBRcvObj.PBRcvType.getGroupInfoAck:
+                //noinspection unchecked
+                handleGetGroupInfoAck(obj.mTemplateAck);
+                break;
+            case PBRcvObj.PBRcvType.getFriendInfosAck:
+                //noinspection unchecked
+                handleGetFriendInfoAck(obj.mTemplateAck);
+                break;
+            case PBRcvObj.PBRcvType.getConversationTagListAck:
+                //noinspection unchecked
+                handleGetConversationTagListAck(obj.mTemplateAck);
+                break;
+            case PBRcvObj.PBRcvType.getUserStatusAck:
+            case PBRcvObj.PBRcvType.qryPubKeysAck:
+                handleTemplateAck(obj.mTemplateAck);
                 break;
             default:
                 JLogger.i("WS-Receive", "default, type is " + obj.getRcvType());
@@ -946,8 +1054,15 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 }
                 JLogger.i("WS-Connect", "onClose isCompeteFinish, code is " + code + ", reason is " + reason + ", isRemote is " + remote + ", clientIP is " + JUtility.getLocalIPv4Address()  + ", osVersion is " + Build.VERSION.RELEASE + ", networkId is " + mNetworkType + ", carrier is " + mCarrier + ", sdkVersion is " + SDK_VERSION);
                 resetWebSocketClient();
-                if (remote && mConnectListener != null) {
-                    mConnectListener.onWebSocketClose();
+                if (reason.contains("403")) {
+                    JLogger.e("WS-Connect", "webSocket 403");
+                    if (mConnectListener != null) {
+                        mConnectListener.onConnectComplete(ConstInternal.ErrorCode.CONNECT_FORBIDDEN, "", "", "");
+                    }
+                } else {
+                    if (remote && mConnectListener != null) {
+                        mConnectListener.onWebSocketClose();
+                    }
                 }
             } else {
                 for (int i = 0; i < mCompeteWSCList.size(); i++) {
@@ -964,10 +1079,19 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                         break;
                     }
                 }
-                if (allFailed && mConnectListener != null) {
+                if (allFailed) {
                     JLogger.i("WS-Connect", "onClose, code is " + code + ", reason is " + reason + ", isRemote " + remote + ", clientIP is " + JUtility.getLocalIPv4Address()  + ", osVersion is " + Build.VERSION.RELEASE + ", networkId is " + mNetworkType + ", carrier is " + mCarrier + ", sdkVersion is " + SDK_VERSION);
                     resetWebSocketClient();
-                    mConnectListener.onWebSocketClose();
+                    if (reason.contains("403")) {
+                        JLogger.e("WS-Connect", "webSocket 403");
+                        if (mConnectListener != null) {
+                            mConnectListener.onConnectComplete(ConstInternal.ErrorCode.CONNECT_FORBIDDEN, "", "", "");
+                        }
+                    } else {
+                        if (mConnectListener != null) {
+                            mConnectListener.onWebSocketClose();
+                        }
+                    }
                 }
             }
         });
@@ -980,7 +1104,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
         ex.printStackTrace();
         JLogger.e("WS-Connect", "onError, msg is " + ex.getMessage());
-        //不处理，避免业务层的异常导致重连
+        //Do not handle it to avoid reconnecting because of business-layer exceptions
 //        mSendHandler.post(this::resetWebSocketClient);
 //        if (mConnectListener != null) {
 //            mConnectListener.onWebSocketFail();
@@ -1013,7 +1137,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 mPushToken,
                 mNetworkType,
                 mCarrier,
-                JUtility.getLocalIPv4Address(),
+                JUtility.getLocalIPv4Address() == null ? "" : JUtility.getLocalIPv4Address(),
                 mLanguage);
         sendWhenOpen(bytes);
     }
@@ -1255,7 +1379,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
-    private void handleGetUserInfoAck(PBRcvObj.StringAck ack) {
+    private void handleGetUserSettingAck(PBRcvObj.StringAck ack) {
         JLogger.i("WS-Receive", "handleGetUserInfoAck");
         IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
         if (c == null) {
@@ -1329,6 +1453,88 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         if (c instanceof WebSocketDataCallback) {
             @SuppressWarnings("unchecked")
             WebSocketDataCallback<CallInfo> callback = (WebSocketDataCallback<CallInfo>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.t);
+            }
+        }
+    }
+
+    private void handleGetUserInfoAck(PBRcvObj.TemplateAck<UserInfo> ack) {
+        JLogger.i("WS-Receive", "handleGetUserInfoAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof WebSocketDataCallback) {
+            @SuppressWarnings("unchecked")
+            WebSocketDataCallback<UserInfo> callback = (WebSocketDataCallback<UserInfo>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.t);
+            }
+        }
+    }
+
+    private void handleGetGroupInfoAck(PBRcvObj.TemplateAck<GroupInfo> ack) {
+        JLogger.i("WS-Receive", "handleGetGroupInfoAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof WebSocketDataCallback) {
+            @SuppressWarnings("unchecked")
+            WebSocketDataCallback<GroupInfo> callback = (WebSocketDataCallback<GroupInfo>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.t);
+            }
+        }
+    }
+
+    private void handleGetFriendInfoAck(PBRcvObj.TemplateAck<FriendInfo> ack) {
+        JLogger.i("WS-Receive", "handleGetFriendInfoAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof WebSocketDataCallback) {
+            @SuppressWarnings("unchecked")
+            WebSocketDataCallback<FriendInfo> callback = (WebSocketDataCallback<FriendInfo>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.t);
+            }
+        }
+    }
+
+    private void handleGetConversationTagListAck(PBRcvObj.TemplateAck<List<ConversationTagInfo>> ack) {
+        JLogger.i("WS-Receive", "handleGetConversationTagListAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) {
+            return;
+        }
+        if (c instanceof WebSocketDataCallback) {
+            @SuppressWarnings("unchecked")
+            WebSocketDataCallback<List<ConversationTagInfo>> callback = (WebSocketDataCallback<List<ConversationTagInfo>>) c;
+            if (ack.code != 0) {
+                callback.onError(ack.code);
+            } else {
+                callback.onSuccess(ack.t);
+            }
+        }
+    }
+
+    private void handleTemplateAck(PBRcvObj.TemplateAck ack) {
+        JLogger.i("WS-Receive", "handleTemplateAck");
+        IWebSocketCallback c = mWebSocketCommandManager.removeCommand(ack.index);
+        if (c == null) return;
+        if (c instanceof WebSocketDataCallback) {
+            WebSocketDataCallback callback = (WebSocketDataCallback) c;
             if (ack.code != 0) {
                 callback.onError(ack.code);
             } else {
@@ -1491,7 +1697,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 return;
             }
             JLogger.e("WS-Send", mWebSocketClient == null ? "mWebSocketClient is null" : "mWebSocketClient is not open");
-            //可能是还没连接成功，或者根本就没连接
+            //The connection may not have succeeded yet, or may not be connected at all
             //webSocketSendFail();
             pushRemainCmdAndCallbackError();
         });
@@ -1507,6 +1713,29 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         mCompeteWSCList.clear();
         mCompeteStatusList.clear();
         mIsCompeteFinish = false;
+    }
+    
+    private void addConnectHeader(JWebSocketClient c) {
+        if (mConnectHeaders != null && !mConnectHeaders.isEmpty()) {
+            for (Map.Entry<String, String> entry : mConnectHeaders.entrySet()) {
+                c.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+        c.addHeader("x-appkey", mAppKey);
+        c.addHeader("x-token", mToken);
+        c.addHeader("x-platform", ConstInternal.PLATFORM);
+        c.addHeader("x-version", SDK_VERSION);
+        c.addHeader("x-device", Build.BRAND + "-" + Build.MODEL);
+        c.addHeader("x-device_id", mDeviceId);
+
+        Random random = new Random();
+        int randomNum = random.nextInt(100000);
+        @SuppressLint("DefaultLocale") String nonce = String.format("%05d", randomNum);
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String signature = JUtility.createSignature(nonce, timestamp, mSignKey);
+        c.addHeader("X-Nonce", nonce);
+        c.addHeader("X-Timestamp", timestamp);
+        c.addHeader("X-Signature", signature);
     }
 
     private URI createWebSocketUri(String server) {
@@ -1544,6 +1773,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private final List<JWebSocketClient> mCompeteWSCList;
     private final List<WebSocketStatus> mCompeteStatusList;
     private final Handler mSendHandler;
+    private String mSignKey;
+    private Map<String, String> mConnectHeaders;
+
     private static final String PROTOCOL_HEAD = "://";
     private static final String WS_HEAD_PREFIX = "ws://";
     private static final String WSS_HEAD_PREFIX = "wss://";

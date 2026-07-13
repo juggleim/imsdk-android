@@ -18,7 +18,11 @@ import com.juggle.im.call.internal.model.RtcRoom;
 import com.juggle.im.call.model.CallInfo;
 import com.juggle.im.call.model.CallMember;
 import com.juggle.im.interfaces.IMessageManager;
+import com.juggle.im.internal.model.E2EEInfo;
+import com.juggle.im.internal.util.EncryptUtility;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FavoriteMessage;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.ContentTypeCenter;
 import com.juggle.im.internal.model.ChatroomAttributeItem;
@@ -41,15 +45,16 @@ import com.juggle.im.model.MessageContent;
 import com.juggle.im.model.MessageMentionInfo;
 import com.juggle.im.model.MessageReaction;
 import com.juggle.im.model.MessageReactionItem;
-import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.UserStatus;
 import com.juggle.im.model.messages.MergeMessage;
 import com.juggle.im.push.PushChannel;
 
 import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +75,10 @@ class PBData {
 
     void setMessagePreprocessor(IMessageManager.IMessagePreprocessor preprocessor) {
         mMessagePreprocessor = preprocessor;
+    }
+
+    void setE2EEProvider(IE2EEProvider provider) {
+        mE2EEProvider = provider;
     }
 
     byte[] connectData(String appKey,
@@ -166,26 +175,23 @@ class PBData {
     byte[] sendMessageData(String contentType,
                            byte[] msgData,
                            int flags,
-                           String clientUid,
+                           ConcreteMessage message,
                            MergeInfo mergeInfo,
                            boolean isBroadcast,
                            String userId,
                            int index,
-                           Conversation conversation,
-                           MessageMentionInfo mentionInfo,
-                           ConcreteMessage referMsg,
-                           PushData pushData,
-                           long lifeTime,
-                           long lifeTimeAfterRead) {
+                           byte[] pubKey,
+                           byte[] priKey,
+                           List<E2EEInfo> e2EEInfoList) {
         if (mMessagePreprocessor != null) {
-            msgData = mMessagePreprocessor.encryptMessageContent(msgData, conversation, contentType);
+            msgData = mMessagePreprocessor.encryptMessageContent(msgData, message.getConversation(), contentType);
         }
         ByteString byteString = ByteString.copyFrom(msgData);
         Appmessages.UpMsg.Builder upMsgBuilder = Appmessages.UpMsg.newBuilder();
         upMsgBuilder.setMsgType(contentType)
                 .setMsgContent(byteString)
                 .setFlags(flags)
-                .setClientUid(clientUid);
+                .setClientUid(message.getClientUid());
         if (mergeInfo != null && TextUtils.isEmpty(mergeInfo.getContainerMsgId()) && mergeInfo.getMessages() != null) {
             flags |= MessageContent.MessageFlag.IS_MERGED.getValue();
             upMsgBuilder.setFlags(flags);
@@ -213,11 +219,11 @@ class PBData {
             flags |= MessageContent.MessageFlag.IS_BROADCAST.getValue();
             upMsgBuilder.setFlags(flags);
         }
-        if (mentionInfo != null) {
+        if (message.getMentionInfo() != null) {
             Appmessages.MentionInfo.Builder pbMentionBuilder = Appmessages.MentionInfo.newBuilder();
-            pbMentionBuilder.setMentionTypeValue(mentionInfo.getType().getValue());
-            if (mentionInfo.getTargetUsers() != null) {
-                for (UserInfo userInfo : mentionInfo.getTargetUsers()) {
+            pbMentionBuilder.setMentionTypeValue(message.getMentionInfo().getType().getValue());
+            if (message.getMentionInfo().getTargetUsers() != null) {
+                for (UserInfo userInfo : message.getMentionInfo().getTargetUsers()) {
                     Appmessages.UserInfo pbUser = Appmessages.UserInfo.newBuilder()
                             .setUserId(userInfo.getUserId())
                             .build();
@@ -226,30 +232,71 @@ class PBData {
             }
             upMsgBuilder.setMentionInfo(pbMentionBuilder);
         }
-        if (referMsg != null) {
-            Appmessages.DownMsg downMsg = downMsgWithMessage(referMsg);
+        if (message.getReferredMessage() != null) {
+            Appmessages.DownMsg downMsg = downMsgWithMessage((ConcreteMessage) message.getReferredMessage());
             upMsgBuilder.setReferMsg(downMsg);
         }
-        if (pushData != null) {
+        if (message.getPushData() != null) {
             Appmessages.PushData.Builder pbPushData = Appmessages.PushData.newBuilder();
-            if (pushData.getContent() != null) {
-                pbPushData.setPushText(pushData.getContent());
+            if (message.getPushData().getTitle() != null) {
+                pbPushData.setTitle(message.getPushData().getTitle());
             }
-            if (pushData.getExtra() != null) {
-                pbPushData.setPushExtraData(pushData.getExtra());
+            if (message.getPushData().getContent() != null) {
+                pbPushData.setPushText(message.getPushData().getContent());
+            }
+            if (message.getPushData().getExtra() != null) {
+                pbPushData.setPushExtraData(message.getPushData().getExtra());
             }
             upMsgBuilder.setPushData(pbPushData);
         }
-        upMsgBuilder.setLifeTime(lifeTime);
-        upMsgBuilder.setLifeTimeAfterRead(lifeTimeAfterRead);
-        if (!TextUtils.isEmpty(conversation.getSubChannel())) {
-            upMsgBuilder.setSubChannel(conversation.getSubChannel());
+        upMsgBuilder.setLifeTime(message.getLifeTime());
+        upMsgBuilder.setLifeTimeAfterRead(message.getLifeTimeAfterRead());
+        if (!TextUtils.isEmpty(message.getConversation().getSubChannel())) {
+            upMsgBuilder.setSubChannel(message.getConversation().getSubChannel());
+        }
+
+        if (pubKey != null) {
+            flags |= MessageContent.MessageFlag.IS_E2EE.getValue();
+            upMsgBuilder.setFlags(flags);
+
+            String sha256 = EncryptUtility.calcPubKeysSHA256Base64WithInfoList(e2EEInfoList);
+            byte[] aesKey = EncryptUtility.generateAes256GcmKey();
+            byte[] aesNonce = EncryptUtility.generateAes256GcmNonce();
+            byte[] aesTag = new byte[16];
+
+            byte[] encryptData = EncryptUtility.encryptAes256Gcm(aesKey, aesNonce, null, msgData, aesTag);
+            upMsgBuilder.setMsgContent(ByteString.copyFrom(encryptData));
+
+            Appmessages.E2ESuite.Builder suiteBuilder = Appmessages.E2ESuite.newBuilder()
+                    .setSenderPubKey(ByteString.copyFrom(pubKey))
+                    .setPubKeysHash(sha256)
+                    .setNonce(ByteString.copyFrom(aesNonce))
+                    .setTag(ByteString.copyFrom(aesTag));
+
+            Appmessages.E2ECiphers.Builder ciphersBuilder = Appmessages.E2ECiphers.newBuilder();
+            for (E2EEInfo e2EEInfo : e2EEInfoList) {
+                Appmessages.E2ECipher.Builder cipherBuilder = Appmessages.E2ECipher.newBuilder();
+                cipherBuilder.setUserId(e2EEInfo.getUserId());
+                cipherBuilder.setDeviceId(e2EEInfo.getDeviceId());
+
+                byte[] sharedSecret = EncryptUtility.calculateX25519SharedSecret(priKey, e2EEInfo.getPubKey());
+                byte[] hkdf = EncryptUtility.deriveAES256KeyFromSharedSecret(sharedSecret);
+                byte[] cipherNonce = EncryptUtility.generateAes256GcmNonce();
+                byte[] cipherTag = new byte[16];
+                byte[] encryptKey = EncryptUtility.encryptAes256Gcm(hkdf, cipherNonce, null, aesKey, cipherTag);
+                byte[] cipherData = buildWrappedKey(cipherNonce, encryptKey, cipherTag);
+
+                cipherBuilder.setCipher(ByteString.copyFrom(cipherData));
+                ciphersBuilder.addItems(cipherBuilder);
+            }
+            suiteBuilder.setCiphers(ciphersBuilder);
+            upMsgBuilder.setE2ESuite(suiteBuilder);
         }
 
         Appmessages.UpMsg upMsg = upMsgBuilder.build();
 
         String topic = "";
-        switch (conversation.getConversationType()) {
+        switch (message.getConversation().getConversationType()) {
             case PRIVATE:
                 topic = P_MSG;
                 break;
@@ -264,12 +311,15 @@ class PBData {
             case PUBLIC_SERVICE:
                 topic = PC_MSG;
                 break;
+            case PRIVATE_E2EE:
+                topic = S_P_MSG;
+                break;
         }
 
         Connect.PublishMsgBody publishMsgBody = Connect.PublishMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(topic)
-                .setTargetId(conversation.getConversationId())
+                .setTargetId(message.getConversation().getConversationId())
                 .setData(upMsg.toByteString())
                 .build();
 
@@ -1257,6 +1307,52 @@ class PBData {
         return m.toByteArray();
     }
 
+    byte[] createConversationTag(String tagId, String tagName, String userId, int index) {
+        Appmessages.ConverTag converTag = Appmessages.ConverTag.newBuilder()
+                .setTag(tagId)
+                .setTagName(tagName)
+                .build();
+        Appmessages.UserConverTags userConverTags = Appmessages.UserConverTags.newBuilder()
+                .addTags(converTag)
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(CREATE_USER_CONVER_TAGS)
+                .setTargetId(userId)
+                .setData(userConverTags.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] destroyConversationTag(String tagId, String userId, int index) {
+        Appmessages.UserConverTags.Builder builder = Appmessages.UserConverTags.newBuilder();
+        Appmessages.ConverTag converTag = Appmessages.ConverTag.newBuilder().setTag(tagId).build();
+        builder.addTags(converTag);
+        Appmessages.UserConverTags userConverTags = builder.build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(DEL_USER_CONVER_TAGS)
+                .setTargetId(userId)
+                .setData(userConverTags.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getConversationTagList(String userId, int index) {
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_USER_CONVER_TAGS)
+                .setTargetId(userId)
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
     byte[] addConversationsToTag(List<Conversation> conversations, String tagId, String userId, int index) {
         Appmessages.TagConvers.Builder builder = Appmessages.TagConvers.newBuilder();
         builder.setTag(tagId);
@@ -1299,6 +1395,100 @@ class PBData {
                 .setTopic(TAG_DEL_CONVERS)
                 .setTargetId(userId)
                 .setData(tagConvers.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] fetchUserInfo(String userId, int index) {
+        Appmessages.UserIdReq req = Appmessages.UserIdReq.newBuilder().setUserId(userId).build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_USER_INFO)
+                .setTargetId(userId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] fetchGroupInfo(String groupId, int index) {
+        Appmessages.GroupInfoReq req = Appmessages.GroupInfoReq.newBuilder().setGroupId(groupId).build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_GROUP_INFO)
+                .setTargetId(groupId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] fetchFriendInfo(String userId, String currentUserId, int index) {
+        Appmessages.FriendIdsReq.Builder builder = Appmessages.FriendIdsReq.newBuilder();
+        builder.addFriendIds(userId);
+        Appmessages.FriendIdsReq req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_FRIEND_INFOS)
+                .setTargetId(currentUserId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getUserStatus(List<String> userIdList, String currentUserId, int index) {
+        Appmessages.UserIdsReq.Builder builder = Appmessages.UserIdsReq.newBuilder();
+        builder.addAllUserIds(userIdList);
+        Appmessages.UserIdsReq req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(QRY_USER_STATUS)
+                .setTargetId(currentUserId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] getPubKeys(String userId, String currentUserId, int index) {
+        userId = TextUtils.isEmpty(userId) ? "" : userId;
+        currentUserId = TextUtils.isEmpty(currentUserId) ? "" : currentUserId;
+        Appmessages.UserIdsReq.Builder builder = Appmessages.UserIdsReq.newBuilder();
+        builder.addUserIds(userId);
+        builder.addUserIds(currentUserId);
+        Appmessages.UserIdsReq req = builder.build();
+
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(BATCH_QRY_PUBKEYS)
+                .setTargetId(currentUserId)
+                .setData(req.toByteString())
+                .build();
+        mMsgCmdMap.put(index, body.getTopic());
+        Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
+        return m.toByteArray();
+    }
+
+    byte[] uploadPubKey(byte[] pubKey, String deviceId, String currentUserId, int index) {
+        Appmessages.PublicKeyData key = Appmessages.PublicKeyData.newBuilder()
+                .setUserId(currentUserId)
+                .setDeviceId(deviceId)
+                .setPublicKey(ByteString.copyFrom(pubKey))
+                .build();
+        Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
+                .setIndex(index)
+                .setTopic(UPLOAD_PUBKEY)
+                .setTargetId(currentUserId)
+                .setData(key.toByteString())
                 .build();
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
@@ -1449,8 +1639,8 @@ class PBData {
                         case PBRcvObj.PBRcvType.qryCallRoomAck:
                             obj = qryCallRoomAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
-                        case PBRcvObj.PBRcvType.getUserInfoAck:
-                            obj = getUserInfoAckWithImWebsocketMsg(queryAckMsgBody);
+                        case PBRcvObj.PBRcvType.getUserSettingAck:
+                            obj = getUserSettingAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
                         case PBRcvObj.PBRcvType.qryMsgExtAck:
                             obj = qryMsgExtAckWithImWebsocketMsg(queryAckMsgBody);
@@ -1464,6 +1654,25 @@ class PBData {
                         case PBRcvObj.PBRcvType.getConversationConfAck:
                             obj = getConversationConfAckWithImWebsocketMsg(queryAckMsgBody);
                             break;
+                        case PBRcvObj.PBRcvType.getUserInfoAck:
+                            obj = getUserInfoAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getGroupInfoAck:
+                            obj = getGroupInfoAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getFriendInfosAck:
+                            obj = getFriendInfosAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getConversationTagListAck:
+                            obj = getConversationTagListAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.getUserStatusAck:
+                            obj = getUserStatusAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+                        case PBRcvObj.PBRcvType.qryPubKeysAck:
+                            obj = qryPubKeysAckWithImWebsocketMsg(queryAckMsgBody);
+                            break;
+
                         default:
                             break;
                     }
@@ -1607,7 +1816,7 @@ class PBData {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.DownMsgSet set = Appmessages.DownMsgSet.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.syncMessagesAck);
-        //sync 和 query history 共用一个 ack
+        //sync and query history share one ack
         PBRcvObj.QryHisMsgAck a = new PBRcvObj.QryHisMsgAck(body);
         a.isFinished = set.getIsFinished();
         List<ConcreteMessage> list = new ArrayList<>();
@@ -1704,17 +1913,17 @@ class PBData {
 
         RtcRoom outRoom = rtcRoomWithPBRtcRoom(room);
         outRooms.add(outRoom);
-        //共用 RtcQryCallRoomsAck
+        //Share RtcQryCallRoomsAck
         PBRcvObj.RtcQryCallRoomsAck a = new PBRcvObj.RtcQryCallRoomsAck(body);
         a.rooms = outRooms;
         obj.mRtcQryCallRoomsAck = a;
         return obj;
     }
 
-    private PBRcvObj getUserInfoAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+    private PBRcvObj getUserSettingAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.UserInfo userInfo = Appmessages.UserInfo.parseFrom(body.getData());
-        obj.setRcvType(PBRcvObj.PBRcvType.getUserInfoAck);
+        obj.setRcvType(PBRcvObj.PBRcvType.getUserSettingAck);
         String s = "";
         for (Appmessages.KvItem item : userInfo.getSettingsList()) {
             if (item.getKey().equals(LANGUAGE)) {
@@ -1728,6 +1937,91 @@ class PBData {
         return obj;
     }
 
+    private PBRcvObj getUserInfoAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.UserInfo pbUserInfo = Appmessages.UserInfo.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getUserInfoAck);
+        UserInfo userInfo = userInfoWithPBUserInfo(pbUserInfo);
+        PBRcvObj.TemplateAck<UserInfo> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = userInfo;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getGroupInfoAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.GroupInfo pbGroupInfo = Appmessages.GroupInfo.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getGroupInfoAck);
+        GroupInfo groupInfo = groupInfoWithPBGroupInfo(pbGroupInfo);
+        PBRcvObj.TemplateAck<GroupInfo> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = groupInfo;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getFriendInfosAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.FriendInfos pbFriendInfos = Appmessages.FriendInfos.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getFriendInfosAck);
+        FriendInfo friendInfo = null;
+        if (pbFriendInfos != null && pbFriendInfos.getItemsCount() > 0) {
+            friendInfo = friendInfoWithPBFriendInfo(pbFriendInfos.getItems(0));
+        }
+        PBRcvObj.TemplateAck<FriendInfo> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = friendInfo;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getConversationTagListAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.UserConverTags userConverTags = Appmessages.UserConverTags.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getConversationTagListAck);
+        List<ConversationTagInfo> tagList = new ArrayList<>();
+        if (userConverTags != null && userConverTags.getTagsCount() > 0) {
+            for (Appmessages.ConverTag converTag : userConverTags.getTagsList()) {
+                ConversationTagInfo tagInfo = conversationTagInfoWithConverTag(converTag);
+                tagList.add(tagInfo);
+            }
+        }
+        PBRcvObj.TemplateAck<List<ConversationTagInfo>> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = tagList;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
+    private PBRcvObj getUserStatusAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.UserStatusList userStatusList = Appmessages.UserStatusList.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.getUserStatusAck);
+        List<UserStatus> statusList = new ArrayList<>();
+        for (Appmessages.UserStatus pbUserStatus : userStatusList.getItemsList()) {
+            UserStatus userStatus = userStatusWithPBUserStatus(pbUserStatus);
+            statusList.add(userStatus);
+        }
+        PBRcvObj.TemplateAck<List<UserStatus>> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = statusList;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
+    private PBRcvObj qryPubKeysAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
+        PBRcvObj obj = new PBRcvObj();
+        Appmessages.MultiPublicKeys multiPublicKeys = Appmessages.MultiPublicKeys.parseFrom(body.getData());
+        obj.setRcvType(PBRcvObj.PBRcvType.qryPubKeysAck);
+        List <E2EEInfo> infoList = new ArrayList<>();
+        for (Appmessages.PublicKeys publicKeys : multiPublicKeys.getItemsList()) {
+            for (Appmessages.PublicKeyData publicKey : publicKeys.getPublicKeysList()) {
+                E2EEInfo info = e2eeInfoWithPublicKeyData(publicKey);
+                infoList.add(info);
+            }
+        }
+        PBRcvObj.TemplateAck<List<E2EEInfo>> a = new PBRcvObj.TemplateAck<>(body);
+        a.t = infoList;
+        obj.mTemplateAck = a;
+        return obj;
+    }
+
     private PBRcvObj qryMsgExtAckWithImWebsocketMsg(Connect.QueryAckMsgBody body) throws InvalidProtocolBufferException {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.MsgExtItemsList list = Appmessages.MsgExtItemsList.parseFrom(body.getData());
@@ -1737,7 +2031,7 @@ class PBData {
             MessageReaction reaction = new MessageReaction();
             reaction.setMessageId(pbItems.getMsgId());
             List<MessageReactionItem> itemList = new ArrayList<>();
-            boolean isUpdate = false;
+            boolean isUpdate;
             for (Appmessages.MsgExtItem pbItem : pbItems.getExtsList()) {
                 UserInfo user = userInfoWithPBUserInfo(pbItem.getUserInfo());
                 isUpdate = false;
@@ -2012,6 +2306,39 @@ class PBData {
         message.setSeqNo(downMsg.getMsgSeqNo());
         message.setMsgIndex(downMsg.getUnreadIndex());
         byte[] content = downMsg.getMsgContent().toByteArray();
+
+        if ((downMsg.getFlags() & MessageContent.MessageFlag.IS_E2EE.getValue()) != 0) {
+            Appmessages.E2ESuite suite = downMsg.getE2ESuite();
+            byte[] senderPubKey = suite.getSenderPubKey().toByteArray();
+            byte[] nonce = suite.getNonce().toByteArray();
+            byte[] tag = suite.getTag().toByteArray();
+            Appmessages.E2ECiphers ciphers = suite.getCiphers();
+            byte[] cipherData = null;
+            for (Appmessages.E2ECipher cipher : ciphers.getItemsList()) {
+                if (cipher.getUserId().equals(JIM.getInstance().getCurrentUserId())
+                && cipher.getDeviceId().equals(JIM.getInstance().getDeviceId())) {
+                    cipherData = cipher.getCipher().toByteArray();
+                    break;
+                }
+            }
+            byte[] priKey = mE2EEProvider.getPriKey();
+            if (cipherData != null && priKey != null) {
+                int cipherLength = cipherData.length - 12 - 16;
+                byte[] cipherNonce = new byte[12];
+                byte[] encryptedCEK = new byte[cipherLength];
+                byte[] cipherTag = new byte[16];
+                System.arraycopy(cipherData, 0, cipherNonce, 0, 12);
+                System.arraycopy(cipherData, 12, encryptedCEK, 0, cipherLength);
+                System.arraycopy(cipherData, 12 + cipherLength, cipherTag, 0, 16);
+
+                byte[] sharedSecret = EncryptUtility.calculateX25519SharedSecret(priKey, senderPubKey);
+                byte[] hkdf = EncryptUtility.deriveAES256KeyFromSharedSecret(sharedSecret);
+                byte[] aesKey = EncryptUtility.decryptAes256Gcm(hkdf, cipherNonce, null, encryptedCEK, cipherTag);
+                content = EncryptUtility.decryptAes256Gcm(aesKey, nonce, null, content, tag);
+                JLogger.i("lifei", "aesKey is " + Arrays.toString(aesKey) + ", aesNonce is " + Arrays.toString(nonce) + ", aesTag is " + Arrays.toString(tag) + ", deviceId is " + JIM.getInstance().getDeviceId() +
+                        ", sharedSecret is " + Arrays.toString(sharedSecret) + ", hkdf is " + Arrays.toString(hkdf) + ", cipherNonce is " + Arrays.toString(cipherNonce) + ", cipherTag is " + Arrays.toString(cipherTag) + ", encryptedCEK is " + Arrays.toString(encryptedCEK));
+            }
+        }
         if (mMessagePreprocessor != null) {
             content = mMessagePreprocessor.decryptMessageContent(content, conversation, message.getContentType());
         }
@@ -2032,6 +2359,8 @@ class PBData {
         message.setGroupInfo(groupInfoWithPBGroupInfo(downMsg.getGroupInfo()));
         message.setTargetUserInfo(userInfoWithPBUserInfo(downMsg.getTargetUserInfo()));
         message.setGroupMemberInfo(groupMemberWithPBGroupMember(downMsg.getGrpMemberInfo(), message.getGroupInfo().getGroupId(), message.getTargetUserInfo().getUserId()));
+        message.setSenderUserInfo(userInfoWithPBUserInfo(downMsg.getSenderInfo()));
+        message.setFriendInfo(friendInfoWithPBFriendInfo(downMsg.getFriendInfo()));
         if (downMsg.hasMentionInfo() && Appmessages.MentionType.MentionDefault != downMsg.getMentionInfo().getMentionType()) {
             MessageMentionInfo mentionInfo = new MessageMentionInfo();
             mentionInfo.setType(mentionTypeFromPbMentionType(downMsg.getMentionInfo().getMentionType()));
@@ -2055,6 +2384,7 @@ class PBData {
         message.setDestroyTime(downMsg.getDestroyTime());
         message.setLifeTimeAfterRead(downMsg.getLifeTimeAfterRead());
         message.setReadTime(downMsg.getReadTime());
+        message.setMute(downMsg.getUndisturbType() != 0);
         return message;
     }
 
@@ -2131,9 +2461,10 @@ class PBData {
         info.setTopTime(conversation.getTopUpdatedTime());
         info.setGroupInfo(groupInfoWithPBGroupInfo(conversation.getGroupInfo()));
         info.setTargetUserInfo(userInfoWithPBUserInfo(conversation.getTargetUserInfo()));
+        info.setFriendInfo(friendInfoWithPBFriendInfo(conversation.getFriendInfo()));
         if (conversation.getMentions() != null && conversation.getMentions().getIsMentioned()) {
             ConversationMentionInfo mentionInfo = new ConversationMentionInfo();
-            //解析@消息列表
+            // Parse the mention message list
             if (conversation.getMentions().getMentionMsgsList() != null) {
                 List<ConversationMentionInfo.MentionMsg> mentionMsgList = new ArrayList<>();
                 for (Appmessages.MentionMsg pbMentionMsg : conversation.getMentions().getMentionMsgsList()) {
@@ -2145,7 +2476,7 @@ class PBData {
                 mentionInfo.setMentionMsgList(mentionMsgList);
             }
             info.setMentionInfo(mentionInfo);
-            //解析用户信息列表
+            // Parse the user info list
             if (conversation.getMentions().getSendersList() != null) {
                 List<UserInfo> mentionUserList = new ArrayList<>();
                 for (Appmessages.UserInfo pbUserInfo : conversation.getMentions().getSendersList()) {
@@ -2214,6 +2545,12 @@ class PBData {
                 result.setToken(agoraAuth.getToken());
             }
         }
+        if (pbRoom.hasAttachedConver()) {
+            Rtcroom.ConverIndex converIndex = pbRoom.getAttachedConver();
+            Conversation conversation = new Conversation(conversationTypeFromChannelType(converIndex.getChannelType()), converIndex.getTargetId());
+            conversation.setSubChannel(conversation.getSubChannel());
+            result.setConversation(conversation);
+        }
         return result;
     }
 
@@ -2275,6 +2612,20 @@ class PBData {
         return result;
     }
 
+    private UserStatus userStatusWithPBUserStatus(Appmessages.UserStatus pbUserStatus) {
+        if (pbUserStatus == null) {
+            return null;
+        }
+        UserStatus userStatus = new UserStatus();
+        userStatus.setUserId(pbUserStatus.getUserId());
+        if (pbUserStatus.hasOnlineStatus() && pbUserStatus.getOnlineStatus().getIsOnline()) {
+            userStatus.setStatusType(UserStatus.UserStatusType.ONLINE);
+        } else {
+            userStatus.setStatusType(UserStatus.UserStatusType.OFFLINE);
+        }
+        return userStatus;
+    }
+
     private GroupMember groupMemberWithPBGroupMember(Appmessages.GrpMemberInfo pbGroupMember, String groupId, String userId) {
         if (pbGroupMember == null) {
             return null;
@@ -2295,6 +2646,34 @@ class PBData {
         }
         result.setUpdatedTime(pbGroupMember.getUpdatedTime());
         return result;
+    }
+
+    private FriendInfo friendInfoWithPBFriendInfo(Appmessages.FriendInfo pbFriendInfo) {
+        if (pbFriendInfo == null || pbFriendInfo.getUpdatedTime() == 0) {
+            return null;
+        }
+        FriendInfo friendInfo = new FriendInfo();
+        friendInfo.setUserId(pbFriendInfo.getFriendId());
+        friendInfo.setFriend(pbFriendInfo.getIsFriend());
+        friendInfo.setAlias(pbFriendInfo.getFriendDisplayName());
+        friendInfo.setUpdatedTime(pbFriendInfo.getUpdatedTime());
+        return friendInfo;
+    }
+
+    private ConversationTagInfo conversationTagInfoWithConverTag(Appmessages.ConverTag converTag) {
+        ConversationTagInfo tagInfo = new ConversationTagInfo();
+        tagInfo.setTagId(converTag.getTag());
+        tagInfo.setName(converTag.getTagName());
+        tagInfo.setType(ConversationTagInfo.TagType.setValue(converTag.getTagType().getNumber()));
+        return tagInfo;
+    }
+
+    private E2EEInfo e2eeInfoWithPublicKeyData(Appmessages.PublicKeyData publicKey) {
+        E2EEInfo info = new E2EEInfo();
+        info.setUserId(publicKey.getUserId());
+        info.setDeviceId(publicKey.getDeviceId());
+        info.setPubKey(publicKey.getPublicKey().toByteArray());
+        return info;
     }
 
     private Appmessages.UserInfo pbUserInfoWithUserInfo(UserInfo userInfo) {
@@ -2417,6 +2796,12 @@ class PBData {
             case PublicService:
                 result = Conversation.ConversationType.PUBLIC_SERVICE;
                 break;
+            case SubStatus:
+                result = Conversation.ConversationType.SUB_STATUS;
+                break;
+            case PrivateE2EE:
+                result = Conversation.ConversationType.PRIVATE_E2EE;
+                break;
             default:
                 break;
         }
@@ -2440,6 +2825,12 @@ class PBData {
                 break;
             case PUBLIC_SERVICE:
                 result = Appmessages.ChannelType.PublicService;
+                break;
+            case SUB_STATUS:
+                result = Appmessages.ChannelType.SubStatus;
+                break;
+            case PRIVATE_E2EE:
+                result = Appmessages.ChannelType.PrivateE2EE;
                 break;
             default:
                 break;
@@ -2502,6 +2893,50 @@ class PBData {
             return PBRcvObj.PBRcvType.cmdMatchError;
         }
         return type;
+    }
+
+    private byte[] buildWrappedKey(
+            byte[] nonce,
+            byte[] encryptedCEK,
+            byte[] tag) {
+
+        if (nonce == null || encryptedCEK == null || tag == null) {
+            return null;
+        }
+
+        byte[] result = new byte[
+                nonce.length +
+                        encryptedCEK.length +
+                        tag.length];
+
+        int offset = 0;
+
+        System.arraycopy(
+                nonce,
+                0,
+                result,
+                offset,
+                nonce.length);
+
+        offset += nonce.length;
+
+        System.arraycopy(
+                encryptedCEK,
+                0,
+                result,
+                offset,
+                encryptedCEK.length);
+
+        offset += encryptedCEK.length;
+
+        System.arraycopy(
+                tag,
+                0,
+                result,
+                offset,
+                tag.length);
+
+        return result;
     }
 
     private static class CmdType {
@@ -2575,17 +3010,27 @@ class PBData {
     private static final String QRY_MSG_EX_SET = "qry_msg_exset";
     private static final String TAG_ADD_CONVERS = "tag_add_convers";
     private static final String TAG_DEL_CONVERS = "tag_del_convers";
+    private static final String DEL_USER_CONVER_TAGS = "del_user_conver_tags";
+    private static final String CREATE_USER_CONVER_TAGS = "create_user_conver_tags";
+    private static final String QRY_USER_CONVER_TAGS = "qry_user_conver_tags";
     private static final String SET_TOP_MSG = "set_top_msg";
     private static final String DEL_TOP_MSG = "del_top_msg";
     private static final String GET_TOP_MSG = "get_top_msg";
     private static final String ADD_FAVORITE_MSGS = "add_favorite_msgs";
     private static final String DEL_FAVORITE_MSGS = "del_favorite_msgs";
     private static final String QRY_FAVORITE_MSGS = "qry_favorite_msgs";
+    private static final String QRY_USER_INFO = "qry_user_info";
+    private static final String QRY_GROUP_INFO = "qry_group_info";
+    private static final String QRY_FRIEND_INFOS = "qry_friend_infos";
+    private static final String QRY_USER_STATUS = "qry_user_status";
+    private static final String BATCH_QRY_PUBKEYS = "batch_qry_pubkeys";
+    private static final String UPLOAD_PUBKEY = "upload_pubkey";
 
     private static final String P_MSG = "p_msg";
     private static final String G_MSG = "g_msg";
     private static final String C_MSG = "c_msg";
     private static final String PC_MSG = "pc_msg";
+    private static final String S_P_MSG = "s_p_msg";
     private static final String NTF = "ntf";
     private static final String MSG = "msg";
     private static final String C_USER_NTF = "c_user_ntf";
@@ -2634,7 +3079,7 @@ class PBData {
             put(RTC_MEMBER_ROOMS, PBRcvObj.PBRcvType.qryCallRoomsAck);
             put(RTC_QRY, PBRcvObj.PBRcvType.qryCallRoomAck);
             put(SET_USER_SETTINGS, PBRcvObj.PBRcvType.simpleQryAck);
-            put(GET_USER_SETTINGS, PBRcvObj.PBRcvType.getUserInfoAck);
+            put(GET_USER_SETTINGS, PBRcvObj.PBRcvType.getUserSettingAck);
             put(MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(DEL_MSG_EX_SET, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
             put(QRY_MSG_EX_SET, PBRcvObj.PBRcvType.qryMsgExtAck);
@@ -2649,11 +3094,22 @@ class PBData {
             put(QRY_FAVORITE_MSGS, PBRcvObj.PBRcvType.getFavoriteMsgAck);
             put(RTC_JOIN, PBRcvObj.PBRcvType.qryCallRoomAck);
             put(QRY_CONVER_CONF, PBRcvObj.PBRcvType.getConversationConfAck);
+            put(QRY_USER_INFO, PBRcvObj.PBRcvType.getUserInfoAck);
+            put(QRY_GROUP_INFO, PBRcvObj.PBRcvType.getGroupInfoAck);
+            put(QRY_FRIEND_INFOS, PBRcvObj.PBRcvType.getFriendInfosAck);
+            put(DEL_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(CREATE_USER_CONVER_TAGS, PBRcvObj.PBRcvType.simpleQryAckCallbackTimestamp);
+            put(QRY_USER_CONVER_TAGS, PBRcvObj.PBRcvType.getConversationTagListAck);
+            put(QRY_USER_STATUS, PBRcvObj.PBRcvType.getUserStatusAck);
+            put(BATCH_QRY_PUBKEYS, PBRcvObj.PBRcvType.qryPubKeysAck);
+            put(UPLOAD_PUBKEY, PBRcvObj.PBRcvType.simpleQryAck);
+            put(S_P_MSG, PBRcvObj.PBRcvType.publishMsgAck);
         }
     };
 
     private final ConcurrentHashMap<Integer, String> mMsgCmdMap = new ConcurrentHashMap<>();
     private IDataConverter mConverter = new SimpleDataConverter();
     private IMessageManager.IMessagePreprocessor mMessagePreprocessor;
+    private IE2EEProvider mE2EEProvider;
     private IUltEncrypt mConverter2 = fetchUltConverter();
 }

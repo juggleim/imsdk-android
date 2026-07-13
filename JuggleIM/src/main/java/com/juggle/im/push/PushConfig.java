@@ -6,6 +6,7 @@ public class PushConfig {
     private VIVOConfig vivoConfig;
     private OPPOConfig oppoConfig;
     private JGConfig jgConfig;
+    private HonorConfig honorConfig;
 
     public PushConfig(Builder builder) {
         this.xmConfig = builder.xmConfig;
@@ -13,6 +14,7 @@ public class PushConfig {
         this.vivoConfig = builder.vivoConfig;
         this.oppoConfig = builder.oppoConfig;
         this.jgConfig = builder.jgConfig;
+        this.honorConfig = builder.honorConfig;
     }
 
     public void setXmConfig(XMConfig xmConfig) {
@@ -35,6 +37,10 @@ public class PushConfig {
         this.jgConfig = jgConfig;
     }
 
+    public void setHonorConfig(HonorConfig honorConfig) {
+        this.honorConfig = honorConfig;
+    }
+
     public XMConfig getXMConfig() {
         return xmConfig;
     }
@@ -53,6 +59,10 @@ public class PushConfig {
 
     public JGConfig getJGConfig() {
         return jgConfig;
+    }
+
+    public HonorConfig getHonorConfig() {
+        return honorConfig;
     }
 
     public static class XMConfig {
@@ -91,6 +101,8 @@ public class PushConfig {
     public static class JGConfig {
     }
 
+    public static class HonorConfig {
+    }
 
     public static class OPPOConfig {
         private final String appKey;
@@ -116,6 +128,7 @@ public class PushConfig {
         private VIVOConfig vivoConfig;
         private OPPOConfig oppoConfig;
         private JGConfig jgConfig;
+        private HonorConfig honorConfig;
 
         public Builder() {
         }
@@ -142,6 +155,11 @@ public class PushConfig {
 
         public Builder setJgConfig() {
             this.jgConfig = new JGConfig();
+            return this;
+        }
+
+        public Builder setHonorConfig() {
+            this.honorConfig = new HonorConfig();
             return this;
         }
 

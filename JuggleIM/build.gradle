@@ -61,11 +61,11 @@ dependencies {
 }
 
 protobuf {
-    //配置 protoc 编译器
+    // Configure protoc compiler.
     protoc {
         artifact = 'com.google.protobuf:protoc:3.21.7'
     }
-    //配置生成目录，编译后会在 build 的目录下生成对应的java文件
+    // Configure generated output; after compilation, the corresponding Java files are generated under build.
     generateProtoTasks {
         all().each { task ->
             task.builtins {

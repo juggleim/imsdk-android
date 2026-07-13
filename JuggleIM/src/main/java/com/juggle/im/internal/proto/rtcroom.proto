@@ -28,6 +28,7 @@ message RtcRoom{
     RtcMediaType rtcMediaType = 5;
     string ext = 6;
     RtcAuth auth= 7;
+    ConverIndex attachedConver = 8;
     
     repeated RtcMember members = 51;
 }
@@ -37,7 +38,7 @@ enum RtcChannel {
     LivekitRtc = 1;
     Agora = 2;
         
-    JuggleRtc = 11; //自建音视频，保留
+    JuggleRtc = 11; // Self-hosted audio/video, reserved
 }
 
 enum RtcRoomType{
@@ -77,7 +78,7 @@ enum RtcState{
 
 message RtcRoomEvent{
     RtcRoomEventType roomEventType = 1;
-    repeated RtcMember members = 2; //事件相关人的列表
+    repeated RtcMember members = 2; // List of people related to the event
     RtcRoom room = 3;
     RtcRoomQuitReason reason = 4;
     int64 eventTime = 5;
@@ -182,4 +183,3 @@ message ActivedRtcRoom{
 
     repeated RtcMember members = 51;
 }
-

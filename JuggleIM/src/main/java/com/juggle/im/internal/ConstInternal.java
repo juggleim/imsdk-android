@@ -1,7 +1,7 @@
 package com.juggle.im.internal;
 
 public class ConstInternal {
-    public static final String SDK_VERSION = "1.8.28.1";
+    public static final String SDK_VERSION = "1.9.0";
     public static final String PLATFORM = "Android";
     public static final String LOG_UPLOAD_HEADER_APP_KEY = "x-appkey";
     public static final String LOG_UPLOAD_HEADER_TOKEN = "x-token";
@@ -11,41 +11,47 @@ public class ConstInternal {
 
     public static class ErrorCode {
         public static final int NONE = 0;
-        //未传 AppKey
+        //AppKey was not provided
         public static final int APP_KEY_EMPTY = 11001;
-        //未传 Token
+        //Token was not provided
         public static final int TOKEN_EMPTY = 11002;
-        //AppKey 不存在
+        //AppKey does not exist
         public static final int APP_KEY_INVALID = 11003;
-        //Token 不合法
+        //Token is invalid
         public static final int TOKEN_ILLEGAL = 11004;
-        //Token 未授权
+        //Token is unauthorized
         public static final int TOKEN_UNAUTHORIZED = 11005;
-        //Token 已过期
+        //Token has expired
         public static final int TOKEN_EXPIRED = 11006;
-        //App 已封禁
+        //App is banned
         public static final int APP_PROHIBITED = 11009;
-        //用户被封禁
+        //User is banned
         public static final int USER_PROHIBITED = 11010;
-        //用户被踢下线
+        //User was kicked offline
         public static final int USER_KICKED_BY_OTHER_CLIENT = 11011;
-        //用户注销下线
+        //User logged out and went offline
         public static final int USER_LOG_OUT = 11012;
 
-        //非好友关系
+        //Not friends
         public static final int NOT_FRIEND = 12009;
-        //没有操作权限
+        //No operation permission
         public static final int NO_OPERATION_PERMISSION = 12010;
-        //消息不存在
+        //Message does not exist
         public static final int REMOTE_MESSAGE_NOT_EXIST = 12011;
-        //收藏重复消息
+        //Duplicate favorite message
         public static final int ADD_DUPLICATE_FAVORITE_MESSAGE = 12012;
+        //Encrypted chat hash does not match
+        public static final int PUB_KEYS_HASH_MISMATCH = 12013;
 
-        //群组不存在
+        //Group does not exist
         public static final int GROUP_NOT_EXIST = 13001;
-        //不是群成员
+        //Not a group member
         public static final int NOT_GROUP_MEMBER = 13002;
 
+        //The conversation has an unfinished call
+        public static final int CALL_CONVERSATION_BOUND = 16011;
+        //Connection forbidden
+        public static final int CONNECT_FORBIDDEN = 21000;
         public static final int WEB_SOCKET_FAILURE = 21001;
         public static final int NAVI_FAILURE = 21002;
         public static final int INVALID_PARAM = 21003;
@@ -57,7 +63,12 @@ public class ConstInternal {
         public static final int MESSAGE_NOT_EXIST = 22001;
         public static final int MESSAGE_ALREADY_RECALLED = 22002;
 
-        //加入 LiveKit 房间失败
+        //Peer public key not found
+        public static final int OTHER_SIDE_E2EE_INVALID = 22006;
+        //Local public key has not been generated
+        public static final int LOCAL_PUBLIC_KEY_INVALID = 22007;
+
+        //Failed to join the LiveKit room
         public static final int JOIN_LIVEKIT_FAIL = 25001;
     }
 }

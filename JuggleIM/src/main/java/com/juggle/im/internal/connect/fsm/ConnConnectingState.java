@@ -18,7 +18,7 @@ public class ConnConnectingState extends ConnBaseState {
         NONE, CONNECT, DISCONNECT
     }
     private String mUserToken;
-    //连接过程中保存的状态
+    // State saved during connection
     private ConnectingStoreStatus mStoreStatus;
     private boolean mReceivePush;
 

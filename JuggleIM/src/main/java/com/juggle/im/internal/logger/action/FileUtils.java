@@ -21,7 +21,7 @@ import java.util.zip.ZipOutputStream;
  * @create 2024-05-23 14:26
  */
 class FileUtils {
-    //检查当前日志目录总大小是否超过使用限制
+    //Check whether the current log directory total size exceeds the usage limit
     static boolean isCanWriteSDCard(String path) {
         boolean item = false;
         try {
@@ -38,7 +38,7 @@ class FileUtils {
         return item;
     }
 
-    //删除过期的日志
+    //Delete expired logs
     static void deleteExpiredLog(String path, long deleteTime) {
         File dir = new File(path);
         if (dir.isDirectory()) {
@@ -47,13 +47,13 @@ class FileUtils {
                 for (String item : files) {
                     try {
                         if (TextUtils.isEmpty(item)) continue;
-                        //检查是否是日志文件，如果不是则跳过
+                        //Check whether it is a log file; skip it if not
                         if (!item.endsWith(Constants.LOG_FILE_SUFFIX)) continue;
                         String[] longStrArray = item.split("\\.");
-                        if (longStrArray.length > 0) {//小于时间就删除
+                        if (longStrArray.length > 0) {//Delete if it is earlier than the time
                             long longItem = Long.parseLong(longStrArray[0]);
                             if (longItem <= deleteTime) {
-                                new File(path, item).delete(); //删除文件
+                                new File(path, item).delete(); //Delete file
                             }
                         }
                     } catch (Exception e) {
@@ -64,7 +64,7 @@ class FileUtils {
         }
     }
 
-    //准备日志文件
+    //Prepare the log file
     static void prepareLogFile(String path, long currentHour) {
         try {
             File dir = new File(path);
@@ -83,62 +83,62 @@ class FileUtils {
 
     static void writLog2File(String path, long currentHour, WriteAction action) {
         try {
-            //构建日志文件名
+            //Build the log file name
             String logFileName = currentHour + Constants.LOG_FILE_SUFFIX;
             File logFile = new File(path, logFileName);
-            //如果文件不存在，则创建文件
+            //Create the file if it does not exist
             if (!logFile.exists()) {
                 logFile.createNewFile();
             }
-            //将内容追加到文件末尾
+            //Append content to the end of the file
             try (FileWriter fw = new FileWriter(logFile, true);
                  BufferedWriter bw = new BufferedWriter(fw)) {
                 bw.write(action.toString());
-                bw.newLine(); // 换行
+                bw.newLine(); // New line
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    //将所有处于时间范围内的日志文件打成zip包
+    //Package all log files within the time range into a zip
     static String zipUploadLogFiles(String path, long startTime, long endTime) {
         try {
-            //创建压缩文件名
+            //Create the compressed file name
             SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.LOG_TIMESTAMP_FORMAT, Locale.US);
             String startLogFileName = dateFormat.format(new Date(startTime));
             String endLogFileName = dateFormat.format(new Date(endTime));
             String zipFileName = startLogFileName + "-" + endLogFileName + Constants.ZIP_FILE_SUFFIX;
-            //创建压缩文件路径
+            //Create the compressed file path
             File zipFile = new File(path, zipFileName);
-            //如果文件已存在，则删除原文件
+            //If the file already exists, delete the original file
             if (zipFile.exists()) {
                 zipFile.delete();
             }
-            //创建ZipOutputStream
+            //Create ZipOutputStream
             try (FileOutputStream fos = new FileOutputStream(zipFile);
                  BufferedOutputStream bos = new BufferedOutputStream(fos);
                  ZipOutputStream zos = new ZipOutputStream(bos)) {
-                //获取日志文件夹路径
+                //Get the log folder path
                 File logFolder = new File(path);
                 if (!logFolder.exists()) {
-                    return null; //日志文件夹不存在，返回空
+                    return null; //Log folder does not exist; return null
                 }
-                //记录是否有符合条件的日志
+                //Record whether any matching logs exist
                 boolean hasLog = false;
-                //遍历日志文件夹下的所有文件，将符合时间范围的文件添加到压缩包中
+                //Iterate over all files in the log folder and add files within the time range to the zip
                 File[] logFiles = logFolder.listFiles();
                 if (logFiles != null) {
                     for (File logFile : logFiles) {
-                        //检查是否是日志文件，如果不是则跳过
+                        //Check whether it is a log file; skip it if not
                         if (!logFile.getName().endsWith(Constants.LOG_FILE_SUFFIX)) continue;
-                        //获取日志文件名称并转换为时间戳
+                        //Get the log file name and convert it to a timestamp
                         long logFileTime = getTimestampFromFileName(logFile.getName());
                         if (logFileTime > 0 && logFileTime >= startTime && logFileTime <= endTime) {
-                            //创建ZipEntry
+                            //Create ZipEntry
                             ZipEntry zipEntry = new ZipEntry(logFile.getName());
                             zos.putNextEntry(zipEntry);
-                            //将文件内容写入压缩包
+                            //Write file contents to the zip
                             try (FileInputStream fis = new FileInputStream(logFile);
                                  BufferedInputStream bis = new BufferedInputStream(fis)) {
                                 byte[] buffer = new byte[1024];
@@ -147,14 +147,14 @@ class FileUtils {
                                     zos.write(buffer, 0, bytesRead);
                                 }
                             }
-                            //关闭当前ZipEntry
+                            //Close the current ZipEntry
                             zos.closeEntry();
-                            //更新hasLog
+                            //Update hasLog
                             if(!hasLog) hasLog = true;
                         }
                     }
                 }
-                //如果没有符合条件的日志，删除文件并返回null
+                // If no matching logs exist, delete the file and return null
                 if(!hasLog){
                     if (zipFile.exists()) {
                         zipFile.delete();
@@ -162,7 +162,7 @@ class FileUtils {
                     return null;
                 }
             }
-            //返回压缩文件路径
+            //Return the compressed file path
             return zipFile.getAbsolutePath();
         } catch (Exception e) {
             e.printStackTrace();
@@ -170,7 +170,7 @@ class FileUtils {
         }
     }
 
-    //将日志文件名转换为时间戳
+    //Convert the log file name to a timestamp
     static long getTimestampFromFileName(String fileName) {
         String fileNameNoExtend = getFileNameNoExtend(fileName);
         try {
@@ -181,7 +181,7 @@ class FileUtils {
         return -1;
     }
 
-    //获取不带扩展名的文件名
+    //Get the file name without extension
     static String getFileNameNoExtend(String filename) {
         if ((filename != null) && (filename.length() > 0)) {
             int dot = filename.lastIndexOf('.');

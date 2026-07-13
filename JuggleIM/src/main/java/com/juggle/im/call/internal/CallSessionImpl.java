@@ -149,6 +149,12 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
     }
 
     @Override
+    public void stopPreview() {
+        CallMediaManager.getInstance().stopPreview();
+        mViewMap.remove(JIM.getInstance().getCurrentUserId());
+    }
+
+    @Override
     public void muteMicrophone(boolean isMute) {
         CallMediaManager.getInstance().muteMicrophone(isMute);
     }
@@ -421,7 +427,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
                 mMembers.add(newMember);
             }
         }
-        // 主动加入没有回调，最终会在 media 加入成功之后走 usersDidConnect
+        // Active join has no callback; Finally usersDidConnect will be called after media joins successfully.
     }
 
     public void cameraEnable(String userId, boolean enable) {
@@ -485,7 +491,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
             @Override
             public void onError(int errorCode) {
                 JLogger.e("Call-Signal", "send invite error, code is " + errorCode);
-                sendMessage(CallEvent.INVITE_FAIL);
+                sendMessage(CallEvent.INVITE_FAIL, errorCode);
             }
         });
     }
@@ -788,6 +794,7 @@ public class CallSessionImpl extends StateMachine implements ICallSession, ICall
         mUrl = url;
     }
 
+    @Override
     public Conversation getConversation() {
         return mConversation;
     }

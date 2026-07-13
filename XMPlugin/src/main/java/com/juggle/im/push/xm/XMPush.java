@@ -2,6 +2,7 @@ package com.juggle.im.push.xm;
 
 import android.content.Context;
 
+import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.push.IPush;
 import com.juggle.im.push.PushConfig;
 import com.juggle.im.push.PushChannel;
@@ -13,10 +14,10 @@ public class XMPush implements IPush {
     @Override
     public void getToken(Context context, PushConfig config, Callback callback) {
         sCallback = callback;
+        JLogger.i("CON-Push", "xiaomi get token, xmConfig null is " + (config.getXMConfig() == null));
         if (config.getXMConfig() != null) {
             MiPushClient.registerPush(context, config.getXMConfig().getAppId(), config.getXMConfig().getAppKey());
         }
-
     }
 
     @Override

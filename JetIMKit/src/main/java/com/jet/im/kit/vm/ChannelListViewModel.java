@@ -175,7 +175,7 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         if (channelList.getValue() != null && !channelList.getValue().isEmpty()) {
             timestamp = channelList.getValue().get(channelList.getValue().size() - 1).getSortTime();
         }
-        int[] types = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue(), Conversation.ConversationType.PUBLIC_SERVICE.getValue()};
+        int[] types = {Conversation.ConversationType.PRIVATE.getValue(), Conversation.ConversationType.GROUP.getValue(), Conversation.ConversationType.PUBLIC_SERVICE.getValue(), Conversation.ConversationType.PRIVATE_E2EE.getValue()};
         List<ConversationInfo> conversationInfoList = JIM.getInstance().getConversationManager().getConversationInfoList(types, 20, timestamp, JIMConst.PullDirection.OLDER);
         if (conversationInfoList != null && conversationInfoList.size() < 20) {
             mHasNext = false;
@@ -343,6 +343,10 @@ public class ChannelListViewModel extends BaseViewModel implements OnPagedDataLo
         }
         ConversationInfo toBeRemove;
         for (ConversationInfo newInfo : newList) {
+            if (newInfo == null || newInfo.getConversation() == null) {
+                continue;
+            }
+
             if (newInfo.getConversation().getConversationType() == Conversation.ConversationType.SYSTEM
             && newInfo.getConversation().getConversationId().equals(SendbirdUIKit.FRIEND_CONVERSATION_ID)) {
                 continue;

@@ -29,10 +29,10 @@ import okio.Source;
  * @create 2024-05-29 9:12
  */
 public class PreSignUploader extends BaseUploader {
-    private static final int BUFFER_SIZE = 4096; //缓冲区大小
-    private static final int CONNECT_TIMEOUT = 20 * 1000; //连接超时时间
-    private static final int READ_TIMEOUT = 20 * 1000; //读取超时时间
-    private static final int WRITE_TIMEOUT = 20 * 1000; //读取超时时间
+    private static final int BUFFER_SIZE = 4096; // Buffer size
+    private static final int CONNECT_TIMEOUT = 20 * 1000; // Connection timeout
+    private static final int READ_TIMEOUT = 20 * 1000; // Read timeout
+    private static final int WRITE_TIMEOUT = 20 * 1000; // Write timeout
 
     private final UploadPreSignCred mPreSignCred;
     private volatile boolean mIsCancelled = false;
@@ -47,42 +47,42 @@ public class PreSignUploader extends BaseUploader {
 
     @Override
     public void start() {
-        //判空文件地址
+        //Check whether the file path is empty
         if (TextUtils.isEmpty(mLocalPath)) {
             JLogger.e("J-Uploader", "PreSignUploader error, mLocalPath is empty");
             notifyFail();
             return;
         }
-        //判空mQiNiuCred
+        //Check whether mQiNiuCred is null
         if (mPreSignCred == null || TextUtils.isEmpty(mPreSignCred.getUrl())) {
             JLogger.e("J-Uploader", "PreSignUploader error, mPreSignCred is null or empty");
 
             notifyFail();
             return;
         }
-        //获取文件名
+        //Get the file name
         String fileName = FileUtil.getFileName(mLocalPath);
-        //判空文件名
+        //Check whether the file name is empty
         if (TextUtils.isEmpty(fileName)) {
             JLogger.e("J-Uploader", "PreSignUploader error, fileName is empty");
             notifyFail();
             return;
         }
-        //开始上传
+        //Start upload
         JThreadPoolExecutor.runInBackground(() -> {
-            //构造OkHttpClient
+            //Build OkHttpClient
             OkHttpClient client = new OkHttpClient.Builder()
                     .connectTimeout(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)
                     .readTimeout(READ_TIMEOUT, TimeUnit.MILLISECONDS)
                     .writeTimeout(WRITE_TIMEOUT, TimeUnit.MILLISECONDS)
                     .build();
-            //构造RequestBody
+            //Build RequestBody
             File file = new File(mLocalPath);
             RequestBody requestBody = new RequestBody() {
                 @Nullable
                 @Override
                 public MediaType contentType() {
-                    //不要返回ContentType，不然阿里云上传会403
+                    //Do not return ContentType, otherwise Alibaba Cloud upload returns 403
                     return null;
                 }
 
@@ -103,7 +103,7 @@ public class PreSignUploader extends BaseUploader {
                             }
                             uploaded += read;
                             sink.flush();
-                            //计算上传进度
+                            //Calculate upload progress
                             if (fileLength == -1) {
                                 notifyProgress(0);
                             } else {
@@ -114,7 +114,7 @@ public class PreSignUploader extends BaseUploader {
                     }
                 }
             };
-            //构造request
+            //Build the request
             Request.Builder builder = new Request.Builder()
                     .url(mPreSignCred.getUrl())
                     .put(requestBody);
@@ -122,7 +122,7 @@ public class PreSignUploader extends BaseUploader {
                 builder.addHeader("x-amz-acl", "public-read");
             }
             Request request = builder.build();
-            //发起网络请求
+            //Start the network request
             try {
                 currentCall = client.newCall(request);
                 Response response = currentCall.execute();
@@ -131,15 +131,15 @@ public class PreSignUploader extends BaseUploader {
                     if (TextUtils.isEmpty(mediaUrl)) {
                         mediaUrl = removeQueryFromUrl(mPreSignCred.getUrl());
                     }
-                    //回调上传成功
+                    //Callback upload success
                     notifySuccess(mediaUrl);
                 } else {
-                    JLogger.e("J-Uploader, PreSignUploader error, responseCode is " + response.code() + ", responseMessage is " + response.message());
-                    //回调上传失败
+                    JLogger.e("J-Uploader", "PreSignUploader error, responseCode is " + response.code() + ", responseMessage is " + response.message());
+                    //Callback upload failure
                     notifyFail();
                 }
             } catch (Exception e) {
-                JLogger.e("J-Uploader, PreSignUploader error, exception is " + e.getMessage());
+                JLogger.e("J-Uploader", "PreSignUploader error, exception is " + e.getMessage());
                 e.printStackTrace();
                 notifyFail();
             }
@@ -156,7 +156,7 @@ public class PreSignUploader extends BaseUploader {
         notifyCancel();
     }
 
-    //移除URL的query部分
+    //Remove the query part of the URL
     private String removeQueryFromUrl(String url) {
         int index = url.indexOf("?");
         if (index != -1) {

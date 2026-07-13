@@ -4,7 +4,7 @@ import android.content.Context;
 
 public interface IPush {
     /**
-     * 非主线程调用此方法
+     * Call this method from a non-main thread.
      */
     void getToken(Context context, PushConfig config, Callback callback);
 

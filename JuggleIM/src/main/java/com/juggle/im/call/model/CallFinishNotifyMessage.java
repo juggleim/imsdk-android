@@ -69,13 +69,13 @@ public class CallFinishNotifyMessage extends MessageContent {
     }
 
     public enum CallFinishNotifyType {
-        /// 主叫取消
+        /// Caller canceled.
         CANCEL(0),
-        /// 被叫拒绝
+        /// Callee rejected.
         REJECT(1),
-        /// 被叫无应答
+        /// Callee did not answer.
         NO_RESPONSE(2),
-        /// 通话结束
+        /// Call completed.
         COMPLETE(3);
 
         CallFinishNotifyType(int value) {

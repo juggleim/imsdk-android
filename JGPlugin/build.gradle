@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.library'
 }
-
+apply from: './upload-maven.gradle'
 android {
     namespace 'com.juggle.im.push.jg'
     compileSdk 33
@@ -34,6 +34,11 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    publishing {
+        // Publishes "fullRelease" build variant with "fullRelease" component created by
+        // Android Gradle plugin
+        singleVariant("release")
     }
 }
 

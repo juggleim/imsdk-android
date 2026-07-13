@@ -54,7 +54,7 @@ public class CallIncomingState extends CallState {
 
             case CallEvent.RECEIVE_ACCEPT:
                 userId = (String) msg.obj;
-                // 当前用户在其它端 accept，else 走 super
+                // Current user accepted on another client; otherwise fall through to super
                 if (callSession.getCore().getUserId().equals(userId)) {
                     callSession.setFinishReason(CallConst.CallFinishReason.ACCEPT_ON_OTHER_CLIENT);
                     callSession.transitionToIdleState();
@@ -64,7 +64,7 @@ public class CallIncomingState extends CallState {
 
             case CallEvent.RECEIVE_HANGUP:
                 userId = (String) msg.obj;
-                // 当前用户在其它端 hangup，else 走 super
+                // Current user hung up on another client; otherwise fall through to super
                 if (callSession.getCore().getUserId().equals(userId)) {
                     callSession.setFinishReason(CallConst.CallFinishReason.HANGUP_ON_OTHER_CLIENT);
                     callSession.transitionToIdleState();

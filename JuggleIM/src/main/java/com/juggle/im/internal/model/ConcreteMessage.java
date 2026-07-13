@@ -1,5 +1,6 @@
 package com.juggle.im.internal.model;
 
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.Message;
@@ -20,9 +21,11 @@ public class ConcreteMessage extends Message {
         mGroupInfo = other.getGroupInfo();
         mTargetUserInfo = other.getTargetUserInfo();
         mGroupMemberInfo = other.getGroupMemberInfo();
+        mFriendInfo = other.getFriendInfo();
         mReferMsgId = other.getReferMsgId();
         mPushData = other.getPushData();
         mLifeTime = other.getLifeTime();
+        mReadTime = other.getReadTime();
     }
 
     public long getSeqNo() {
@@ -81,12 +84,28 @@ public class ConcreteMessage extends Message {
         mTargetUserInfo = targetUserInfo;
     }
 
+    public UserInfo getSenderUserInfo() {
+        return mSenderUserInfo;
+    }
+
+    public void setSenderUserInfo(UserInfo senderUserInfo) {
+        mSenderUserInfo = senderUserInfo;
+    }
+
     public GroupMember getGroupMemberInfo() {
         return mGroupMemberInfo;
     }
 
     public void setGroupMemberInfo(GroupMember groupMemberInfo) {
         mGroupMemberInfo = groupMemberInfo;
+    }
+
+    public FriendInfo getFriendInfo() {
+        return mFriendInfo;
+    }
+
+    public void setFriendInfo(FriendInfo friendInfo) {
+        mFriendInfo = friendInfo;
     }
 
     public String getReferMsgId() {
@@ -121,6 +140,18 @@ public class ConcreteMessage extends Message {
         mReadTime = readTime;
     }
 
+    public boolean isMute() {
+        return mIsMute;
+    }
+
+    public void setMute(boolean mute) {
+        mIsMute = mute;
+    }
+
+    public int getHashCountAndIncrement() {
+        return mHashCount++;
+    }
+
     private long mSeqNo;
     private long mMsgIndex;
     private String mClientUid;
@@ -128,9 +159,14 @@ public class ConcreteMessage extends Message {
     private boolean mExisted;
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;
+    private UserInfo mSenderUserInfo;
     private GroupMember mGroupMemberInfo;
+    private FriendInfo mFriendInfo;
     private String mReferMsgId;
     private PushData mPushData;
     private long mLifeTime;
     private long mReadTime;
+    private boolean mIsMute;
+    // Encrypted message hash retry count
+    private int mHashCount;
 }

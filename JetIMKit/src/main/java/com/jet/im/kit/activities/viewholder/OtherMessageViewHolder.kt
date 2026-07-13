@@ -15,8 +15,6 @@ import com.jet.im.kit.model.MessageListUIParams
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
 import com.juggle.im.model.MessageReactionItem
-import com.sendbird.android.message.Emoji
-import com.sendbird.android.message.Reaction
 
 /**
  * This ViewHolder has a basic message template for 'Other message.'

@@ -23,6 +23,7 @@ public class MiMessageReceiver extends PushMessageReceiver {
     @Override
     public void onReceiveRegisterResult(Context context, MiPushCommandMessage message) {
         if (message == null) {
+            XMPush.sCallback.onError(PushChannel.XIAOMI, -1, "MiPushCommandMessage is null");
             return;
         }
         String command = message.getCommand();

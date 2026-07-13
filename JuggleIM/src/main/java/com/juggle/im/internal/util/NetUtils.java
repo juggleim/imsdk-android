@@ -27,7 +27,7 @@ public class NetUtils {
             url = new URL(urlStr);
             HttpsURLConnection c = null;
             c = (HttpsURLConnection) url.openConnection();
-            // 优先使用SSLSocketFactory，未设置则尝试使用SSLContext的SSLSocketFactory
+            // Prefer SSLSocketFactory; if not set, try SSLContext.getSSLSocketFactory
             if (sslSocketFactory != null) {
                 c.setSSLSocketFactory(sslSocketFactory);
             } else if (sslContext != null) {
@@ -77,7 +77,7 @@ public class NetUtils {
                     isNetAvailable = true;
                 }
             } else {
-                // 29以后弃用
+                // Deprecated after API 29
                 NetworkInfo networkInfo = null;
                 try {
                     networkInfo = manager.getActiveNetworkInfo();

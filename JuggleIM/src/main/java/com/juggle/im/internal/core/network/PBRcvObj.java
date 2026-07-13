@@ -239,10 +239,16 @@ class PBRcvObj {
         static final int qryCallRoomsAck = 31;
         static final int qryCallRoomAck = 32;
         static final int qryMsgExtAck = 33;
-        static final int getUserInfoAck = 34;
+        static final int getUserSettingAck = 34;
         static final int getTopMsgAck = 35;
         static final int getFavoriteMsgAck = 36;
         static final int getConversationConfAck = 37;
+        static final int getUserInfoAck = 38;
+        static final int getGroupInfoAck = 39;
+        static final int getFriendInfosAck = 40;
+        static final int getConversationTagListAck = 41;
+        static final int getUserStatusAck = 42;
+        static final int qryPubKeysAck = 43;
     }
 
     public enum PBChatroomEventType {
@@ -250,7 +256,7 @@ class PBRcvObj {
         QUIT(1),
         KICK(2),
         FALLOUT(3);
-        /// 系统会话
+        /// System conversation
         PBChatroomEventType(int value) {
             this.mValue = value;
         }

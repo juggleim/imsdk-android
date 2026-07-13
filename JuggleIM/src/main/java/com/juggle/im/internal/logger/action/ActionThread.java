@@ -17,23 +17,23 @@ class ActionThread extends Thread {
     private volatile boolean mIsRun = true;
     private volatile boolean mIsWorking;
 
-    //当前时间的整小时时间戳
+    //Current hour timestamp
     private long mCurrentHour;
-    //上次检查sdcard的时间
+    //Last sdcard check time
     private long mLastCheckSDCardTime;
-    //日志保存目录
+    //Log storage directory
     private String mPath;
-    //日志过期时间
+    //Log expiration time
     private long mExpiredTime;
-    //新日志文件创建间隔
+    //New log file creation interval
     private long mLogFileCreateInterval;
-    //上传结果StatusCode
+    //Upload result StatusCode
     private int mUploadStatusCode;
-    //action缓存队列
+    //Action cache queue
     private final ConcurrentLinkedQueue<IAction> mActionCacheQueue;
-    //上传缓存队列
+    //Upload cache queue
     private final ConcurrentLinkedQueue<IAction> mUploadActionCacheQueue = new ConcurrentLinkedQueue<>();
-    //上传线程池
+    //Upload thread pool
     private ExecutorService mSingleThreadExecutor;
 
     ActionThread(String path, long expiredTime, long logFileCreateInterval, ConcurrentLinkedQueue<IAction> cacheLogQueue) {
@@ -115,24 +115,24 @@ class ActionThread extends Thread {
         }
     }
 
-    //清除过期的日志文件
+    //Remove expired log files
     private void doRemoveExpiredLog(RemoveExpiredAction action) {
         FileUtils.deleteExpiredLog(mPath, action.mDeleteTime);
     }
 
-    //写日志
+    //Write logs
     private void doWriteLog2File(WriteAction action) {
-        //判断是否需要创建新的日志文件
+        //Check whether a new log file needs to be created
         if (!TimeUtils.needCreateLogFile(mCurrentHour, mLogFileCreateInterval)) {
-            //清除过期的日志文件
+            //Remove expired log files
             long tempCurrentHour = TimeUtils.getCurrentHour();
             long deleteTime = tempCurrentHour - mExpiredTime;
             FileUtils.deleteExpiredLog(mPath, deleteTime);
-            //更新当前整小时时间戳
+            //Update the current hour timestamp
             mCurrentHour = TimeUtils.getCurrentHour();
             FileUtils.prepareLogFile(mPath, mCurrentHour);
         }
-        //每隔1分钟检查一次当前日志目录总大小是否超过使用限制，如果大于限制，则不允许再次写入
+        //Check every minute whether the current log directory total size exceeds the usage limit. If it does, writing is not allowed
         long currentTime = System.currentTimeMillis();
         boolean isCanWriteSDCard = true;
         if (currentTime - mLastCheckSDCardTime > Constants.MINUTE) {
@@ -142,11 +142,11 @@ class ActionThread extends Thread {
         if (!isCanWriteSDCard) {
             return;
         }
-        //将日志写入文件
+        //Write logs to file
         FileUtils.writLog2File(mPath, mCurrentHour, action);
     }
 
-    //上传日志
+    //Upload logs
     private void doUploadLog2Net(UploadAction action) {
         if (action == null) return;
         if (TextUtils.isEmpty(mPath) || !action.isValid()) {
@@ -196,9 +196,9 @@ class ActionThread extends Thread {
         mSingleThreadExecutor.execute(action.mUploadRunnable);
     }
 
-    //发送日志前的预处理操作
+    //Preprocessing before sending logs
     private boolean prepareUploadLogFile(UploadAction action) {
-        //如果需要上传的endTime小于过期时间，直接不处理
+        //If the endTime to upload is earlier than the expiration time, skip it directly
         if (action.mEndTime < TimeUtils.getCurrentHour() - mExpiredTime) {
             action.mUploadLocalPath = "";
             return false;

@@ -62,19 +62,19 @@ public interface IMessageManager {
     }
 
     interface IGetMessagesCallbackV2 {
-        //messages: 消息列表，code: 结果码，0 为成功
+        // messages: message list, code: result code, 0 indicates success.
         void onGetLocalMessages(List<Message> messages, int code);
-        //messages: 消息列表，timestamp: 消息时间戳，拉下一批消息的时候可以使用，hasMore: 是否还有更多消息，code: 结果码，0 为成功
+        // messages: message list, timestamp: message timestamp for fetching the next batch, hasMore: whether more messages are available, code: result code, 0 indicates success.
         void onGetRemoteMessages(List<Message> messages, long timestamp, boolean hasMore, int code);
     }
 
     interface IGetMessagesCallbackV3 {
         /**
-         * 结果回调
-         * @param messages 消息列表
-         * @param timestamp 消息时间戳，拉下一批消息的时候可以使用
-         * @param hasMore 是否还有更多消息
-         * @param code 结果码，0 为成功。code 不为 0 的时候，如果本地存在缓存消息，则会在 messages 里返回本地消息
+         * Result callback.
+         * @param messages Message list.
+         * @param timestamp Message timestamp for fetching the next batch.
+         * @param hasMore Whether more messages are available.
+         * @param code Result code. 0 indicates success. When code is not 0, cached local messages are returned in messages if they exist locally.
          */
         void onGetMessages(List<Message> messages, long timestamp, boolean hasMore, int code);
     }
@@ -149,11 +149,11 @@ public interface IMessageManager {
                         ISendMessageCallback callback);
 
     /**
-     * 发送媒体消息（先上传媒体，再发送消息）
-     * @param content 媒体消息实体
-     * @param conversation 会话
-     * @param callback 发送回调
-     * @return 消息对象
+     * Sends a media message by uploading the media first and then sending the message.
+     * @param content Media message entity.
+     * @param conversation Conversation.
+     * @param callback Send callback.
+     * @return Message object.
      */
     Message sendMediaMessage(MediaMessageContent content,
                              Conversation conversation,
@@ -165,19 +165,21 @@ public interface IMessageManager {
                              ISendMediaMessageCallback callback);
 
     /**
-     * 重发消息，用于发送失败后进行重发（如果消息已经发送成功则直接返回成功回调）
+     * Resends a message after a send failure. If the message was already sent successfully,
+     * the success callback is returned directly.
      *
-     * @param message 消息对象。
-     * @param callback 结果回调。参考 {@link ISendMessageCallback}。
+     * @param message Message object.
+     * @param callback Result callback. See {@link ISendMessageCallback}.
      */
     Message resendMessage(Message message,
                           ISendMessageCallback callback);
 
     /**
-     * 重发消息，用于媒体类型消息发送失败后重发（如果消息已经发送成功则直接返回成功回调）
+     * Resends a media message after a send failure. If the message was already sent successfully,
+     * the success callback is returned directly.
      *
-     * @param message 消息对象。
-     * @param callback 结果回调。参考 {@link ISendMediaMessageCallback}。
+     * @param message Message object.
+     * @param callback Result callback. See {@link ISendMediaMessageCallback}.
      */
     Message resendMediaMessage(Message message,
                                ISendMediaMessageCallback callback);
@@ -208,10 +210,10 @@ public interface IMessageManager {
     List<Message> getMessagesByClientMsgNos(long[] clientMsgNos);
 
     /**
-     * 获取会话中第一条未读消息。
+     * Gets the first unread message in a conversation.
      *
-     * @param conversation 会话标识。
-     * @param callback  下载文件的回调。参考 {@link IDownloadMediaMessageCallback}。
+     * @param conversation Conversation identifier.
+     * @param callback Callback for downloading the file. See {@link IDownloadMediaMessageCallback}.
      */
     void getFirstUnreadMessage(Conversation conversation, IGetMessagesCallback callback);
 
@@ -235,25 +237,6 @@ public interface IMessageManager {
             long timestamp,
             JIMConst.PullDirection direction);
 
-    /**
-     * 根据消息中的关键字搜索会话。
-     *
-     * @param options 搜索条件。
-     * @param callback 结果回调。参考 {@link ISearchConversationWithMessageContentCallback}。
-     */
-    void searchConversationsWithMessageContent(MessageQueryOptions options, ISearchConversationWithMessageContentCallback callback);
-
-    /**
-     * 下载多媒体文件。
-     *
-     * @param messageId 媒体消息（FileMessage，SightMessage，GIFMessage, HQVoiceMessage等）。
-     * @param callback  下载文件的回调。参考 {@link IDownloadMediaMessageCallback}。
-     */
-    void downloadMediaMessage(
-            final String messageId, final IDownloadMediaMessageCallback callback);
-
-    void cancelDownloadMediaMessage(String messageId);
-
     List<Message> searchMessageInConversation(
             Conversation conversation,
             String searchContent,
@@ -262,56 +245,92 @@ public interface IMessageManager {
             JIMConst.PullDirection direction,
             List<String> contentTypes);
 
+    List<Message> searchMessageInConversation(
+            Conversation conversation,
+            String searchContent,
+            int count,
+            long timestamp,
+            JIMConst.PullDirection direction,
+            List<String> contentTypes,
+            List<String> senderUserIds);
+
     /**
-     * 在同一个会话里，根据消息 id 批量删除消息
-     * @param conversation 会话标识
-     * @param messageIds 消息 id 列表
-     * @param callback 结果回调
+     * Searches conversations by keywords in messages.
+     *
+     * @param options Search options.
+     * @param callback Result callback. See {@link ISearchConversationWithMessageContentCallback}.
+     */
+    void searchConversationsWithMessageContent(MessageQueryOptions options, ISearchConversationWithMessageContentCallback callback);
+
+    /**
+     * Downloads a media file.
+     *
+     * @param messageId Media message, such as FileMessage, SightMessage, GIFMessage, or HQVoiceMessage.
+     * @param callback Callback for downloading the file. See {@link IDownloadMediaMessageCallback}.
+     */
+    void downloadMediaMessage(
+            final String messageId, final IDownloadMediaMessageCallback callback);
+
+    void cancelDownloadMediaMessage(String messageId);
+
+    /**
+     * Deletes messages in the same conversation in batches by message ID.
+     * @param conversation Conversation identifier.
+     * @param messageIds Message ID list.
+     * @param callback Result callback.
      */
     void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, ISimpleCallback callback);
 
     /**
-     * 在同一个会话里，根据本端消息唯一编号批量删除消息
-     * @param conversation 会话标识
-     * @param clientMsgNos 本端消息唯一编号列表
-     * @param callback 结果回调
+     * Deletes messages in the same conversation in batches by local unique message number.
+     * @param conversation Conversation identifier.
+     * @param clientMsgNos Local unique message number list.
+     * @param callback Result callback.
      */
     void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, ISimpleCallback callback);
 
     /**
-     * 在同一个会话里，根据消息 id 批量删除消息
-     * @param conversation 会话标识
-     * @param messageIds 消息 id 列表
-     * @param forAllUsers 是否对会话里所有用户删除消息
-     * @param callback 结果回调
+     * Deletes messages in the same conversation in batches by message ID.
+     * @param conversation Conversation identifier.
+     * @param messageIds Message ID list.
+     * @param forAllUsers Whether to delete the messages for all users in the conversation.
+     * @param callback Result callback.
      */
     void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, boolean forAllUsers, ISimpleCallback callback);
 
     /**
-     * 在同一个会话里，根据本端消息唯一编号批量删除消息
-     * @param conversation 会话标识
-     * @param clientMsgNos 本端消息唯一编号列表
-     * @param forAllUsers 是否对会话里所有用户删除消息
-     * @param callback 结果回调
+     * Deletes messages in the same conversation in batches by local unique message number.
+     * @param conversation Conversation identifier.
+     * @param clientMsgNos Local unique message number list.
+     * @param forAllUsers Whether to delete the messages for all users in the conversation.
+     * @param callback Result callback.
      */
     void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, boolean forAllUsers, ISimpleCallback callback);
 
     /**
-     * 清空会话中指定时间之前的所有消息，startTime 传 0 表示当前时间
-     * @param conversation 会话标识
-     * @param startTime 开始时间，传 0 表示当前时间
-     * @param callback 结果回调
+     * Clears all messages before the specified time in a conversation. Pass 0 for startTime to use the current time.
+     * @param conversation Conversation identifier.
+     * @param startTime Start time. Pass 0 to use the current time.
+     * @param callback Result callback.
      */
     void clearMessages(Conversation conversation, long startTime, ISimpleCallback callback);
 
     /**
-     * 清空会话中指定时间之前的所有消息，startTime 传 0 表示当前时间
-     * @param conversation 会话标识
-     * @param startTime 开始时间，传 0 表示当前时间
-     * @param forAllUsers 是否对会话里所有用户清除消息
-     * @param callback 结果回调
+     * Clears all messages before the specified time in a conversation. Pass 0 for startTime to use the current time.
+     * @param conversation Conversation identifier.
+     * @param startTime Start time. Pass 0 to use the current time.
+     * @param forAllUsers Whether to clear messages for all users in the conversation.
+     * @param callback Result callback.
      */
     void clearMessages(Conversation conversation, long startTime, boolean forAllUsers, ISimpleCallback callback);
+
+    /**
+     * Physically deletes all messages before the specified time. Only local messages are deleted,
+     * which can be used to free local storage space.
+     * @param timestamp Timestamp. Pass 0 to use the current time.
+     * @param conversationTypes Conversation type list to delete. Pass null to delete messages for all conversation types.
+     */
+    void purgeMessages(long timestamp, List<Conversation.ConversationType> conversationTypes);
 
     void recallMessage(String messageId, Map<String, String> extras, IRecallMessageCallback callback);
 
@@ -329,18 +348,20 @@ public interface IMessageManager {
                                    JIMConst.PullDirection direction,
                                    IGetLocalAndRemoteMessagesCallback callback);
 
-    /// 获取消息，结果按照消息时间正序排列（旧的在前，新的在后）。该接口必定回调两次，先回调本地的缓存消息（有可能存在缺失），再回调远端的消息。
+    /// Gets messages. Results are sorted by message time in ascending order, with older messages first and newer messages later. This API always invokes the callback twice: first with locally cached messages, which may have gaps, and then with remote messages.
     void getMessages(Conversation conversation,
                      JIMConst.PullDirection direction,
                      GetMessageOptions options,
                      IGetMessagesCallbackV2 callback);
 
     /**
-     * 获取消息，结果按照消息时间正序排列（旧的在前，新的在后）。当消息有缺失并且网络有问题的时候，返回本地缓存的消息。
-     * @param conversation 会话对象
-     * @param direction 拉取方向
-     * @param options 获取消息选项
-     * @param callback 回调
+     * Gets messages. Results are sorted by message time in ascending order, with older messages
+     * first and newer messages later. When messages are missing and the network has a problem,
+     * locally cached messages are returned.
+     * @param conversation Conversation object.
+     * @param direction Fetch direction.
+     * @param options Message fetch options.
+     * @param callback Callback.
      */
     void getMessages(Conversation conversation,
                      JIMConst.PullDirection direction,
@@ -352,25 +373,25 @@ public interface IMessageManager {
                          ISendReadReceiptCallback callback);
 
     /**
-     * 获取群消息阅读状态
-     * @param conversation 消息所在会话
-     * @param messageId 需要查询的群消息 id
-     * @param callback 结果回调
+     * Gets the read status of a group message.
+     * @param conversation Conversation containing the message.
+     * @param messageId ID of the group message to query.
+     * @param callback Result callback.
      */
     void getGroupMessageReadInfoDetail(Conversation conversation,
                                        String messageId,
                                        JIMConst.IResultCallback<GroupMessageReadInfoDetail> callback);
 
     /**
-     * 获取单聊消息阅读时间（群消息阅读状态请使用 getGroupMessageReadInfoDetail）
-     * @param clientMsgNo 本端消息唯一编号
+     * Gets the read time of a one-to-one chat message. Use getGroupMessageReadInfoDetail for group message read status.
+     * @param clientMsgNo Local unique message number.
      */
     long getMessageReadTime(long clientMsgNo);
 
     /**
-     * 获取被合并的消息列表
-     * @param containerMsgId 合并消息 id
-     * @param callback 结果回调
+     * Gets the list of merged messages.
+     * @param containerMsgId Merged message ID.
+     * @param callback Result callback.
      */
     void getMergedMessageList(String containerMsgId,
                               IGetMessagesCallback callback);
@@ -394,11 +415,11 @@ public interface IMessageManager {
                           IBroadcastMessageCallback callback);
 
     /**
-     * 添加消息回应
-     * @param messageId 消息 id
-     * @param conversation 消息所属会话
-     * @param reactionId 回应 id
-     * @param callback 结果回调
+     * Adds a message reaction.
+     * @param messageId Message ID.
+     * @param conversation Conversation that the message belongs to.
+     * @param reactionId Reaction ID.
+     * @param callback Result callback.
      */
     void addMessageReaction(String messageId,
                             Conversation conversation,
@@ -406,11 +427,11 @@ public interface IMessageManager {
                             ISimpleCallback callback);
 
     /**
-     * 删除消息回应
-     * @param messageId 消息 id
-     * @param conversation 消息所属会话
-     * @param reactionId 回应 id
-     * @param callback 结果回调
+     * Deletes a message reaction.
+     * @param messageId Message ID.
+     * @param conversation Conversation that the message belongs to.
+     * @param reactionId Reaction ID.
+     * @param callback Result callback.
      */
     void removeMessageReaction(String messageId,
                                Conversation conversation,
@@ -418,35 +439,36 @@ public interface IMessageManager {
                                ISimpleCallback callback);
 
     /**
-     * 批量获取消息回应（消息必须属于同一个会话）
-     * @param messageIdList 消息 id 列表
-     * @param conversation 消息所属会话
-     * @param callback 结果回调
+     * Gets message reactions in batches. Messages must belong to the same conversation.
+     * @param messageIdList Message ID list.
+     * @param conversation Conversation that the messages belong to.
+     * @param callback Result callback.
      */
     void getMessagesReaction(List<String> messageIdList,
                              Conversation conversation,
                              IMessageReactionListCallback callback);
 
     /**
-     * 获取缓存的消息回应（缓存的数据不一定是最新版本，可用于第一时间渲染，优化用户体验）
-     * @param messageIdList 消息 id 列表
-     * @return 消息回应列表
+     * Gets cached message reactions. Cached data may not be the latest version and can be used
+     * to render immediately for a better user experience.
+     * @param messageIdList Message ID list.
+     * @return Message reaction list.
      */
     List<MessageReaction> getCachedMessagesReaction(List<String> messageIdList);
 
     /**
-     * 上传图片
-     * @param localPath 图片路径
-     * @param callback 成功的时候回调图片的远端 url
+     * Uploads an image.
+     * @param localPath Image path.
+     * @param callback Returns the remote image URL on success.
      */
     void uploadImage(String localPath, JIMConst.IResultCallback<String> callback);
 
     /**
-     * 设置消息全局免打扰。
+     * Sets global message mute.
      *
-     * @param isMute 是否免打扰
-     * @param periods 免打扰的时间段，如果为空则视为全天免打扰
-     * @param callback  结果回调
+     * @param isMute Whether to mute.
+     * @param periods Mute time periods. If empty, it is treated as all-day mute.
+     * @param callback Result callback.
      */
     void setMute(boolean isMute, List<TimePeriod> periods, ISimpleCallback callback);
 
@@ -455,39 +477,39 @@ public interface IMessageManager {
     void setMessageState(long clientMsgNo, Message.MessageState state);
 
     /**
-     * 设置置顶
-     * @param messageId 消息 id
-     * @param conversation 消息所属会话标识
-     * @param isTop 是否置顶
-     * @param callback 结果回调
+     * Sets a message as top.
+     * @param messageId Message ID.
+     * @param conversation Identifier of the conversation that the message belongs to.
+     * @param isTop Whether to set as top.
+     * @param callback Result callback.
      */
     void setTop(String messageId, Conversation conversation, boolean isTop, ISimpleCallback callback);
 
     /**
-     * 获取置顶消息
-     * @param conversation 会话标识
-     * @param callback 结果回调
+     * Gets the top message.
+     * @param conversation Conversation identifier.
+     * @param callback Result callback.
      */
     void getTopMessage(Conversation conversation, IGetTopMessageCallback callback);
 
     /**
-     * 添加消息收藏
-     * @param messageIdList 待收藏的消息 id 列表
-     * @param callback 结果回调
+     * Adds messages to favorites.
+     * @param messageIdList List of message IDs to add to favorites.
+     * @param callback Result callback.
      */
     void addFavorite(List<String> messageIdList, ISimpleCallback callback);
 
     /**
-     * 移除消息收藏
-     * @param messageIdList 待移除的消息 id 列表
-     * @param callback 结果回调
+     * Removes messages from favorites.
+     * @param messageIdList List of message IDs to remove from favorites.
+     * @param callback Result callback.
      */
     void removeFavorite(List<String> messageIdList, ISimpleCallback callback);
 
     /**
-     * 获取收藏的消息
-     * @param option 查询参数
-     * @param callback 结果回调
+     * Gets favorite messages.
+     * @param option Query options.
+     * @param callback Result callback.
      */
     void getFavorite(GetFavoriteMessageOption option, IGetFavoriteMessageCallback callback);
 
@@ -511,6 +533,10 @@ public interface IMessageManager {
 
     void setPreprocessor(IMessagePreprocessor preprocessor);
 
+    void addStreamMessageListener(String key, IStreamMessageListener listener);
+
+    void removeStreamMessageListener(String key);
+
     void setMessageUploadProvider(IMessageUploadProvider uploadProvider);
 
     interface IMessageListener {
@@ -520,19 +546,19 @@ public interface IMessageManager {
 
         void onMessageDelete(Conversation conversation, List<Long> clientMsgNos);
 
-        //当 senderId 有值时，表示只清空这个用户发送的消息
+        // When senderId has a value, only messages sent by this user are cleared.
         void onMessageClear(Conversation conversation, long timestamp, String senderId);
 
-        //消息修改的回调
+        // Callback for message updates.
         void onMessageUpdate(Message message);
 
-        //新增消息回应的回调
+        // Callback for added message reactions.
         void onMessageReactionAdd(Conversation conversation, MessageReaction reaction);
 
-        //删除消息回应的回调
+        // Callback for deleted message reactions.
         void onMessageReactionRemove(Conversation conversation, MessageReaction reaction);
 
-        //消息置顶的回调
+        // Callback for setting a message as top.
         void onMessageSetTop(Message message, UserInfo operator, boolean isTop);
     }
 
@@ -548,33 +574,48 @@ public interface IMessageManager {
 
     interface IMessageDestroyListener {
         /**
-         * 消息销毁时间更新回调（一般发生在阅后即焚之类的场景）
-         * @param messageId 消息 id
-         * @param conversation 所在会话
-         * @param destroyTime 更新后的销毁时间
+         * Callback for message destroy time updates. This usually occurs in scenarios such as burn-after-reading.
+         * @param messageId Message ID.
+         * @param conversation Conversation containing the message.
+         * @param destroyTime Updated destroy time.
          */
         void onMessageDestroyTimeUpdate(String messageId, Conversation conversation, long destroyTime);
     }
 
     interface IMessagePreprocessor {
         /**
-         * 消息加密的回调
-         * 回调时机：消息入库之后，发送之前
-         * @param content 待发送的消息内容，已序列化成 byte[]
-         * @param conversation 所在会话
-         * @param contentType 消息类型
-         * @return 处理后的消息内容。
+         * Callback for message encryption.
+         * Callback timing: after the message is stored in the database and before it is sent.
+         * @param content Message content to send, already serialized into a byte array.
+         * @param conversation Conversation containing the message.
+         * @param contentType Message type.
+         * @return Processed message content.
          */
         byte[] encryptMessageContent(byte[] content, Conversation conversation, String contentType);
 
         /**
-         * 消息解密的回调
-         * 回调时机：接收到消息，入库之前
-         * @param content 接收到的消息内容, byte[] 类型，还没反序列化
-         * @param conversation 所在会话
-         * @param contentType 消息类型
-         * @return 处理后的消息内容。
+         * Callback for message decryption.
+         * Callback timing: after the message is received and before it is stored in the database.
+         * @param content Received message content as a byte array, not yet deserialized.
+         * @param conversation Conversation containing the message.
+         * @param contentType Message type.
+         * @return Processed message content.
          */
         byte[] decryptMessageContent(byte[] content, Conversation conversation, String contentType);
+    }
+
+    interface IStreamMessageListener {
+        /**
+         * Callback for appending a streaming message fragment.
+         * @param messageId Message ID of the streaming message.
+         * @param content Appended fragment content. Developers can append content to the end of JStreamTextMessage content in the UI.
+         */
+        void onStreamTextMessageAppend(String messageId, String content);
+
+        /**
+         * Callback for streaming message completion.
+         * @param message Completed streaming message. Developers can find the corresponding streaming message in the UI by messageId and refresh the UI.
+         */
+        void onStreamTextMessageComplete(Message message);
     }
 }

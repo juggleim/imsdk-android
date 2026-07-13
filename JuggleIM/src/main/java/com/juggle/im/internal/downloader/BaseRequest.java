@@ -4,7 +4,7 @@ import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 上传 或 下载的基类
+ * Base class for upload or download
  *
  * @author lvhongzhen
  */
@@ -53,6 +53,6 @@ public abstract class BaseRequest<T extends RequestCallback> {
         run();
     }
 
-    /** 需要执行的代码逻辑，上传 或 下载 */
+    /** Code logic to execute: upload or download */
     public abstract void run();
 }

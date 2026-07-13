@@ -78,13 +78,13 @@ class UploadDefaultRunnable extends UploadRunnable {
 //            connection.setRequestProperty("Charset", Constants.LOG_UPLOAD_CHARSET);
 //            connection.setRequestProperty("connection", Constants.LOG_UPLOAD_KEEP_ALIVE);
 //            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-//            //添加请求头
+//            //Add request headers
 //            Set<Map.Entry<String, String>> entrySet = mRequestHeaders.entrySet();
 //            for (Map.Entry<String, String> tempEntry : entrySet) {
 //                connection.addRequestProperty(tempEntry.getKey(), tempEntry.getValue());
 //            }
 //            outputStream = connection.getOutputStream();
-//            //写入文件参数
+//            //Write file parameters
 //            if (file != null) {
 //                String fileParam = new StringBuilder()
 //                        .append(Constants.LOG_UPLOAD_PREFIX)
@@ -95,7 +95,7 @@ class UploadDefaultRunnable extends UploadRunnable {
 //                        .append(Constants.LOG_UPLOAD_LINE_END)
 //                        .toString();
 //                outputStream.write(fileParam.getBytes());
-//                //写入文件
+//                //Write file
 //                FileInputStream fileInputStream = new FileInputStream(file);
 //                int bytesRead;
 //                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
@@ -104,11 +104,11 @@ class UploadDefaultRunnable extends UploadRunnable {
 //                fileInputStream.close();
 //                outputStream.write(Constants.LOG_UPLOAD_LINE_END.getBytes());
 //            }
-//            //请求结束标志
+//            //Request end marker
 //            byte[] end_data = (Constants.LOG_UPLOAD_PREFIX + boundary + Constants.LOG_UPLOAD_PREFIX + Constants.LOG_UPLOAD_LINE_END).getBytes();
 //            outputStream.write(end_data);
 //            outputStream.flush();
-//            //得到响应码
+//            //Get response code
 //            int statusCode = connection.getResponseCode();
 //            if (statusCode / 100 == 2) {
 //                responseStream = new ByteArrayOutputStream();
@@ -153,7 +153,7 @@ class UploadDefaultRunnable extends UploadRunnable {
 //                    e.printStackTrace();
 //                }
 //            }
-//            //上传完成后删除文件
+//            // Delete the file after upload completes
 //            if (file != null) {
 //                try {
 //                    file.delete();

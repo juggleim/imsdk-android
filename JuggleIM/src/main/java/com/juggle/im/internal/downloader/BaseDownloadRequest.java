@@ -15,14 +15,14 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 
 /**
- * 多媒体下载基类
+ * Base class for media download
  *
  * @author lvhongzhen
  */
 public abstract class BaseDownloadRequest<V extends IDownloadInfo>
         extends BaseRequest<RequestCallback> {
     /**
-     * 默认 60 秒超时时间
+     * Default timeout is 60 seconds
      */
     protected static final int TIMEOUT = 60 * 1000;
 
@@ -42,7 +42,7 @@ public abstract class BaseDownloadRequest<V extends IDownloadInfo>
     }
 
     protected void download() {
-        // 任务不存在直接取消
+        // Cancel directly if the task does not exist
         if (!MediaDownloadEngine.getInstance().existsTask(tag)) {
             return;
         }
@@ -88,16 +88,16 @@ public abstract class BaseDownloadRequest<V extends IDownloadInfo>
     }
 
     /**
-     * 可以通过此方法设置头信息等
+     * Headers and similar settings can be configured through this method
      *
-     * @param conn HttpURLConnection 对象
+     * @param conn HttpURLConnection object
      */
     protected abstract void setRequestProperty(HttpURLConnection conn);
 
     /**
-     * 确认文件是覆盖写入还是继续写入
+     * Confirm whether the file should be overwritten or appended
      *
-     * @return true，文件继续写入，false 覆盖写入
+     * @return true to continue writing the file, false to overwrite it
      */
     protected abstract boolean appendOutputStream();
 
@@ -147,11 +147,11 @@ public abstract class BaseDownloadRequest<V extends IDownloadInfo>
     }
 
     /**
-     * 当开始写入文件的回调
+     * Callback when file writing starts
      *
-     * @param total   文件总大小
-     * @param current 当前已经下载大小
-     * @param length  当次读取大小
+     * @param total   Total file size
+     * @param current Current downloaded size
+     * @param length  Current read size
      */
     protected abstract void onWriteFile(long total, long current, int length);
 }

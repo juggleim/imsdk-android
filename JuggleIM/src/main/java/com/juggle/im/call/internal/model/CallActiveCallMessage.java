@@ -23,7 +23,7 @@ public class CallActiveCallMessage extends MessageContent {
 
     @Override
     public byte[] encode() {
-        //不会往外发
+        // Not sent outward
         return new byte[0];
     }
 

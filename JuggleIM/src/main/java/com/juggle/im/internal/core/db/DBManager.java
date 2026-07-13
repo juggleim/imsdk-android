@@ -11,6 +11,9 @@ import androidx.annotation.NonNull;
 
 import com.juggle.im.JIM;
 import com.juggle.im.JIMConst;
+import com.juggle.im.internal.model.E2EEInfo;
+import com.juggle.im.model.ConversationTagInfo;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GetMomentOption;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.internal.model.ConcreteConversationInfo;
@@ -32,6 +35,7 @@ import com.juggle.im.model.MomentMedia;
 import com.juggle.im.model.MomentReaction;
 import com.juggle.im.model.SearchConversationsResult;
 import com.juggle.im.model.UserInfo;
+import com.juggle.im.model.messages.StreamTextMessage;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -114,6 +118,38 @@ public class DBManager {
         return result;
     }
 
+    public byte[] getE2EEPubKey() {
+        byte[] result = new byte[0];
+        String[] args = new String[]{ProfileSql.PUBLIC_KEY};
+        try (Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args)) {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    String str = CursorHelper.readString(cursor, ProfileSql.COLUMN_VALUE);
+                    result = E2EESql.hexToBytes(str);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getE2EEPubKey " + e.getMessage());
+        }
+        return result;
+    }
+
+    public byte[] getE2EEPriKey() {
+        byte[] result = new byte[0];
+        String[] args = new String[]{ProfileSql.PRIVATE_KEY};
+        try (Cursor cursor = rawQuery(ProfileSql.SQL_GET_VALUE, args)) {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    String str = CursorHelper.readString(cursor, ProfileSql.COLUMN_VALUE);
+                    result = E2EESql.hexToBytes(str);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getE2EEPriKey " + e.getMessage());
+        }
+        return result;
+    }
+
     public void setConversationSyncTime(long time) {
         String[] args = new String[]{ProfileSql.CONVERSATION_TIME, String.valueOf(time)};
         execSQL(ProfileSql.SQL_SET_VALUE, args);
@@ -126,6 +162,13 @@ public class DBManager {
 
     public void setMessageReceiveSyncTime(long time) {
         String[] args = new String[]{ProfileSql.RECEIVE_TIME, String.valueOf(time)};
+        execSQL(ProfileSql.SQL_SET_VALUE, args);
+    }
+
+    public void setE2EEKeys(byte[] pubKey, byte[] priKey) {
+        String[] args = new String[]{ProfileSql.PUBLIC_KEY, E2EESql.bytesToHex(pubKey)};
+        execSQL(ProfileSql.SQL_SET_VALUE, args);
+        args = new String[]{ProfileSql.PRIVATE_KEY, E2EESql.bytesToHex(priKey)};
         execSQL(ProfileSql.SQL_SET_VALUE, args);
     }
 
@@ -156,7 +199,7 @@ public class DBManager {
         }
     }
 
-    //重设会话sortTime
+    //Reset conversation sortTime
     private void resetSortTime(ConcreteConversationInfo info) {
         if (info == null || info.getSortTime() != 0) return;
         info.setSortTime(mSortTimeCounter == null ? 0 : mSortTimeCounter.getNextSortTime());
@@ -377,6 +420,50 @@ public class DBManager {
         return count;
     }
 
+    public void createConversationTag(ConversationTagInfo tagInfo) {
+        String sql = ConversationSql.SQL_INSERT_CONVERSATION_TAG_INFO;
+        String tagId = tagInfo.getTagId() == null ? "" : tagInfo.getTagId();
+        String tagName = tagInfo.getName() == null ? "" : tagInfo.getName();
+        execSQL(sql, new String[]{tagId, tagName, String.valueOf(tagInfo.getType())});
+    }
+
+    public void destroyConversationTag(String tagId) {
+        String sql = ConversationSql.SQL_REMOVE_CONVERSATION_TAG_INFO;
+        execSQL(sql, new String[]{tagId});
+    }
+
+    public void updateConversationTagName(String tagId, String tagName) {
+        String sql = ConversationSql.SQL_UPDATE_TAG_NAME;
+        execSQL(sql, new String[]{tagName == null ? "" : tagName, tagId == null ? "" : tagId});
+    }
+
+    public List<ConversationTagInfo> getConversationTagInfoList() {
+        String sql = ConversationSql.SQL_GET_TAG_LIST;
+        List<ConversationTagInfo> list = new ArrayList<>();
+        try (Cursor cursor = rawQuery(sql, null)) {
+            if (cursor != null) {
+                addConversationTagsFromCursor(list, cursor);
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getConversationTagInfoList " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<ConversationTagInfo> getTagsForConversation(Conversation conversation) {
+        String sql = ConversationSql.SQL_GET_TAGS_FOR_CONVERSATION;
+        List<ConversationTagInfo> list = new ArrayList<>();
+        String[] args = new String[]{String.valueOf(conversation.getConversationType().getValue()), conversation.getConversationId(), conversation.getSubChannel()};
+        try (Cursor cursor = rawQuery(sql, args)) {
+            if (cursor != null) {
+                addConversationTagsFromCursor(list, cursor);
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getTagsForConversation " + e.getMessage());
+        }
+        return list;
+    }
+
     public void updateConversationTag(List<ConcreteConversationInfo> conversationInfos) {
         StringBuilder sql = new StringBuilder(ConversationSql.SQL_INSERT_CONVERSATION_TAG);
         List<String> argList = new ArrayList<>();
@@ -404,6 +491,11 @@ public class DBManager {
                 execSQL(sql.toString(), args);
             }
         });
+    }
+
+    public void clearConversationTags() {
+        String sql = ConversationSql.SQL_CLEAR_CONVERSATION_TAGS;
+        execSQL(sql);
     }
 
     public void addConversationsToTag(List<Conversation> conversations, String tagId) {
@@ -523,7 +615,7 @@ public class DBManager {
         if (TextUtils.isEmpty(message.getReferMsgId())) {
             return message;
         }
-        //查询被引用的消息
+        //Query referenced messages
         ConcreteMessage referMsg = getMessageWithMessageIdEvenDelete(message.getReferMsgId());
         if (referMsg != null) {
             message.setReferredMessage(referMsg);
@@ -535,13 +627,13 @@ public class DBManager {
         List<SearchConversationsResult> resultList = new ArrayList<>();
         List<String> args = new ArrayList<>();
         String sql = MessageSql.sqlSearchMessageInConversations(options, now, args);
-        //执行查询
+        //Execute the query
         Cursor cursor = rawQuery(sql, args.toArray(new String[0]));
         if (cursor == null) {
             return resultList;
         }
         try {
-            //解析查询结果
+            //Parse query results
             for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                 int type = CursorHelper.readInt(cursor, MessageSql.COL_CONVERSATION_TYPE);
                 String conversationId = CursorHelper.readString(cursor, MessageSql.COL_CONVERSATION_ID);
@@ -571,7 +663,7 @@ public class DBManager {
             }
         }
 
-        //返回查询结果
+        //Return query results
         return resultList;
     }
 
@@ -593,31 +685,31 @@ public class DBManager {
         if (timestamp == 0) {
             timestamp = Long.MAX_VALUE;
         }
-        //处理sql及查询条件
+        //Handle SQL and query conditions
         List<String> whereArgs = new ArrayList<>();
         String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, conversationTypes, now, whereArgs);
-        //执行查询
+        //Execute the query
         Cursor cursor = rawQuery(sql, whereArgs.toArray(new String[0]));
         if (cursor == null) {
             return result;
         }
         try {
-            //解析查询结果
+            //Parse query results
             addMessagesFromCursor(result, cursor);
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getMessages " + e.getMessage());
         } finally {
             cursor.close();
         }
-        //按需反转结果列表
+        //Reverse the result list when needed
         if (JIMConst.PullDirection.OLDER == pullDirection) {
             Collections.reverse(result);
         }
-        //返回查询结果
+        //Return query results
         return result;
     }
 
-    //被删除的消息也能查出来
+    //Deleted messages can also be queried
     public List<Message> getMessagesByMessageIds(List<String> messageIds) {
         List<Message> result = new ArrayList<>();
         if (messageIds.isEmpty()) {
@@ -647,7 +739,7 @@ public class DBManager {
         return messages;
     }
 
-    //被删除的消息也能查出来
+    //Deleted messages can also be queried
     public List<ConcreteMessage> getConcreteMessagesByMessageIds(List<String> messageIds) {
         List<ConcreteMessage> result = new ArrayList<>();
         if (messageIds.isEmpty()) {
@@ -677,7 +769,7 @@ public class DBManager {
         return messages;
     }
 
-    //被删除的消息也能查出来
+    //Deleted messages can also be queried
     public List<Message> getMessagesByClientMsgNos(long[] clientMsgNos) {
         List<Message> result = new ArrayList<>();
         if (clientMsgNos.length == 0) {
@@ -707,7 +799,7 @@ public class DBManager {
         return messages;
     }
 
-    //从消息表中获取会话中最新一条消息
+    //Get the latest message in the conversation from the message table
     public Message getLastMessage(Conversation conversation, long now) {
         String sql = MessageSql.sqlGetLastMessageInConversation(conversation);
         String[] args = new String[]{String.valueOf(now)};
@@ -780,19 +872,29 @@ public class DBManager {
     public void insertMessages(List<ConcreteMessage> list) {
         performTransaction(() -> {
             for (ConcreteMessage message : list) {
-                ConcreteMessage m = null;
-                //messageId 排重
+                ConcreteMessage old = null;
+                //Deduplicate by messageId
                 if (!TextUtils.isEmpty(message.getMessageId())) {
-                    m = getMessageWithMessageId(message.getMessageId(), 0);
+                    old = getMessageWithMessageId(message.getMessageId(), 0);
                 }
-                //clientUid 排重
-                if (m == null && !TextUtils.isEmpty(message.getClientUid())) {
-                    m = getMessageWithClientUid(message.getClientUid());
+                //Deduplicate by clientUid
+                if (old == null && !TextUtils.isEmpty(message.getClientUid())) {
+                    old = getMessageWithClientUid(message.getClientUid());
                 }
-                if (m != null) {
-                    message.setClientMsgNo(m.getClientMsgNo());
+                if (old != null) {
+                    message.setClientMsgNo(old.getClientMsgNo());
                     message.setExisted(true);
-                    if (TextUtils.isEmpty(m.getMessageId())) {
+                    if (old.getContentType().equals(StreamTextMessage.CONTENT_TYPE)) {
+                        StreamTextMessage oldStreamText = (StreamTextMessage) old.getContent();
+                        StreamTextMessage newStreamText = (StreamTextMessage) message.getContent();
+                        if (!oldStreamText.isFinished() && newStreamText.isFinished()) {
+                            updateMessageContentWithMessageId(newStreamText, StreamTextMessage.CONTENT_TYPE, message.getMessageId());
+                        }
+                        if (oldStreamText.getSeq() > newStreamText.getSeq()) {
+                            message.setContent(oldStreamText);
+                        }
+                    }
+                    if (TextUtils.isEmpty(old.getMessageId())) {
                         updateMessageAfterSend(message.getClientMsgNo(), message.getMessageId(), message.getTimestamp(), message.getSeqNo(), message.getGroupMessageReadInfo().getMemberCount());
                     }
                 } else {
@@ -871,6 +973,10 @@ public class DBManager {
         execSQL(MessageSql.sqlUpdateMessageState(state.getValue(), clientMsgNo));
     }
 
+    public void batchSetMessageStateFail() {
+        execSQL(MessageSql.SQL_BATCH_SET_STATE_FAIL);
+    }
+
     public void setMessagesRead(List<String> messageIds, long readTime) {
         Object[] args = new Object[messageIds.size()+1];
         args[0] = readTime;
@@ -902,6 +1008,22 @@ public class DBManager {
         execSQL(MessageSql.sqlClearMessages(conversation, startTime, senderId));
     }
 
+    public void purgeMessages(long timestamp, List<Conversation.ConversationType> conversationTypes) {
+        int conversationTypeSize = 0;
+        if (conversationTypes != null && !conversationTypes.isEmpty()) {
+            conversationTypeSize = conversationTypes.size();
+        }
+        String[] args = new String[conversationTypeSize+1];
+        args[0] = String.valueOf(timestamp);
+        if (conversationTypeSize > 0) {
+            int i = 1;
+            for (Conversation.ConversationType type : conversationTypes) {
+                args[i++] = String.valueOf(type.getValue());
+            }
+        }
+        execSQL(MessageSql.sqlPurgeMessages(conversationTypeSize), args);
+    }
+
     public void clearChatroomMessageExclude(List<String> chatroomIds) {
         String[] args = chatroomIds.toArray(new String[0]);
         execSQL(MessageSql.sqlClearChatroomMessagesExclude(chatroomIds.size()), args);
@@ -929,6 +1051,26 @@ public class DBManager {
             JLogger.w("DB-Exception", "getUserInfo " + e.getMessage());
         }
         return info;
+    }
+
+    public List<UserInfo> getUserInfoList(List<String> userIdList) {
+        List<UserInfo> userList = new ArrayList<>();
+        if (userIdList == null || userIdList.isEmpty()) {
+            return userList;
+        }
+        String sql = UserInfoSql.SQL_GET_USER_INFO_LIST + CursorHelper.getQuestionMarkPlaceholder(userIdList.size());
+        String[] args = userIdList.toArray(new String[0]);
+        try (Cursor cursor = rawQuery(sql, args)) {
+            if (cursor != null) {
+                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                    UserInfo userInfo = UserInfoSql.userInfoWithCursor(cursor);
+                    userList.add(userInfo);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getUserInfoList " + e.getMessage());
+        }
+        return userList;
     }
 
     public void insertUserInfoList(List<UserInfo> userInfoList) {
@@ -960,6 +1102,26 @@ public class DBManager {
             JLogger.w("DB-Exception", "getGroupInfo " + e.getMessage());
         }
         return info;
+    }
+
+    public List<GroupInfo> getGroupInfoList(List<String> groupIdList) {
+        List<GroupInfo> groupList = new ArrayList<>();
+        if (groupIdList == null || groupIdList.isEmpty()) {
+            return groupList;
+        }
+        String sql = UserInfoSql.SQL_GET_GROUP_LIST + CursorHelper.getQuestionMarkPlaceholder(groupIdList.size());
+        String[] args = groupIdList.toArray(new String[0]);
+        try (Cursor cursor = rawQuery(sql, args)) {
+            if (cursor != null) {
+                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                    GroupInfo groupInfo = UserInfoSql.groupInfoWithCursor(cursor);
+                    groupList.add(groupInfo);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getGroupInfoList " + e.getMessage());
+        }
+        return groupList;
     }
 
     public void insertGroupInfoList(List<GroupInfo> groupInfoList) {
@@ -1004,6 +1166,36 @@ public class DBManager {
                     String extra = UserInfoSql.stringFromMap(member.getExtra());
                     String[] args = new String[]{member.getGroupId(), member.getUserId(), member.getGroupDisplayName(), extra, String.valueOf(member.getUpdatedTime())};
                     execSQL(UserInfoSql.SQL_INSERT_GROUP_MEMBER, args);
+                }
+            }
+        });
+    }
+
+    public FriendInfo getFriendInfo(String userId) {
+        if (TextUtils.isEmpty(userId)) {
+            return null;
+        }
+        FriendInfo friendInfo = null;
+        String[] args = new String[]{userId};
+        try (Cursor cursor = rawQuery(UserInfoSql.SQL_GET_FRIEND_INFO, args)) {
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    friendInfo = UserInfoSql.friendInfoWithCursor(cursor);
+                }
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getFriendInfo " + e.getMessage());
+        }
+        return friendInfo;
+    }
+
+    public void insertFriendInfoList(List<FriendInfo> friendInfoList) {
+        performTransaction(() -> {
+            for (FriendInfo info : friendInfoList) {
+                FriendInfo old = getFriendInfo(info.getUserId());
+                if (old == null || info.getUpdatedTime() > old.getUpdatedTime()) {
+                    Object[] args = new Object[]{info.getUserId(), info.isFriend(), info.getAlias(), info.getUpdatedTime()};
+                    execSQL(UserInfoSql.SQL_INSERT_FRIEND, args);
                 }
             }
         });
@@ -1116,6 +1308,36 @@ public class DBManager {
         return result;
     }
 
+    public List<E2EEInfo> getE2EEInfo(String userId) {
+        List<E2EEInfo> result = new ArrayList<>();
+        if (TextUtils.isEmpty(userId)) {
+            return result;
+        }
+        String sql = E2EESql.SQL_GET_E2EE_INFO;
+        String[] args = new String[]{userId};
+        try (Cursor cursor = rawQuery(sql, args)) {
+            if (cursor != null) {
+                addE2EEInfoFromCursor(result, cursor);
+            }
+        } catch (Exception e) {
+            JLogger.w("DB-Exception", "getE2EEInfo " + e.getMessage());
+        }
+        return result;
+    }
+
+    public void updateE2EEInfo(List<E2EEInfo> infoList) {
+        if (infoList == null || infoList.isEmpty()) {
+            return;
+        }
+        performTransaction(() -> {
+            for (E2EEInfo info : infoList) {
+                String sql = E2EESql.SQL_UPDATE_E2EE_INFO;
+                Object[] args = new Object[]{info.getUserId(), info.getDeviceId(), info.getPubKey()};
+                execSQL(sql, args);
+            }
+        });
+    }
+
     private void checkLastMessage(ConcreteConversationInfo info) {
         if (info == null) {
             return;
@@ -1123,7 +1345,7 @@ public class DBManager {
         boolean needUpdate = false;
         long timeDifference = JIM.getInstance().getTimeDifference();
         long now = System.currentTimeMillis() + timeDifference;
-        // 当 lastMessage 存在的时候，检查它是否被删除或者过期了。不存在的时候不做处理
+        // When lastMessage exists, check whether it has been deleted or expired. Do nothing when it does not exist
         if (info.getLastMessage() instanceof ConcreteMessage) {
             ConcreteMessage conversationLastMessage = (ConcreteMessage) info.getLastMessage();
             ConcreteMessage lastMessage = getMessageWithClientUid(conversationLastMessage.getClientUid());
@@ -1196,7 +1418,7 @@ public class DBManager {
         return result;
     }
 
-    //执行事务
+    //Execute transaction
     private synchronized boolean performTransaction(TransactionOperation operation) {
         if (mDb == null) return false;
 
@@ -1269,6 +1491,20 @@ public class DBManager {
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             Moment moment = MomentSql.momentWithCursor(cursor);
             momentList.add(moment);
+        }
+    }
+
+    private void addE2EEInfoFromCursor(List<E2EEInfo> e2EEInfoList, Cursor cursor) {
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            E2EEInfo info = E2EESql.e2EEInfoWithCursor(cursor);
+            e2EEInfoList.add(info);
+        }
+    }
+
+    private void addConversationTagsFromCursor(List<ConversationTagInfo> list, Cursor cursor) {
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            ConversationTagInfo info = ConversationSql.tagInfoWithCursor(cursor);
+            list.add(info);
         }
     }
 

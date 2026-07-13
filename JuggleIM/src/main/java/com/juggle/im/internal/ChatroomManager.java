@@ -51,7 +51,7 @@ public class ChatroomManager implements IChatroomManager, JWebSocket.IWebSocketC
             public void onSuccess(long timestamp) {
                 JLogger.i("CHRM-Join", "success");
                 changeStatus(chatroomId, CachedChatroom.ChatroomStatus.JOINED);
-                //count 为 0， timestamp 也为 0，服务端永远同步不下来消息
+                //When count is 0 and timestamp is also 0, messages can never be synced from the server
                 long existedSyncTime = getSyncTimeForChatroom(chatroomId);
                 if (prevMessageCount == 0 && existedSyncTime == 0) {
                     setSyncTime(chatroomId, timestamp);

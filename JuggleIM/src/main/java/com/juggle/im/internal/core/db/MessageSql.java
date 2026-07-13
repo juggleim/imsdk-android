@@ -203,10 +203,13 @@ class MessageSql {
     static final String SQL_CREATE_DESTROY_TIME_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_destroy_time ON message(destroy_time)";
     static final String SQL_CREATE_TIMESTAMP_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_timestamp ON message(timestamp)";
     static final String SQL_CREATE_CONVERSATION_SUBCHANNEL_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_subchannel ON message(conversation_type, conversation_id, subchannel)";
+    static final String SQL_CREATE_CONVERSATION_SUBCHANNEL_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_subchannel_ts ON message(conversation_type, conversation_id, subchannel, timestamp)";
     static final String SQL_DROP_INDEX_CONVERSATION = "DROP INDEX IF EXISTS idx_message_conversation";
     static final String SQL_DROP_INDEX_CONVERSATION_TS = "DROP INDEX IF EXISTS idx_message_conversation_ts";
     static final String SQL_DROP_INDEX_DS_CONVERSATION_TS = "DROP INDEX IF EXISTS idx_message_ds_conversation_ts";
     static final String SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX2 = "CREATE INDEX IF NOT EXISTS idx_message_ds_conversation_ts2 ON message(destroy_time, conversation_type, conversation_id, subchannel, timestamp)";
+    static final String SQL_CREATE_STATE_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_state ON message(state)";
+    static final String SQL_CREATE_SENDER_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_sender ON message(sender)";
     static final String SQL_ALTER_ADD_FLAGS = "ALTER TABLE message ADD COLUMN flags INTEGER";
     static final String SQL_ALTER_ADD_LIFE_TIME = "ALTER TABLE message ADD COLUMN life_time INTEGER DEFAULT 0";
     static final String SQL_ALTER_ADD_LIFE_TIME_AFTER_READ = "ALTER TABLE message ADD COLUMN life_time_after_read INTEGER DEFAULT 0";
@@ -227,12 +230,12 @@ class MessageSql {
 
     static String sqlSearchMessageInConversations(MessageQueryOptions options, long now, List<String> whereArgs) {
         List<String> whereClauses = new ArrayList<>();
-        //添加 is_deleted = 0 条件
+        //Add the is_deleted = 0 condition
         whereClauses.add("is_deleted = 0");
         whereClauses.add("(destroy_time = 0 OR destroy_time > ?)");
         whereArgs.add(String.valueOf(now));
         if (options != null) {
-            //添加 conversations 条件
+            //Add the conversations condition
             if (options.getConversations() != null && !options.getConversations().isEmpty()) {
                 List<String> conversationClauses = new ArrayList<>();
                 for (Conversation conversation : options.getConversations()) {
@@ -243,44 +246,44 @@ class MessageSql {
                 }
                 whereClauses.add("(" + String.join(" OR ", conversationClauses) + ")");
             }
-            //添加 direction 条件
+            //Add the direction condition
             if (options.getDirection() != null) {
                 whereClauses.add("direction = ?");
                 whereArgs.add(String.valueOf(options.getDirection().getValue()));
             }
-            //添加 contentTypes 条件
+            //Add the contentTypes condition
             if (options.getContentTypes() != null && !options.getContentTypes().isEmpty()) {
                 whereClauses.add("type IN " + CursorHelper.getQuestionMarkPlaceholder(options.getContentTypes().size()));
                 whereArgs.addAll(options.getContentTypes());
             }
-            //添加 senderUserIds 条件
+            //Add the senderUserIds condition
             if (options.getSenderUserIds() != null && !options.getSenderUserIds().isEmpty()) {
                 whereClauses.add("sender IN " + CursorHelper.getQuestionMarkPlaceholder(options.getSenderUserIds().size()));
                 whereArgs.addAll(options.getSenderUserIds());
             }
-            //添加 messageStates 条件
+            //Add the messageStates condition
             if (options.getStates() != null && !options.getStates().isEmpty()) {
                 whereClauses.add("state IN " + CursorHelper.getQuestionMarkPlaceholder(options.getStates().size()));
                 for (Message.MessageState state : options.getStates()) {
                     whereArgs.add(String.valueOf(state.getValue()));
                 }
             }
-            //添加 conversationTypes 条件
+            //Add the conversationTypes condition
             if (options.getConversationTypes() != null && !options.getConversationTypes().isEmpty()) {
                 whereClauses.add("conversation_type IN " + CursorHelper.getQuestionMarkPlaceholder(options.getConversationTypes().size()));
                 for (Conversation.ConversationType type : options.getConversationTypes()) {
                     whereArgs.add(String.valueOf(type.getValue()));
                 }
             }
-            //添加 search_content 条件
+            //Add the search_content condition
             if (options.getSearchContent() != null) {
                 whereClauses.add("search_content LIKE ?");
                 whereArgs.add("%" + options.getSearchContent() + "%");
             }
         }
-        //合并查询条件
+        //Merge query conditions
         String whereClause = whereClauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", whereClauses);
-        //返回sql
+        //Return SQL
         return SQL_SEARCH_MESSAGE_IN_CONVERSATIONS + whereClause + " GROUP BY conversation_type, conversation_id, subchannel" + " ORDER BY timestamp DESC";
     }
 
@@ -299,11 +302,11 @@ class MessageSql {
             List<String> whereArgs
     ) {
         List<String> whereClauses = new ArrayList<>();
-        //添加 is_deleted = 0 条件
+        //Add the is_deleted = 0 condition
         whereClauses.add("is_deleted = 0");
         whereClauses.add("(destroy_time = 0 OR destroy_time > ?)");
         whereArgs.add(String.valueOf(now));
-        //添加 conversations 条件
+        //Add the conversations condition
         if (conversations != null && !conversations.isEmpty()) {
             List<String> conversationClauses = new ArrayList<>();
             for (Conversation conversation : conversations) {
@@ -314,48 +317,48 @@ class MessageSql {
             }
             whereClauses.add("(" + String.join(" OR ", conversationClauses) + ")");
         }
-        //添加 timestamp 和 pullDirection 条件
+        //Add the timestamp and pullDirection conditions
         if (pullDirection != null) {
             whereClauses.add(pullDirection == JIMConst.PullDirection.NEWER ? "timestamp > ?" : "timestamp < ?");
             whereArgs.add(String.valueOf(timestamp));
         }
-        //添加 direction 条件
+        //Add the direction condition
         if (direction != null) {
             whereClauses.add("direction = ?");
             whereArgs.add(String.valueOf(direction.getValue()));
         }
-        //添加 contentTypes 条件
+        //Add the contentTypes condition
         if (contentTypes != null && !contentTypes.isEmpty()) {
             whereClauses.add("type IN " + CursorHelper.getQuestionMarkPlaceholder(contentTypes.size()));
             whereArgs.addAll(contentTypes);
         }
-        //添加 senderUserIds 条件
+        //Add the senderUserIds condition
         if (senderUserIds != null && !senderUserIds.isEmpty()) {
             whereClauses.add("sender IN " + CursorHelper.getQuestionMarkPlaceholder(senderUserIds.size()));
             whereArgs.addAll(senderUserIds);
         }
-        //添加 messageStates 条件
+        //Add the messageStates condition
         if (messageStates != null && !messageStates.isEmpty()) {
             whereClauses.add("state IN " + CursorHelper.getQuestionMarkPlaceholder(messageStates.size()));
             for (Message.MessageState state : messageStates) {
                 whereArgs.add(String.valueOf(state.getValue()));
             }
         }
-        //添加 conversationTypes 条件
+        //Add the conversationTypes condition
         if (conversationTypes != null && !conversationTypes.isEmpty()) {
             whereClauses.add("conversation_type IN " + CursorHelper.getQuestionMarkPlaceholder(conversationTypes.size()));
             for (Conversation.ConversationType type : conversationTypes) {
                 whereArgs.add(String.valueOf(type.getValue()));
             }
         }
-        //添加 search_content 条件
+        //Add the search_content condition
         if (searchContent != null) {
             whereClauses.add("search_content LIKE ?");
             whereArgs.add("%" + searchContent + "%");
         }
-        //合并查询条件
+        //Merge query conditions
         String whereClause = whereClauses.isEmpty() ? "" : "WHERE " + String.join(" AND ", whereClauses);
-        //返回sql
+        //Return SQL
         return "SELECT * FROM message " + whereClause + " ORDER BY timestamp " + (JIMConst.PullDirection.NEWER == pullDirection ? "ASC" : "DESC") + " LIMIT " + count;
     }
 
@@ -397,6 +400,7 @@ class MessageSql {
         return sql.toString();
     }
 
+    static final String SQL_BATCH_SET_STATE_FAIL = "UPDATE message set state = 3 WHERE state = 1 OR state = 4";
     static final String SQL_ORDER_BY_TIMESTAMP = " ORDER BY timestamp";
     static final String SQL_DESC = " DESC";
     static final String SQL_LIMIT = " LIMIT ";
@@ -428,6 +432,15 @@ class MessageSql {
         String sql = String.format("UPDATE message SET is_deleted = 1 WHERE conversation_type = %s AND conversation_id = '%s' AND subchannel = '%s' AND timestamp <= %s", conversation.getConversationType().getValue(), conversation.getConversationId(), subChannel, startTime);
         if (!TextUtils.isEmpty(senderId)) {
             sql = sql + String.format(" AND sender = '%s'", senderId);
+        }
+        return sql;
+    }
+
+    static String sqlPurgeMessages(int conversationTypeSize) {
+        String sql = "DELETE FROM message WHERE timestamp < ? ";
+
+        if (conversationTypeSize > 0) {
+            sql += "AND conversation_type IN " + CursorHelper.getQuestionMarkPlaceholder(conversationTypeSize);
         }
         return sql;
     }

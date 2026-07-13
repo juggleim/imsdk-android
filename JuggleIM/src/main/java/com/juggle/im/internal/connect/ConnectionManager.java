@@ -32,6 +32,7 @@ import com.juggle.im.internal.core.network.wscallback.WebSocketDataCallback;
 import com.juggle.im.internal.core.network.wscallback.WebSocketSimpleCallback;
 import com.juggle.im.internal.util.IntervalGenerator;
 import com.juggle.im.internal.util.JLogger;
+import com.juggle.im.internal.util.JUtility;
 import com.juggle.im.internal.util.NetworkChangeReceiver;
 import com.juggle.im.internal.util.statemachine.StateMachine;
 import com.juggle.im.push.PushChannel;
@@ -43,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager extends StateMachine implements IConnectionManager, JWebSocket.IWebSocketConnectListener, Application.ActivityLifecycleCallbacks, NetworkChangeReceiver.INetworkChangeReceiverListener {
     @Override
     public void connect(String token) {
-        JLogger.i("CON-Connect", "token is " + token);
+        JLogger.i("CON-Connect", "token is " + JUtility.maskToken(token));
         sendMessage(ConnEvent.USER_CONNECT, token);
     }
 
@@ -163,6 +164,12 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     @Override
+    public void setConnectParams(String signKey, Map<String, String> headers) {
+        mSignKey = signKey;
+        mConnectHeaders = headers;
+    }
+
+    @Override
     public void addConnectionStatusListener(String key, IConnectionStatusListener listener) {
         if (listener == null || TextUtils.isEmpty(key)) {
             return;
@@ -214,7 +221,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
             mChatroomManager.connectSuccess();
             mCallManager.connectSuccess();
             sendMessage(ConnEvent.CONNECT_DONE, extra);
-            mConversationManager.syncConversations(mMessageManager::syncMessage);
+            mMessageManager.checkAndUploadPubKey(() -> mConversationManager.syncConversations(mMessageManager::syncMessage));
             PushManager.getInstance().getToken(mCore.getContext());
         } else {
             if (checkConnectionFailure(errorCode)) {
@@ -327,7 +334,8 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
                 || errorCode == ConstInternal.ErrorCode.APP_PROHIBITED
                 || errorCode == ConstInternal.ErrorCode.USER_PROHIBITED
                 || errorCode == ConstInternal.ErrorCode.USER_KICKED_BY_OTHER_CLIENT
-                || errorCode == ConstInternal.ErrorCode.USER_LOG_OUT;
+                || errorCode == ConstInternal.ErrorCode.USER_LOG_OUT
+                || errorCode == ConstInternal.ErrorCode.CONNECT_FORBIDDEN;
     }
 
     private void dbStatusNotice(boolean isOpen) {
@@ -419,7 +427,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
 
     public void connect() {
         openDB();
-        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getSystemLanguage(), mCore.getServers());
+        mCore.getWebSocket().connect(mCore.getAppKey(), mCore.getToken(), mCore.getDeviceId(), mCore.getPackageName(), mCore.getNetworkType(), mCore.getCarrier(), mPushChannel, mPushToken, mCore.getSystemLanguage(), mCore.getServers(), mSignKey, mConnectHeaders);
     }
 
     public void enterConnected() {
@@ -514,6 +522,8 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     private boolean mIsForeground;
     private Activity mTopForegroundActivity;
     private final NetworkChangeReceiver mNetworkChangeReceiver;
+    private Map<String, String> mConnectHeaders;
+    private String mSignKey;
 
     private ConnSuperState mSuperState;
     private ConnIdleState mIdleState;

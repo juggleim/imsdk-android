@@ -2,6 +2,7 @@ package com.juggle.im.push.vivo;
 
 import android.content.Context;
 
+import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.push.IPush;
 import com.juggle.im.push.PushChannel;
 import com.juggle.im.push.PushConfig;
@@ -16,6 +17,7 @@ public class VIVOPush implements IPush {
     @Override
     public void getToken(Context context, PushConfig config, IPush.Callback callback) {
         sCallback = callback;
+        JLogger.i("CON-Push", "vivo get token, vivoConfig null is " + (config.getVIVOConfig() == null));
         if (config.getVIVOConfig() == null) {
             return;
         }

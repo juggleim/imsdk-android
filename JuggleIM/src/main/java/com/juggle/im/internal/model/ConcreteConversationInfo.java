@@ -1,6 +1,7 @@
 package com.juggle.im.internal.model;
 
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.UserInfo;
 
@@ -47,6 +48,14 @@ public class ConcreteConversationInfo extends ConversationInfo {
         mTargetUserInfo = userInfo;
     }
 
+    public FriendInfo getFriendInfo() {
+        return mFriendInfo;
+    }
+
+    public void setFriendInfo(FriendInfo friendInfo) {
+        mFriendInfo = friendInfo;
+    }
+
     public List<UserInfo> getMentionUserList() {
         return mMentionUserList;
     }
@@ -68,6 +77,7 @@ public class ConcreteConversationInfo extends ConversationInfo {
     private long mSyncTime;
     private GroupInfo mGroupInfo;
     private UserInfo mTargetUserInfo;
+    private FriendInfo mFriendInfo;
     private List<UserInfo> mMentionUserList;
     private List<String> mTagIdList;
 }

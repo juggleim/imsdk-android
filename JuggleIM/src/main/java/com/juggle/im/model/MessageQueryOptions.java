@@ -7,13 +7,13 @@ import java.util.List;
  * @create 2024-07-04 17:33
  */
 public class MessageQueryOptions {
-    private final String mSearchContent;//指定搜索内容
-    private final List<String> mSenderUserIds;//指定消息发送者ID
-    private final List<String> mContentTypes;//指定消息类型
-    private final List<Conversation> mConversations;//指定会话
-    private final List<Message.MessageState> mStates;//指定消息状态
-    private final Message.MessageDirection mDirection;//指定消息方向
-    private final List<Conversation.ConversationType> mConversationTypes;//指定会话类型
+    private final String mSearchContent;//Specified search content.
+    private final List<String> mSenderUserIds;//Specified message sender IDs.
+    private final List<String> mContentTypes;//Specified message types.
+    private final List<Conversation> mConversations;//Specified conversations.
+    private final List<Message.MessageState> mStates;//Specified message states.
+    private final Message.MessageDirection mDirection;//Specified message direction.
+    private final List<Conversation.ConversationType> mConversationTypes;//Specified conversation types.
 
     public MessageQueryOptions(Builder builder) {
         this.mSearchContent = builder.mSearchContent;

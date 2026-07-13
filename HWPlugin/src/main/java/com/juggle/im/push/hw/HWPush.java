@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.huawei.hms.aaid.HmsInstanceId;
 import com.huawei.hms.common.ApiException;
+import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.push.IPush;
 import com.juggle.im.push.PushConfig;
 import com.juggle.im.push.PushChannel;
@@ -15,6 +16,7 @@ public class HWPush implements IPush {
     @Override
     public void getToken(Context context, PushConfig config, IPush.Callback callback) {
         sCallback = callback;
+        JLogger.i("CON-Push", "huawei get token, hwConfig null is " + (config.getHWConfig() == null));
         if (config.getHWConfig() == null) {
             return;
         }

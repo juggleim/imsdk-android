@@ -17,8 +17,8 @@ public class GetFavoriteMessageOption {
         mOffset = offset;
     }
 
-    //查询的起始位置，第一次可以传空，后续可以从成功回调里获取下一次的 offset
+    // Query start position. Pass null for the first request; later requests can use the next offset from the success callback.
     private String mOffset;
-    //查询数量
+    // Query count.
     private int mCount;
 }

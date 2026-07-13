@@ -1,7 +1,6 @@
 package com.juggle.im.internal.core.db;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -16,23 +15,33 @@ public class DBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(ProfileSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_INDEX2);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TS_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CLIENT_UID_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_TIMESTAMP_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_DESTROY_TIME_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CONVERSATION_SUBCHANNEL_INDEX);
+        sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CONVERSATION_SUBCHANNEL_TS_INDEX);
         sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_MESSAGE_DT_CONVERSATION_TS_INDEX2);
+        sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_STATE_INDEX);
+        sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_SENDER_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_TABLE);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_FRIEND_TABLE);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_USER_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_INDEX);
         sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_GROUP_MEMBER_INDEX);
+        sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_FRIEND_INDEX);
         sqLiteDatabase.execSQL(ReactionSql.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_TABLE);
         sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INDEX2);
         sqLiteDatabase.execSQL(MomentSql.SQL_CREATE_TABLE);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INFO_TABLE);
+        sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INFO_INDEX);
+        sqLiteDatabase.execSQL(E2EESql.SQL_CREATE_PUBLIC_KEY_TABLE);
+        sqLiteDatabase.execSQL(E2EESql.SQL_CREATE_PUBLIC_KEY_INDEX);
     }
 
     @Override
@@ -157,7 +166,59 @@ public class DBHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
+        if (oldVersion < 17) {
+            try {
+                sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_STATE_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
+        if (oldVersion < 18) {
+            try {
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TS_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
+        if (oldVersion < 19) {
+            try {
+                sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_SENDER_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
+        if (oldVersion < 20) {
+            try {
+                sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_FRIEND_TABLE);
+                sqLiteDatabase.execSQL(UserInfoSql.SQL_CREATE_FRIEND_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
+        if (oldVersion < 21) {
+            try {
+                sqLiteDatabase.execSQL(MessageSql.SQL_CREATE_CONVERSATION_SUBCHANNEL_TS_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
+        if (oldVersion < 22) {
+            try {
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INFO_TABLE);
+                sqLiteDatabase.execSQL(ConversationSql.SQL_CREATE_TAG_INFO_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
+        if (oldVersion < 23) {
+            try {
+                sqLiteDatabase.execSQL(E2EESql.SQL_CREATE_PUBLIC_KEY_TABLE);
+                sqLiteDatabase.execSQL(E2EESql.SQL_CREATE_PUBLIC_KEY_INDEX);
+            } catch (SQLiteException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private final static int version = 16;
+    private final static int version = 23;
 }

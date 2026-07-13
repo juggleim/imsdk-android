@@ -68,8 +68,8 @@ public class MomentReaction {
 
         for (Map.Entry<String, List<UserInfo>> entry : keyUserMap.entrySet()) {
             MomentReaction reaction = new MomentReaction();
-            reaction.setKey(entry.getKey()); // 设置 key
-            reaction.setUserList(entry.getValue()); // 设置分组后的用户列表
+            reaction.setKey(entry.getKey()); // Set key.
+            reaction.setUserList(entry.getValue()); // Set grouped user list.
             reactionModels.add(reaction);
         }
 

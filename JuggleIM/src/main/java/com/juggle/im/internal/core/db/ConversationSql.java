@@ -11,6 +11,7 @@ import com.juggle.im.internal.model.ConcreteConversationInfo;
 import com.juggle.im.internal.model.ConcreteMessage;
 import com.juggle.im.model.Conversation;
 import com.juggle.im.model.ConversationMentionInfo;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.GetConversationOptions;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageMentionInfo;
@@ -81,6 +82,14 @@ class ConversationSql {
         }
         boolean hasUnread = CursorHelper.readInt(cursor, COL_UNREAD_TAG) != 0;
         info.setUnread(hasUnread);
+        return info;
+    }
+
+    static ConversationTagInfo tagInfoWithCursor(Cursor cursor) {
+        ConversationTagInfo info = new ConversationTagInfo();
+        info.setTagId(CursorHelper.readString(cursor, "tag_id"));
+        info.setName(CursorHelper.readString(cursor, "name"));
+        info.setType(ConversationTagInfo.TagType.setValue(CursorHelper.readInt(cursor, "type")));
         return info;
     }
 
@@ -271,12 +280,15 @@ class ConversationSql {
     }
 
     static final String SQL_GET_TOTAL_UNREAD_COUNT = "SELECT SUM(CASE WHEN last_message_index = last_read_message_index AND unread_tag = 1 THEN 1 WHEN last_message_index - last_read_message_index > 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info WHERE mute = 0";
-
     static final String SQL_GET_UNREAD_COUNT_WITH_TAG = "SELECT SUM(CASE WHEN last_message_index = last_read_message_index AND unread_tag = 1 THEN 1 WHEN last_message_index - last_read_message_index > 0 THEN last_message_index - last_read_message_index ELSE 0 END) AS total_count FROM conversation_info INNER JOIN conversation_tag ON conversation_info.conversation_type = conversation_tag.conversation_type AND conversation_info.conversation_id = conversation_tag.conversation_id AND conversation_info.subchannel = conversation_tag.subchannel WHERE tag_id = ?";
-
     static final String SQL_CLEAR_TAG_BY_CONVERSATION = "DELETE FROM conversation_tag WHERE conversation_type = ? AND conversation_id = ? AND subchannel = ?";
-
     static final String SQL_INSERT_CONVERSATION_TAG = "INSERT INTO conversation_tag (tag_id, conversation_type, conversation_id, subchannel) VALUES ";
+    static final String SQL_INSERT_CONVERSATION_TAG_INFO = "INSERT OR REPLACE INTO conversation_tag_info (tag_id, name, type) VALUES (?, ?, ?)";
+    static final String SQL_REMOVE_CONVERSATION_TAG_INFO = "DELETE FROM conversation_tag_info WHERE tag_id = ?";
+    static final String SQL_UPDATE_TAG_NAME = "UPDATE conversation_tag_info SET name = ? WHERE tag_id = ?";
+    static final String SQL_GET_TAG_LIST = "SELECT * FROM conversation_tag_info ORDER BY id";
+    static final String SQL_GET_TAGS_FOR_CONVERSATION = "SELECT DISTINCT cti.* FROM conversation_tag ct INNER JOIN conversation_tag_info cti ON ct.tag_id = cti.tag_id WHERE ct.conversation_type = ? AND ct.conversation_id = ? AND ct.subchannel = ?";
+    static final String SQL_CLEAR_CONVERSATION_TAGS = "DELETE FROM conversation_tag_info";
 
     static String sqlAddConversationsToTag(@NonNull List<Conversation> conversations, @NonNull String tagId, @NonNull List<String> args) {
         StringBuilder sql = new StringBuilder(ConversationSql.SQL_INSERT_CONVERSATION_TAG);
@@ -389,6 +401,7 @@ class ConversationSql {
             + ")";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation ON conversation_info(conversation_type, conversation_id)";
     static final String SQL_CREATE_INDEX2 = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation2 ON conversation_info(conversation_type, conversation_id, subchannel)";
+    static final String SQL_CREATE_TS_INDEX = "CREATE INDEX IF NOT EXISTS idx_conversation_timestamp ON conversation_info(timestamp)";
     static final String SQL_CREATE_TAG_TABLE = "CREATE TABLE IF NOT EXISTS conversation_tag ("
                                                 + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                                 + "tag_id VARCHAR (64),"
@@ -398,6 +411,13 @@ class ConversationSql {
                                                 + ")";
     static final String SQL_CREATE_TAG_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation_tag ON conversation_tag(tag_id, conversation_type, conversation_id)";
     static final String SQL_CREATE_TAG_INDEX2 = "CREATE UNIQUE INDEX IF NOT EXISTS idx_conversation_tag2 ON conversation_tag(tag_id, conversation_type, conversation_id, subchannel)";
+    static final String SQL_CREATE_TAG_INFO_TABLE = "CREATE TABLE IF NOT EXISTS conversation_tag_info ("
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + "tag_id VARCHAR (64),"
+            + "name VARCHAR (64),"
+            + "type SMALLINT"
+            + ")";
+    static final String SQL_CREATE_TAG_INFO_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_tag_info ON conversation_tag_info(tag_id)";
     static final String SQL_ADD_COLUMN_UNREAD_TAG = "ALTER TABLE conversation_info ADD COLUMN unread_tag BOOLEAN";
     static final String SQL_INSERT_CONVERSATION = "INSERT OR REPLACE INTO conversation_info"
             + "(conversation_type, conversation_id, subchannel, timestamp, last_message_id,"

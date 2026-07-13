@@ -2,6 +2,7 @@ package com.juggle.im.internal.core.db;
 
 import android.database.Cursor;
 
+import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.UserInfo;
@@ -46,6 +47,15 @@ public class UserInfoSql {
         member.setExtra(mapFromString(extra));
         member.setUpdatedTime(CursorHelper.readLong(cursor, COL_UPDATED_TIME));
         return member;
+    }
+
+    static FriendInfo friendInfoWithCursor(Cursor cursor) {
+        FriendInfo info = new FriendInfo();
+        info.setUserId(CursorHelper.readString(cursor, COL_USER_ID));
+        info.setFriend(CursorHelper.readInt(cursor, COL_IS_FRIEND) != 0);
+        info.setAlias(CursorHelper.readString(cursor, COL_NAME));
+        info.setUpdatedTime(CursorHelper.readLong(cursor, COL_UPDATED_TIME));
+        return info;
     }
 
     static String stringFromMap(Map<String, String> map) {
@@ -102,18 +112,30 @@ public class UserInfoSql {
             + "extension TEXT,"
             + "updated_time INTEGER"
             + ")";
+    static final String SQL_CREATE_FRIEND_TABLE = "CREATE TABLE IF NOT EXISTS friend ("
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + "user_id VARCHAR (64),"
+            + "is_friend BOOLEAN,"
+            + "name VARCHAR (64),"
+            + "updated_time INTEGER"
+            + ")";
     static final String SQL_CREATE_USER_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_user ON user(user_id)";
     static final String SQL_CREATE_GROUP_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_group ON group_info(group_id)";
     static final String SQL_CREATE_GROUP_MEMBER_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_group_member ON group_member(group_id, user_id)";
+    static final String SQL_CREATE_FRIEND_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_friend ON friend(user_id)";
     static final String SQL_ALTER_USER_ADD_UPDATED_TIME = "ALTER TABLE user ADD COLUMN updated_time INTEGER";
     static final String SQL_ALTER_GROUP_ADD_UPDATED_TIME = "ALTER TABLE group_info ADD COLUMN updated_time INTEGER";
     static final String SQL_ALTER_GROUP_MEMBER_ADD_UPDATED_TIME = "ALTER TABLE group_member ADD COLUMN updated_time INTEGER";
     static final String SQL_GET_USER_INFO = "SELECT * FROM user WHERE user_id = ?";
     static final String SQL_GET_GROUP_INFO = "SELECT * FROM group_info WHERE group_id = ?";
     static final String SQL_GET_GROUP_MEMBER = "SELECT * FROM group_member WHERE group_id = ? AND user_id = ?";
+    static final String SQL_GET_FRIEND_INFO = "SELECT * FROM friend WHERE user_id = ?";
     static final String SQL_INSERT_USER_INFO = "INSERT OR REPLACE INTO user (user_id, name, portrait, extension, updated_time) VALUES (?, ?, ?, ?, ?)";
     static final String SQL_INSERT_GROUP_INFO = "INSERT OR REPLACE INTO group_info (group_id, name, portrait, extension, updated_time) VALUES (?, ?, ?, ?, ?)";
     static final String SQL_INSERT_GROUP_MEMBER = "INSERT OR REPLACE INTO group_member (group_id, user_id, display_name, extension, updated_time) VALUES (?, ?, ?, ?, ?)";
+    static final String SQL_INSERT_FRIEND = "INSERT OR REPLACE INTO friend (user_id, is_friend, name, updated_time) VALUES (?, ?, ?, ?)";
+    static final String SQL_GET_USER_INFO_LIST = "SELECT * FROM user WHERE user_id IN ";
+    static final String SQL_GET_GROUP_LIST = "SELECT * FROM group_info WHERE group_id IN ";
 
     static final String COL_USER_ID = "user_id";
     static final String COL_GROUP_ID = "group_id";
@@ -122,4 +144,5 @@ public class UserInfoSql {
     static final String COL_EXTENSION = "extension";
     static final String COL_DISPLAY_NAME = "display_name";
     static final String COL_UPDATED_TIME = "updated_time";
+    static final String COL_IS_FRIEND = "is_friend";
 }

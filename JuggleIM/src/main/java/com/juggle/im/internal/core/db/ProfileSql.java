@@ -7,9 +7,13 @@ class ProfileSql {
             + ")";
     static final String SQL_GET_VALUE = "SELECT value FROM profile WHERE key = ?";
     static final String SQL_SET_VALUE = "INSERT OR REPLACE INTO profile (key, value) values (?, ?)";
+
     static final String COLUMN_VALUE = "value";
+
     static final String CONVERSATION_TIME = "conversation_time";
     static final String SEND_TIME = "send_time";
     static final String RECEIVE_TIME = "receive_time";
+    static final String PUBLIC_KEY = "public_key";
+    static final String PRIVATE_KEY = "private_key";
 
 }

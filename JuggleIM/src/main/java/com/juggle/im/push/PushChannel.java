@@ -38,9 +38,9 @@ public enum PushChannel {
     }
 
     /**
-     * 添加该pushType支持的设备厂商名称. 在初始化 SDK 之前调用
+     * Adds device manufacturer names supported by this pushType. Call before initializing the SDK.
      *
-     * @param osList 设备厂商名称; 使用{@code Build.MANUFACTURER}获取设备厂商名称.
+     * @param osList device manufacturer names; use {@code Build.MANUFACTURER} to get the device manufacturer name.
      */
     public void appendOs(String... osList) {
         if (osList == null || osList.length == 0) {

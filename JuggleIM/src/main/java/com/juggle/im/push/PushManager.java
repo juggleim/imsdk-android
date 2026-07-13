@@ -42,6 +42,7 @@ public class PushManager implements IPush.Callback {
                 init("com.juggle.im.push.oppo.OPPOPush");
                 init("com.juggle.im.push.jg.JGPush");
                 init("com.juggle.im.push.google.GooglePush");
+                init("com.juggle.im.push.honor.HonorPush");
             }
         });
     }
@@ -63,7 +64,7 @@ public class PushManager implements IPush.Callback {
     }
 
     /**
-     * 获取适合的推送类型 根据手机机型和用户 enable 适配的推送类型
+     * Gets suitable push types based on the phone model and the push types enabled by the user.
      */
     private List<IPush> getRegisterPush() {
         List<IPush> result = new ArrayList<>();
@@ -71,10 +72,12 @@ public class PushManager implements IPush.Callback {
         for (Map.Entry<PushChannel, IPush> item : iPushMap.entrySet()) {
             if (item.getKey() == PushChannel.JIGUANG || item.getKey() == PushChannel.GOOGLE) {
                 result.add(item.getValue());
+                JLogger.i(TAG, "add channel " + item.getKey().getName());
                 continue;
             }
             String pushTypeOs = item.getKey().getOs();
             if (pushTypeOs.contains(os)) {
+                JLogger.i(TAG, "add channel " + item.getKey().getName());
                 result.add(item.getValue());
             }
         }
@@ -93,7 +96,7 @@ public class PushManager implements IPush.Callback {
 
     @Override
     public void onReceivedToken(PushChannel type, String token) {
-        //todo 1.本地持久化，2.调用上报 token 接口
+        //todo 1. Persist locally. 2. Call the token reporting API.
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -105,7 +108,7 @@ public class PushManager implements IPush.Callback {
 
     @Override
     public void onError(PushChannel type, int code, String msg) {
-        //todo 处理 onError
+        //todo Handle onError.
         pushExecutor.execute(new Runnable() {
             @Override
             public void run() {

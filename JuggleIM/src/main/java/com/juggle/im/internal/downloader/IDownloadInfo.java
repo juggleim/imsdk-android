@@ -1,41 +1,41 @@
 package com.juggle.im.internal.downloader;
 
 /**
- * 获取下载信息
+ * Get download info
  *
  * @author lvhongzhen
  */
 public interface IDownloadInfo {
     /**
-     * 本地保存文件地址
+     * Local saved file path
      *
      * @return
      */
     String getSavePath();
 
     /**
-     * 下载地址
+     * Download URL
      *
      * @return
      */
     String getDownloadUrl();
 
     /**
-     * 文件大小
+     * File size
      *
      * @return
      */
     long getFileLength();
 
     /**
-     * 已经下载的文件大小
+     * Downloaded file size
      *
      * @return
      */
     long getCurrentLength();
 
     /**
-     * 任务标识
+     * Task identifier
      *
      * @return
      */

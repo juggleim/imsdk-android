@@ -30,34 +30,34 @@ public class CallSuperState extends CallState {
         switch (msg.what) {
             case CallEvent.INVITE:
                 // do nothing
-                // idle 状态处理
-                // connected 状态处理
-                // 其它状态下 invite 两次不会是同一个 callSession
+                // Handled by the idle state
+                // Handled by the connected state
+                // In other states, duplicate invites do not belong to the same callSession
                 break;
 
             case CallEvent.INVITE_DONE:
                 // do nothing
-                // outgoing 状态处理
-                // connected 状态处理
-                // 其它状态下忽略
+                // Handled by the outgoing state
+                // Handled by the connected state
+                // Ignored in other states
                 break;
 
             case CallEvent.INVITE_FAIL:
                 // do nothing
-                // outgoing 状态处理
-                // connected 状态处理
-                // 其它状态下忽略
+                // Handled by the outgoing state
+                // Handled by the connected state
+                // Ignored in other states
                 break;
 
             case CallEvent.RECEIVE_INVITE:
                 // do nothing
-                // idle 状态处理
-                // 其它状态下忽略（服务端不会给已在房间内的用户发送同一个 callId 的 invite）
+                // Handled by the idle state
+                // Ignored in other states; the server does not send the same callId invite to users already in the room
                 break;
 
             case CallEvent.RECEIVE_INVITE_OTHERS:
-                // idle 状态 do nothing
-                // 其它状态统一由这里处理
+                // Do nothing in the idle state
+                // Handled here for all other states
                 map = (Map<?, ?>) msg.obj;
                 UserInfo inviter = (UserInfo) map.get("inviter");
                 List<UserInfo> targetUsers = (List<UserInfo>) map.get("targetUsers");
@@ -100,25 +100,25 @@ public class CallSuperState extends CallState {
 
             case CallEvent.ACCEPT_DONE:
                 // do nothing
-                // incoming 状态处理
-                // 其它状态忽略
+                // Handled by the incoming state
+                // Ignored in other states
                 break;
 
             case CallEvent.ACCEPT_FAIL:
                 // do nothing
-                // incoming 状态处理
-                // 其它状态忽略
+                // Handled by the incoming state
+                // Ignored in other states
                 break;
 
             case CallEvent.RECEIVE_ACCEPT:
-                // outgoing 状态处理（别的用户 accept）
-                // incoming 状态处理（当前用户在其它端 accept）
+                // Handled by the outgoing state when another user accepts
+                // Handled by the incoming state when the current user accepts on another client
                 userId = (String) msg.obj;
                 callSession.memberAccept(userId);
                 break;
 
             case CallEvent.RECEIVE_HANGUP:
-                // incoming 状态处理（当前用户在其它端 hangup）
+                // Handled by the incoming state when the current user hangs up on another client
                 userId = (String) msg.obj;
                 callSession.memberHangup(userId);
                 if (!callSession.isMultiCall()) {
@@ -127,7 +127,7 @@ public class CallSuperState extends CallState {
                 break;
 
             case CallEvent.RECEIVE_QUIT:
-                // 跟 JCallEventReceiveHangup 不同，incoming 状态不会收到当前用户在其它端的 quit 事件
+                // Unlike JCallEventReceiveHangup, the incoming state does not receive quit events from the current user on another client
                 userIdList = (List<String>) msg.obj;
                 callSession.membersQuit(userIdList);
                 if (!callSession.isMultiCall()) {
@@ -137,14 +137,14 @@ public class CallSuperState extends CallState {
 
             case CallEvent.JOIN_CHANNEL_DONE:
                 // do nothing
-                // connecting 状态处理
-                // 其它状态忽略
+                // Handled by the connecting state
+                // Ignored in other states
                 break;
 
             case CallEvent.JOIN_CHANNEL_FAIL:
                 // do nothing
-                // connecting 状态处理
-                // 其它状态忽略
+                // Handled by the connecting state
+                // Ignored in other states
                 break;
 
             case CallEvent.PARTICIPANT_JOIN_CHANNEL:
@@ -181,20 +181,20 @@ public class CallSuperState extends CallState {
 
             case CallEvent.JOIN:
                 // do nothing
-                // idle 状态处理
-                // 其它状态下忽略
+                // Handled by the idle state
+                // Ignored in other states
                 break;
 
             case CallEvent.JOIN_DONE:
                 // do nothing
-                // join 状态处理
-                // 其它状态下忽略
+                // Handled by the join state
+                // Ignored in other states
                 break;
 
             case CallEvent.JOIN_FAIL:
                 // do nothing
-                // join 状态处理
-                // 其它状态下忽略
+                // Handled by the join state
+                // Ignored in other states
                 break;
 
             case CallEvent.RECEIVE_JOIN:

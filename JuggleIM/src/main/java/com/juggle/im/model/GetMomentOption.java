@@ -1,5 +1,7 @@
 package com.juggle.im.model;
 
+import android.text.TextUtils;
+
 import com.juggle.im.JIMConst;
 
 import org.json.JSONException;
@@ -13,6 +15,9 @@ public class GetMomentOption {
         json.put("limit", mCount);
         int order = (mDirection == JIMConst.PullDirection.OLDER) ? 0 : 1;
         json.put("order", order);
+        if (!TextUtils.isEmpty(mUserId)) {
+            json.put("user_id", mUserId);
+        }
 
         return json;
     }
@@ -41,7 +46,16 @@ public class GetMomentOption {
         mStartTime = startTime;
     }
 
+    public String getUserId() {
+        return mUserId;
+    }
+
+    public void setUserId(String userId) {
+        mUserId = userId;
+    }
+
     private long mStartTime;
     private int mCount;
     private JIMConst.PullDirection mDirection = JIMConst.PullDirection.OLDER;
+    private String mUserId;
 }

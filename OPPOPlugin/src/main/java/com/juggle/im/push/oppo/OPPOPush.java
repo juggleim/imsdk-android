@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.heytap.msp.push.HeytapPushManager;
 import com.heytap.msp.push.callback.ICallBackResultService;
+import com.juggle.im.internal.util.JLogger;
 import com.juggle.im.push.IPush;
 import com.juggle.im.push.PushChannel;
 import com.juggle.im.push.PushConfig;
@@ -14,12 +15,14 @@ public class OPPOPush implements IPush {
     @Override
     public void getToken(Context context, PushConfig config, IPush.Callback callback) {
         sCallback = callback;
+        JLogger.i("CON-Push", "oppo get token, oppoConfig null is " + (config.getOPPOConfig() == null));
         if (config.getOPPOConfig() == null) {
             return;
         }
         try {
             HeytapPushManager.init(context, false);
             if (!HeytapPushManager.isSupportPush(context)) {
+                sCallback.onError(PushChannel.OPPO, -1, "HeytapPushManager not support push");
                 return;
             }
             HeytapPushManager.register(context, config.getOPPOConfig().getAppKey(), config.getOPPOConfig().getAppSecret(), new ICallBackResultService() {

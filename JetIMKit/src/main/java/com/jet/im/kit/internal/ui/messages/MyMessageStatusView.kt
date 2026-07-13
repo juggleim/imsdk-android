@@ -12,6 +12,7 @@ import com.jet.im.kit.R
 import com.jet.im.kit.SendbirdUIKit
 import com.jet.im.kit.databinding.SbViewMyMessageStatusBinding
 import com.jet.im.kit.utils.DrawableUtils
+import com.juggle.im.model.Conversation
 import com.juggle.im.model.ConversationInfo
 import com.juggle.im.model.Message
 
@@ -119,12 +120,18 @@ internal class MyMessageStatusView @JvmOverloads constructor(
                     return
                 }
                 visibility = VISIBLE
-                val unreadMemberCount = 0
-                val unDeliveredMemberCount = 0
-                if (unreadMemberCount == 0) {
-                    drawRead()
-                } else if (unDeliveredMemberCount == 0) {
-                    drawDelivered()
+                if (message.conversation.conversationType == Conversation.ConversationType.PRIVATE) {
+                    if (message.isHasRead) {
+                        drawRead()
+                    } else {
+                        drawSent()
+                    }
+                } else if (message.conversation.conversationType == Conversation.ConversationType.GROUP) {
+                    if (message.groupMessageReadInfo.readCount >= message.groupMessageReadInfo.memberCount) {
+                        drawRead()
+                    } else {
+                        drawSent()
+                    }
                 } else {
                     drawSent()
                 }
