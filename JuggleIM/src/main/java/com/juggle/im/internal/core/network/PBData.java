@@ -1816,7 +1816,7 @@ class PBData {
         PBRcvObj obj = new PBRcvObj();
         Appmessages.DownMsgSet set = Appmessages.DownMsgSet.parseFrom(body.getData());
         obj.setRcvType(PBRcvObj.PBRcvType.syncMessagesAck);
-        //sync 和 query history 共用一个 ack
+        //sync and query history share one ack
         PBRcvObj.QryHisMsgAck a = new PBRcvObj.QryHisMsgAck(body);
         a.isFinished = set.getIsFinished();
         List<ConcreteMessage> list = new ArrayList<>();
@@ -1913,7 +1913,7 @@ class PBData {
 
         RtcRoom outRoom = rtcRoomWithPBRtcRoom(room);
         outRooms.add(outRoom);
-        //共用 RtcQryCallRoomsAck
+        //Share RtcQryCallRoomsAck
         PBRcvObj.RtcQryCallRoomsAck a = new PBRcvObj.RtcQryCallRoomsAck(body);
         a.rooms = outRooms;
         obj.mRtcQryCallRoomsAck = a;
@@ -2464,7 +2464,7 @@ class PBData {
         info.setFriendInfo(friendInfoWithPBFriendInfo(conversation.getFriendInfo()));
         if (conversation.getMentions() != null && conversation.getMentions().getIsMentioned()) {
             ConversationMentionInfo mentionInfo = new ConversationMentionInfo();
-            //解析@消息列表
+            // Parse the mention message list
             if (conversation.getMentions().getMentionMsgsList() != null) {
                 List<ConversationMentionInfo.MentionMsg> mentionMsgList = new ArrayList<>();
                 for (Appmessages.MentionMsg pbMentionMsg : conversation.getMentions().getMentionMsgsList()) {
@@ -2476,7 +2476,7 @@ class PBData {
                 mentionInfo.setMentionMsgList(mentionMsgList);
             }
             info.setMentionInfo(mentionInfo);
-            //解析用户信息列表
+            // Parse the user info list
             if (conversation.getMentions().getSendersList() != null) {
                 List<UserInfo> mentionUserList = new ArrayList<>();
                 for (Appmessages.UserInfo pbUserInfo : conversation.getMentions().getSendersList()) {

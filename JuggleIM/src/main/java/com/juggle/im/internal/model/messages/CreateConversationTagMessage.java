@@ -20,7 +20,7 @@ public class CreateConversationTagMessage extends MessageContent {
 
     @Override
     public byte[] encode() {
-        //不会往外发，也不入库
+        //Not sent out and not stored in the database
         return new byte[0];
     }
 

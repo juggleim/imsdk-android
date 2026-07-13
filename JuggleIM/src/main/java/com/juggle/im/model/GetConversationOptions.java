@@ -43,14 +43,14 @@ public class GetConversationOptions {
         this.tagId = tagId;
     }
 
-    /// 会话类型列表，传空表示全部类型
+    /// Conversation type list. Pass null to include all types.
     private int[] mConversationTypes;
-    /// 拉取数量
+    /// Pull count.
     private int mCount;
-    /// 拉取时间戳，0 表示当前时间
+    /// Pull timestamp. 0 means the current time.
     private long mTimestamp;
-    /// 拉取方向
+    /// Pull direction.
     private JIMConst.PullDirection mPullDirection;
-    /// 标签 id，传空表示不限标签
+    /// Tag ID. Pass null to ignore tags.
     private String tagId;
 }

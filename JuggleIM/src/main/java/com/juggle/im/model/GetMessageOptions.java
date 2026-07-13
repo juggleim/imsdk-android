@@ -27,10 +27,10 @@ public class GetMessageOptions {
         mContentTypes = contentTypes;
     }
 
-    // 消息时间戳，传 0 或者不设置时，默认为当前时间
+    // Message timestamp. Defaults to the current time when set to 0 or left unset.
     long mStartTime;
-    // 拉取数量，默认为 100 条，超过 100 时按 100 返回
+    // Pull count. Defaults to 100; values greater than 100 return 100 messages.
     int mCount;
-    // 拉取的消息类型列表，如果为空则拉取所有类型的消息
+    // Message content type list to pull. If empty, all message types are pulled.
     List<String> mContentTypes;
 }

@@ -256,7 +256,7 @@ class PBRcvObj {
         QUIT(1),
         KICK(2),
         FALLOUT(3);
-        /// 系统会话
+        /// System conversation
         PBChatroomEventType(int value) {
             this.mValue = value;
         }

@@ -12,73 +12,73 @@ import java.util.List;
 public interface IUserInfoManager {
 
     /**
-     * 获取用户信息
-     * @param userId 用户 id
-     * @return 用户信息
+     * Gets user information.
+     * @param userId User ID.
+     * @return User information.
      */
     UserInfo getUserInfo(String userId);
 
     /**
-     * 批量获取用户信息
-     * @param userIdList 用户 id 列表
-     * @return 用户信息列表
+     * Gets user information in batches.
+     * @param userIdList List of user IDs.
+     * @return User information list.
      */
     List<UserInfo> getUserInfoList(List<String> userIdList);
 
     /**
-     * 获取群组信息
-     * @param groupId 群组 id
-     * @return 群组信息
+     * Gets group information.
+     * @param groupId Group ID.
+     * @return Group information.
      */
     GroupInfo getGroupInfo(String groupId);
 
     /**
-     * 批量获取群组信息
-     * @param groupIdList 群组 id 列表
-     * @return 群组信息列表
+     * Gets group information in batches.
+     * @param groupIdList List of group IDs.
+     * @return Group information list.
      */
     List<GroupInfo> getGroupInfoList(List<String> groupIdList);
 
     /**
-     * 获取群成员
-     * @param groupId 群组 id
-     * @param userId 用户 id
-     * @return 群成员信息
+     * Gets a group member.
+     * @param groupId Group ID.
+     * @param userId User ID.
+     * @return Group member information.
      */
     GroupMember getGroupMember(String groupId, String userId);
 
     /**
-     * 获取好友信息
-     * @param userId 用户 id
-     * @return 好友信息
+     * Gets friend information.
+     * @param userId User ID.
+     * @return Friend information.
      */
     FriendInfo getFriendInfo(String userId);
 
     /**
-     * 从服务端获取最新的用户信息
-     * @param userId 用户 id
-     * @param callback 结果回调
+     * Fetches the latest user information from the server.
+     * @param userId User ID.
+     * @param callback Result callback.
      */
     void fetchUserInfo(String userId, JIMConst.IResultCallback<UserInfo> callback);
 
     /**
-     * 从服务端获取最新的群组信息
-     * @param groupId 群组 id
-     * @param callback 结果回调
+     * Fetches the latest group information from the server.
+     * @param groupId Group ID.
+     * @param callback Result callback.
      */
     void fetchGroupInfo(String groupId, JIMConst.IResultCallback<GroupInfo> callback);
 
     /**
-     * 从服务端获取最新的好友信息
-     * @param userId 用户 id
-     * @param callback 结果回调
+     * Fetches the latest friend information from the server.
+     * @param userId User ID.
+     * @param callback Result callback.
      */
     void fetchFriendInfo(String userId, JIMConst.IResultCallback<FriendInfo> callback);
 
     /**
-     * 查询用户状态
-     * @param userIdList 需要获取的用户 id 列表
-     * @param callback 结果回调
+     * Queries user status.
+     * @param userIdList List of user IDs to fetch.
+     * @param callback Result callback.
      */
     void getUserStatus(List<String> userIdList, JIMConst.IResultListCallback<UserStatus> callback);
 

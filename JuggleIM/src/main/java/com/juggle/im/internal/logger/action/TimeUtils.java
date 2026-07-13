@@ -11,13 +11,13 @@ import java.util.Locale;
  */
 class TimeUtils {
 
-    //判断当前时间是否位于指定的小时范围内
+    //Check whether the current time is within the specified hour range
     static boolean needCreateLogFile(long currentHour, long createInterval) {
         long currentTime = System.currentTimeMillis();
         return currentHour < currentTime && currentHour + createInterval > currentTime;
     }
 
-    //获取当前时间所在的整小时时间戳
+    //Get the hour timestamp for the current time
     static long getCurrentHour() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());

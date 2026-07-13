@@ -18,6 +18,6 @@ public class FavoriteMessage {
     }
 
     private Message mMessage;
-    //收藏时间
+    // Favorite time.
     private long mCreatedTime;
 }

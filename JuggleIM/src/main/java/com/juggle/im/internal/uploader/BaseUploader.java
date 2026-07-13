@@ -5,11 +5,11 @@ package com.juggle.im.internal.uploader;
  * @create 2024-05-29 9:04
  */
 public abstract class BaseUploader implements IUploader {
-    private static final long PROGRESS_CALLBACK_INTERVAL = 100;//进度回调时间间隔
+    private static final long PROGRESS_CALLBACK_INTERVAL = 100;//Progress callback interval
 
     private final UploaderCallback mUploaderCallback;
     protected final String mLocalPath;
-    private volatile long mLastProgressCallbackTime = 0;//上次进度回调时间
+    private volatile long mLastProgressCallbackTime = 0;//Last progress callback time
 
     public BaseUploader(String localPath, UploaderCallback uploaderCallback) {
         this.mLocalPath = localPath;

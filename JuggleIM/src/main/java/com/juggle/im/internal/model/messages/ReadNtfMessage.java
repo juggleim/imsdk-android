@@ -18,7 +18,7 @@ public class ReadNtfMessage extends MessageContent {
 
     @Override
     public byte[] encode() {
-        //不会往外发
+        //Not sent out
         return new byte[0];
     }
 

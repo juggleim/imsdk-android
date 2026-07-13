@@ -1,7 +1,7 @@
 package com.juggle.im.model;
 
 public class TimePeriod {
-    //开始时间，格式为 "HH:mm"
+    // Start time in "HH:mm" format.
     String mStartTime;
 
     public String getStartTime() {
@@ -20,6 +20,6 @@ public class TimePeriod {
         mEndTime = endTime;
     }
 
-    //结束时间，格式为 "HH:mm"
+    // End time in "HH:mm" format.
     String mEndTime;
 }

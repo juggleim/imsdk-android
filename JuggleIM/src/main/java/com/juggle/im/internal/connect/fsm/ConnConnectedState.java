@@ -47,7 +47,7 @@ public class ConnConnectedState extends ConnBaseState {
                     manager.disconnectExist(false);
                     manager.notifyDisconnected(JErrorCode.NONE, "");
                     manager.transitionToIdleState();
-                    //todo 加个延时，因为 disconnect 之后会收到 onClose 回调，导致 connecting 状态被打断
+                    // TODO: Add a delay because disconnect triggers onClose later and can interrupt the connecting state
                     manager.sendMessage(msg.what, msg.obj);
                 }
                 break;

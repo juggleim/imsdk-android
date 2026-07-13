@@ -154,7 +154,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                                                    Message.MessageState state,
                                                    Message.MessageDirection direction,
                                                    boolean isBroadcast) {
-        //构造消息
+        //Build the message
         ConcreteMessage message = new ConcreteMessage();
         message.setContent(content);
         message.setConversation(conversation);
@@ -194,12 +194,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         if (message.getLifeTime() > 0) {
             message.setDestroyTime(mCore.getCurrentTime() + message.getLifeTime());
         }
-        //保存消息
+        //Save the message
         if ((message.getFlags() & MessageContent.MessageFlag.IS_SAVE.getValue()) != 0) {
             List<ConcreteMessage> list = new ArrayList<>(1);
             list.add(message);
             mCore.getDbManager().insertMessages(list);
-            //回调通知
+            //Notify callback
             if (conversation.getConversationType() != Conversation.ConversationType.CHATROOM) {
                 if (mSendReceiveListener != null) {
                     mSendReceiveListener.onMessageSave(message);
@@ -208,7 +208,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         } else {
             message.setClientMsgNo(now);
         }
-        //返回消息
+        //Return the message
         return message;
     }
 
@@ -225,7 +225,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             ConcreteMessage referMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId(), mCore.getCurrentTime());
             message.setReferredMessage(referMsg);
         }
-        //保存消息
+        //Save the message
         mCore.getDbManager().updateMessage(message);
     }
 
@@ -540,7 +540,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     @Override
     public Message resendMessage(Message message, ISendMessageCallback callback) {
         if (message.getClientMsgNo() <= 0
-                || !TextUtils.isEmpty(message.getMessageId())//已发送的消息不允许重发
+                || !TextUtils.isEmpty(message.getMessageId())//Sent messages cannot be resent
                 || message.getContent() == null
                 || message.getConversation() == null
                 || message.getConversation().getConversationId() == null) {
@@ -592,7 +592,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     public Message resendMediaMessage(Message m,
                                       ISendMediaMessageCallback callback) {
         if (m.getClientMsgNo() <= 0
-                || !TextUtils.isEmpty(m.getMessageId())//已发送的消息不允许重发
+                || !TextUtils.isEmpty(m.getMessageId())//Sent messages cannot be resent
                 || m.getContent() == null
                 || !(m.getContent() instanceof MediaMessageContent)
                 || m.getConversation() == null
@@ -972,16 +972,16 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void deleteMessagesByMessageIdList(Conversation conversation, List<String> messageIds, boolean forAllUsers, ISimpleCallback callback) {
-        //判空
+        //Validate empty input
         if (conversation == null || messageIds == null || messageIds.isEmpty()) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
             }
             return;
         }
-        //查询消息
+        //Query messages
         List<Message> messages = getMessagesByMessageIds(messageIds);
-        //按conversation过滤
+        //Filter by conversation
         List<String> deleteIdList = new ArrayList<>();
         List<ConcreteMessage> deleteList = new ArrayList<>();
         List<Long> clientMsgNoList = new ArrayList<>();
@@ -993,7 +993,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 clientMsgNoList.add(temp.getClientMsgNo());
             }
         }
-        //判空
+        //Validate empty input
         if (deleteList.isEmpty()) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
@@ -1009,17 +1009,17 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
             return;
         }
-        //调用接口
+        //Call the API
         mCore.getWebSocket().deleteMessage(conversation, deleteList, forAllUsers, new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Delete", "by messageId, success");
                 updateMessageSendSyncTime(timestamp);
-                //删除消息
+                //Delete messages
                 mCore.getDbManager().deleteMessagesByMessageIds(deleteIdList);
-                //通知会话更新
+                //Notify the conversation update
                 notifyMessageRemoved(conversation, deleteList);
-                //执行回调
+                // Run the callback
                 mCore.getCallbackHandler().post(() -> {
                     if (callback != null) {
                         callback.onSuccess();
@@ -1049,20 +1049,20 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void deleteMessagesByClientMsgNoList(Conversation conversation, List<Long> clientMsgNos, boolean forAllUsers, ISimpleCallback callback) {
-        //判空
+        //Validate empty input
         if (conversation == null || clientMsgNos == null || clientMsgNos.isEmpty()) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
             }
             return;
         }
-        //查询消息
+        //Query messages
         long[] clientMsgNoArray = new long[clientMsgNos.size()];
         for (int i = 0; i < clientMsgNos.size(); i++) {
             clientMsgNoArray[i] = clientMsgNos.get(i);
         }
         List<Message> messages = getMessagesByClientMsgNos(clientMsgNoArray);
-        //按conversation过滤，分为本地处理列表及接口处理列表
+        // Filter by conversation and split into local and API handling lists
         List<Long> deleteClientMsgNoList = new ArrayList<>();
         List<ConcreteMessage> deleteLocalList = new ArrayList<>();
         List<ConcreteMessage> deleteRemoteList = new ArrayList<>();
@@ -1077,7 +1077,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 deleteRemoteList.add((ConcreteMessage) temp);
             }
         }
-        //判空
+        //Validate empty input
         if (deleteClientMsgNoList.isEmpty()) {
             if (callback != null) {
                 mCore.getCallbackHandler().post(() -> callback.onError(JErrorCode.MESSAGE_NOT_EXIST));
@@ -1085,11 +1085,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return;
         }
         JLogger.i("MSG-Delete", "by clientMsgNo, local count is " + deleteLocalList.size() + ", remote count is " + deleteRemoteList);
-        //所有消息均为仅本地保存的消息，不需要调用接口
+        // All messages are local-only, so the API does not need to be called
         if (deleteRemoteList.isEmpty()) {
-            //删除消息
+            //Delete messages
             mCore.getDbManager().deleteMessageByClientMsgNo(deleteClientMsgNoList);
-            //通知会话更新
+            //Notify the conversation update
             notifyMessageRemoved(conversation, deleteLocalList);
             mCore.getCallbackHandler().post(() -> {
                 if (callback != null) {
@@ -1103,7 +1103,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             });
             return;
         }
-        //判空
+        //Validate empty input
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("MSG-Delete", "by clientMsgNo, fail, code is " + errorCode);
@@ -1112,18 +1112,18 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
             return;
         }
-        //调用接口
+        //Call the API
         mCore.getWebSocket().deleteMessage(conversation, deleteRemoteList, forAllUsers, new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Delete", "by clientMsgNo, success");
                 updateMessageSendSyncTime(timestamp);
-                //删除消息
+                //Delete messages
                 mCore.getDbManager().deleteMessageByClientMsgNo(deleteClientMsgNoList);
-                //通知会话更新
+                //Notify the conversation update
                 deleteLocalList.addAll(deleteRemoteList);
                 notifyMessageRemoved(conversation, deleteLocalList);
-                //执行回调
+                // Run the callback
                 mCore.getCallbackHandler().post(() -> {
                     if (callback != null) {
                         callback.onSuccess();
@@ -1153,7 +1153,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void clearMessages(Conversation conversation, long startTime, boolean forAllUsers, ISimpleCallback callback) {
-        //判空
+        //Validate empty input
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("MSG-Clear", "fail, code is " + errorCode);
@@ -1167,18 +1167,18 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             startTime = Math.max(mCore.getMessageSendSyncTime(), mCore.getMessageReceiveTime());
             startTime = Math.max(System.currentTimeMillis(), startTime);
         }
-        //调用接口
+        //Call the API
         long finalStartTime = startTime;
         mCore.getWebSocket().clearHistoryMessage(conversation, finalStartTime, forAllUsers, new WebSocketTimestampCallback() {
             @Override
             public void onSuccess(long timestamp) {
                 JLogger.i("MSG-Clear", "success");
                 updateMessageSendSyncTime(timestamp);
-                //清空消息
+                //Clear messages
                 mCore.getDbManager().clearMessages(conversation, finalStartTime, null);
-                //通知会话更新
+                //Notify the conversation update
                 notifyMessageCleared(conversation, finalStartTime, null);
-                //执行回调
+                // Run the callback
                 mCore.getCallbackHandler().post(() -> {
                     if (callback != null) {
                         callback.onSuccess();
@@ -1261,7 +1261,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 recallInfoMessage.setExtra(extras);
                 m.setContent(recallInfoMessage);
                 mCore.getDbManager().updateMessageContentWithMessageId(recallInfoMessage, m.getContentType(), messageId);
-                //通知会话更新
+                //Notify the conversation update
                 List<ConcreteMessage> messageList = new ArrayList<>();
                 messageList.add((ConcreteMessage) m);
                 notifyMessageRemoved(m.getConversation(), messageList);
@@ -1428,12 +1428,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             count = 100;
         }
         List<Message> localMessages = getMessages(conversation, count, startTime, direction);
-        //如果本地消息为空，需要获取远端消息
+        //Fetch remote messages when local messages are empty
         boolean needRemote = localMessages == null || localMessages.isEmpty();
         if (!needRemote) {
-            //获取本地消息列表中首条消息
+            //Get the first message in the local message list
             long firstMessageSeqNo = ((ConcreteMessage) localMessages.get(0)).getSeqNo();
-            //判断是否需要获取远端消息
+            //Check whether remote messages need to be fetched
             needRemote = isRemoteMessagesNeeded(localMessages, count, firstMessageSeqNo);
         }
         if (callback != null) {
@@ -1445,11 +1445,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 @Override
                 public void onSuccess(List<Message> messages, boolean isFinished) {
                     JLogger.i("MSG-Get", "getLocalAndRemoteMessages, success");
-                    //合并去重
+                    //Merge and deduplicate
                     List<Message> mergeList = mergeLocalAndRemoteMessages(localMessages == null ? new ArrayList<>() : localMessages, messages);
-                    //消息排序
+                    //Sort messages
                     Collections.sort(mergeList, (o1, o2) -> Long.compare(o1.getTimestamp(), o2.getTimestamp()));
-                    //返回合并后的消息列表
+                    //Return the merged message list
                     if (callback != null) {
                         mCore.getCallbackHandler().post(() -> callback.onGetRemoteList(mergeList));
                     }
@@ -1556,7 +1556,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         if (localMessages.size() < count+1) {
             needRemote = true;
         } else {
-            //查询逆向的消息，用于判断是否断档
+            //Query messages in the opposite direction to check for gaps
             List<Message> fullLocalMessages = new ArrayList<>(localMessages);
             if (options.getStartTime() != 0) {
                 JIMConst.PullDirection reverseDirection;
@@ -1632,9 +1632,9 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             internalGetRemoteMessages(conversation, count + 1, startTime, direction, options.getContentTypes(), new IGetMessagesWithFinishCallback() {
                 @Override
                 public void onSuccess(List<Message> messages, boolean isFinished) {
-                    //合并去重
+                    //Merge and deduplicate
                     List<Message> mergeList = mergeLocalAndRemoteMessages(localMessages, messages);
-                    //消息排序
+                    //Sort messages
                     Collections.sort(mergeList, (o1, o2) -> Long.compare(o1.getTimestamp(), o2.getTimestamp()));
                     completeCallbackForGetMessages(mergeList, count, direction, !isFinished, JErrorCode.NONE, startTime, callback);
                 }
@@ -1682,13 +1682,13 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
-    //判断是否需要同步远端数据
+    //Check whether remote data needs to be synced
     private boolean isRemoteMessagesNeeded(List<Message> localMessages, int count, long firstMessageSeqNo) {
-        //如果本地消息数量不满足分页需求数量，需要获取远端消息
+        //Fetch remote messages if the local message count is not enough for the page size
         if (localMessages.size() < count) {
             return true;
         }
-        //判断本地列表中的消息是否连续，不连续时需要获取远端消息
+        //Check whether local messages are continuous; fetch remote messages if they are not
         long expectedSeqNo = firstMessageSeqNo;
         for (int i = 0; i < localMessages.size(); i++) {
             if (i == 0) continue;
@@ -1702,7 +1702,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         return false;
     }
 
-    //合并localList和remoteList并去重
+    //Merge localList and remoteList and deduplicate
     private List<Message> mergeLocalAndRemoteMessages(List<Message> localList, List<Message> remoteList) {
         List<Message> mergedList = new ArrayList<>(remoteList);
         for (Message localMessage : localList) {
@@ -1957,7 +1957,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     }
 
                     //callback delegate
-                    //callback 只有新增的，不用本地做合并，因为本地不全（特别是收到别的用户的 reaction 时，不能返回不全的数据）
+                    //The callback only contains newly added items; do not merge locally because local data is incomplete, especially when receiving reactions from other users
                     MessageReaction reaction = new MessageReaction();
                     reaction.setMessageId(messageId);
                     MessageReactionItem it = new MessageReactionItem();
@@ -2052,7 +2052,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     }
 
                     //callback delegate
-                    //callback 只有新增的，不用本地做合并，因为本地不全（特别是收到别的用户的 reaction 时，不能返回不全的数据）
+                    //The callback only contains newly added items; do not merge locally because local data is incomplete, especially when receiving reactions from other users
                     MessageReaction reaction = new MessageReaction();
                     reaction.setMessageId(messageId);
                     MessageReactionItem item = new MessageReactionItem();
@@ -2248,11 +2248,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void setMessageState(long clientMsgNo, Message.MessageState state) {
-        //更新消息状态
+        //Update message status
         mCore.getDbManager().setMessageState(clientMsgNo, state);
-        //查询消息
+        //Query messages
         List<Message> messages = getMessagesByClientMsgNos(new long[]{clientMsgNo});
-        //通知会话更新
+        //Notify the conversation update
         if (messages == null || messages.isEmpty()) {
             return;
         }
@@ -2597,7 +2597,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     @Override
     public boolean onMessageReceive(ConcreteMessage message) {
         JLogger.i("MSG-Rcv", "direct message id is " + message.getMessageId());
-        // 只处理发件箱的消息，收件箱的消息直接抛弃（状态消息直接漏过）
+        // Only handle outbox messages; discard inbox messages directly (status messages pass through)
         boolean isStatusMessage = ((message.getFlags() & MessageContent.MessageFlag.IS_STATUS.getValue()) != 0);
         if (mSyncProcessing && !isStatusMessage) {
             if (message.getDirection() == Message.MessageDirection.SEND) {
@@ -2646,7 +2646,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void onChatroomJoin(String chatroomId) {
-        // 确保后面会走 sync 逻辑
+        // Ensure the later sync logic runs
         long time = mChatroomManager.getSyncTimeForChatroom(chatroomId) + 1;
         onChatroomSyncNotify(chatroomId, time);
     }
@@ -2791,7 +2791,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             if (message.getContentType().equals(RecallCmdMessage.CONTENT_TYPE)) {
                 RecallCmdMessage cmd = (RecallCmdMessage) message.getContent();
                 Message recallMessage = handleRecallCmdMessage(message.getConversation(), cmd.getOriginalMessageId(), cmd.getExtra());
-                //recallMessage 为空表示被撤回的消息本地不存在，不需要回调
+                //A null recallMessage means the recalled message does not exist locally, so no callback is needed
                 if (recallMessage != null) {
                     if (mListenerMap != null) {
                         for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
@@ -2802,17 +2802,17 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 continue;
             }
 
-            //cmd消息不回调
+            //Do not callback for cmd messages
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
 
-            //已存在的消息不回调
+            //Do not callback for existing messages
             if (message.isExisted()) {
                 continue;
             }
 
-            //执行回调
+            // Run the callback
             if (mListenerMap != null) {
                 for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
                     mCore.getCallbackHandler().post(() -> entry.getValue().onMessageReceive(message));
@@ -2835,14 +2835,14 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     private void saveReferMessages(ConcreteMessage message) {
         if (message.getReferredMessage() == null) return;
-        //查询本地数据库是否已保存该引用消息
+        //Check whether the referenced message is already saved in the local database
         ConcreteMessage localReferMsg = mCore.getDbManager().getMessageWithMessageId(message.getReferredMessage().getMessageId(), mCore.getCurrentTime());
-        //如果本地数据库已保存该引用消息，直接将消息中原来的引用消息替换为本地保存的引用消息
+        //If the referenced message is already saved locally, replace the original referenced message with the locally saved one
         if (localReferMsg != null) {
             message.setReferredMessage(localReferMsg);
             return;
         }
-        //如果本地数据库未保存该引用消息，将该引用消息保存到数据库中
+        //If the referenced message is not saved locally, save it to the database
         List<ConcreteMessage> list = new ArrayList<>();
         list.add((ConcreteMessage) message.getReferredMessage());
         List<ConcreteMessage> messagesToSave = messagesToSave(list);
@@ -2879,7 +2879,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         ids.add(messageId);
         List<ConcreteMessage> messages = mCore.getDbManager().getConcreteMessagesByMessageIds(ids);
         if (!messages.isEmpty()) {
-            //通知会话更新
+            //Notify the conversation update
             notifyMessageRemoved(conversation, messages);
             return messages.get(0);
         }
@@ -2893,12 +2893,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             mSendReceiveListener.onMessageReceive(messagesToSave);
         }
 
-        //合并同一类型不同会话的cmd消息列表
+        //Merge cmd message lists of the same type across conversations
         Map<String, Map<Conversation, List<ConcreteMessage>>> mergeSameTypeMessages = new HashMap<>();
         long sendTime = 0;
         long receiveTime = 0;
         for (ConcreteMessage message : messages) {
-            //获取消息时间
+            //Get the message time
             boolean isStatusMessage = ((message.getFlags() & MessageContent.MessageFlag.IS_STATUS.getValue()) != 0);
             if (message.getDirection() == Message.MessageDirection.SEND && !isStatusMessage) {
                 sendTime = message.getTimestamp();
@@ -3022,7 +3022,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             if (message.getContentType().equals(MsgModifyMessage.CONTENT_TYPE)) {
                 MsgModifyMessage cmd = (MsgModifyMessage) message.getContent();
                 Message updatedMessage = handleModifyMessage(cmd.getOriginalMessageId(), cmd.getMessageType(), cmd.getMessageContent());
-                //updatedMessage 为空表示被修改的消息本地不存在，不需要回调
+                //A null updatedMessage means the modified message does not exist locally, so no callback is needed
                 if (updatedMessage != null) {
                     if (mListenerMap != null) {
                         for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
@@ -3037,7 +3037,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             if (message.getContentType().equals(RecallCmdMessage.CONTENT_TYPE)) {
                 RecallCmdMessage cmd = (RecallCmdMessage) message.getContent();
                 Message recallMessage = handleRecallCmdMessage(message.getConversation(), cmd.getOriginalMessageId(), cmd.getExtra());
-                //recallMessage 为空表示被撤回的消息本地不存在，不需要回调
+                //A null recallMessage means the recalled message does not exist locally, so no callback is needed
                 if (recallMessage != null) {
                     if (mListenerMap != null) {
                         for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
@@ -3054,18 +3054,18 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
                 List<Conversation> deletedList = new ArrayList<>();
                 for (Conversation deleteConv : deleteConvMessage.getConversations()) {
-                    //从消息表中获取指定会话的最新一条消息
+                    //Get the latest message for the specified conversation from the message table
                     ConcreteConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(deleteConv);
                     if (conversationInfo == null) {
                         continue;
                     }
                     Message lastMessage = conversationInfo.getLastMessage();
-                    //当DeleteConvMessage的时间戳小于它指定的会话的最后一条消息的时间戳时，进行抛弃处理
+                    //Discard DeleteConvMessage when its timestamp is earlier than the latest message timestamp in its target conversation
                     if (lastMessage != null && message.getTimestamp() <= lastMessage.getTimestamp())
                         continue;
                     deletedList.add(deleteConv);
                 }
-                //进行删除操作
+                //Perform the delete operation
                 mCore.getDbManager().deleteConversationInfo(deletedList);
                 if (!deletedList.isEmpty() && mSendReceiveListener != null) {
                     mSendReceiveListener.onConversationsDelete(deletedList);
@@ -3141,7 +3141,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     messageListEntry = new ArrayList<>();
                     conversationEntry.put(message.getConversation(), messageListEntry);
                 }
-                //只保存本次循环中最新的一条消息
+                //Save only the latest message in this loop
                 if (messageListEntry.isEmpty() || messageListEntry.get(messageListEntry.size() - 1).getTimestamp() < message.getTimestamp()) {
                     messageListEntry.clear();
                     messageListEntry.add(message);
@@ -3196,17 +3196,17 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 continue;
             }
 
-            //cmd消息不回调
+            //Do not callback for cmd messages
             if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
                 continue;
             }
 
-            //已存在的消息不回调
+            //Do not callback for existing messages
             if (message.isExisted()) {
                 continue;
             }
 
-            //执行回调
+            // Run the callback
             if (mListenerMap != null) {
                 for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
                     mCore.getCallbackHandler().post(() -> entry.getValue().onMessageReceive(message));
@@ -3214,7 +3214,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
         }
 
-        //处理合并的cmd消息
+        //Handle merged cmd messages
         for (Map.Entry<String, Map<Conversation, List<ConcreteMessage>>> conversationEntry : mergeSameTypeMessages.entrySet()) {
             String contentType = conversationEntry.getKey();
             Map<Conversation, List<ConcreteMessage>> conversationsMap = conversationEntry.getValue();
@@ -3246,7 +3246,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                     break;
             }
         }
-        //直发的消息，而且正在同步中，不直接更新 sync time
+        //For directly sent messages while syncing, do not update sync time directly
         if (!isSync && mSyncProcessing) {
             if (sendTime > 0) {
                 mCachedSendTime = sendTime;
@@ -3266,7 +3266,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     private void handleTopMsgMessage(ConcreteMessage message) {
         TopMsgMessage topMsg = (TopMsgMessage) message.getContent();
-        //延时操作有可能导致乱序，但是针对这个业务，回调延迟也不会造成太大影响
+        //The delayed operation may cause reordering, but for this flow delayed callbacks have limited impact
         getMessagesByMessageIds(message.getConversation(), Collections.singletonList(topMsg.getMessageId()), new IGetMessagesCallback() {
             @Override
             public void onSuccess(List<Message> messages) {
@@ -3296,26 +3296,26 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     private void handleClearHistoryMessageCmdMessage(Conversation conversation, long startTime, String senderId) {
         if (startTime <= 0) startTime = System.currentTimeMillis();
-        //清空消息
+        //Clear messages
         mCore.getDbManager().clearMessages(conversation, startTime, senderId);
-        //通知消息回调
+        //Notify message callbacks
         if (mListenerMap != null) {
             long finalStartTime = startTime;
             for (Map.Entry<String, IMessageListener> entry : mListenerMap.entrySet()) {
                 mCore.getCallbackHandler().post(() -> entry.getValue().onMessageClear(conversation, finalStartTime, senderId));
             }
         }
-        //通知会话更新
+        //Notify the conversation update
         notifyMessageCleared(conversation, startTime, senderId);
     }
 
     private void handleDeleteMsgMessageCmdMessage(Conversation conversation, List<String> msgIds) {
-        //查询消息
+        //Query messages
         List<ConcreteMessage> messages = mCore.getDbManager().getConcreteMessagesByMessageIds(msgIds);
         if (messages.isEmpty()) return;
-        //删除消息
+        //Delete messages
         mCore.getDbManager().deleteMessagesByMessageIds(msgIds);
-        //通知消息回调
+        //Notify message callbacks
         if (mListenerMap != null) {
             List<Long> messageClientMsgNos = new ArrayList<>();
             for (int i = 0; i < messages.size(); i++) {
@@ -3325,7 +3325,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
                 mCore.getCallbackHandler().post(() -> entry.getValue().onMessageDelete(conversation, messageClientMsgNos));
             }
         }
-        //通知会话更新
+        //Notify the conversation update
         notifyMessageRemoved(conversation, messages);
     }
 
@@ -3386,21 +3386,21 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
     }
 
-    //通知会话更新最新信息
+    // Notify the latest conversation info update
     private void notifyMessageRemoved(Conversation conversation, List<ConcreteMessage> removedMessages) {
         if (mSendReceiveListener != null) {
             long now = mCore.getCurrentTime();
-            //从消息表中获取当前会话最新一条消息
+            //Get the current conversation latest message from the message table
             Message lastMessage = mCore.getDbManager().getLastMessage(conversation, now);
             mSendReceiveListener.onMessageRemove(conversation, removedMessages, lastMessage == null ? null : (ConcreteMessage) lastMessage);
         }
     }
 
-    //通知会话更新最新信息
+    // Notify the latest conversation info update
     private void notifyMessageCleared(Conversation conversation, long startTime, String sendUserId) {
         if (mSendReceiveListener != null) {
             long now = mCore.getCurrentTime();
-            //获取当前会话最新一条消息
+            //Get the current conversation latest message
             Message lastMessage = mCore.getDbManager().getLastMessage(conversation, now);
             mSendReceiveListener.onMessageClear(conversation, startTime, sendUserId, lastMessage == null ? null : (ConcreteMessage) lastMessage);
         }
@@ -3684,7 +3684,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     private boolean mSyncProcessing = true;
     private long mCachedReceiveTime = -1;
     private long mCachedSendTime = -1;
-    private long mSyncNotifyTime;//发件箱
+    private long mSyncNotifyTime;//Outbox
     private boolean mChatroomSyncProcessing;
     private final ConcurrentHashMap<String, Long> mChatroomSyncMap;
     private ConcurrentHashMap<String, IMessageListener> mListenerMap;

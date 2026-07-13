@@ -12,13 +12,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Ye_Guli
  * @create 2024-05-11 16:33
  * <p>
- * 分两部分逻辑，信令超时和消息重发
- * 信令超时（包含发消息的）（超时时间 5 s）
- * WebSocketCommandManager（对应图中的 MessageTimeoutManager），把 mCmdCallbackMap 放进去，改造一下，加上时间戳。WebSocketCommandManager 暴露 put 和 remove 接口给 JWebSocket 使用，暴露一个 CommandListnener 给 JWebSocket 设置，用来回调 onTimeOut
- * WebSocketCommandManager 维护一个常驻 Timer，5s 检测一次，检查 mCmdCallbackMap 里面是否有超时的 index，超时则 remove 对应的 index，直接回调 JWebSocket onTimeOut，JWebSocket 直接回调上层 onError(OPERATION_TIMEOUT)
- * 要补充一个逻辑：在 ConnectionManager 里调用 stopHeartbeat 的这个时机（也就是长连接从 connected 到断开的这个时机），调用 JWebSocket 的接口 pushRemainCmdAndCallbackError，把 mCmdCallbackMap 剩余所有的 cmd 取出来回调 onError(CONNECTION_UNAVAILABLE)
+ * Two parts of logic: command timeout and message resend
+ * Command timeout (including message sending), timeout is 5 seconds
+ * WebSocketCommandManager (MessageTimeoutManager in the diagram) stores mCmdCallbackMap with timestamps. It exposes put and remove APIs for JWebSocket and exposes a CommandListnener for JWebSocket to set so onTimeOut can be called back
+ * WebSocketCommandManager keeps a resident Timer that checks every 5 seconds whether mCmdCallbackMap contains timed-out indexes. If one times out, it removes the index and calls back JWebSocket onTimeOut; JWebSocket then calls upper-layer onError(OPERATION_TIMEOUT)
+ * Add one more flow: when ConnectionManager calls stopHeartbeat, meaning the persistent connection moves from connected to disconnected, call JWebSocket.pushRemainCmdAndCallbackError to take all remaining cmds from mCmdCallbackMap and callback onError(CONNECTION_UNAVAILABLE)
  * <p>
- * 重发：可以做到业务层
+ * Resend can be handled in the business layer
  */
 public class WebSocketCommandManager {
     private final static String TAG = "WS-Command";

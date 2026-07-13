@@ -35,19 +35,19 @@ public class Conversation {
     }
     public enum ConversationType {
         UNKNOWN(0),
-        /// 单聊
+        /// One-to-one chat.
         PRIVATE(1),
-        /// 群组
+        /// Group.
         GROUP(2),
-        /// 聊天室
+        /// Chatroom.
         CHATROOM(3),
-        /// 系统会话
+        /// System conversation.
         SYSTEM(4),
-        /// 公众号
+        /// Public service account.
         PUBLIC_SERVICE(7),
-        /// 状态变更
+        /// Status change.
         SUB_STATUS(8),
-        /// 端对端加密单聊
+        /// End-to-end encrypted one-to-one chat.
         PRIVATE_E2EE(11);
 
         ConversationType(int value) {

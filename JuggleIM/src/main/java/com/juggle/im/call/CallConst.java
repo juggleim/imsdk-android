@@ -1,19 +1,19 @@
 package com.juggle.im.call;
 
 public class CallConst {
-    // 通话状态
+    // Call status.
     public enum CallStatus {
-        // 无通话
+        // No active call.
         IDLE(0),
-        // 被呼叫
+        // Incoming call.
         INCOMING(1),
-        // 呼出
+        // Outgoing call.
         OUTGOING(2),
-        // 连接中
+        // Connecting.
         CONNECTING(3),
-        // 连接成功
+        // Connected.
         CONNECTED(4),
-        // 主动加入
+        // Joined proactively.
         JOIN(5);
         private final int mValue;
 
@@ -36,9 +36,9 @@ public class CallConst {
     }
 
     public enum CallMediaType {
-        // 语音通话
+        // Voice call.
         VOICE(0),
-        // 视频通话
+        // Video call.
         VIDEO(1);
 
         private final int mValue;
@@ -61,37 +61,37 @@ public class CallConst {
         }
     }
 
-    /// 通话结束原因
+    /// Call finish reason.
     public enum CallFinishReason {
-        /// 未知原因
+        /// Unknown reason.
         UNKNOWN(0),
-        /// 当前用户挂断已接通的来电
+        /// Current user hung up a connected call.
         HANGUP(1),
-        /// 当前用户拒接来电
+        /// Current user declined the incoming call.
         DECLINE(2),
-        /// 当前用户忙线
+        /// Current user was busy.
         BUSY(3),
-        /// 当前用户未接听
+        /// Current user did not answer.
         NO_RESPONSE(4),
-        /// 当前用户取消呼叫
+        /// Current user canceled the call.
         CANCEL(5),
-        /// 对端用户挂断已接通的来电
+        /// The other side hung up a connected call.
         OTHER_SIDE_HANGUP(6),
-        /// 对端用户拒接来电
+        /// The other side declined the incoming call.
         OTHER_SIDE_DECLINE(7),
-        /// 对端用户忙线
+        /// The other side was busy.
         OTHER_SIDE_BUSY(8),
-        /// 对端用户未接听
+        /// The other side did not answer.
         OTHER_SIDE_NO_RESPONSE(9),
-        /// 对端用户取消呼叫
+        /// The other side canceled the call.
         OTHER_SIDE_CANCEL(10),
-        /// 房间被销毁
+        /// The room was destroyed.
         ROOM_DESTROY(11),
-        /// 网络出错
+        /// Network error.
         NETWORK_ERROR(12),
-        /// 当前用户在其它端接听来电
+        /// Current user answered the incoming call on another client.
         ACCEPT_ON_OTHER_CLIENT(13),
-        /// 当前用户在其它端挂断来电
+        /// The current user hung up the incoming call on another client.
         HANGUP_ON_OTHER_CLIENT(14);
         private final int value;
 

@@ -3,7 +3,7 @@ package com.juggle.im.internal.downloader;
 import java.net.HttpURLConnection;
 
 /**
- * 分片下载
+ * Slice download
  *
  * @author lvhongzhen
  */

@@ -167,6 +167,6 @@ public class ConcreteMessage extends Message {
     private long mLifeTime;
     private long mReadTime;
     private boolean mIsMute;
-    // 加密消息 hash 重试次数
+    // Encrypted message hash retry count
     private int mHashCount;
 }

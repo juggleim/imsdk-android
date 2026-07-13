@@ -199,7 +199,7 @@ public class DBManager {
         }
     }
 
-    //重设会话sortTime
+    //Reset conversation sortTime
     private void resetSortTime(ConcreteConversationInfo info) {
         if (info == null || info.getSortTime() != 0) return;
         info.setSortTime(mSortTimeCounter == null ? 0 : mSortTimeCounter.getNextSortTime());
@@ -615,7 +615,7 @@ public class DBManager {
         if (TextUtils.isEmpty(message.getReferMsgId())) {
             return message;
         }
-        //查询被引用的消息
+        //Query referenced messages
         ConcreteMessage referMsg = getMessageWithMessageIdEvenDelete(message.getReferMsgId());
         if (referMsg != null) {
             message.setReferredMessage(referMsg);
@@ -627,13 +627,13 @@ public class DBManager {
         List<SearchConversationsResult> resultList = new ArrayList<>();
         List<String> args = new ArrayList<>();
         String sql = MessageSql.sqlSearchMessageInConversations(options, now, args);
-        //执行查询
+        //Execute the query
         Cursor cursor = rawQuery(sql, args.toArray(new String[0]));
         if (cursor == null) {
             return resultList;
         }
         try {
-            //解析查询结果
+            //Parse query results
             for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
                 int type = CursorHelper.readInt(cursor, MessageSql.COL_CONVERSATION_TYPE);
                 String conversationId = CursorHelper.readString(cursor, MessageSql.COL_CONVERSATION_ID);
@@ -663,7 +663,7 @@ public class DBManager {
             }
         }
 
-        //返回查询结果
+        //Return query results
         return resultList;
     }
 
@@ -685,31 +685,31 @@ public class DBManager {
         if (timestamp == 0) {
             timestamp = Long.MAX_VALUE;
         }
-        //处理sql及查询条件
+        //Handle SQL and query conditions
         List<String> whereArgs = new ArrayList<>();
         String sql = MessageSql.sqlGetMessages(count, timestamp, pullDirection, searchContent, direction, contentTypes, senderUserIds, messageStates, conversations, conversationTypes, now, whereArgs);
-        //执行查询
+        //Execute the query
         Cursor cursor = rawQuery(sql, whereArgs.toArray(new String[0]));
         if (cursor == null) {
             return result;
         }
         try {
-            //解析查询结果
+            //Parse query results
             addMessagesFromCursor(result, cursor);
         } catch (Exception e) {
             JLogger.w("DB-Exception", "getMessages " + e.getMessage());
         } finally {
             cursor.close();
         }
-        //按需反转结果列表
+        //Reverse the result list when needed
         if (JIMConst.PullDirection.OLDER == pullDirection) {
             Collections.reverse(result);
         }
-        //返回查询结果
+        //Return query results
         return result;
     }
 
-    //被删除的消息也能查出来
+    //Deleted messages can also be queried
     public List<Message> getMessagesByMessageIds(List<String> messageIds) {
         List<Message> result = new ArrayList<>();
         if (messageIds.isEmpty()) {
@@ -739,7 +739,7 @@ public class DBManager {
         return messages;
     }
 
-    //被删除的消息也能查出来
+    //Deleted messages can also be queried
     public List<ConcreteMessage> getConcreteMessagesByMessageIds(List<String> messageIds) {
         List<ConcreteMessage> result = new ArrayList<>();
         if (messageIds.isEmpty()) {
@@ -769,7 +769,7 @@ public class DBManager {
         return messages;
     }
 
-    //被删除的消息也能查出来
+    //Deleted messages can also be queried
     public List<Message> getMessagesByClientMsgNos(long[] clientMsgNos) {
         List<Message> result = new ArrayList<>();
         if (clientMsgNos.length == 0) {
@@ -799,7 +799,7 @@ public class DBManager {
         return messages;
     }
 
-    //从消息表中获取会话中最新一条消息
+    //Get the latest message in the conversation from the message table
     public Message getLastMessage(Conversation conversation, long now) {
         String sql = MessageSql.sqlGetLastMessageInConversation(conversation);
         String[] args = new String[]{String.valueOf(now)};
@@ -873,11 +873,11 @@ public class DBManager {
         performTransaction(() -> {
             for (ConcreteMessage message : list) {
                 ConcreteMessage old = null;
-                //messageId 排重
+                //Deduplicate by messageId
                 if (!TextUtils.isEmpty(message.getMessageId())) {
                     old = getMessageWithMessageId(message.getMessageId(), 0);
                 }
-                //clientUid 排重
+                //Deduplicate by clientUid
                 if (old == null && !TextUtils.isEmpty(message.getClientUid())) {
                     old = getMessageWithClientUid(message.getClientUid());
                 }
@@ -1345,7 +1345,7 @@ public class DBManager {
         boolean needUpdate = false;
         long timeDifference = JIM.getInstance().getTimeDifference();
         long now = System.currentTimeMillis() + timeDifference;
-        // 当 lastMessage 存在的时候，检查它是否被删除或者过期了。不存在的时候不做处理
+        // When lastMessage exists, check whether it has been deleted or expired. Do nothing when it does not exist
         if (info.getLastMessage() instanceof ConcreteMessage) {
             ConcreteMessage conversationLastMessage = (ConcreteMessage) info.getLastMessage();
             ConcreteMessage lastMessage = getMessageWithClientUid(conversationLastMessage.getClientUid());
@@ -1418,7 +1418,7 @@ public class DBManager {
         return result;
     }
 
-    //执行事务
+    //Execute transaction
     private synchronized boolean performTransaction(TransactionOperation operation) {
         if (mDb == null) return false;
 

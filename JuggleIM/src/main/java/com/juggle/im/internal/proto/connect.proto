@@ -6,30 +6,30 @@ import "appmessages.proto";
 
 message ConnectMsgBody{
     string protoId = 1;
-    string sdkVersion = 2; //sdk 版本
+    string sdkVersion = 2; // SDK version
     string appkey = 3;
     string token = 4;
 
-    //设备信息
+    // Device information
     string deviceId = 5;
     string platform = 6;//iOS/Android/iPad
-    string deviceCompany = 7;//设备厂商, huawei/apple
-    string deviceModel = 8;//设备型号  例如: iPhone8
-    string deviceOsVersion = 9;//手机操作系统版本
-    string pushToken = 10;//厂商推送Token
-    //网络
-    string networkId = 11;//网络类型；4G/wifi
-    string isp_num = 12;//网络运营商编号
+    string deviceCompany = 7;// Device vendor, e.g. huawei/apple
+    string deviceModel = 8;// Device model, e.g. iPhone8
+    string deviceOsVersion = 9;// Mobile operating system version
+    string pushToken = 10;// Vendor push token
+    // Network
+    string networkId = 11;// Network type; 4G/wifi
+    string isp_num = 12;// Network operator ID
     string clientIp = 13;
     
     string packageName = 14;
     string pushChannel = 15;
     string ext = 16;
-    string instanceId = 17;//客户端实例标识,用于多开时识别不同的实例，clientSession
-    string language = 18;//语言设置
-    bool isBackend = 19;//app是否在后台
+    string instanceId = 17;// Client instance identifier, used to distinguish different instances when multiple instances are running, clientSession
+    string language = 18;// Language setting
+    bool isBackend = 19;// Whether the app is in the background
 
-    bytes secretNegotiate = 101; //密钥协商
+    bytes secretNegotiate = 101; // Secret negotiation
 }
 
 message ConnectAckMsgBody{
@@ -39,7 +39,7 @@ message ConnectAckMsgBody{
     int64 timestamp = 4;
     string ext = 5;
 
-    bytes secretNegotiateAck = 101; //密钥协商应答
+    bytes secretNegotiateAck = 101; // Secret negotiation response
 }
 
 message DisconnectMsgBody{

@@ -11,95 +11,95 @@ import java.util.List;
 
 public interface ICallSession {
     interface ICallSessionListener {
-        // 通话已接通
+        // Call connected.
         void onCallConnect();
 
-        // 通话已结束
+        // Call finished.
         void onCallFinish(CallConst.CallFinishReason finishReason);
 
-        // 通话中的错误回调
+        // Error callback during a call.
         void onErrorOccur(CallConst.CallErrorCode errorCode);
 
-        // 用户被邀请（多人通话中使用）
+        // Users were invited (used in multi-party calls).
         void onUsersInvite(String inviterId, List<String> userIdList);
 
-        // 用户加入通话（多人通话中使用）
+        // Users joined the call (used in multi-party calls).
         void onUsersConnect(List<String> userIdList);
 
-        // 用户退出通话（多人通话中使用）
+        // Users left the call (used in multi-party calls).
         void onUsersLeave(List<String> userIdList);
 
-        // 用户开启/关闭摄像头
+        // User enabled or disabled the camera.
         void onUserCameraEnable(String userId, boolean enable);
 
-        // 用户开启/关闭麦克风
+        // User enabled or disabled the microphone.
         void onUserMicrophoneEnable(String userId, boolean enable);
 
-        // 用户声音大小变化
-        // userId 为 key，声音大小为 value
+        // User sound levels changed.
+        // userId as the key, and the sound level as the value.
         void onSoundLevelUpdate(HashMap<String, Float> soundLevels);
 
-        // 视频渲染第一祯回调
+        // Callback for the first rendered video frame.
         void onVideoFirstFrameRender(String userId);
     }
 
     void addListener(String key, ICallSessionListener listener);
     void removeListener(String key);
 
-    // 接听来电
+    // Accept an incoming call.
     void accept();
-    // 挂断来电
+    // Hang up the call.
     void hangup();
-    // 开启摄像头
+    // Enable the camera.
     void enableCamera(boolean isEnable);
-    // 设置用户的视频 view
+    // Set the user's video view.
     void setVideoView(String userId, View view);
-    // 开始预览
+    // Start preview.
     void startPreview(View view);
-    // 结束预览
+    // Stop preview.
     void stopPreview();
-    // 设置麦克风静音
+    // Mute or unmute the microphone.
     void muteMicrophone(boolean isMute);
-    // 设置扬声器静音
+    // Mute or unmute the speaker.
     void muteSpeaker(boolean isMute);
-    // 设置外放声音
-    // true 使用外放扬声器；false 使用听筒
+    // Set speakerphone output.
+    // true uses the speakerphone; false uses the earpiece.
     void setSpeakerEnable(boolean isEnable);
-    // 切换摄像头，默认 true 使用前置摄像头
+    // Switch the camera. true uses the front camera by default.
     void useFrontCamera(boolean isEnable);
-    // 呼叫用户加入通话（isMultiCall 为 false 时不支持该功能）
+    // Invite users to join the call (not supported when isMultiCall is false).
     void inviteUsers(List<String> userIdList);
-    // 开启回声消除
+    // Enable echo cancellation.
     void enableAEC(boolean isEnable);
-    // 设置视频降噪参数
+    // Set video denoise parameters.
     void setVideoDenoiseParams(CallVideoDenoiseParams params);
 
-    // 通话 id
+    // Call ID.
     String getCallId();
-    // 是否多人通话，false 表示一对一通话
+    // Whether this is a multi-party call. false means a one-to-one call.
     boolean isMultiCall();
-    // 媒体类型（语音/视频）
+    // Media type (voice or video).
     CallConst.CallMediaType getMediaType();
-    // 通话状态
+    // Call status.
     CallConst.CallStatus getCallStatus();
-    // 呼叫开始时间（多人会话中当前用户被呼叫的时间，不一定等于整个通话开始的时间）
+    // Call start time. In a multi-party call, this is the time when current user was invited and may differ from the overall call start time.
     long getStartTime();
-    // 当前用户加入通话的时间
+    // Time when current user joined the call.
     long getConnectTime();
-    // 当前用户结束通话的时间
+    // Time when current user finished the call.
     long getFinishTime();
-    // 通话的发起人 id
+    // ID of the call initiator.
     String getOwner();
-    // 邀请当前用户加入通话的用户 id
+    // ID of the user who invited current user to the call.
     String getInviter();
-    // 通话结束原因
+    // Call finish reason.
     CallConst.CallFinishReason getFinishReason();
-    // 通话参与者（除当前用户外的其他参与者）
+    // Call participants other than current user.
     List<CallMember> getMembers();
-    // 当前用户
+    // Current user.
     CallMember getCurrentCallMember();
-    // 扩展字段
+    // Extra field.
     String getExtra();
-    // 所属会话
+    // Owning conversation.
     Conversation getConversation();
 }

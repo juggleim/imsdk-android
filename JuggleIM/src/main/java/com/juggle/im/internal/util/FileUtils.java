@@ -16,10 +16,10 @@ public class FileUtils {
     private static final String TAG = "FileUtils";
 
     /**
-     * 获取文件数据
+     * Get file data
      *
-     * @param path 文件路径
-     * @return 获取文件数据
+     * @param path File path
+     * @return Get file data
      */
     public static String getStringFromFile(String path) {
         if (TextUtils.isEmpty(path)) {
@@ -64,10 +64,10 @@ public class FileUtils {
     }
 
     /**
-     * 根据文件路径获取文件名
+     * Gets the file name from the file path
      *
-     * @param path 文件路径
-     * @return 文件名
+     * @param path File path
+     * @return File name
      */
     public static String getFileNameWithPath(String path) {
         if (TextUtils.isEmpty(path)) {
@@ -83,11 +83,11 @@ public class FileUtils {
     }
 
     /**
-     * 获取媒体文件存储路径
+     * Get the media file storage path
      *
-     * @param context 上下文
-     * @param dir     自定义目录
-     * @return 媒体文件存储路径
+     * @param context Context
+     * @param dir     Custom directory
+     * @return Media file storage path
      */
     public static String getMediaDownloadDir(Context context, String dir, String name) {
         boolean sdCardExist =
@@ -115,10 +115,10 @@ public class FileUtils {
     }
 
     /**
-     * 把字符串存到指定路径下
+     * Save the string to the specified path
      *
-     * @param str 要存储的字符串
-     * @param filePath 指定路径
+     * @param str String to store
+     * @param filePath Specified path
      */
     public static void saveFile(String str, String filePath) {
         FileOutputStream outStream = null;

@@ -25,21 +25,21 @@ public class UserInfoManager implements IUserInfoManager {
 
     @Override
     public UserInfo getUserInfo(String userId) {
-        //判空
+        //Validate empty input
         if (TextUtils.isEmpty(userId)) {
             return null;
         }
-        //从缓存中查找
+        //Look up from the cache
         UserInfo userInfoCache = mUserInfoCache.getUserInfo(userId);
-        //缓存命中，直接返回缓存数据
+        //Cache hit; return cached data directly
         if (userInfoCache != null) {
             return userInfoCache;
         }
-        //缓存未命中，从数据库中查询
+        //Cache miss; query the database
         UserInfo userInfoDB = mCore.getDbManager().getUserInfo(userId);
-        //更新缓存
+        //Update the cache
         mUserInfoCache.insertUserInfo(userInfoDB);
-        //返回数据
+        //Return data
         return userInfoDB;
     }
 
@@ -54,21 +54,21 @@ public class UserInfoManager implements IUserInfoManager {
 
     @Override
     public GroupInfo getGroupInfo(String groupId) {
-        //判空
+        //Validate empty input
         if (TextUtils.isEmpty(groupId)) {
             return null;
         }
-        //从缓存中查找
+        //Look up from the cache
         GroupInfo groupInfoCache = mUserInfoCache.getGroupInfo(groupId);
-        //缓存命中，直接返回缓存数据
+        //Cache hit; return cached data directly
         if (groupInfoCache != null) {
             return groupInfoCache;
         }
-        //缓存未命中，从数据库中查询
+        //Cache miss; query the database
         GroupInfo groupInfoDB = mCore.getDbManager().getGroupInfo(groupId);
-        //更新缓存
+        //Update the cache
         mUserInfoCache.insertGroupInfo(groupInfoDB);
-        //返回数据
+        //Return data
         return groupInfoDB;
     }
 
@@ -83,21 +83,21 @@ public class UserInfoManager implements IUserInfoManager {
 
     @Override
     public GroupMember getGroupMember(String groupId, String userId) {
-        //判空
+        //Validate empty input
         if (TextUtils.isEmpty(groupId) || TextUtils.isEmpty(userId)) {
             return null;
         }
-        //从缓存中查找
+        //Look up from the cache
         GroupMember groupMember = mUserInfoCache.getGroupMember(groupId, userId);
-        //缓存命中，直接返回缓存数据
+        //Cache hit; return cached data directly
         if (groupMember != null) {
             return groupMember;
         }
-        //缓存未命中，从数据库中查询
+        //Cache miss; query the database
         groupMember = mCore.getDbManager().getGroupMember(groupId, userId);
-        //更新缓存
+        //Update the cache
         mUserInfoCache.insertGroupMember(groupMember);
-        //返回数据
+        //Return data
         return groupMember;
     }
 
@@ -293,35 +293,35 @@ public class UserInfoManager implements IUserInfoManager {
     }
 
     public void insertUserInfoList(List<UserInfo> list) {
-        //判空
+        //Validate empty input
         if (list == null || list.isEmpty()) {
             return;
         }
-        //更新数据库
+        //Update the database
         mCore.getDbManager().insertUserInfoList(list);
-        //更新缓存
+        //Update the cache
         mUserInfoCache.insertUserInfoList(list);
     }
 
     void insertGroupInfoList(List<GroupInfo> list) {
-        //判空
+        //Validate empty input
         if (list == null || list.isEmpty()) {
             return;
         }
-        //更新数据库
+        //Update the database
         mCore.getDbManager().insertGroupInfoList(list);
-        //更新缓存
+        //Update the cache
         mUserInfoCache.insertGroupInfoList(list);
     }
 
     void insertGroupMemberList(List<GroupMember> list) {
-        //判空
+        //Validate empty input
         if (list == null || list.isEmpty()) {
             return;
         }
-        //更新数据库
+        //Update the database
         mCore.getDbManager().insertGroupMembers(list);
-        //更新缓存
+        //Update the cache
         mUserInfoCache.insertGroupMemberList(list);
     }
 

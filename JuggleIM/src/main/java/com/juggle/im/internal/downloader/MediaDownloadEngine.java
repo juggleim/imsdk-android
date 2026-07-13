@@ -135,10 +135,10 @@ public class MediaDownloadEngine {
         if (existsTask(tag)) {
             return;
         }
-        // 先判断是否支持断点续传，如果支持，再判断文件是否大于需要分片的逻辑，需要则开始分片，默认分4片
-        // 判断是否支持断点续传
+        // First check whether resume is supported. If it is, check whether the file is large enough to require slicing; if needed, start slicing into 4 slices by default
+        // Check whether resume is supported
         boolean support = checkSupportResumeTransfer(url);
-        // 获取媒体文件的大小
+        // Get the media file size
         long mediaLength = getMediaLength(url);
         if (!support || mediaLength <= 0) {
             TotalDownloadInfo totalDownloadInfo =
@@ -150,12 +150,12 @@ public class MediaDownloadEngine {
             taskDispatcher.enqueue(request);
             return;
         }
-        // 使用分片下载支持断点续传
-        // 获取分片的临界值，大于临界值时开始分4片，否则使用 1 片
+        // Use slice download to support resumable transfers
+        // Get the slice threshold. Use 4 slices above the threshold, otherwise use 1 slice
         int sliceLength = getDownloadEachSliceLength();
-        // 获取文件暂存地址
+        // Get the temporary file path
         final String pausePath = new File(new File(savePath).getParent(), tag + ".txt").getPath();
-        // 获取文件信息
+        // Get file info
         final DownloadInfo downloadInfo =
                 getFileInfo(tag, pausePath, mediaLength, savePath, url, sliceLength);
 
@@ -173,10 +173,10 @@ public class MediaDownloadEngine {
     }
 
     /**
-     * 判断是否支持断点续传
+     * Check whether resume is supported
      *
-     * @param url 文件 fileUri
-     * @return true 支持断点续传, false 不支持断点续传
+     * @param url File fileUri
+     * @return true if resume is supported, false if not
      */
     public boolean checkSupportResumeTransfer(String url) {
         HttpURLConnection conn = null;
@@ -207,12 +207,12 @@ public class MediaDownloadEngine {
     }
 
     private long getMediaLength(String url) {
-        // 先使用 HEAD 请求，如果异常，使用 get 请求
+        // Use a HEAD request first; if it fails, use a GET request
         HttpURLConnection connection = null;
         String[] methodList = new String[]{BaseRequest.METHOD_GET};
         for (String method : methodList) {
             try {
-                // 连接网络
+                // Connect to the network
                 connection = NetUtils.createURLConnection(url);
                 connection.setRequestMethod(method);
                 connection.setConnectTimeout(TIMEOUT);
@@ -224,13 +224,13 @@ public class MediaDownloadEngine {
                 connection.connect();
                 if (connection.getResponseCode() >= HttpURLConnection.HTTP_OK
                         && connection.getResponseCode() < HttpURLConnection.HTTP_MULT_CHOICE) {
-                    // 获得文件长度
+                    // Get file length
                     return connection.getContentLength();
                 }
             } catch (Exception e) {
                 Log.e(TAG, "getMediaLength", e);
             } finally {
-                // 释放资源
+                // Release resources
                 try {
                     if (connection != null) {
                         connection.disconnect();
@@ -244,24 +244,24 @@ public class MediaDownloadEngine {
     }
 
     /**
-     * 从 rc_resume_file_transfer_size_each_slice 取值
+     * Read the value from rc_resume_file_transfer_size_each_slice
      *
-     * @return 获取分片下载临界值
+     * @return slice download threshold
      */
     public int getDownloadEachSliceLength() {
         return 1024 * 1024 * 10;
     }
 
     /**
-     * 磁盘有，返回磁盘信息，没有则创建
+     * Return disk info if it exists; otherwise create it
      *
-     * @param tag         唯一标识（messageId）
-     * @param pausedPath  暂存地址
-     * @param fileLength  文件大小
-     * @param filePath    文件存储地址
-     * @param downloadUrl 服务端下载地址
-     * @param sliceLimit  临界值
-     * @return 文件信息
+     * @param tag         Unique identifier (messageId)
+     * @param pausedPath  Temporary path
+     * @param fileLength  File size
+     * @param filePath    File storage path
+     * @param downloadUrl server download URL
+     * @param sliceLimit  Threshold
+     * @return file info
      */
     private DownloadInfo getFileInfo(
             String tag,
@@ -350,30 +350,30 @@ public class MediaDownloadEngine {
     }
     public interface DownloadEngineCallback {
         /**
-         * 下载出错的回调
+         * Callback for download errors
          *
-         * @param errorCode 返回错误码
+         * @param errorCode Returned error code
          */
         void onError(int errorCode);
 
         /**
-         * 下载成功的回调
+         * Callback for successful download
          *
-         * @param savePath 文件保存地址
+         * @param savePath File save path
          */
         void onComplete(String savePath);
 
         /**
-         * 下载进度回到
+         * Download progress callback
          *
-         * @param progress 当前进度（0-100）
+         * @param progress Current progress (0-100)
          */
         void onProgress(int progress);
 
         /**
-         * 下载被取消的回调
+         * Callback for canceled download
          *
-         * @param tag 任务标识
+         * @param tag Task identifier
          */
         void onCanceled(String tag);
     }
@@ -441,7 +441,7 @@ public class MediaDownloadEngine {
 
         @Override
         public synchronized void onSuccess(String sliceSavePath) {
-            // 合流，删除缓存文件，返回完成
+            // Merge streams, delete cache files, and return completion
             if (!downloadInfo.isFinished()) {
                 return;
             }

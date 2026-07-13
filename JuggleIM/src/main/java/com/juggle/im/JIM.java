@@ -55,14 +55,14 @@ public class JIM {
         if (initConfig.getPushConfig() == null) {
             initConfig.setPushConfig(new PushConfig.Builder().build());
         }
-        //保存context
+        // Save context.
         mCore.setContext(context);
         mConnectionManager.init();
-        //初始化日志
+        // Initialize logging.
         JLogger.getInstance().init(initConfig.getJLogConfig());
-        //初始化push
+        // Initialize push.
         PushManager.getInstance().init(initConfig.getPushConfig());
-        //初始化appKey
+        // Initialize appKey.
         JLogger.i("J-Init", "appKey is " + JUtility.maskAppKey(appKey));
         if (appKey.equals(mCore.getAppKey())) {
             return;

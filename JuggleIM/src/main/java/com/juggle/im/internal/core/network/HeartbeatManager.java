@@ -80,9 +80,9 @@ public class HeartbeatManager {
 
     private void doHeartbeatDetection() {
         if (mLastMessageReceivedTime.longValue() != 0) {
-            //获取当前系统时间
+            //Get the current system time
             long now = System.currentTimeMillis();
-            //如果当前时系统时间和lastMessageReceivedTime的差值大于HEARTBEAT_DETECTION_TIME_OUT，认为心跳超时，执行timeout回调
+            //If the difference between the current system time and lastMessageReceivedTime is greater than HEARTBEAT_DETECTION_TIME_OUT, treat it as a heartbeat timeout and run the timeout callback
             if (now - mLastMessageReceivedTime.longValue() >= HEARTBEAT_DETECTION_TIME_OUT) {
                 JLogger.e("HB-TimeOut", "timeout");
                 notifyHeartbeatTimeout();

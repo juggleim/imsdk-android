@@ -868,9 +868,9 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public interface IWebSocketCallListener {
         void onCallInvite(RtcRoom room, UserInfo inviter, List<UserInfo> targetUsers);
-        // 用户主动挂断
+        // User hung up actively
         void onCallHangup(RtcRoom room, UserInfo user);
-        // 用户掉线或者被踢出通话
+        // User went offline or was kicked out of the call
         void onCallQuit(RtcRoom room, List<CallMember> members);
         void onCallAccept(RtcRoom room, UserInfo user);
         void onRoomDestroy(RtcRoom room);
@@ -1000,7 +1000,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
                 break;
             case PBRcvObj.PBRcvType.qryCallRoomAck:
-                //复用 mRtcQryCallRoomsAck
+                //Reuse mRtcQryCallRoomsAck
                 handleRtcQryCallRoomsAck(obj.mRtcQryCallRoomsAck);
                 break;
             case PBRcvObj.PBRcvType.getUserSettingAck:
@@ -1104,7 +1104,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
         ex.printStackTrace();
         JLogger.e("WS-Connect", "onError, msg is " + ex.getMessage());
-        //不处理，避免业务层的异常导致重连
+        //Do not handle it to avoid reconnecting because of business-layer exceptions
 //        mSendHandler.post(this::resetWebSocketClient);
 //        if (mConnectListener != null) {
 //            mConnectListener.onWebSocketFail();
@@ -1697,7 +1697,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 return;
             }
             JLogger.e("WS-Send", mWebSocketClient == null ? "mWebSocketClient is null" : "mWebSocketClient is not open");
-            //可能是还没连接成功，或者根本就没连接
+            //The connection may not have succeeded yet, or may not be connected at all
             //webSocketSendFail();
             pushRemainCmdAndCallbackError();
         });

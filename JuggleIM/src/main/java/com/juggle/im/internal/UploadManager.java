@@ -144,27 +144,27 @@ public class UploadManager implements IMessageUploadProvider {
 
     @Override
     public void uploadMessage(Message message, UploadCallback uploadCallback) {
-        //判空WebSocket
+        //Check whether WebSocket is null
         if (mCore.getWebSocket() == null) {
             JLogger.e("J-Uploader", "uploadMessage fail, webSocket is null, message= " + message.getClientMsgNo());
             uploadCallback.onError();
             return;
         }
-        //判空content
+        //Check whether content is null
         if (message.getContent() == null || !(message.getContent() instanceof MediaMessageContent)) {
             JLogger.e("J-Uploader", "uploadMessage fail, message content is null, message= " + message.getClientMsgNo());
             uploadCallback.onError();
             return;
         }
-        //获取content
+        //Get content
         MediaMessageContent content = (MediaMessageContent) message.getContent();
-        //判空localPath
+        //Check whether localPath is empty
         if (TextUtils.isEmpty(content.getLocalPath())) {
             JLogger.e("J-Uploader", "uploadMessage fail, local path is null, message= " + message.getClientMsgNo());
             uploadCallback.onError();
             return;
         }
-        //获取localPath上传类型
+        //Get the upload type for localPath
         UploadFileType uploadFileType;
         if (content instanceof ImageMessage || content instanceof ThumbnailPackedImageMessage) {
             uploadFileType = UploadFileType.IMAGE;
@@ -177,7 +177,7 @@ public class UploadManager implements IMessageUploadProvider {
         } else {
             uploadFileType = UploadFileType.DEFAULT;
         }
-        //获取封面或缩略图
+        //Get the cover image or thumbnail
         boolean needPreUpload = false;
         String preUploadLocalPath = "";
         if (content instanceof ImageMessage) {
@@ -191,19 +191,19 @@ public class UploadManager implements IMessageUploadProvider {
                 needPreUpload = true;
             }
         }
-        //有缩略图的情况下先上传缩略图
+        //Upload the thumbnail first when one exists
         if (needPreUpload) {
             doUploadMessage(message, UploadFileType.IMAGE, preUploadLocalPath, true, new PreUploadCallback(uploadFileType, uploadCallback));
             return;
         }
-        //没有缩略图的情况下直接上传
+        //Upload directly when there is no thumbnail
         doUploadMessage(message, uploadFileType, content.getLocalPath(), false, uploadCallback);
     }
 
     private void requestUploadFileCred(UploadFileType fileType, String filePath, QryUploadFileCredCallback callback) {
-        //获取文件后缀
+        //Get the file extension
         String ext = FileUtil.getFileExtension(filePath);
-        //判空WebSocket
+        //Check whether WebSocket is null
         if (mCore.getWebSocket() == null) {
             JLogger.e("J-Uploader", "requestUploadFileCred fail, webSocket is null, path = " + filePath);
             if (callback != null) {
@@ -211,7 +211,7 @@ public class UploadManager implements IMessageUploadProvider {
             }
             return;
         }
-        //调用接口获取文件上传凭证
+        //Call the API to get file upload credentials
         mCore.getWebSocket().getUploadFileCred(mCore.getUserId(), fileType, ext, new QryUploadFileCredCallback() {
             @Override
             public void onSuccess(UploadOssType ossType, UploadQiNiuCred qiNiuCred, UploadPreSignCred preSignCred) {
@@ -258,7 +258,7 @@ public class UploadManager implements IMessageUploadProvider {
     }
 
     private void doRealUpload(Message message, UploadCallback uploadCallback, UploadOssType ossType, UploadQiNiuCred qiNiuCred, UploadPreSignCred preSignCred, String localPath, boolean isPreUpload) {
-        //声明回调
+        //Declare the callback
         IUploader.UploaderCallback callback = new IUploader.UploaderCallback() {
             @Override
             public void onProgress(int progress) {
@@ -290,14 +290,14 @@ public class UploadManager implements IMessageUploadProvider {
                 uploadCallback.onCancel();
             }
         };
-        //获取Uploader
+        //Get the uploader
         IUploader uploader = new UploaderFactory().getUploader(localPath, callback, ossType, qiNiuCred, preSignCred);
         if (uploader == null) {
             JLogger.e("J-Uploader", "doRealUpload failed, uploader is null, localPath= " + localPath);
             uploadCallback.onError();
             return;
         }
-        //开始上传
+        //Start upload
         uploader.start();
     }
 
@@ -334,7 +334,7 @@ public class UploadManager implements IMessageUploadProvider {
         @Override
         public void onSuccess(Message message) {
             if (mIsPreUpload) {
-                //缩略图上传成功，继续上传localPath
+                //Thumbnail uploaded successfully; continue uploading localPath
                 mIsPreUpload = false;
                 MediaMessageContent content = (MediaMessageContent) message.getContent();
                 doUploadMessage(message, mUploadFileType, content.getLocalPath(), false, this);

@@ -23,27 +23,27 @@ public class QiNiuUploader extends BaseUploader {
 
     @Override
     public void start() {
-        //判空文件地址
+        //Check whether the file path is empty
         if (TextUtils.isEmpty(mLocalPath)) {
             JLogger.e("J-Uploader", "QiNiuUploader error, mLocalPath is empty");
             notifyFail();
             return;
         }
-        //判空mQiNiuCred
+        //Check whether mQiNiuCred is null
         if (mQiNiuCred == null || TextUtils.isEmpty(mQiNiuCred.getToken()) || TextUtils.isEmpty(mQiNiuCred.getDomain())) {
             JLogger.e("J-Uploader", "QiNiuUploader error, mQiNiuCred is null or empty");
             notifyFail();
             return;
         }
-        //获取文件名
+        //Get the file name
         String fileName = FileUtil.getFileName(mLocalPath);
-        //判空文件名
+        //Check whether the file name is empty
         if (TextUtils.isEmpty(fileName)) {
             JLogger.e("J-Uploader", "QiNiuUploader error, fileName is empty");
             notifyFail();
             return;
         }
-        //声明完成回调
+        //Declare the completion callback
         UpCompletionHandler completionHandler = (key, info, response) -> {
             if (!fileName.equals(key)) return;
 
@@ -64,14 +64,14 @@ public class QiNiuUploader extends BaseUploader {
             }
             notifyFail();
         };
-        //声明进度回调
+        //Declare the progress callback
         UploadOptions options = new UploadOptions(null, null, false,
                 (key, percent) -> {
                     if (!fileName.equals(key)) return;
                     notifyProgress((int) (percent * 100));
                 },
                 () -> mIsCancelled);
-        //开始上传
+        //Start upload
         UploadManager uploadManager = new UploadManager();
         uploadManager.put(mLocalPath, fileName, mQiNiuCred.getToken(), completionHandler, options);
     }

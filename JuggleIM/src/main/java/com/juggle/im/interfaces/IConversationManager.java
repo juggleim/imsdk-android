@@ -32,18 +32,19 @@ public interface IConversationManager {
                                                    JIMConst.PullDirection direction);
 
     /**
-     * 根据查询条件获取会话信息列表
-     * @param options 查询条件
-     * @return 会话信息列表
+     * Gets the conversation information list by query options.
+     * @param options Query options.
+     * @return Conversation information list.
      */
     List<ConversationInfo> getConversationInfoList(GetConversationOptions options);
 
     /**
-     * 分页获取会话信息列表，结果按照会话时间倒序排列（新的在前，旧的在后）
-     * @param count 拉取数量
-     * @param timestamp 拉取时间戳（传 0 表示当前时间）
-     * @param direction 拉取方向
-     * @return 会话信息列表
+     * Gets the conversation information list by page. Results are sorted by conversation time
+     * in descending order, with newer items first and older items later.
+     * @param count Number of items to fetch.
+     * @param timestamp Fetch timestamp. Pass 0 to use the current time.
+     * @param direction Fetch direction.
+     * @return Conversation information list.
      */
     List<ConversationInfo> getConversationInfoList(int count,
                                                    long timestamp,
@@ -70,16 +71,16 @@ public interface IConversationManager {
     int getTotalUnreadCount();
 
     /**
-     * 根据会话类型获取消息未读总数
-     * @param conversationTypes 会话类型列表
-     * @return 消息未读总数
+     * Gets the total unread message count by conversation types.
+     * @param conversationTypes Conversation type list.
+     * @return Total unread message count.
      */
     int getUnreadCountWithTypes(int[] conversationTypes);
 
     /**
-     * 根据标签 id 获取消息未读总数
-     * @param tagId 标签 id
-     * @return 消息未读总数
+     * Gets the total unread message count by tag ID.
+     * @param tagId Tag ID.
+     * @return Total unread message count.
      */
     int getUnreadCountWithTag(String tagId);
 
@@ -90,60 +91,60 @@ public interface IConversationManager {
     void setUnread(Conversation conversation, ISimpleCallback callback);
 
     /**
-     * 添加会话标签
-     * @param tagId 标签 id
-     * @param tagName 标签名称
-     * @param callback 结果回调
+     * Adds a conversation tag.
+     * @param tagId Tag ID.
+     * @param tagName Tag name.
+     * @param callback Result callback.
      */
     void createConversationTag(String tagId, String tagName, ISimpleCallback callback);
 
     /**
-     * 删除会话标签
-     * @param tagId 标签 id
-     * @param callback 结果回调
+     * Deletes a conversation tag.
+     * @param tagId Tag ID.
+     * @param callback Result callback.
      */
     void destroyConversationTag(String tagId, ISimpleCallback callback);
 
     /**
-     * 更新会话标签名称
-     * @param tagId 标签 id
-     * @param tagName 标签名称
-     * @param callback 结果回调
+     * Updates a conversation tag name.
+     * @param tagId Tag ID.
+     * @param tagName Tag name.
+     * @param callback Result callback.
      */
     void updateConversationTagName(String tagId, String tagName, ISimpleCallback callback);
 
     /**
-     * 获取缓存的会话标签列表
-     * @return 会话标签列表
+     * Gets the cached conversation tag list.
+     * @return Conversation tag list.
      */
     List<ConversationTagInfo> getCachedConversationTagList();
 
     /**
-     * 获取会话标签列表
-     * @param callback 结果回调
+     * Gets the conversation tag list.
+     * @param callback Result callback.
      */
     void getConversationTagList(JIMConst.IResultListCallback<ConversationTagInfo> callback);
 
     /**
-     * 获取特定会话的所有标签
-     * @param conversation 会话标识
-     * @return 特定会话的标签列表
+     * Gets all tags for a specific conversation.
+     * @param conversation Conversation identifier.
+     * @return Tag list for the specific conversation.
      */
     List<ConversationTagInfo> getTagsForConversation(Conversation conversation);
 
     /**
-     * 将会话添加到标签
-     * @param conversations 会话列表
-     * @param tagId 标签 id
-     * @param callback 结果回调
+     * Adds conversations to a tag.
+     * @param conversations Conversation list.
+     * @param tagId Tag ID.
+     * @param callback Result callback.
      */
     void addConversationsToTag(List<Conversation> conversations, String tagId, ISimpleCallback callback);
 
     /**
-     * 将会话从标签中删除
-     * @param conversations 会话列表
-     * @param tagId 标签 id
-     * @param callback 结果回调
+     * Removes conversations from a tag.
+     * @param conversations Conversation list.
+     * @param tagId Tag ID.
+     * @param callback Result callback.
      */
     void removeConversationsFromTag(List<Conversation> conversations, String tagId, ISimpleCallback callback);
 

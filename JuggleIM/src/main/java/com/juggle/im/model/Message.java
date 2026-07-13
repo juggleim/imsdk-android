@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import com.juggle.im.JIM;
 
 public class Message {
-    /// 消息方向，发送/接收
+    /// Message direction: sent or received.
     public enum MessageDirection {
         SEND(1),
         RECEIVE(2);
@@ -30,7 +30,7 @@ public class Message {
         private final int mValue;
     }
 
-    /// 消息状态
+    /// Message state.
     public enum MessageState {
         UNKNOWN(0),
         SENDING(1),
@@ -312,42 +312,42 @@ public class Message {
     }
 
     private Conversation mConversation;
-    /// 消息类型
+    /// Message type.
     private String mContentType;
-    /// 本端消息唯一编号（只对当前设备生效）
+    /// Unique local message number (only valid on the current device).
     private long mClientMsgNo;
-    /// 消息 id，全局唯一
+    /// Globally unique message ID.
     private String mMessageId;
-    /// 消息方向，发送/接收
+    /// Message direction: sent or received.
     private MessageDirection mDirection;
-    /// 消息状态
+    /// Message state.
     private MessageState mState;
-    /// 是否已读
+    /// Whether the message has been read.
     private boolean mHasRead;
-    /// 消息发送的时间戳（服务端时间，单位毫秒）
+    /// Message send timestamp (server time, in milliseconds).
     private long mTimestamp;
-    /// 发送者 userId
+    /// Sender userId.
     private String mSenderUserId;
-    /// 消息内容
+    /// Message content.
     private MessageContent mContent;
-    /// 群消息阅读信息（只对群消息生效）
+    /// Group message read info (only applies to group messages).
     private GroupMessageReadInfo mGroupMessageReadInfo;
-    /// 引用消息
+    /// Referred message.
     private Message mReferredMessage;
-    /// @ 消息
+    /// Mention message.
     private MessageMentionInfo mMentionInfo;
-    /// 消息本地属性（仅对本端生效，不会同步到服务端）
+    /// Local message attributes (only valid locally and not synced to the server).
     private String mLocalAttribute;
-    ///是否已删除
+    /// Whether the message has been deleted.
     private boolean mIsDelete;
-    ///是否被编辑
+    /// Whether the message has been edited.
     private boolean mIsEdit;
-    /// 消息销毁时间戳（服务器时间，单位毫秒）。
-    /// 由消息的发送时间，加上发送消息时 JMessageOptions 的 lifeTime 和 lifeTimeAfterRead 共同决定，取其中较小的那个时间戳。
-    /// 默认值为 0，表示不自动销毁。
+    /// Message destruction timestamp (server time, in milliseconds).
+    /// Determined by the message send time plus JMessageOptions lifeTime and lifeTimeAfterRead when sending the message; the earlier timestamp is used.
+    /// The default value is 0, which means no automatic destruction.
     private long mDestroyTime;
-    /// 消息已读后的生存周期，单位毫秒。
-    /// 默认值为 0，表示读后不自动销毁。
+    /// Message lifetime after it is read, in milliseconds.
+    /// The default value is 0, which means no automatic destruction after read.
     private long mLifeTimeAfterRead;
     private UserInfo mUserInfo;
 }

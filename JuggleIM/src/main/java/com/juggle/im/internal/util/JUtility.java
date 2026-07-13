@@ -115,9 +115,9 @@ public class JUtility {
     }
 
     /**
-     * 获取设备制造厂商
+     * Get the device manufacturer
      *
-     * @return 设备厂商
+     * @return Device manufacturer
      */
     public static String getDeviceManufacturer() {
         String manufacturer = Build.MANUFACTURER.replace("-", "_");
@@ -138,25 +138,25 @@ public class JUtility {
     }
 
     /**
-     * 获取本地 IPv4 地址（非回环地址）
-     * @return IPv4 地址，若未找到则返回 null
+     * Get the local IPv4 address (non-loopback)
+     * @return IPv4 address, or null if not found
      */
     public static String getLocalIPv4Address() {
         try {
-            // 遍历所有网络接口
+            // Iterate over all network interfaces
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface intf = interfaces.nextElement();
-                // 跳过回环接口和未启用的接口
+                // Skip loopback and disabled interfaces
                 if (intf.isLoopback() || !intf.isUp()) {
                     continue;
                 }
 
-                // 遍历接口的所有 IP 地址
+                // Iterate over all IP addresses on the interface
                 Enumeration<InetAddress> addresses = intf.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     InetAddress addr = addresses.nextElement();
-                    // 过滤 IPv4 且非回环地址
+                    // Filter for IPv4 non-loopback addresses
                     if (addr instanceof Inet4Address && !addr.isLoopbackAddress()) {
                         return addr.getHostAddress();
                     }
@@ -178,10 +178,10 @@ public class JUtility {
     }
 
     /**
-     * 获取系统属性
+     * Get a system property
      *
-     * @param propName 指定系统属性 key
-     * @return 系统属性 value
+     * @param propName Specified system property key
+     * @return System property value
      */
     private static String getProp(String propName) {
         Class<?> classType;
@@ -197,19 +197,19 @@ public class JUtility {
     }
 
     public static String createSignature(String nonce, String timestamp, String signKey) {
-        // 1. 空值处理：null 转为空字符串（对应 OC 的 nonce ?: @""）
+        // 1. Null handling: convert null to an empty string (matching OC nonce ?: @"")
         nonce = (nonce == null) ? "" : nonce;
         timestamp = (timestamp == null) ? "" : timestamp;
         signKey = (signKey == null) ? "" : signKey;
 
-        // 2. 拼接字符串：nonce + timestamp + signKey（和 OC 拼接规则完全一致）
+        // 2. Build the string: nonce + timestamp + signKey (exactly matching OC concatenation rules)
         String raw = nonce + timestamp + signKey;
 
-        // 3. 编码为 UTF-8 字节数组（对应 OC dataUsingEncoding:NSUTF8StringEncoding）
+        // 3. Encode as UTF-8 bytes (matching OC dataUsingEncoding:NSUTF8StringEncoding)
         byte[] rawData = raw.getBytes(StandardCharsets.UTF_8);
         byte[] keyData = signKey.getBytes(StandardCharsets.UTF_8);
 
-        // 4. 初始化 HMAC-SHA256 加密（对应 OC CCHmac）
+        // 4. Initialize HMAC-SHA256 encryption (matching OC CCHmac)
         Mac mac;
         try {
             mac = Mac.getInstance("HmacSHA256");
@@ -222,10 +222,10 @@ public class JUtility {
 
         byte[] digest = mac.doFinal(rawData);
 
-        // 5. 转换为小写十六进制字符串（对应 OC %02x 格式）
+        // 5. Convert to a lowercase hexadecimal string (matching OC %02x format)
         StringBuilder signature = new StringBuilder();
         for (byte b : digest) {
-            // 两位小写十六进制，不足补0（和OC输出完全一致）
+            // Two lowercase hex digits, padding with 0 when needed (exactly matching OC output)
             signature.append(String.format("%02x", b));
         }
 

@@ -29,7 +29,7 @@ public class E2EESql {
         }
         StringBuilder sb = new StringBuilder(bytes.length * 2);
         for (byte b : bytes) {
-            // 转两位十六进制，不足补0
+            // Convert to two hex digits, padding with 0 when needed
             String hex = Integer.toHexString(0xFF & b);
             if (hex.length() == 1) {
                 sb.append('0');
@@ -41,14 +41,14 @@ public class E2EESql {
 
     static byte[] hexToBytes(String hexStr) {
         if (hexStr == null || hexStr.length() % 2 != 0) {
-            throw new IllegalArgumentException("非法十六进制字符串，长度必须为偶数");
+            throw new IllegalArgumentException("Invalid hexadecimal string. The length must be even.");
         }
         int len = hexStr.length() / 2;
         byte[] result = new byte[len];
         for (int i = 0; i < len; i++) {
-            // 截取两位
+            // Take two characters
             String sub = hexStr.substring(i * 2, i * 2 + 2);
-            // 十六进制转数字
+            // Convert hexadecimal to a number
             result[i] = (byte) Integer.parseInt(sub, 16);
         }
         return result;

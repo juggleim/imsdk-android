@@ -26,10 +26,10 @@ public class PushData {
         mTitle = title;
     }
 
-    // 推送标题，用于通知栏的展示
+    // Push title used for notification display.
     private String mTitle;
-    // 推送内容，用于通知栏的展示
+    // Push content used for notification display.
     private String mContent;
-    // 扩展字段，可以携带自定义 json
+    // Extra field that can carry custom JSON.
     private String mExtra;
 }

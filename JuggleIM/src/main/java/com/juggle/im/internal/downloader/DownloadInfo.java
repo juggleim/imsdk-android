@@ -6,22 +6,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 保存下载文件信息类
+ * Class that stores downloaded file info
  *
  * @author lvhongzhen
  */
 public class DownloadInfo{
     private String tag;
-    // 文件流存储路径
+    // File stream storage path
     private String filePath;
-    // 文件信息存储路径
+    // File info storage path
     private String infoPath;
 
-    // 下载地址
+    // Download URL
     private String url;
-    // 文件大小
+    // File size
     private long length;
-    // 是否正在下载
+    // Whether downloading is in progress
     private boolean isDownLoading;
 
     private List<SliceInfo> sliceInfoList = new ArrayList<>();
@@ -70,27 +70,27 @@ public class DownloadInfo{
     }
 
     /**
-     * 获取文件大小
+     * Gets the file size
      *
-     * @return 文件大小
+     * @return File size
      */
     public long getLength() {
         return length;
     }
 
     /**
-     * 设置文件大小
+     * Sets the file size
      *
-     * @param length 文件大小
+     * @param length File size
      */
     public void setLength(long length) {
         this.length = length;
     }
 
     /**
-     * 获取下载已完成进度
+     * Get completed download progress
      *
-     * @return 下载以已完成进度
+     * @return Completed download progress
      */
     public boolean isFinished() {
         for (SliceInfo info : sliceInfoList) {
@@ -114,75 +114,75 @@ public class DownloadInfo{
     }
 
     /**
-     * 获取文件名
+     * Get file name
      *
-     * @return 文件名
+     * @return File name
      */
     public String getFilePath() {
         return filePath;
     }
 
     /**
-     * 设置文件名
+     * Set file name
      *
-     * @param filePath 文件名
+     * @param filePath File name
      */
     public void setFilePath(String filePath) {
         this.filePath = filePath;
     }
 
     /**
-     * 获取下载地址
+     * Gets the download URL
      *
-     * @return 下载地址
+     * @return Download URL
      */
     public String getUrl() {
         return url;
     }
 
     /**
-     * 设置下载地址
+     * Sets the download URL
      *
-     * @param url 下载地址
+     * @param url Download URL
      */
     public void setUrl(String url) {
         this.url = url;
     }
 
     /**
-     * 获取是否正在下载
+     * Gets whether downloading is in progress
      *
-     * @return 是否正在下载
+     * @return Whether downloading is in progress
      */
     public boolean isDownLoading() {
         return isDownLoading;
     }
 
     /**
-     * 设置是否正在下载
+     * Sets whether downloading is in progress
      *
-     * @param downLoading 是否正在下载
+     * @param downLoading Whether downloading is in progress
      */
     public void setDownLoading(boolean downLoading) {
         isDownLoading = downLoading;
     }
 
     public static class SliceInfo implements IDownloadInfo {
-        // 分片索引
+        // Slice index
         private int partNumber;
-        // 分片占下载进度比
+        // Slice share of download progress
         private int proportion;
-        // 分片流大小
+        // Slice stream size
         private long maxLength;
-        // 当前已下载大小
+        // Current downloaded size
         private long currentLength;
-        // 当前下载开始节点
+        // Current download start point
         private long startRange;
-        // 当前下载结束节点
+        // Current download end point
         private long endRange;
-        // 分片缓存流存放地址
+        // Slice cache stream storage path
         private String slicePath;
-        // 分片信息存放地址
+        // Slice info storage path
         private String infoPath;
 
         private String url;

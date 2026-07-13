@@ -8,11 +8,11 @@ public class MessageOptions {
     private String mReferredMessageId;
     private MessageMentionInfo mMentionInfo;
     private PushData mPushData;
-    /// 消息生存周期，单位毫秒。例：86400000 = 24 * 60 * 60 * 1000，该消息1天后会被自动删除。
-    /// 默认值为 0，表示不自动销毁。
+    /// Message lifetime in milliseconds. Example: 86400000 = 24 * 60 * 60 * 1000; the message is automatically deleted after 1 day.
+    /// The default value is 0, which means no automatic destruction.
     private long mLifeTime;
-    /// 消息已读后的生存周期，单位毫秒。通常小于 lifeTime。
-    /// 默认值为 0，表示读后不自动销毁。
+    /// Message lifetime after it is read, in milliseconds. Usually less than lifeTime.
+    /// The default value is 0, which means no automatic destruction after read.
     private long mLifeTimeAfterRead;
 
     public String getReferredMessageId() {

@@ -28,7 +28,7 @@ public class ActionManager {
 
     private JLogConfig jLogConfig;
     private ActionThread mActionThread;
-    private final ConcurrentLinkedQueue<IAction> mActionCacheQueue = new ConcurrentLinkedQueue<>();//缓存任务队列
+    private final ConcurrentLinkedQueue<IAction> mActionCacheQueue = new ConcurrentLinkedQueue<>();//Cached task queue
 
     public JLogConfig getJLogConfig() {
         return jLogConfig;

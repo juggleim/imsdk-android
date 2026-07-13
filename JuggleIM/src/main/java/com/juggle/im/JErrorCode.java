@@ -2,58 +2,58 @@ package com.juggle.im;
 
 public class JErrorCode {
     public static final int NONE = 0;
-    //未传 AppKey
+    // AppKey was not provided.
     public static final int APP_KEY_EMPTY = 11001;
-    //未传 Token
+    // Token was not provided.
     public static final int TOKEN_EMPTY = 11002;
-    //AppKey 不存在
+    // AppKey is invalid.
     public static final int APP_KEY_INVALID = 11003;
-    //Token 不合法
+    // Token is invalid.
     public static final int TOKEN_ILLEGAL = 11004;
-    //Token 未授权
+    // Token is unauthorized.
     public static final int TOKEN_UNAUTHORIZED = 11005;
-    //Token 已过期
+    // Token has expired.
     public static final int TOKEN_EXPIRED = 11006;
-    //App 已封禁
+    // App is banned.
     public static final int APP_PROHIBITED = 11009;
-    //用户被封禁
+    // User is banned.
     public static final int USER_PROHIBITED = 11010;
-    //用户被踢下线
+    // User was kicked offline.
     public static final int USER_KICKED_BY_OTHER_CLIENT = 11011;
-    //用户注销下线
+    // User logged out.
     public static final int USER_LOG_OUT = 11012;
 
-    //非好友关系
+    // Not friends.
     public static final int NOT_FRIEND = 12009;
-    //没有操作权限
+    // No operation permission.
     public static final int NO_OPERATION_PERMISSION = 12010;
-    //消息不存在
+    // Message does not exist.
     public static final int REMOTE_MESSAGE_NOT_EXIST = 12011;
-    //收藏重复消息
+    // Duplicate favorite message.
     public static final int ADD_DUPLICATE_FAVORITE_MESSAGE = 12012;
-    //密聊 hash 不匹配
+    // Secret chat hash mismatch.
     public static final int PUB_KEYS_HASH_MISMATCH = 12013;
 
-    //群组不存在
+    // Group does not exist.
     public static final int GROUP_NOT_EXIST = 13001;
-    //不是群成员
+    // Not a group member.
     public static final int NOT_GROUP_MEMBER = 13002;
 
-    //聊天室默认错误
+    // Default chatroom error.
     public static final int CHATROOM_UNKNOWN_ERROR = 14000;
-    //非聊天室成员
+    // Not a chatroom member.
     public static final int NOT_CHATROOM_MEMBER = 14001;
-    //聊天室属性已满（最多 100 个）
+    // Chatroom attributes are full (maximum 100).
     public static final int CHATROOM_ATTRIBUTES_COUNT_EXCEED = 14002;
-    //无权限操作聊天室属性（非当前用户设置的 key）
+    // No permission to operate on the chatroom attribute (key was not set by the current user).
     public static final int CHATROOM_KEY_UNAUTHORIZED = 14003;
-    //聊天室属性不存在
+    // Chatroom attribute does not exist.
     public static final int CHATROOM_ATTRIBUTE_NOT_EXIST = 14004;
-    //聊天室不存在
+    // Chatroom does not exist.
     public static final int CHATROOM_NOT_EXIST = 14005;
-    //聊天室已销毁
+    // Chatroom has been destroyed.
     public static final int CHATROOM_DESTROYED = 14006;
-    //禁止连接
+    // Connection is forbidden.
     public static final int CONNECT_FORBIDDEN = 21000;
     public static final int INVALID_PARAM = 21003;
     public static final int OPERATION_TIMEOUT = 21004;
@@ -66,23 +66,23 @@ public class JErrorCode {
     public static final int MESSAGE_NOT_EXIST = 22001;
     public static final int MESSAGE_ALREADY_RECALLED = 22002;
     public static final int MESSAGE_UPLOAD_ERROR = 22003;
-    //未找到对端公钥
+    // Other side's public key was not found.
     public static final int OTHER_SIDE_E2EE_INVALID = 22006;
-    //本地公钥未生成
+    // Local public key has not been generated.
     public static final int LOCAL_PUBLIC_KEY_INVALID = 22007;
 
-    //不是媒体消息
+    // Not a media message.
     public static final int MESSAGE_DOWNLOAD_ERROR_NOT_MEDIA_MESSAGE = 23001;
-    //媒体消息url 为空
+    // Media message URL is empty.
     public static final int MESSAGE_DOWNLOAD_ERROR_URL_EMPTY = 23002;
-    //appKey 或 userid 为 null
+    // appKey or userId is null.
     public static final int MESSAGE_DOWNLOAD_ERROR_APP_KEY_OR_USERID_EMPTY = 23004;
     public static final int MESSAGE_DOWNLOAD_ERROR_SAVE_PATH_EMPTY = 23005;
     public static final int MESSAGE_DOWNLOAD_ERROR = 23006;
     public static final int FILE_SAVED_FAILED = 23007;
-    //批量设置聊天室属性失败
+    // Failed to batch set chatroom attributes.
     public static final int CHATROOM_BATCH_SET_ATTRIBUTE_FAIL = 24001;
 
-    //加入 LiveKit 房间失败
+    // Failed to join the LiveKit room.
     public static final int JOIN_LIVEKIT_FAIL = 25001;
 }

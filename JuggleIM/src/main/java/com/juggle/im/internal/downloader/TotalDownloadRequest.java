@@ -3,7 +3,7 @@ package com.juggle.im.internal.downloader;
 import java.net.HttpURLConnection;
 
 /**
- * 基本的 request 不支持断点续传,只能取消，不能暂停 多媒体下载Reuqest
+ * Basic request for media download. It does not support resume; it can only be canceled, not paused
  *
  * @author lvhongzhen
  */

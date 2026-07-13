@@ -115,7 +115,7 @@ public class JThreadPoolExecutor {
                 mPool.execute(runnable);
             };
 
-            //该runnable仍在mapToMainHandler中，表示它并未被执行，需要将其先从mainHandler中移除
+            //This runnable is still in mapToMainHandler, meaning it has not been executed; remove it from mainHandler first
             if (mapToMainHandler.containsKey(runnable)) {
                 removeCallbackInBackground(runnable);
             }

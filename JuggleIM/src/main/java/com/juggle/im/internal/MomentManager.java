@@ -413,15 +413,15 @@ public class MomentManager implements IMomentManager {
     }
 
     private void request(String subUrl, String method, JSONObject jsonObject, JIMConst.IResultCallback<JSONObject> callback) {
-        // 1. 拼接基础URL
+        // 1. Build the base URL
         String urlString = getBaseUrl() + subUrl;
 
-        // 2. 处理GET请求参数
+        // 2. Handle GET request parameters
         if ("GET".equalsIgnoreCase(method)) {
             urlString = fetchGetUrl(urlString, jsonObject);
         }
 
-        // 开启新线程执行网络请求（避免阻塞主线程）
+        // Start a new thread for the network request to avoid blocking the main thread
         String finalUrlString = urlString;
         new Thread(() -> {
             HttpURLConnection connection = null;
@@ -429,21 +429,21 @@ public class MomentManager implements IMomentManager {
                 URL url = new URL(finalUrlString);
                 connection = (HttpURLConnection) url.openConnection();
 
-                // 3. 设置请求方法和超时
+                // 3. Set the request method and timeout
                 connection.setRequestMethod(method);
-                connection.setConnectTimeout(30000); // 连接超时30秒
-                connection.setReadTimeout(30000);    // 读取超时30秒
+                connection.setConnectTimeout(30000); // Connection timeout: 30 seconds
+                connection.setReadTimeout(30000);    // Read timeout: 30 seconds
 
-                // 4. 设置请求头
+                // 4. Set request headers
                 connection.setRequestProperty("appKey", mCore.getAppKey());
                 connection.setRequestProperty("Authorization", mCore.getToken());
 
-                // 5. 处理POST请求参数（JSON格式）
+                // 5. Handle POST request parameters in JSON format
                 if ("POST".equalsIgnoreCase(method) && jsonObject != null) {
                     connection.setDoOutput(true);
                     connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 
-                    // 写入JSON请求体
+                    // Write the JSON request body
                     try (OutputStream os = connection.getOutputStream();
                          OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
                         String jsonBody = jsonObject.toString();
@@ -452,13 +452,13 @@ public class MomentManager implements IMomentManager {
                     }
                 }
 
-                // 6. 获取响应状态码
+                // 6. Get the response status code
                 int responseCode = connection.getResponseCode();
-                if (responseCode != HttpURLConnection.HTTP_OK) { // 对应OC中的statusCode != 200
+                if (responseCode != HttpURLConnection.HTTP_OK) { // Corresponds to statusCode != 200 in Objective-C
                     throw new IOException("HTTP status code: " + responseCode);
                 }
 
-                // 7. 读取响应体
+                // 7. Read the response body
                 try (InputStream is = connection.getInputStream();
                      BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
                     StringBuilder responseBody = new StringBuilder();
@@ -466,25 +466,25 @@ public class MomentManager implements IMomentManager {
                     while ((line = reader.readLine()) != null) {
                         responseBody.append(line);
                     }
-                    // 处理响应内容
+                    // Handle the response content
                     handleResponse(responseBody.toString(), finalUrlString, callback);
                 }
             } catch (Exception e) {
                 handleError(finalUrlString, e, callback);
             } finally {
                 if (connection != null) {
-                    connection.disconnect(); // 关闭连接
+                    connection.disconnect(); // Close the connection
                 }
             }
-        }).start(); // 启动线程
+        }).start(); // Start the thread
     }
 
     private void handleResponse(String responseBody, String url, JIMConst.IResultCallback<JSONObject> callback) {
         try {
-            // 解析响应为JSONObject
+            // Parse the response as a JSONObject
             JSONObject responseJson = new JSONObject(responseBody);
 
-            // 检查业务状态码
+            // Check the business status code
             if (!responseJson.has("code")) {
                 JLogger.e("Mmt-Request", "response missing 'code', url: " + url);
                 if (callback != null) {
@@ -526,11 +526,11 @@ public class MomentManager implements IMomentManager {
 
     private String fetchGetUrl(String url, JSONObject json) {
         try {
-            // 1. 解析原始 URL 为 URI（处理基础 URL 部分）
+            // 1. Parse the original URL as a URI and handle the base URL part
             URI uri = new URI(url);
             URL urlObj = uri.toURL();
 
-            // 2. 初始化查询参数列表（保留已有参数）
+            // 2. Initialize the query parameter list and keep existing parameters
             List<String> queryItems = new ArrayList<>();
             String existingQuery = uri.getQuery();
             if (existingQuery != null && !existingQuery.isEmpty()) {
@@ -538,30 +538,30 @@ public class MomentManager implements IMomentManager {
                 Collections.addAll(queryItems, existingParams);
             }
 
-            // 3. 遍历 JSONObject，添加新参数（自动编码，兼容 JSON 基础类型）
+            // 3. Iterate over the JSONObject and add new parameters with encoding for basic JSON types
             if (json != null && json.length() > 0) {
-                // 使用迭代器遍历 JSON 键值对
+                // Iterate over JSON key-value pairs
                 Iterator<String> keyIterator = json.keys();
                 while (keyIterator.hasNext()) {
                     String key = keyIterator.next();
                     try {
-                        // 获取参数值（兼容 String/Number/Boolean 等 JSON 支持类型）
+                        // Get the parameter value for JSON-supported types such as String, Number, and Boolean
                         Object valueObj = json.get(key);
                         String value = valueObj.toString();
 
-                        // 对键和值进行 URL 编码（处理中文、特殊字符）
+                        // URL-encode keys and values to handle non-ASCII and special characters
                         String encodedKey = URLEncoder.encode(key, StandardCharsets.UTF_8.name());
                         String encodedValue = URLEncoder.encode(value, StandardCharsets.UTF_8.name());
 
                         queryItems.add(encodedKey + "=" + encodedValue);
                     } catch (JSONException e) {
-                        // 单个参数解析失败不影响整体，仅日志输出
+                        // A single parameter parse failure does not affect the whole operation; only log it
                         JLogger.e("Mmt-Request", "parse json param error, key: " + key, e.getMessage());
                     }
                 }
             }
 
-            // 4. 拼接所有查询参数
+            // 4. Join all query parameters
             StringBuilder queryBuilder = new StringBuilder();
             for (int i = 0; i < queryItems.size(); i++) {
                 if (i > 0) {
@@ -571,12 +571,12 @@ public class MomentManager implements IMomentManager {
             }
             String newQuery = queryBuilder.toString();
 
-            // 5. 构建最终 URL（拼接协议、主机、路径和新参数）
+            // 5. Build the final URL from the scheme, host, path, and new parameters
             URI finalUri = new URI(
                     urlObj.getProtocol(),
                     urlObj.getAuthority(),
                     urlObj.getPath(),
-                    newQuery.isEmpty() ? null : newQuery, // 无参数时传 null，避免 URL 末尾多 "?"
+                    newQuery.isEmpty() ? null : newQuery, // Pass null when there are no parameters to avoid a trailing "?"
                     urlObj.getRef()
             );
 
@@ -584,7 +584,7 @@ public class MomentManager implements IMomentManager {
 
         } catch (Exception e) {
             JLogger.e("Mmt-Request", "fetch url error: " + e.getMessage());
-            return url; // 错误时返回原始 URL
+            return url; // Return the original URL on error
         }
     }
 

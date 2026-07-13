@@ -46,20 +46,20 @@ message RpcMessageWraper{
   UserInfo senderInfo = 51;
 }
 
-//上行消息
+// Upstream message
 message UpMsg {
-  string msgType = 1;//消息类型定义
-  bytes msgContent = 2;// 消息实体数据
-  int32 flags = 3;// 标识
-  string clientUid = 4;//客户端指定的消息唯一ID
-  PushData pushData = 5;// 推送设置
-  MentionInfo mentionInfo = 6;//@设置
-  DownMsg referMsg = 7;//被引用的消息
-  repeated string toUserIds = 8;//群定向消息，指定接收消息的部分群成员
+  string msgType = 1;// Message type definition
+  bytes msgContent = 2;// Message entity data
+  int32 flags = 3;// Flags
+  string clientUid = 4;// Client-specified unique message ID
+  PushData pushData = 5;// Push settings
+  MentionInfo mentionInfo = 6;// Mention settings
+  DownMsg referMsg = 7;// Referenced message
+  repeated string toUserIds = 8;// Targeted group message; specifies some group members that should receive the message
   MergedMsgs mergedMsgs = 9;
   string SearchText = 10;
-  int64 lifeTime = 11;   // 消息默认生存周期，单位毫秒，例如：86400000，即该消息1天后会被自动删除
-  int64 lifeTimeAfterRead = 12; // 消息已读后的生存周期，通常小于lifeTime，例如60000，即消息已读1分钟后会被自动删除
+  int64 lifeTime = 11;   // Default message lifetime, in milliseconds. For example: 86400000 means the message is automatically deleted after 1 day.
+  int64 lifeTimeAfterRead = 12; // Message lifetime after it is read, usually less than lifeTime. For example: 60000 means the message is automatically deleted 1 minute after it is read.
   string subChannel = 13;
   E2ESuite e2eSuite = 14;
   
@@ -131,8 +131,8 @@ message DownMsg{
   repeated ConverTag converTags = 27;
   string SearchText = 29;
   GrpMemberInfo grpMemberInfo = 30;
-  int64 destroyTime = 31;  // 消息默认的销毁时间点，单位毫秒，如 1752551449037，为0时，表示消息不自动销毁
-  int64 lifeTimeAfterRead = 32; // 消息已读后生存周期，例如60000，即消息已读1分钟后会被自动删除
+  int64 destroyTime = 31;  // Default message destruction timestamp, in milliseconds, e.g. 1752551449037. When 0, the message is not automatically destroyed.
+  int64 lifeTimeAfterRead = 32; // Message lifetime after it is read. For example: 60000 means the message is automatically deleted 1 minute after it is read.
   bool isDelete = 33;
   string subChannel = 34;
   repeated string toUserIds = 35;
@@ -206,9 +206,9 @@ enum NotifyType {
   ChatroomDestroy = 5;
 }
 message SyncMsgReq{
-  int64 syncTime = 1;//收件箱同步时间
-  bool containsSendBox = 2;//是否包含发件箱消息
-  int64 sendBoxSyncTime = 3;//发件箱同步时间
+  int64 syncTime = 1;// Inbox sync time
+  bool containsSendBox = 2;// Whether to include outbox messages
+  int64 sendBoxSyncTime = 3;// Outbox sync time
 }
 message DownMsgSet{
   repeated DownMsg msgs = 1;
