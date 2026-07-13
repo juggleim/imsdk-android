@@ -1,0 +1,78 @@
+name: Bug report
+description: Report a reproducible problem in JuggleIM Android SDK.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please remove all secrets before posting logs or code.
+  - type: input
+    id: sdk-version
+    attributes:
+      label: SDK version
+      description: Example: 1.9.0
+      placeholder: "1.9.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - JuggleIM
+        - JetIMKit
+        - demo
+        - GooglePlugin
+        - HWPlugin
+        - XMPlugin
+        - OPPOPlugin
+        - VIVOPlugin
+        - HonorPlugin
+        - JGPlugin
+        - JZegoCall
+        - JAgoraCall
+        - JLiveKitCall
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: android-version
+    attributes:
+      label: Android version and device
+      placeholder: "Android 14, Pixel 8"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal reproducible flow.
+      placeholder: |
+        1. Initialize SDK with ...
+        2. Connect with ...
+        3. Send ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Remove app keys, tokens, server credentials, and user data.
+      render: text
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context

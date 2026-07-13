@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest an improvement for JuggleIM Android SDK.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Scenario
+      description: What product or integration scenario needs this feature?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API, behavior, or module change you want.
+    validations:
+      required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Target module
+      options:
+        - JuggleIM
+        - JetIMKit
+        - Push plugin
+        - Call plugin
+        - Demo
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility requirements
+      description: Include Android version, vendor push requirements, server requirements, or migration constraints if relevant.
