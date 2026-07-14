@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="res/logo.png" alt="JuggleIM" width="120" />
+  <img src="demo/src/main/res/logo.png" alt="JuggleIM" width="120" />
 
   <h1>JuggleIM Android SDK</h1>
 
@@ -8,7 +8,7 @@
 
   <p>
     <a href="https://github.com/Juggleim/im-android-sdk"><img src="https://img.shields.io/github/stars/Juggleim/im-android-sdk?style=social" alt="GitHub Stars"/></a>
-    <a href="https://github.com/Juggleim/im-android-sdk/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Juggleim/im-android-sdk" alt="License"/></a>
+    <a href="https://github.com/Juggleim/im-android-sdk/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Juggleim/im-android-sdk" alt="License"/></a>
   </p>
 
   <p>
@@ -110,7 +110,7 @@ JIM.getInstance().getConnectionManager().connect("user_im_token");
 
 > Manage user tokens on your server side. Do not hard-code production secrets in client applications or public repositories.
 
-Send a text message
+Send a text message:
 
 ```java
 TextMessage text = new TextMessage("Hello from JuggleIM 👋");
@@ -177,7 +177,6 @@ Demo initialization examples:
 We love contributions! Whether it's:
 
 - Reporting a bug via [Issues](https://github.com/Juggleim/im-android-sdk/issues)
-- Proposing a feature in [Discussions](https://github.com/Juggleim/im-android-sdk/discussions)
 - Improving docs or examples
 - Sending a [Pull Request](https://github.com/Juggleim/im-android-sdk/pulls)
 
