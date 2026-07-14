@@ -1,34 +1,55 @@
-# JuggleIM Android SDK
+<div align="center">
+  <img src="res/logo.png" alt="JuggleIM" width="120" />
 
-[English](README.en.md) | 简体中文
+  <h1>JuggleIM Android SDK</h1>
 
-JuggleIM Android SDK 是 JuggleIM 官方开源的 Android 即时通讯 SDK，提供稳定的长连接、会话、消息、聊天室、用户资料、推送和音视频通话扩展能力。它适合需要在 Android 应用中集成单聊、群聊、直播聊天室、系统通知、自定义消息和多厂商推送的团队。
+  <p><strong>A high-performance, open-source real-time messaging SDK for Android.</strong><br/>
+  Built on a custom binary protocol over WebSocket. Powers chat, group, live chatroom, RTC signaling and moments out of the box.</p>
 
-JuggleIM 也提供其他平台和服务端项目：
+  <p>
+    <a href="https://github.com/Juggleim/im-android-sdk"><img src="https://img.shields.io/github/stars/Juggleim/im-android-sdk?style=social" alt="GitHub Stars"/></a>
+    <a href="https://github.com/Juggleim/im-android-sdk/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Juggleim/im-android-sdk" alt="License"/></a>
+  </p>
 
-| 项目                                                  | 说明                   |
-|-----------------------------------------------------|----------------------|
-| [im-server](https://github.com/juggleim/im-server)  | JuggleIM 服务端         |
-| [imsdk-web](https://github.com/juggleim/imsdk-web)  | Web / JavaScript SDK |
-| im-android-sdk                                      | Android SDK 和 Demo   |
-| [im-ios-sdk](https://github.com/juggleim/imsdk-ios) | iOS SDK 和 Demo       |
+  <p>
+    <a href="#-features">Features</a> ·
+    <a href="#-quick-start">Quick Start</a> ·
+    <a href="#-documentation">Docs</a> ·
+    <a href="#-ecosystem">Ecosystem</a> ·
+    <a href="#-community">Community</a>
+  </p>
 
-## 功能特性
+  <p>
+    English | <a href="./README.zh-CN.md">简体中文</a>
+  </p>
+</div>
 
-- IM 基础能力：连接、断线重连、会话列表、消息收发、历史消息、未读数。
-- 消息类型：文本、图片、文件、自定义消息，以及业务通知类消息。
-- 场景支持：单聊、群聊、聊天室、直播聊天室。
-- 扩展模块：用户资料、朋友圈/动态、音视频通话、消息上传。
-- 推送插件：Google FCM、华为、小米、OPPO、VIVO、荣耀、极光推送。
-- 音视频插件：Zego、Agora、LiveKit。
-- 安全能力：支持端到端加密相关能力，详见最新版本说明和源码实现。
-- Demo 应用：仓库内包含可运行的 Android Demo，便于验证登录、会话、消息和通话流程。
+---
 
-## 快速开始
+## Why JuggleIM?
 
-### 1. 添加 Maven 仓库
+Building reliable, large-scale real-time messaging from scratch is hard. **JuggleIM** is a complete, production-grade IM platform with server, admin and multi-platform clients. This repository hosts the **official Android SDK** that lets you ship chat features in minutes — without giving up control of your protocol, your data or your infrastructure.
 
-在项目的 `settings.gradle` 或根 `build.gradle` 中添加 JuggleIM Maven 仓库：
+- Custom binary protocol — Protobuf over WebSocket, optimized for low latency and small payload.
+- Auto-reconnect — Survives flaky networks with offline messages, ACK and retransmission.
+- Composable architecture — One unified client API for chat, group, chatroom, moments and RTC signaling.
+
+## ✨ Features
+
+- Core IM capabilities: connection management, reconnect, conversations, message send/receive, history, unread counts.
+- Message types: text, image, file, custom messages, and business notification messages.
+- Chat scenarios: one-to-one chat, group chat, chatroom, and live chatroom.
+- Extensions: user profile, moments, audio/video calls, and message upload.
+- Push plugins: Google FCM, Huawei, Xiaomi, OPPO, VIVO, Honor, and JPush.
+- Call plugins: Zego, Agora, and LiveKit.
+- Security: end-to-end encryption related capabilities are available in recent versions.
+- Demo app: a runnable Android demo is included for login, conversation, messaging, and call flows.
+
+## 🚀 Quick Start
+
+### Install
+
+Add the JuggleIM Maven repository to `settings.gradle` or your root Gradle file:
 
 ```gradle
 dependencyResolutionManagement {
@@ -40,7 +61,7 @@ dependencyResolutionManagement {
 }
 ```
 
-### 2. 添加 SDK 依赖
+Add Juggle dependency in your app's build.gradle:
 
 ```gradle
 dependencies {
@@ -48,7 +69,7 @@ dependencies {
 }
 ```
 
-按需添加插件：
+Add optional plugins as needed:
 
 ```gradle
 dependencies {
@@ -59,9 +80,9 @@ dependencies {
 }
 ```
 
-### 3. 初始化 SDK
+### Initialize
 
-在 `Application` 中初始化 SDK：
+Initialize the SDK in your `Application`:
 
 ```java
 import com.juggle.im.JIM;
@@ -71,77 +92,108 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
+        List<String> serverUrls = new ArrayList<>();
+        serverUrls.add("wss://your-im-server");
+        JIM.getInstance().setServerUrls(serverUrls);
         JIM.getInstance().init(this, "your_app_key");
     }
 }
 ```
 
-如果需要指定服务地址、日志或推送配置，可使用 `InitConfig`：
+### Connect & send a message
 
-```java
-List<String> serverUrls = new ArrayList<>();
-serverUrls.add("wss://your-im-server");
-JIM.getInstance().setServerUrls(serverUrls);
-
-JIM.InitConfig initConfig = new JIM.InitConfig.Builder()
-        .setJLogConfig(logConfig)
-        .setPushConfig(pushConfig)
-        .build();
-
-JIM.getInstance().init(this, "your_app_key", initConfig);
-```
-
-### 4. 连接用户
-
-客户端需要使用业务服务端签发的 IM token 连接：
+Connect with an IM token issued by your application server:
 
 ```java
 JIM.getInstance().getConnectionManager().connect("user_im_token");
 ```
 
-> `appKey` 和 `token` 应由你的业务服务端管理，不要把生产环境密钥硬编码到客户端或公开仓库。
+> Manage user tokens on your server side. Do not hard-code production secrets in client applications or public repositories.
 
-## 仓库结构
+Send a text message
 
-| 目录 | 说明 |
+```java
+TextMessage text = new TextMessage("Hello from JuggleIM 👋");
+Conversation conversation = new Conversation(Conversation.ConversationType.PRIVATE, "TARGET_USER_ID");
+IMessageManager.ISendMessageCallback callback = new IMessageManager.ISendMessageCallback() {
+    @Override
+    public void onSuccess(Message message) {
+    }
+
+    @Override
+    public void onError(Message message, int errorCode) {
+    }
+};
+Message message = JIM.getInstance().getMessageManager().sendMessage(text, conversation, callback);
+```
+
+## Repository Layout
+
+| Directory | Description |
 | --- | --- |
-| `JuggleIM` | IM 核心 SDK |
-| `JetIMKit` | UI Kit 相关模块 |
-| `demo` | Android Demo 应用 |
-| `GooglePlugin` | Google FCM 推送插件 |
-| `HWPlugin` | 华为推送插件 |
-| `XMPlugin` | 小米推送插件 |
-| `OPPOPlugin` | OPPO 推送插件 |
-| `VIVOPlugin` | VIVO 推送插件 |
-| `HonorPlugin` | 荣耀推送插件 |
-| `JGPlugin` | 极光推送插件 |
-| `JZegoCall` | Zego 音视频插件 |
-| `JAgoraCall` | Agora 音视频插件 |
-| `JLiveKitCall` | LiveKit 音视频插件 |
+| `JuggleIM` | Core IM SDK |
+| `JetIMKit` | UI Kit module |
+| `demo` | Android demo app |
+| `GooglePlugin` | Google FCM push plugin |
+| `HWPlugin` | Huawei push plugin |
+| `XMPlugin` | Xiaomi push plugin |
+| `OPPOPlugin` | OPPO push plugin |
+| `VIVOPlugin` | VIVO push plugin |
+| `HonorPlugin` | Honor push plugin |
+| `JGPlugin` | JPush plugin |
+| `JZegoCall` | Zego call plugin |
+| `JAgoraCall` | Agora call plugin |
+| `JLiveKitCall` | LiveKit call plugin |
 
-## 运行 Demo
+## Run the Demo
 
-1. 使用 Android Studio 打开本仓库。
-2. 确认 JDK 17、Android Gradle Plugin 和 Android SDK 环境可用。
-3. 选择 `demo` 或 `app` 模块运行。
-4. 根据实际环境配置 `appKey`、服务地址、推送厂商参数和音视频厂商参数。
+1. Open this repository with Android Studio.
+2. Make sure JDK 17, Android Gradle Plugin, and Android SDK are available.
+3. Run the `demo` or `app` module.
+4. Configure your `appKey`, server URL, push vendor credentials, and call vendor credentials for your environment.
 
-Demo 中的初始化示例可参考：
+Demo initialization examples:
 
 - `demo/src/main/java/com/juggle/chat/BaseApplication.kt`
 - `demo/src/main/java/com/juggle/chat/LoginActivity.kt`
 
-## 文档与社区
+## 📚 Documentation
 
-- 官网与文档：[https://www.juggle.im/](https://www.juggle.im/)
-- Telegram 中文群：[https://t.me/juggleim_zh](https://t.me/juggleim_zh)
-- Telegram English：[https://t.me/juggleim_en](https://t.me/juggleim_en)
-- 微信群：可通过 [添加好友](https://downloads.juggleim.com/xiaoshan.jpg) 邀请加入
+- Official docs: <https://www.juggle.im/>
 
-## 贡献
+## 🌱 Ecosystem
 
-欢迎提交 Issue 和 Pull Request。开始前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
+| Project                                                      | Description                 |
+|--------------------------------------------------------------|-----------------------------|
+| [im-web-sdk](https://github.com/Juggleim/im-web-sdk)         | Web SDK                     |
+| [im-server](https://github.com/Juggleim/im-server)           | Self-hosted IM backend      |
+| [im-admin](https://github.com/Juggleim/im-admin)             | Admin console               |
+| [im-android-sdk](https://github.com/Juggleim/im-android-sdk) | **This repo** — Android SDK |
+| [im-ios-sdk](https://github.com/Juggleim/im-ios-sdk)         | iOS SDK                     |
+| [web-im-demo](https://github.com/Juggleim/web-im-demo)       | React/Vue integration demo  |
 
-## License
+## 🤝 Contributing
 
-JuggleIM Android SDK 使用 [Apache License 2.0](LICENSE) 开源协议。
+We love contributions! Whether it's:
+
+- Reporting a bug via [Issues](https://github.com/Juggleim/im-android-sdk/issues)
+- Proposing a feature in [Discussions](https://github.com/Juggleim/im-android-sdk/discussions)
+- Improving docs or examples
+- Sending a [Pull Request](https://github.com/Juggleim/im-android-sdk/pulls)
+
+Please read **[CONTRIBUTING.md](./CONTRIBUTING.md)** first.
+
+## 💬 Community
+
+Have questions or want to chat with other JuggleIM developers? Join us:
+
+- Telegram Group: <https://t.me/juggleim_zh>
+
+
+## 📄 License
+
+Copyright © JuggleIM. Licensed under the **[Apache License 2.0](./LICENSE)**.
+
+---
+
+<sub>Built with ❤️ by the JuggleIM team and contributors.</sub>
