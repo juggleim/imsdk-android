@@ -473,10 +473,14 @@ class ConversationSql {
         }
         args.add(String.valueOf(ts));
         sql.append(sqlAndConversationTypeIn(options.getConversationTypes()));
-        if (type == JIMConst.TopConversationsOrderType.ORDER_BY_TOP_TIME) {
-            sql.append(" ORDER BY is_top DESC, top_time DESC, timestamp DESC");
+        if (options.isIgnoreTop()) {
+            sql.append(" ORDER BY timestamp DESC");
         } else {
-            sql.append(" ORDER BY is_top DESC, timestamp DESC");
+            if (type == JIMConst.TopConversationsOrderType.ORDER_BY_TOP_TIME) {
+                sql.append(" ORDER BY is_top DESC, top_time DESC, timestamp DESC");
+            } else {
+                sql.append(" ORDER BY is_top DESC, timestamp DESC");
+            }
         }
         sql.append(" LIMIT ").append(options.getCount());
         return sql.toString();

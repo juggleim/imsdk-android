@@ -36,11 +36,19 @@ public class GetConversationOptions {
     }
 
     public String getTagId() {
-        return tagId;
+        return mTagId;
     }
 
     public void setTagId(String tagId) {
-        this.tagId = tagId;
+        this.mTagId = tagId;
+    }
+
+    public boolean isIgnoreTop() {
+        return mIgnoreTop;
+    }
+
+    public void setIgnoreTop(boolean ignoreTop) {
+        mIgnoreTop = ignoreTop;
     }
 
     /// Conversation type list. Pass null to include all types.
@@ -52,5 +60,7 @@ public class GetConversationOptions {
     /// Pull direction.
     private JIMConst.PullDirection mPullDirection;
     /// Tag ID. Pass null to ignore tags.
-    private String tagId;
+    private String mTagId;
+    /// true means fetch without top conversations.
+    private boolean mIgnoreTop;
 }
