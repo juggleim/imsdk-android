@@ -36,11 +36,19 @@ public class GetConversationOptions {
     }
 
     public String getTagId() {
-        return tagId;
+        return mTagId;
     }
 
     public void setTagId(String tagId) {
-        this.tagId = tagId;
+        this.mTagId = tagId;
+    }
+
+    public boolean isIgnoreTop() {
+        return mIgnoreTop;
+    }
+
+    public void setIgnoreTop(boolean ignoreTop) {
+        mIgnoreTop = ignoreTop;
     }
 
     /// 会话类型列表，传空表示全部类型
@@ -52,5 +60,7 @@ public class GetConversationOptions {
     /// 拉取方向
     private JIMConst.PullDirection mPullDirection;
     /// 标签 id，传空表示不限标签
-    private String tagId;
+    private String mTagId;
+    /// true means fetch without top conversations.
+    private boolean mIgnoreTop;
 }
