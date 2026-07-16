@@ -47,8 +47,6 @@ import com.juggle.im.model.GroupMessageReadInfoDetail;
 import com.juggle.im.model.MediaMessageContent;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.MessageContent;
-import com.juggle.im.model.MessageMentionInfo;
-import com.juggle.im.model.PushData;
 import com.juggle.im.model.TimePeriod;
 import com.juggle.im.model.UserInfo;
 import com.juggle.im.model.UserStatus;
@@ -96,7 +94,6 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             mConnectHeaders = headers;
 
             resetWebSocketClient();
-            ExecutorService executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_COUNT);
 
             for (String server : servers) {
                 URI uri = createWebSocketUri(server);
@@ -104,7 +101,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 addConnectHeader(wsc);
                 mCompeteWSCList.add(wsc);
                 mCompeteStatusList.add(WebSocketStatus.IDLE);
-                executorService.execute(wsc::connect);
+                mExecutorService.execute(wsc::connect);
             }
         });
     }
@@ -1760,6 +1757,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private final Handler mSendHandler;
     private String mSignKey;
     private Map<String, String> mConnectHeaders;
+    private final ExecutorService mExecutorService = Executors.newFixedThreadPool(MAX_CONCURRENT_COUNT);
 
     private static final String PROTOCOL_HEAD = "://";
     private static final String WS_HEAD_PREFIX = "ws://";
