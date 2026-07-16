@@ -109,7 +109,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     public void disconnect(Boolean receivePush) {
         JLogger.i("WS-Disconnect", "receivePush is " + receivePush);
-        sendDisconnectMsg(receivePush);
+        mSendHandler.post(() -> sendDisconnectMsg(receivePush));
     }
 
     public void setConnectionListener(IWebSocketConnectListener listener) {
@@ -144,30 +144,32 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               byte[] currentPriKey,
                               List<E2EEInfo> e2EEInfoList,
                               SendMessageCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] encodeBytes = encodeContentData(message.getContent());
-        String contentType;
-        if (message.getContent() instanceof UnknownMessage) {
-            UnknownMessage unknown = (UnknownMessage) message.getContent();
-            contentType = unknown.getMessageType();
-        } else {
-            contentType = message.getContent().getContentType();
-        }
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] encodeBytes = encodeContentData(message.getContent());
+            String contentType;
+            if (message.getContent() instanceof UnknownMessage) {
+                UnknownMessage unknown = (UnknownMessage) message.getContent();
+                contentType = unknown.getMessageType();
+            } else {
+                contentType = message.getContent().getContentType();
+            }
 
-        byte[] bytes = mPbData.sendMessageData(contentType,
-                encodeBytes,
-                message.getContent().getFlags(),
-                message,
-                mergeInfo,
-                isBroadcast,
-                userId,
-                mCmdIndex++,
-                currentPubKey,
-                currentPriKey,
-                e2EEInfoList);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "send message");
-        sendWhenOpen(bytes);
+            byte[] bytes = mPbData.sendMessageData(contentType,
+                    encodeBytes,
+                    message.getContent().getFlags(),
+                    message,
+                    mergeInfo,
+                    isBroadcast,
+                    userId,
+                    mCmdIndex++,
+                    currentPubKey,
+                    currentPriKey,
+                    e2EEInfoList);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "send message");
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     private byte[] encodeContentData(MessageContent content) {
@@ -208,79 +210,93 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                               long timestamp,
                               Map<String, String> extras,
                               WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, extras, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "recallMessage, messageId is " + messageId);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.recallMessageData(messageId, conversation, timestamp, extras, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "recallMessage, messageId is " + messageId);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void updateMessage(String messageId, MessageContent content, Conversation conversation, long timestamp, long msgSeqNo, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] contentBytes = encodeContentData(content);
-        String contentType;
-        if (content instanceof UnknownMessage) {
-            UnknownMessage unknown = (UnknownMessage) content;
-            contentType = unknown.getMessageType();
-        } else {
-            contentType = content.getContentType();
-        }
-        byte[] bytes = mPbData.updateMessageData(messageId, contentType, contentBytes, conversation, timestamp, msgSeqNo, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "update message, messageId is " + messageId);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] contentBytes = encodeContentData(content);
+            String contentType;
+            if (content instanceof UnknownMessage) {
+                UnknownMessage unknown = (UnknownMessage) content;
+                contentType = unknown.getMessageType();
+            } else {
+                contentType = content.getContentType();
+            }
+            byte[] bytes = mPbData.updateMessageData(messageId, contentType, contentBytes, conversation, timestamp, msgSeqNo, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "update message, messageId is " + messageId);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void syncConversations(long startTime,
                                   int count,
                                   String userId,
                                   SyncConversationsCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.syncConversationsData(startTime, count, userId, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "syncConversations, startTime is " + startTime + ", count is " + count);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.syncConversationsData(startTime, count, userId, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "syncConversations, startTime is " + startTime + ", count is " + count);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void syncMessages(long receiveTime,
                              long sendTime,
                              String userId,
                              QryHisMsgCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "syncMessages, receiveTime is " + receiveTime + ", sendTime is " + sendTime);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.syncMessagesData(receiveTime, sendTime, userId, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "syncMessages, receiveTime is " + receiveTime + ", sendTime is " + sendTime);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void sendReadReceipt(Conversation conversation,
                                 List<String> messageIds,
                                 WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.sendReadReceiptData(conversation, messageIds, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "sendReadReceipt");
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.sendReadReceiptData(conversation, messageIds, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "sendReadReceipt");
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getGroupMessageReadDetail(Conversation conversation,
                                           String messageId,
                                           WebSocketDataCallback<GroupMessageReadInfoDetail> callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getGroupMessageReadDetail(conversation, messageId, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "getGroupMessageReadDetail, messageId is " + messageId);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getGroupMessageReadDetail(conversation, messageId, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "getGroupMessageReadDetail, messageId is " + messageId);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void deleteConversationInfo(Conversation conversation,
                                        String userId,
                                        WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.deleteConversationData(conversation, userId, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "getGroupMessageReadDetail, conversation is " + conversation);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.deleteConversationData(conversation, userId, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "getGroupMessageReadDetail, conversation is " + conversation);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void clearUnreadCount(Conversation conversation,
@@ -289,107 +305,133 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                                  String msgId,
                                  long timestamp,
                                  WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, msgId, timestamp, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "clearUnreadCount, conversation is " + conversation + ", msgIndex is " + msgIndex);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.clearUnreadCountData(conversation, userId, msgIndex, msgId, timestamp, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "clearUnreadCount, conversation is " + conversation + ", msgIndex is " + msgIndex);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void clearTotalUnreadCount(String userId, long time, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.clearTotalUnreadCountData(userId, time, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "clearTotalUnreadCount, time is " + time);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.clearTotalUnreadCountData(userId, time, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "clearTotalUnreadCount, time is " + time);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void addConversationInfo(Conversation conversation, String userId, AddConversationCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.addConversationInfo(conversation, userId, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "addConversationInfo, conversation is " + conversation);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.addConversationInfo(conversation, userId, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "addConversationInfo, conversation is " + conversation);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void queryHisMsg(Conversation conversation, long startTime, int count, JIMConst.PullDirection direction, List<String> contentTypes, QryHisMsgCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, contentTypes, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "queryHisMsg, conversation is " + conversation + ", startTime is " + startTime + ", count is " + count + ", direction is " + direction);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.queryHisMsgData(conversation, startTime, count, direction, contentTypes, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "queryHisMsg, conversation is " + conversation + ", startTime is " + startTime + ", count is " + count + ", direction is " + direction);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void queryHisMsgByIds(Conversation conversation, List<String> messageIds, QryHisMsgCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.queryHisMsgDataByIds(conversation, messageIds, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "queryHisMsgByIds, conversation is " + conversation);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.queryHisMsgDataByIds(conversation, messageIds, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "queryHisMsgByIds, conversation is " + conversation);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void setMute(Conversation conversation, boolean isMute, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "setMute, conversation is " + conversation + ", isMute is " + isMute);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.disturbData(conversation, userId, isMute, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "setMute, conversation is " + conversation + ", isMute is " + isMute);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void setConversationTop(Conversation conversation, boolean isTop, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.topConversationData(conversation, userId, isTop, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "set conversation top, conversation is " + conversation + ", isTop is " + isTop);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.topConversationData(conversation, userId, isTop, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "set conversation top, conversation is " + conversation + ", isTop is " + isTop);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void setMessageTop(String messageId, Conversation conversation, boolean isTop, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.topMessageData(messageId, conversation, isTop, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "set message top, messageId is " + messageId + ", isTop is " + isTop);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.topMessageData(messageId, conversation, isTop, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "set message top, messageId is " + messageId + ", isTop is " + isTop);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getTopMessage(Conversation conversation, GetTopMsgCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getTopMessageData(conversation, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "get top message, conversation is " + conversation);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getTopMessageData(conversation, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "get top message, conversation is " + conversation);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void addFavoriteMessages(List<Message> messageList, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.favoriteMessagesData(messageList, true, userId, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "add favorite messages");
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.favoriteMessagesData(messageList, true, userId, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "add favorite messages");
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void removeFavoriteMessages(List<Message> messageList, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.favoriteMessagesData(messageList, false, userId, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "add favorite messages");
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.favoriteMessagesData(messageList, false, userId, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "add favorite messages");
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getFavoriteMessages(String offset, int limit, String userId, GetFavoriteMsgCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getFavoriteMessagesData(userId, limit, offset, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "get favorite messages");
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getFavoriteMessagesData(userId, limit, offset, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "get favorite messages");
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void setUnread(Conversation conversation, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.markUnread(conversation, userId, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "setUnread, conversation is " + conversation);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.markUnread(conversation, userId, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "setUnread, conversation is " + conversation);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getMergedMessageList(String containerMsgId,
@@ -397,11 +439,13 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                                      int count,
                                      JIMConst.PullDirection direction,
                                      QryHisMsgCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getMergedMessageList(containerMsgId, timestamp, count, direction, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "getMergedMessageList, containerMsgId is " + containerMsgId + ", timestamp is " + timestamp + ", count is " + count + ", direction is " + direction);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getMergedMessageList(containerMsgId, timestamp, count, direction, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "getMergedMessageList, containerMsgId is " + containerMsgId + ", timestamp is " + timestamp + ", count is " + count + ", direction is " + direction);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getMentionMessageList(Conversation conversation,
@@ -410,341 +454,425 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                                       JIMConst.PullDirection direction,
                                       long lastReadIndex,
                                       QryHisMsgCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getMentionMessages(conversation, time, count, direction, lastReadIndex, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "getMentionMessageList, conversation is " + conversation + ", time is " + time + ", count is " + count + ", direction is " + direction);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getMentionMessages(conversation, time, count, direction, lastReadIndex, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "getMentionMessageList, conversation is " + conversation + ", time is " + time + ", count is " + count + ", direction is " + direction);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void registerPushToken(PushChannel channel, String token, String deviceId, String packageName, String userId, WebSocketSimpleCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.registerPushToken(channel,
-                token,
-                deviceId,
-                packageName,
-                userId,
-                mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "registerPushToken, channel is " + channel.getName() + ", token is " + token);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.registerPushToken(channel,
+                    token,
+                    deviceId,
+                    packageName,
+                    userId,
+                    mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "registerPushToken, channel is " + channel.getName() + ", token is " + token);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void clearHistoryMessage(Conversation conversation, long time, boolean forAllUsers, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        int scope = forAllUsers ? 1 : 0;
-        byte[] bytes = mPbData.clearHistoryMessage(conversation, time, scope, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "clearHistoryMessage, conversation is " + conversation + ", time is " + time);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            int scope = forAllUsers ? 1 : 0;
+            byte[] bytes = mPbData.clearHistoryMessage(conversation, time, scope, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "clearHistoryMessage, conversation is " + conversation + ", time is " + time);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void deleteMessage(Conversation conversation, List<ConcreteMessage> msgList, boolean forAllUsers, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.deleteMessage(conversation, msgList, forAllUsers, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "deleteMessage, conversation is " + conversation);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.deleteMessage(conversation, msgList, forAllUsers, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "deleteMessage, conversation is " + conversation);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getUploadFileCred(String userId, UploadFileType fileType, String ext, QryUploadFileCredCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getUploadFileCred(userId, fileType, ext, mCmdIndex++);
-        JLogger.i("WS-Send", "getUploadFileCred, file type is " + fileType);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getUploadFileCred(userId, fileType, ext, mCmdIndex++);
+            JLogger.i("WS-Send", "getUploadFileCred, file type is " + fileType);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void setGlobalMute(boolean isMute, String userId, String timezone, List<TimePeriod> periods, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.setGlobalMute(isMute, userId, timezone, periods, mCmdIndex++);
-        JLogger.i("WS-Send", "setGlobalMute, isMute is " + isMute);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.setGlobalMute(isMute, userId, timezone, periods, mCmdIndex++);
+            JLogger.i("WS-Send", "setGlobalMute, isMute is " + isMute);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getGlobalMute(String userId, GetGlobalMuteCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getGlobalMute(userId, mCmdIndex++);
-        JLogger.i("WS-Send", "getGlobalMute");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getGlobalMute(userId, mCmdIndex++);
+            JLogger.i("WS-Send", "getGlobalMute");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getFirstUnreadMessage(Conversation conversation, QryHisMsgCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.qryFirstUnreadMessage(conversation, mCmdIndex++);
-        JLogger.i("WS-Send", "getFirstUnreadMessage");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.qryFirstUnreadMessage(conversation, mCmdIndex++);
+            JLogger.i("WS-Send", "getFirstUnreadMessage");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void pushSwitch(boolean enablePush, String userId) {
-        byte[] bytes = mPbData.pushSwitch(enablePush, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "push switch, enable is " + enablePush);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            byte[] bytes = mPbData.pushSwitch(enablePush, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "push switch, enable is " + enablePush);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void uploadLogStatus(int result, String userId, String messageId, String url) {
-        byte[] bytes = mPbData.uploadLogStatus(result, userId, messageId, url, mCmdIndex++);
-        JLogger.i("WS-Send", "upload log status, result is " + result);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            byte[] bytes = mPbData.uploadLogStatus(result, userId, messageId, url, mCmdIndex++);
+            JLogger.i("WS-Send", "upload log status, result is " + result);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void joinChatroom(String chatroomId, boolean isAutoCreate, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.joinChatroom(chatroomId, isAutoCreate, mCmdIndex++);
-        JLogger.i("WS-Send", "joinChatroom");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.joinChatroom(chatroomId, isAutoCreate, mCmdIndex++);
+            JLogger.i("WS-Send", "joinChatroom");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void quitChatroom(String chatroomId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.quitChatroom(chatroomId, mCmdIndex++);
-        JLogger.i("WS-Send", "quitChatroom");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.quitChatroom(chatroomId, mCmdIndex++);
+            JLogger.i("WS-Send", "quitChatroom");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void setAttributes(String chatroomId, Map<String, String> attributes, UpdateChatroomAttrCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.setAttributes(chatroomId, attributes, mCmdIndex++);
-        JLogger.i("WS-Send", "setAttributes");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.setAttributes(chatroomId, attributes, mCmdIndex++);
+            JLogger.i("WS-Send", "setAttributes");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void removeAttributes(String chatroomId, List<String> keys, UpdateChatroomAttrCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.removeAttributes(chatroomId, keys, mCmdIndex++);
-        JLogger.i("WS-Send", "removeAttributes");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.removeAttributes(chatroomId, keys, mCmdIndex++);
+            JLogger.i("WS-Send", "removeAttributes");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void syncChatroomMessages(String chatroomId, String userId, long syncTime, int prevMessageCount, QryHisMsgCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.syncChatroomMessages(chatroomId, userId, syncTime, prevMessageCount, mCmdIndex++);
-        mWebSocketCommandManager.putCommand(key, callback);
-        JLogger.i("WS-Send", "syncChatroomMessages, id is " + chatroomId + ", time is " + syncTime + ", count is " + prevMessageCount);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.syncChatroomMessages(chatroomId, userId, syncTime, prevMessageCount, mCmdIndex++);
+            mWebSocketCommandManager.putCommand(key, callback);
+            JLogger.i("WS-Send", "syncChatroomMessages, id is " + chatroomId + ", time is " + syncTime + ", count is " + prevMessageCount);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void syncChatroomAttributes(String chatroomId, String userId, long syncTime) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.syncChatroomAttributes(chatroomId, userId, syncTime, mCmdIndex++);
-        JLogger.i("WS-Send", "syncChatroomAttributes");
-        ChatroomWebSocketCallback callback = new ChatroomWebSocketCallback();
-        callback.mChatroomId = chatroomId;
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.syncChatroomAttributes(chatroomId, userId, syncTime, mCmdIndex++);
+            JLogger.i("WS-Send", "syncChatroomAttributes");
+            ChatroomWebSocketCallback callback = new ChatroomWebSocketCallback();
+            callback.mChatroomId = chatroomId;
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void setLanguage(String language, String userId, WebSocketSimpleCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.setLanguage(language, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "set language: " + language);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.setLanguage(language, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "set language: " + language);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getLanguage(String userId, WebSocketDataCallback<String> callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getLanguage(userId, mCmdIndex++);
-        JLogger.i("WS-Send", "get language");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getLanguage(userId, mCmdIndex++);
+            JLogger.i("WS-Send", "get language");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void addMessageReaction(String messageId, Conversation conversation, String reactionId, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.addMsgSet(messageId, conversation, reactionId, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "add message reaction, messageId is " + messageId + ", reactionId is " + reactionId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.addMsgSet(messageId, conversation, reactionId, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "add message reaction, messageId is " + messageId + ", reactionId is " + reactionId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void removeMessageReaction(String messageId, Conversation conversation, String reactionId, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.removeMsgSet(messageId, conversation, reactionId, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "remove message reaction, messageId is " + messageId + ", reactionId is " + reactionId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.removeMsgSet(messageId, conversation, reactionId, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "remove message reaction, messageId is " + messageId + ", reactionId is " + reactionId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getMessagesReaction(List<String> messageIdList, Conversation conversation, MessageReactionListCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.queryMsgExSet(messageIdList, conversation, mCmdIndex++);
-        JLogger.i("WS-Send", "get messages reaction, count is " + messageIdList.size());
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.queryMsgExSet(messageIdList, conversation, mCmdIndex++);
+            JLogger.i("WS-Send", "get messages reaction, count is " + messageIdList.size());
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void createConversationTag(String tagId, String tagName, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.createConversationTag(tagId, tagName, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "create conversation tag, tagId is " + tagId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.createConversationTag(tagId, tagName, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "create conversation tag, tagId is " + tagId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void destroyConversationTag(String tagId, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.destroyConversationTag(tagId, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "destroy conversation tag, tagId is " + tagId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.destroyConversationTag(tagId, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "destroy conversation tag, tagId is " + tagId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void updateConversationTagName(String tagId, String name, String userId, WebSocketTimestampCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.createConversationTag(tagId, name, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "update conversation tag name, tagId is " + tagId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.createConversationTag(tagId, name, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "update conversation tag name, tagId is " + tagId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getConversationTagList(String userId, WebSocketDataCallback<List<ConversationTagInfo>> callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getConversationTagList(userId, mCmdIndex++);
-        JLogger.i("WS-Send", "get conversation tag list");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getConversationTagList(userId, mCmdIndex++);
+            JLogger.i("WS-Send", "get conversation tag list");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void addConversationsToTag(List<Conversation> conversations, String tagId, String userId, WebSocketSimpleCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.addConversationsToTag(conversations, tagId, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "add conversations to tag, tagId is " + tagId + ", count is " + conversations.size());
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.addConversationsToTag(conversations, tagId, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "add conversations to tag, tagId is " + tagId + ", count is " + conversations.size());
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void removeConversationsFromTag(List<Conversation> conversations, String tagId, String userId, WebSocketSimpleCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.removeConversationsFromTag(conversations, tagId, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "remove conversations from tag, tagId is " + tagId + ", count is " + conversations.size());
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.removeConversationsFromTag(conversations, tagId, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "remove conversations from tag, tagId is " + tagId + ", count is " + conversations.size());
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void callInvite(String callId, boolean isMultiCall, CallConst.CallMediaType mediaType, Conversation conversation, List<String> userIdList, int engineType, String extra, CallAuthCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.callInvite(callId, isMultiCall, mediaType, conversation, userIdList, engineType, extra, mCmdIndex++);
-        JLogger.i("WS-Send", "call invite, callId is " + callId + ", isMultiCall is " + isMultiCall);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.callInvite(callId, isMultiCall, mediaType, conversation, userIdList, engineType, extra, mCmdIndex++);
+            JLogger.i("WS-Send", "call invite, callId is " + callId + ", isMultiCall is " + isMultiCall);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void callHangup(String callId, WebSocketSimpleCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.callHangup(callId, mCmdIndex++);
-        JLogger.i("WS-Send", "call hangup, callId is " + callId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.callHangup(callId, mCmdIndex++);
+            JLogger.i("WS-Send", "call hangup, callId is " + callId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void callAccept(String callId, CallAuthCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.callAccept(callId, mCmdIndex++);
-        JLogger.i("WS-Send", "call accept, callId is " + callId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.callAccept(callId, mCmdIndex++);
+            JLogger.i("WS-Send", "call accept, callId is " + callId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void callConnected(String callId, WebSocketSimpleCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.callConnected(callId, mCmdIndex++);
-        JLogger.i("WS-Send", "call connected, callId is " + callId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.callConnected(callId, mCmdIndex++);
+            JLogger.i("WS-Send", "call connected, callId is " + callId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void callJoin(String callId, RtcRoomListCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.callJoin(callId, mCmdIndex++);
-        JLogger.i("WS-Send", "call join, callId is " + callId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.callJoin(callId, mCmdIndex++);
+            JLogger.i("WS-Send", "call join, callId is " + callId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getConversationCallInfo(Conversation conversation, String userId, WebSocketDataCallback<CallInfo> callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getConversationCallInfo(conversation, userId, mCmdIndex++);
-        JLogger.i("WS-Send", "get conversation call info");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getConversationCallInfo(conversation, userId, mCmdIndex++);
+            JLogger.i("WS-Send", "get conversation call info");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void queryCallRooms(String userId, RtcRoomListCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.queryCallRooms(userId, mCmdIndex++);
-        JLogger.i("WS-Send", "query call rooms");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.queryCallRooms(userId, mCmdIndex++);
+            JLogger.i("WS-Send", "query call rooms");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void queryCallRoom(String roomId, RtcRoomListCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.queryCallRoom(roomId, mCmdIndex++);
-        JLogger.i("WS-Send", "query call room");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.queryCallRoom(roomId, mCmdIndex++);
+            JLogger.i("WS-Send", "query call room");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void fetchUserInfo(String userId, WebSocketDataCallback<UserInfo> callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.fetchUserInfo(userId, mCmdIndex++);
-        JLogger.i("WS-Send", "fetch user info, userId is " + userId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.fetchUserInfo(userId, mCmdIndex++);
+            JLogger.i("WS-Send", "fetch user info, userId is " + userId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void fetchGroupInfo(String groupId, WebSocketDataCallback<GroupInfo> callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.fetchGroupInfo(groupId, mCmdIndex++);
-        JLogger.i("WS-Send", "fetch group info, groupId is " + groupId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.fetchGroupInfo(groupId, mCmdIndex++);
+            JLogger.i("WS-Send", "fetch group info, groupId is " + groupId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void fetchFriendInfo(String userId, String currentUserId, WebSocketDataCallback<FriendInfo> callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.fetchFriendInfo(userId, currentUserId, mCmdIndex++);
-        JLogger.i("WS-Send", "fetch friend info, userId is " + userId);
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.fetchFriendInfo(userId, currentUserId, mCmdIndex++);
+            JLogger.i("WS-Send", "fetch friend info, userId is " + userId);
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getUserStatus(List<String> userIdList, String currentUserId, WebSocketDataCallback<List<UserStatus>> callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getUserStatus(userIdList, currentUserId, mCmdIndex++);
-        JLogger.i("WS-Send", "get user status, count is " + userIdList.size());
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getUserStatus(userIdList, currentUserId, mCmdIndex++);
+            JLogger.i("WS-Send", "get user status, count is " + userIdList.size());
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void getPubKeys(String userId, String currentUserId, WebSocketDataCallback<List<E2EEInfo>> callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.getPubKeys(userId, currentUserId, mCmdIndex++);
-        JLogger.i("WS-Send", "get pub keys");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.getPubKeys(userId, currentUserId, mCmdIndex++);
+            JLogger.i("WS-Send", "get pub keys");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void uploadPubKey(byte[] pubKey, String deviceId, String currentUserId, WebSocketSimpleCallback callback) {
-        Integer key = mCmdIndex;
-        byte[] bytes = mPbData.uploadPubKey(pubKey, deviceId, currentUserId, mCmdIndex++);
-        JLogger.i("WS-Send", "upload pub key");
-        mWebSocketCommandManager.putCommand(key, callback);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            Integer key = mCmdIndex;
+            byte[] bytes = mPbData.uploadPubKey(pubKey, deviceId, currentUserId, mCmdIndex++);
+            JLogger.i("WS-Send", "upload pub key");
+            mWebSocketCommandManager.putCommand(key, callback);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void rtcPing(String callId) {
-        JLogger.v("WS-Send", "rtc ping");
-        byte[] bytes = mPbData.rtcPingData(callId, mCmdIndex++);
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            JLogger.v("WS-Send", "rtc ping");
+            byte[] bytes = mPbData.rtcPingData(callId, mCmdIndex++);
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     public void startHeartbeat() {
@@ -769,9 +897,11 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     }
 
     public void ping() {
-        JLogger.v("WS-Send", "ping");
-        byte[] bytes = mPbData.pingData();
-        sendWhenOpen(bytes);
+        mSendHandler.post(() -> {
+            JLogger.v("WS-Send", "ping");
+            byte[] bytes = mPbData.pingData();
+            sendWhenOpenInternal(bytes);
+        });
     }
 
     @Override
@@ -1137,19 +1267,19 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 mCarrier,
                 ip == null ? "" : ip,
                 mLanguage);
-        sendWhenOpen(bytes);
+        sendWhenOpenInternal(bytes);
     }
 
     private void sendDisconnectMsg(boolean receivePush) {
         byte[] bytes = mPbData.disconnectData(receivePush);
-        sendWhenOpen(bytes);
+        sendWhenOpenInternal(bytes);
         mSendHandler.post(this::resetWebSocketClient);
     }
 
     private void sendPublishAck(int index) {
         JLogger.v("WS-Send", "publish ack");
         byte[] bytes = mPbData.publishAckData(index);
-        sendWhenOpen(bytes);
+        sendWhenOpenInternal(bytes);
     }
 
     private void handleConnectAckMsg(@NonNull PBRcvObj.ConnectAck ack) {
@@ -1548,7 +1678,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
             needAck = mMessageListener.onMessageReceive(body.rcvMessage);
         }
         if (body.qos == 1 && needAck) {
-            sendPublishAck(body.index);
+            mSendHandler.post(() -> sendPublishAck(body.index));
         }
     }
 
@@ -1683,22 +1813,20 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
-    private void sendWhenOpen(byte[] bytes) {
-        mSendHandler.post(() -> {
-            if (mWebSocketClient != null && mWebSocketClient.isOpen()) {
-                try {
-                    mWebSocketClient.send(bytes);
-                } catch (WebsocketNotConnectedException e) {
-                    e.printStackTrace();
-                    webSocketSendFail();
-                }
-                return;
+    private void sendWhenOpenInternal(byte[] bytes) {
+        if (mWebSocketClient != null && mWebSocketClient.isOpen()) {
+            try {
+                mWebSocketClient.send(bytes);
+            } catch (WebsocketNotConnectedException e) {
+                e.printStackTrace();
+                webSocketSendFail();
             }
-            JLogger.e("WS-Send", mWebSocketClient == null ? "mWebSocketClient is null" : "mWebSocketClient is not open");
-            //The connection may not have succeeded yet, or may not be connected at all
-            //webSocketSendFail();
-            pushRemainCmdAndCallbackError();
-        });
+            return;
+        }
+        JLogger.e("WS-Send", mWebSocketClient == null ? "mWebSocketClient is null" : "mWebSocketClient is not open");
+        //The connection may not have succeeded yet, or may not be connected at all
+        //webSocketSendFail();
+        pushRemainCmdAndCallbackError();
     }
 
     private void webSocketSendFail() {
