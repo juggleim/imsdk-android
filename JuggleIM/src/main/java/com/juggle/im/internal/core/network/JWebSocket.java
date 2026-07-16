@@ -1107,6 +1107,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
 
     private void sendConnectMsg() {
         mPbData.resetDataConverter();
+        String ip = JUtility.getLocalIPv4Address();
         byte[] bytes = mPbData.connectData(mAppKey,
                 mToken,
                 mDeviceId,
@@ -1119,7 +1120,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 mPushToken,
                 mNetworkType,
                 mCarrier,
-                JUtility.getLocalIPv4Address() == null ? "" : JUtility.getLocalIPv4Address(),
+                ip == null ? "" : ip,
                 mLanguage);
         sendWhenOpen(bytes);
     }
