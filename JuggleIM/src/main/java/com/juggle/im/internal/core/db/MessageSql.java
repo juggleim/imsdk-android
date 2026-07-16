@@ -87,7 +87,7 @@ class MessageSql {
         }
         long seqNo = 0;
         long msgIndex = 0;
-        String clientUid = "";
+        String clientUid = null;
         int flags = 0;
         long lifeTime = 0;
         long readTime = 0;
@@ -96,7 +96,9 @@ class MessageSql {
             ConcreteMessage c = (ConcreteMessage) message;
             seqNo = c.getSeqNo();
             msgIndex = c.getMsgIndex();
-            clientUid = c.getClientUid();
+            if (!TextUtils.isEmpty(c.getClientUid())) {
+//                clientUid = c.getClientUid();
+            }
             flags = c.getFlags();
             lifeTime = c.getLifeTime();
             readTime = c.getReadTime();
@@ -199,7 +201,7 @@ class MessageSql {
 
     static final String TABLE = "message";
     static final String SQL_CREATE_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message ON message(message_uid)";
-    static final String SQL_CREATE_CLIENT_UID_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_message_client_uid ON message(client_uid)";
+    static final String SQL_CREATE_CLIENT_UID_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_client_uid ON message(client_uid)";
     static final String SQL_CREATE_DESTROY_TIME_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_destroy_time ON message(destroy_time)";
     static final String SQL_CREATE_TIMESTAMP_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_timestamp ON message(timestamp)";
     static final String SQL_CREATE_CONVERSATION_SUBCHANNEL_INDEX = "CREATE INDEX IF NOT EXISTS idx_message_conversation_subchannel ON message(conversation_type, conversation_id, subchannel)";
