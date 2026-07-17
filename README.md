@@ -7,11 +7,6 @@
   Built on a custom binary protocol over WebSocket. Powers chat, group, live chatroom, RTC signaling and moments out of the box.</p>
 
   <p>
-    <a href="https://github.com/Juggleim/im-android-sdk"><img src="https://img.shields.io/github/stars/Juggleim/im-android-sdk?style=social" alt="GitHub Stars"/></a>
-    <a href="https://github.com/Juggleim/im-android-sdk/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Juggleim/im-android-sdk?cacheSeconds=3600" alt="License"/></a>
-  </p>
-
-  <p>
     <a href="#-features">Features</a> ·
     <a href="#-quick-start">Quick Start</a> ·
     <a href="#-documentation">Docs</a> ·
