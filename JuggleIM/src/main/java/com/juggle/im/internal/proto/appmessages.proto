@@ -46,20 +46,20 @@ message RpcMessageWraper{
   UserInfo senderInfo = 51;
 }
 
-// Upstream message
+//Upstream message
 message UpMsg {
-  string msgType = 1;// Message type definition
+  string msgType = 1;//Message type definition
   bytes msgContent = 2;// Message entity data
-  int32 flags = 3;// Flags
-  string clientUid = 4;// Client-specified unique message ID
+  int32 flags = 3;// Flag
+  string clientUid = 4;//Client-specified unique message ID
   PushData pushData = 5;// Push settings
-  MentionInfo mentionInfo = 6;// Mention settings
-  DownMsg referMsg = 7;// Referenced message
-  repeated string toUserIds = 8;// Targeted group message; specifies some group members that should receive the message
+  MentionInfo mentionInfo = 6;//@ mention settings
+  DownMsg referMsg = 7;//Referenced message
+  repeated string toUserIds = 8;//Group targeted message, specifying some group members who receive the message
   MergedMsgs mergedMsgs = 9;
   string SearchText = 10;
-  int64 lifeTime = 11;   // Default message lifetime, in milliseconds. For example: 86400000 means the message is automatically deleted after 1 day.
-  int64 lifeTimeAfterRead = 12; // Message lifetime after it is read, usually less than lifeTime. For example: 60000 means the message is automatically deleted 1 minute after it is read.
+  int64 lifeTime = 11;   // Default message lifetime in milliseconds, for example 86400000 means the message is automatically deleted after 1 day
+  int64 lifeTimeAfterRead = 12; // Lifetime after the message is read, usually less than lifeTime. For example, 60000 means the message is automatically deleted 1 minute after being read
   string subChannel = 13;
   E2ESuite e2eSuite = 14;
   
@@ -92,6 +92,9 @@ message PushData{
   string pushId = 2;
   string pushText = 3;
   string pushExtraData = 4;
+  PushLevel pushLevel = 5;
+  bool isVoip = 6;
+  string jPushOptions = 7;
 
   //internal fields
   int32 badge = 50;
@@ -131,8 +134,8 @@ message DownMsg{
   repeated ConverTag converTags = 27;
   string SearchText = 29;
   GrpMemberInfo grpMemberInfo = 30;
-  int64 destroyTime = 31;  // Default message destruction timestamp, in milliseconds, e.g. 1752551449037. When 0, the message is not automatically destroyed.
-  int64 lifeTimeAfterRead = 32; // Message lifetime after it is read. For example: 60000 means the message is automatically deleted 1 minute after it is read.
+  int64 destroyTime = 31;  // Default message destruction timestamp in milliseconds, such as 1752551449037. A value of 0 means the message is not automatically destroyed
+  int64 lifeTimeAfterRead = 32; // Lifetime after the message is read, for example 60000 means the message is automatically deleted 1 minute after being read
   bool isDelete = 33;
   string subChannel = 34;
   repeated string toUserIds = 35;
@@ -206,9 +209,9 @@ enum NotifyType {
   ChatroomDestroy = 5;
 }
 message SyncMsgReq{
-  int64 syncTime = 1;// Inbox sync time
-  bool containsSendBox = 2;// Whether to include outbox messages
-  int64 sendBoxSyncTime = 3;// Outbox sync time
+  int64 syncTime = 1;//Inbox sync time
+  bool containsSendBox = 2;//Whether sent box messages are included
+  int64 sendBoxSyncTime = 3;//Sent box sync time
 }
 message DownMsgSet{
   repeated DownMsg msgs = 1;
@@ -1009,4 +1012,10 @@ message E2ECipher{
   string userId = 1;
   string deviceId = 2;
   bytes cipher = 3;
+}
+
+enum PushLevel{
+  DefaultPuhsLevel = 0;
+  IgnoreSpeedControl = 1;
+  IgnoreUndisturb = 2;
 }

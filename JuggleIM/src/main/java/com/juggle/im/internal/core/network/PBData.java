@@ -247,6 +247,9 @@ class PBData {
             if (message.getPushData().getExtra() != null) {
                 pbPushData.setPushExtraData(message.getPushData().getExtra());
             }
+            if (message.getPushData().getJgOptions() != null) {
+                pbPushData.setJPushOptions(message.getPushData().getJgOptions());
+            }
             upMsgBuilder.setPushData(pbPushData);
         }
         upMsgBuilder.setLifeTime(message.getLifeTime());

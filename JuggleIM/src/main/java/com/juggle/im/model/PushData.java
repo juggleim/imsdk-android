@@ -26,10 +26,20 @@ public class PushData {
         mTitle = title;
     }
 
+    public String getJgOptions() {
+        return mJgOptions;
+    }
+
+    public void setJgOptions(String jgOptions) {
+        mJgOptions = jgOptions;
+    }
+
     // Push title used for notification display.
     private String mTitle;
     // Push content used for notification display.
     private String mContent;
     // Extra field that can carry custom JSON.
     private String mExtra;
+    // Options for jiguang(Aurora), can carry JSON
+    private String mJgOptions;
 }
