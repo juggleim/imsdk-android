@@ -20,7 +20,7 @@ import okhttp3.RequestBody;
 
 
 /**
- * 功能描述: 创建群组ViewModel
+ * Feature: CreateGroupViewModel
  *
  */
 public class AddFriendListViewModel extends BaseViewModel {

@@ -47,7 +47,7 @@ class CallMediaLiveKitEngine(context: Context) : ICallMediaEngine {
                     is RoomEvent.TrackPublished -> onTrackPublished(event)
                     is RoomEvent.TrackSubscribed -> onTrackSubscribed(event)
                     is RoomEvent.ParticipantStateChanged -> onParticipantStateChanged(event)
-                        is RoomEvent.ParticipantConnected -> onParticipantConnected(event)
+                    is RoomEvent.ParticipantConnected -> onParticipantConnected(event)
                     is RoomEvent.ActiveSpeakersChanged -> onActiveSpeakerChanged(event)
                     else -> {}
                 }
@@ -145,11 +145,11 @@ class CallMediaLiveKitEngine(context: Context) : ICallMediaEngine {
     }
 
     override fun muteSpeaker(isMute: Boolean) {
-        //todo 上层实现
+        //todo implemented by the upper layer
     }
 
     override fun setSpeakerEnable(isEnable: Boolean) {
-        //todo 上层实现
+        //todo implemented by the upper layer
     }
 
     override fun useFrontCamera(isEnable: Boolean) {

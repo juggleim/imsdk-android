@@ -57,7 +57,7 @@ public final class BeepManager {
     /**
      * Call updatePrefs() after setting this.
      *
-     * <p>If the device is in silent mode, it will not beep. 如果手机静音状态不会响
+     * <p>If the device is in silent mode, it will not beep.
      *
      * @param beepEnabled true to enable beep
      */
@@ -72,17 +72,17 @@ public final class BeepManager {
     /**
      * Call updatePrefs() after setting this.
      *
-     * @param vibrateEnabled true to enable vibrate 震动
+     * @param vibrateEnabled true to enable vibration
      */
     public void setVibrateEnabled(boolean vibrateEnabled) {
         this.vibrateEnabled = vibrateEnabled;
     }
-    // 播放声音和震动
+    // Play sound and vibrate.
     public synchronized void playBeepSoundAndVibrate() {
-        if (QRCodeConstant.QR_VOICE_MODE) { // 是否播放声音
+        if (QRCodeConstant.QR_VOICE_MODE) { // Whether to play sound
             playBeepSound();
         }
-        if (QRCodeConstant.QR_VIBRATE_MODE) { // 是否震动
+        if (QRCodeConstant.QR_VIBRATE_MODE) { // Whether to vibrate
             Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(VIBRATE_DURATION);
         }
@@ -112,7 +112,7 @@ public final class BeepManager {
                 });
         try {
             AssetFileDescriptor file =
-                    context.getResources().openRawResourceFd(R.raw.zxing_beep); // 自定义二维码声音
+                    context.getResources().openRawResourceFd(R.raw.zxing_beep); // Custom QR code sound
             try {
                 mediaPlayer.setDataSource(
                         file.getFileDescriptor(), file.getStartOffset(), file.getLength());

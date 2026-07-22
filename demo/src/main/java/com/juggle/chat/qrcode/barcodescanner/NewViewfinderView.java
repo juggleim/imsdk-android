@@ -56,7 +56,7 @@ public class NewViewfinderView extends View {
     private final int triAngleLength = dp2px(20);
     private int lineOffsetCount = 0;
     protected Bitmap resultBitmap;
-    protected final int maskColor; // 蒙在摄像头上面区域的半透明颜色
+    protected final int maskColor; // color
     protected final int resultColor;
     protected final int laserColor;
     protected final int resultPointColor;
@@ -170,7 +170,7 @@ public class NewViewfinderView extends View {
         canvas.drawRect(frame.right + 1, frame.top, width, frame.bottom + 1, paint);
         canvas.drawRect(0, frame.bottom + 1, width, height, paint);
 
-        // 四个角落的三角
+        //
         Path leftTopPath = new Path();
         leftTopPath.moveTo(frame.left + triAngleLength, frame.top + triAngleWidth / 2);
         leftTopPath.lineTo(frame.left + triAngleWidth / 2, frame.top + triAngleWidth / 2);
@@ -221,7 +221,7 @@ public class NewViewfinderView extends View {
             canvas.drawRect(0, 0, width, height, paint);
         } else {
             if (allowScanAnimation) {
-                // 循环划线，从上到下
+                // ，
                 if (lineOffsetCount > frame.bottom - frame.top - dp2px(10)) {
                     lineOffsetCount = 0;
                 } else {

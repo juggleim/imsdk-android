@@ -85,7 +85,7 @@ public class GroupNotifyMessage extends MessageContent {
     public String description() {
         boolean isSender = TextUtils.isNotEmpty(mOperator.getUserId())
                 && mOperator.getUserId().equals(JIM.getInstance().getCurrentUserId());
-        String sender = isSender ? "你" : mOperator.getUserName();
+        String sender = isSender ? "You" : mOperator.getUserName();
         StringBuilder userList = new StringBuilder();
         for (UserInfo member : mMembers) {
             userList.append(member.getUserName()).append(", ");
@@ -98,7 +98,7 @@ public class GroupNotifyMessage extends MessageContent {
                 if (member.getUserId().equals(JIM.getInstance().getCurrentUserId())) {
                     isOwner = true;
                 }
-                newOwner = isOwner ? "你" : member.getUserName();
+                newOwner = isOwner ? "You" : member.getUserName();
             }
         }
 
@@ -109,15 +109,15 @@ public class GroupNotifyMessage extends MessageContent {
         String ul = userList.toString();
         switch (mType) {
             case ADD_MEMBER:
-                return sender + " 邀请 " + ul + " 加入群聊";
+                return sender + " invited " + ul + " to join the group";
             case REMOVE_MEMBER:
-                return sender + " 将 " + ul + " 移除群聊";
+                return sender + " removed " + ul + " from the group";
             case RENAME:
-                return sender + " 修改群名称为 " + mName;
+                return sender + " changed the group name to " + mName;
             case CHANGE_OWNER:
-                return newOwner + " 已成为新群主";
+                return newOwner + " is now the new group owner";
             case JOIN:
-                return sender + " 加入群聊";
+                return sender + " joined the group";
             default:
                 return "";
         }
@@ -219,5 +219,5 @@ public class GroupNotifyMessage extends MessageContent {
     private static final String TYPE = "type";
     private static final String OPERATOR = "operator";
     private static final String NAME = "name";
-    private static final String DIGEST = "[群通知]";
+    private static final String DIGEST = "[Group Notification]";
 }

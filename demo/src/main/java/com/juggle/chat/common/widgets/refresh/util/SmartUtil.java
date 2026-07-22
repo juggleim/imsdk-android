@@ -36,7 +36,7 @@ public class SmartUtil implements Interpolator {
         this.type = type;
     }
 
-    // <editor-fold desc="内容工具">
+    // <editor-fold desc="Content utilities">
     public static int measureViewHeight(View view) {
         ViewGroup.LayoutParams p = view.getLayoutParams();
         if (p == null) {
@@ -109,20 +109,20 @@ public class SmartUtil implements Interpolator {
     }
     // </editor-fold>
 
-    // <editor-fold desc="滚动判断">
+    // <editor-fold desc="Scroll detection">
 
     /**
-     * 判断内容是否可以刷新
+     * ContentRefresh
      *
-     * @param targetView 内容视图
-     * @param touch 按压事件位置
-     * @return 是否可以刷新
+     * @param targetView ContentView
+     * @param touch position
+     * @return Refresh
      */
     public static boolean canRefresh(@NonNull View targetView, PointF touch) {
         if (targetView.canScrollVertically(-1) && targetView.getVisibility() == View.VISIBLE) {
             return false;
         }
-        // touch == null 时 canRefresh 不会动态递归搜索
+        // touch == null  canRefresh Search
         if (targetView instanceof ViewGroup && touch != null) {
             ViewGroup viewGroup = (ViewGroup) targetView;
             final int childCount = viewGroup.getChildCount();
@@ -145,18 +145,18 @@ public class SmartUtil implements Interpolator {
     }
 
     /**
-     * 判断内容视图是否可以加载更多
+     * ContentViewLoad
      *
-     * @param targetView 内容视图
-     * @param touch 按压事件位置
-     * @param contentFull 内容是否填满页面 (未填满时，会通过canScrollUp自动判断)
-     * @return 是否可以刷新
+     * @param targetView ContentView
+     * @param touch position
+     * @param contentFull ContentPage (，canScrollUpauto)
+     * @return Refresh
      */
     public static boolean canLoadMore(@NonNull View targetView, PointF touch, boolean contentFull) {
         if (targetView.canScrollVertically(1) && targetView.getVisibility() == View.VISIBLE) {
             return false;
         }
-        // touch == null 时 canLoadMore 不会动态递归搜索
+        // touch == null  canLoadMore Search
         if (targetView instanceof ViewGroup
                 && touch != null
                 && !SmartUtil.isScrollableView(targetView)) {
@@ -207,24 +207,24 @@ public class SmartUtil implements Interpolator {
     }
     // </editor-fold>
 
-    // <editor-fold desc="像素密度">
+    // <editor-fold desc="Pixel density">
     private static float density = Resources.getSystem().getDisplayMetrics().density;
 
     /**
-     * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
+     *  dp   px()
      *
-     * @param dpValue 虚拟像素
-     * @return 像素
+     * @param dpValue
+     * @return
      */
     public static int dp2px(float dpValue) {
         return (int) (0.5f + dpValue * density);
     }
 
     /**
-     * 根据手机的分辨率从 px(像素) 的单位 转成为 dp
+     *  px()   dp
      *
-     * @param pxValue 像素
-     * @return 虚拟像素
+     * @param pxValue
+     * @return
      */
     public static float px2dp(int pxValue) {
         return (pxValue / density);

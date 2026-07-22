@@ -7,14 +7,14 @@ import com.juggle.chat.common.widgets.refresh.api.RefreshKernel;
 import com.juggle.chat.common.widgets.refresh.listener.CoordinatorLayoutListener;
 
 
-/** Design 兼容包缺省尝试 Created by scwang on 2018/1/29. */
+/** Design  Created by scwang on 2018/1/29. */
 public class DesignUtil {
     private static final String TAG = "DesignUtil";
 
     public static void checkCoordinatorLayout(
             View content, RefreshKernel kernel, final CoordinatorLayoutListener listener) {
-        try { // try 不能删除，不然会出现兼容性问题
-            // sdk 不做任何处理，不引用 CoordinatorLayout，则不支持;
+        try { // try Delete，
+            // sdk Handle， CoordinatorLayout，Not supported;
             //            if (content instanceof CoordinatorLayout) {
             //                kernel.getRefreshLayout().setEnableNestedScroll(false);
             //                ViewGroup layout = (ViewGroup) content;

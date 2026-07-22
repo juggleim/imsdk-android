@@ -89,7 +89,7 @@ public class JoinGroupActivity extends AppCompatActivity {
                     @Override
                     public void onError(Throwable t) {
                         super.onError(t);
-                        ToastUtils.show("加入失败");
+                        ToastUtils.show("Failed to join");
                     }
                 });
             }

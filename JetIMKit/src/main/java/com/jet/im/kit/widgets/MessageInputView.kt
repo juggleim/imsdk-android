@@ -508,9 +508,9 @@ class MessageInputView @JvmOverloads constructor(
                 val spannable = SpannableStringBuilder(text)
                 var start = selectionStart
 
-                // 找到前一个完整字符的起始位置
+                // position
                 if (start > 1) {
-                    // 处理 surrogate pair
+                    // Handle surrogate pair
                     val charBefore = text[start - 1]
                     if (Character.isLowSurrogate(charBefore)) {
                         val charBeforeBefore = text[start - 2]
@@ -524,7 +524,7 @@ class MessageInputView @JvmOverloads constructor(
                     }
                 }
 
-                // 处理普通字符（1 个 code unit）
+                // Handle（1  code unit）
                 spannable.delete(start - 1, selectionStart)
                 inputEditText.text = spannable
                 inputEditText.setSelection(start - 1)

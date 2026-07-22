@@ -61,14 +61,14 @@ public class ChatRoomListFragment extends Fragment {
         binding.rvList.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvList.setAdapter(adapter);
         ArrayList<ChatRoomBean> data = new ArrayList<>();
-        data.add(new ChatRoomBean("chatroom1001", "植物大战僵尸首秀","https://downloads.juggleim.com/website/static/chatroom/1.jpeg"));
-        data.add(new ChatRoomBean("chatroom1002", "敢不敢和我比比谁更甜","https://downloads.juggleim.com/website/static/chatroom/2.jpeg"));
-        data.add(new ChatRoomBean("chatroom1003", "今天和我一起拿下这个黑猴","https://downloads.juggleim.com/website/static/chatroom/3.jpeg"));
-        data.add(new ChatRoomBean("chatroom1004", "爱滑雪，2024 滑雪季备赛","https://downloads.juggleim.com/website/static/chatroom/4.jpeg"));
-        data.add(new ChatRoomBean("chatroom1005", "战斗吧豌豆君，看我一决高下","https://downloads.juggleim.com/website/static/chatroom/5.png"));
-        data.add(new ChatRoomBean("chatroom1006", "倔强青铜的逆袭之路","https://downloads.juggleim.com/website/static/chatroom/6.jpeg"));
-        data.add(new ChatRoomBean("chatroom1007", "一个教唱歌的教授","https://downloads.juggleim.com/website/static/chatroom/7.jpeg"));
-        data.add(new ChatRoomBean("chatroom1008", "咔咔咔卡个哇伊喽","https://downloads.juggleim.com/website/static/chatroom/8.jpeg"));
+        data.add(new ChatRoomBean("chatroom1001", "Plants vs. Zombies debut","https://downloads.juggleim.com/website/static/chatroom/1.jpeg"));
+        data.add(new ChatRoomBean("chatroom1002", "Want to compare who is sweeter?","https://downloads.juggleim.com/website/static/chatroom/2.jpeg"));
+        data.add(new ChatRoomBean("chatroom1003", "Join me to take down this black monkey","https://downloads.juggleim.com/website/static/chatroom/3.jpeg"));
+        data.add(new ChatRoomBean("chatroom1004", "Love skiing, training for the 2024 ski season","https://downloads.juggleim.com/website/static/chatroom/4.jpeg"));
+        data.add(new ChatRoomBean("chatroom1005", "Fight on, Pea Shooter, let me beat you","https://downloads.juggleim.com/website/static/chatroom/5.png"));
+        data.add(new ChatRoomBean("chatroom1006", "The comeback of a stubborn bronze player","https://downloads.juggleim.com/website/static/chatroom/6.jpeg"));
+        data.add(new ChatRoomBean("chatroom1007", "A professor who teaches singing","https://downloads.juggleim.com/website/static/chatroom/7.jpeg"));
+        data.add(new ChatRoomBean("chatroom1008", "Ka-ka-ka-ka-wa-yi-lu","https://downloads.juggleim.com/website/static/chatroom/8.jpeg"));
         adapter.setData(data);
         return binding.getRoot();
     }

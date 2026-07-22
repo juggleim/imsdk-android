@@ -322,7 +322,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
 //                mListener.onUsersConnect(userIdList);
 //            }
 //        } else if (updateType == ZegoUpdateType.DELETE) {
-//            // 暂不处理
+//            // Not handled yet
 //        }
         if (sHandler != null) {
             sHandler.onRoomUserUpdate(roomID, updateType, userList);

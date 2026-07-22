@@ -17,7 +17,7 @@
             android:name=".VIVOPushMessageReceiver"
             android:exported="false">
             <intent-filter>
-                <!--接收push消息-->
+                <!--pushMessage-->
                 <action android:name="com.vivo.pushclient.action.RECEIVE" />
             </intent-filter>
         </receiver>

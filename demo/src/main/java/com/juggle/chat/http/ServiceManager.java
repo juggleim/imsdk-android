@@ -67,7 +67,7 @@ public class ServiceManager {
     }
 
     /**
-     * 通过参数 Map 合集
+     * Merge parameter maps.
      *
      * @param paramsMap
      * @return

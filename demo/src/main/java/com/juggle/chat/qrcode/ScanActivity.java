@@ -45,7 +45,7 @@ import java.util.HashMap;
 
 import okhttp3.RequestBody;
 
-/** 扫一扫界面 */
+/** QR scanner screen. */
 public class ScanActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "ScanActivity";
     private static final String ACTION = "action";
@@ -150,7 +150,7 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
         return (DecoratedBarcodeView) findViewById(R.id.zxing_barcode_scanner);
     }
 
-    /** 切换摄像头照明 */
+    /** Toggle the camera light. */
     private void switchCameraLight() {
         if (isCameraLightOn) {
             barcodeScannerView.setTorchOff();
@@ -169,13 +169,13 @@ public class ScanActivity extends AppCompatActivity implements View.OnClickListe
 //        }
     }
 
-    /** 从相册中选中 */
+    /** Pick an image from the album. */
     public void scanFromAlbum() {
         photoUtils.selectPicture(this);
     }
 
     /**
-     * 处理二维码结果，并跳转到相应界面
+     * Handle the QR code result and navigate to the matching screen.
      *
      * @param qrCodeText
      */

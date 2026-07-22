@@ -5,13 +5,13 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.*;
 public class SSLHelper {
-    // 获取TrustManager
+    // GetTrustManager
     public static X509TrustManager getTrustManager(InputStream certInputStream) {
         try {
             CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
             X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(certInputStream);
 
-            // 创建TrustManager并返回
+            // CreateTrustManagerReturn
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(null, null);
             keyStore.setCertificateEntry("ca", certificate);
@@ -26,7 +26,7 @@ public class SSLHelper {
         }
     }
 
-    // 获取自签名证书的SSL Socket Factory
+    // GetSSL Socket Factory
     public static SSLSocketFactory getSSLSocketFactory(InputStream certInputStream) {
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -38,7 +38,7 @@ public class SSLHelper {
         }
     }
 
-    // 获取一个信任所有证书的SSL Socket Factory
+    // GetSSL Socket Factory
     public static SSLSocketFactory getTrustAllSSLSocketFactory() {
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -63,7 +63,7 @@ public class SSLHelper {
         }
     }
 
-    // 获取一个信任所有证书的TrustManager
+    // GetTrustManager
     public static X509TrustManager getTrustAllManager() {
         return new X509TrustManager() {
             @Override

@@ -29,13 +29,13 @@ import java.util.Vector;
 
 public class QRCodeUtils {
     /**
-     * 生成带 logo 的二维码
+     * Generate a QR code with a logo.
      *
-     * @param text 生成二维码的字符串
-     * @param w 生成二维码的宽
-     * @param h 生成二维码的高
-     * @param logo 生成二维码中间的 logo 如果生成不带 logo 的二维码参数传 null 即可
-     * @return 生成二维码的 Bitmap
+     * @param text the text to encode
+     * @param w the QR code width
+     * @param h the QR code height
+     * @param logo the center logo; pass null to omit it
+     * @return the generated QR code bitmap
      */
     public static Bitmap generateImage(String text, int w, int h, Bitmap logo) {
         if (TextUtils.isEmpty(text)) {
@@ -57,9 +57,9 @@ public class QRCodeUtils {
             }
             Hashtable<EncodeHintType, Object> hints = new Hashtable<EncodeHintType, Object>();
             hints.put(EncodeHintType.CHARACTER_SET, "utf-8");
-            // 容错级别
+            // Error correction level
             hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
-            // 设置空白边距的宽度
+            // Set the blank margin width.
             hints.put(EncodeHintType.MARGIN, 0);
             BitMatrix bitMatrix =
                     new QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, w, h, hints);
@@ -107,9 +107,9 @@ public class QRCodeUtils {
     }
 
     /**
-     * 识别图片
+     * Recognize an image.
      *
-     * @param path file:// 或 http:// 资源
+     * @param path a file:// or http:// resource
      */
     public static String analyzeImage(final String path) {
         if (TextUtils.isEmpty(path)) {
@@ -118,15 +118,15 @@ public class QRCodeUtils {
         if (path.startsWith("http://")) {
             return analyzeBitmap(getImage(path));
         } else {
-            /** 首先判断图片的大小,若图片过大,则执行图片的裁剪操作,防止OOM */
+            /** First check the image size; if it is too large, downsample it to avoid OOM. */
             Bitmap mBitmap;
             BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true; // 先获取原大小
+            options.inJustDecodeBounds = true; // Get original size first.
             BitmapFactory.decodeFile(path, options);
             int sampleSize = (int) (options.outHeight / (float) 400);
             if (sampleSize <= 0) sampleSize = 1;
             options.inSampleSize = sampleSize;
-            options.inJustDecodeBounds = false; // 获取新的大小
+            options.inJustDecodeBounds = false; // Get the resized dimensions.
             mBitmap = BitmapFactory.decodeFile(path, options);
             mBitmap = zoomImg(mBitmap, mBitmap.getWidth() * 3, mBitmap.getHeight() * 3);
             return analyzeBitmap(mBitmap);
@@ -134,9 +134,9 @@ public class QRCodeUtils {
     }
 
     /**
-     * 将网络 http:// 图片转换为 bitmap
+     * Convert a network http:// image to a bitmap.
      *
-     * @param path http:// 路径
+     * @param path the http:// URL
      * @return Bitmap
      */
     private static Bitmap getImage(String path) {
@@ -156,48 +156,48 @@ public class QRCodeUtils {
     }
 
     public static Bitmap zoomImg(Bitmap bm, int newWidth, int newHeight) {
-        // 获得图片的宽高
+        // Get the image dimensions.
         int width = bm.getWidth();
         int height = bm.getHeight();
-        // 计算缩放比例
+        // Compute the scale ratio.
         float scaleWidth = ((float) newWidth) / width;
         float scaleHeight = ((float) newHeight) / height;
-        // 取得想要缩放的matrix参数
+        // Create the scaling matrix.
         Matrix matrix = new Matrix();
         matrix.postScale(scaleWidth, scaleHeight);
-        // 得到新的图片
+        // Create the scaled image.
         Bitmap newbm = Bitmap.createBitmap(bm, 0, 0, width, height, matrix, true);
         return newbm;
     }
 
     /**
-     * 解析二维码位图
+     * Decode a QR code bitmap.
      *
-     * @param bitmap
-     * @return 结果字符串
+     * @param bitmap the bitmap to decode
+     * @return the decoded text
      */
     public static String analyzeBitmap(Bitmap bitmap) {
         MultiFormatReader multiFormatReader = new MultiFormatReader();
 
-        // 解码的参数
+        // Decode parameters.
         Hashtable<DecodeHintType, Object> hints = new Hashtable<DecodeHintType, Object>(2);
-        // 可以解析的编码类型
+        // Supported barcode formats.
         Vector<BarcodeFormat> decodeFormats = new Vector<BarcodeFormat>();
         if (decodeFormats.isEmpty()) {
             decodeFormats = new Vector<BarcodeFormat>();
 
-            // 这里设置可扫描的类型，这里选择了都支持
+            // Use all supported scan formats here.
             decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
             decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
             decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
         }
         hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
-        // 设置继续的字符编码格式为UTF8
+        // Use UTF-8 as the character encoding.
         hints.put(DecodeHintType.CHARACTER_SET, "utf-8");
-        //         设置解析配置参数
+        // Configure decode parameters.
         multiFormatReader.setHints(hints);
 
-        // 开始对图像资源解码
+        // Start decoding the image resource.
         Result rawResult = null;
         String result = null;
         try {

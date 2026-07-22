@@ -1,6 +1,6 @@
 package com.juggle.chat.common.widgets.refresh.constant;
 
-/** 刷新状态 */
+/** Refreshstate */
 @SuppressWarnings("unused")
 public enum RefreshState {
     None(0, false, false, false, false, false),
@@ -23,14 +23,14 @@ public enum RefreshState {
 
     public final boolean isHeader;
     public final boolean isFooter;
-    public final boolean isTwoLevel; // 二级刷新 ReleaseToTwoLevel TwoLevelReleased TwoLevel
+    public final boolean isTwoLevel; // Refresh ReleaseToTwoLevel TwoLevelReleased TwoLevel
     public final boolean
-            isDragging; // 正在拖动状态：PullDownToRefresh PullUpToLoad ReleaseToRefresh ReleaseToLoad
+            isDragging; // dragstate：PullDownToRefresh PullUpToLoad ReleaseToRefresh ReleaseToLoad
     // ReleaseToTwoLevel
-    public final boolean isOpening; // 正在刷新状态：Refreshing Loading TwoLevel
-    public final boolean isFinishing; // 正在完成状态：RefreshFinish LoadFinish TwoLevelFinish
+    public final boolean isOpening; // Refreshstate：Refreshing Loading TwoLevel
+    public final boolean isFinishing; // completestate：RefreshFinish LoadFinish TwoLevelFinish
     public final boolean
-            isReleaseToOpening; // 释放立马打开 ReleaseToRefresh ReleaseToLoad ReleaseToTwoLevel
+            isReleaseToOpening; // release ReleaseToRefresh ReleaseToLoad ReleaseToTwoLevel
 
     RefreshState(
             int role,

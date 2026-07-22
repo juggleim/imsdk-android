@@ -64,8 +64,8 @@
             android:textColor="#66FFFFFF"
             android:textSize="14sp" />
 
-        <!--记录rc_voip_call_remind_info
-        单人视频.被叫  单人语音.主叫\被叫
+        <!--rc_voip_call_remind_info
+        video.  Voice.\
         -->
         <TextView
             android:id="@+id/rc_voip_call_remind_info"
@@ -76,6 +76,6 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="56.5dp"
             android:text="@string/rc_voip_call_waiting" />
-        <!--单人视频——被叫-->
+        <!--video——-->
     </RelativeLayout>
 </RelativeLayout>

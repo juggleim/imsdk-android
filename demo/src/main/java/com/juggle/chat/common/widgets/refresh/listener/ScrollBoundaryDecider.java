@@ -2,20 +2,20 @@ package com.juggle.chat.common.widgets.refresh.listener;
 
 import android.view.View;
 
-/** 滚动边界 Created by scwang on 2017/7/8. */
+/** Scroll Created by scwang on 2017/7/8. */
 public interface ScrollBoundaryDecider {
     /**
-     * 根据内容视图状态判断是否可以开始下拉刷新
+     * ContentViewstatestartpull-downRefresh
      *
-     * @param content 内容视图
-     * @return true 将会触发下拉刷新
+     * @param content ContentView
+     * @return true triggerpull-downRefresh
      */
     boolean canRefresh(View content);
     /**
-     * 根据内容视图状态判断是否可以开始上拉加载
+     * ContentViewstatestartpull-upLoad
      *
-     * @param content 内容视图
-     * @return true 将会触发加载更多
+     * @param content ContentView
+     * @return true triggerLoad
      */
     boolean canLoadMore(View content);
 }

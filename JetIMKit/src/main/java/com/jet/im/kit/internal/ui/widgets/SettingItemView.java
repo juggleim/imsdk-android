@@ -211,7 +211,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置右侧图片的隐藏
+     * SetImageHide
      *
      * @param visibility
      */
@@ -220,7 +220,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置标示图片显示隐藏
+     * SetImageShowHide
      *
      * @param visibility
      */
@@ -229,7 +229,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置标示图片
+     * SetImage
      *
      * @param resId
      */
@@ -238,7 +238,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置switch 按钮显示隐藏
+     * Setswitch ShowHide
      *
      * @param visibility
      */
@@ -247,7 +247,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置 switch 按钮选择监听
+     * Set switch SelectListener
      *
      * @param listener
      */
@@ -261,7 +261,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置 value 值 显示隐藏
+     * Set value  ShowHide
      *
      * @param visibility
      */
@@ -270,7 +270,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置 value 值
+     * Set value
      *
      * @param resId
      */
@@ -280,7 +280,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置 value 值
+     * Set value
      *
      * @param value
      */
@@ -289,13 +289,13 @@ public class SettingItemView extends LinearLayout {
         tvValue.setVisibility(VISIBLE);
     }
 
-    /** 设置 value 颜色 */
+    /** Set value color */
     public TextView getValueView() {
         return tvValue;
     }
 
     /**
-     * 获取value
+     * Getvalue
      *
      * @return
      */
@@ -307,7 +307,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置内容
+     * SetContent
      *
      * @param resId
      */
@@ -316,7 +316,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置内容
+     * SetContent
      *
      * @param content
      */
@@ -325,7 +325,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置左侧图片显示隐藏
+     * SetImageShowHide
      *
      * @param visibility
      */
@@ -334,7 +334,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置左侧图片
+     * SetImage
      *
      * @param resId
      */
@@ -343,7 +343,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置 switch 按钮选择状态
+     * Set switch Selectstate
      *
      * @param isChecked
      */
@@ -352,7 +352,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 设置 switch 按钮选择状态,不触发选中事件
+     * Set switch Selectstate,trigger
      *
      * @param isChecked
      */
@@ -363,7 +363,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 立即设置 switch 按钮选择状态，没有动画
+     * Set switch Selectstate，animation
      *
      * @param isChecked
      */
@@ -372,7 +372,7 @@ public class SettingItemView extends LinearLayout {
     }
 
     /**
-     * 立即设置 switch 按钮选择状态，没有动画,不触发选中事件
+     * Set switch Selectstate，animation,trigger
      *
      * @param isChecked
      */
@@ -386,7 +386,7 @@ public class SettingItemView extends LinearLayout {
         sbSwitch.setClickable(isClickable);
     }
 
-    /** 获取当前 switch 状态 */
+    /** Get switch state */
     public boolean isChecked() {
         return sbSwitch.isChecked();
     }

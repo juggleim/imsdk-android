@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@color/rc_voip_background_color">
 
-    <!--多人语音通话中顶部布局-->
+    <!--VoicecallTopLayout-->
     <FrameLayout
         android:visibility="gone"
         android:id="@+id/rc_voip_title"
@@ -54,7 +54,7 @@
 
         </LinearLayout>
     </FrameLayout>
-    <!--多人语音主叫方顶部布局-->
+    <!--VoiceTopLayout-->
     <RelativeLayout
         android:id="@+id/reltive_voip_outgoing_audio_title"
         android:layout_width="match_parent"

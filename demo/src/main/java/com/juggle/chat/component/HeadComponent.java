@@ -18,7 +18,7 @@ import com.juggle.chat.R;
 
 
 /**
- * 功能描述:
+ * Description:
  *
  * @author haogaohui
  * @since 5.10.4
@@ -115,7 +115,7 @@ public class HeadComponent extends BaseComponent {
             }
         }
 
-        // 设置点击事件
+        // Set click listeners
         leftTextView.setOnClickListener(
                 v -> {
                     if (onLeftClickListener != null) {
@@ -145,27 +145,27 @@ public class HeadComponent extends BaseComponent {
     }
 
     /**
-     * 设置标题
+     * Set the title.
      *
-     * @param title 标题
+     * @param title the title
      */
     public void setTitleText(String title) {
         titleTextView.setText(title);
     }
 
     /**
-     * 设置左边文字
+     * Set the left text.
      *
-     * @param text 文字
+     * @param text the text
      */
     public void setLeftText(String text) {
         leftTextView.setText(text);
     }
 
     /**
-     * 设置右边文字
+     * Set the right text.
      *
-     * @param text 文字
+     * @param text the text
      */
     public void setRightText(String text) {
         rightTextView.setText(text);
@@ -173,9 +173,9 @@ public class HeadComponent extends BaseComponent {
     }
 
     /**
-     * 设置左边文字图标
+     * Set the left text drawable.
      *
-     * @param resId 图标资源id
+     * @param resId the drawable resource id
      */
     public void setLeftTextDrawable(int resId) {
         Drawable drawable = getResources().getDrawable(resId);
@@ -185,9 +185,9 @@ public class HeadComponent extends BaseComponent {
     }
 
     /**
-     * 设置标题文字图标
+     * Set the title drawable.
      *
-     * @param resId 图标资源id
+     * @param resId the drawable resource id
      */
     public void setTitleTextDrawable(int resId) {
         Drawable drawable = getResources().getDrawable(resId);
@@ -197,9 +197,9 @@ public class HeadComponent extends BaseComponent {
     }
 
     /**
-     * 设置右边文字图标
+     * Set the right text drawable.
      *
-     * @param resId 图标资源id
+     * @param resId the drawable resource id
      */
     public void setRightTextDrawable(int resId) {
         Drawable drawable = getResources().getDrawable(resId);
@@ -209,9 +209,9 @@ public class HeadComponent extends BaseComponent {
     }
 
     /**
-     * 设置右边文字是否可用
+     * Enable or disable the right text view.
      *
-     * @param enable 是否可用
+     * @param enable whether it is enabled
      */
     public void setRightTextViewEnable(boolean enable) {
         if (rightTextView != null) {
@@ -230,9 +230,9 @@ public class HeadComponent extends BaseComponent {
     }
 
     /**
-     * 添加右边视图
+     * Add a view to the right side.
      *
-     * @param view 视图
+     * @param view the view
      */
     public void addRightView(View view) {
         if (rightContainer != null) {
@@ -241,54 +241,54 @@ public class HeadComponent extends BaseComponent {
     }
 
     /**
-     * 获取左边文字
+     * GetLeft
      *
-     * @return 左边文字
+     * @return Left
      */
     public TextView getLeftTextView() {
         return leftTextView;
     }
 
     /**
-     * 获取标题
+     * GetTitle
      *
-     * @return 标题
+     * @return Title
      */
     public TextView getTitleTextView() {
         return titleTextView;
     }
 
     /**
-     * 获取右边文字
+     * GetRight
      *
-     * @return 右边文字
+     * @return Right
      */
     public TextView getRightTextView() {
         return rightTextView;
     }
 
     /**
-     * 设置左边点击事件
+     * SetLeft
      *
-     * @param listener 点击事件
+     * @param listener
      */
     public void setLeftClickListener(View.OnClickListener listener) {
         this.onLeftClickListener = listener;
     }
 
     /**
-     * 设置标题点击事件
+     * SetTitle
      *
-     * @param listener 点击事件
+     * @param listener
      */
     public void setTitleClickListener(View.OnClickListener listener) {
         this.onTitleClickListener = listener;
     }
 
     /**
-     * 设置右边点击事件
+     * SetRight
      *
-     * @param listener 点击事件
+     * @param listener
      */
     public void setRightClickListener(View.OnClickListener listener) {
         this.onRightClickListener = listener;

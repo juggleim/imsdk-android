@@ -43,7 +43,7 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
     private boolean isSendLost = false;
     private int EVENT_FULL_SCREEN = 1;
     private String targetId = null;
-    /// 是否切换了自己和对方的视频 view（默认对方为 LView，自己为 SView）
+    /// video view（Default LView， SView）
     private boolean mSwitchMainSubVideo;
     private boolean mUseFrontCamera = true;
     private boolean mEnableCamera = true;
@@ -146,7 +146,7 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
         } else {
             mConnectionStateTextView.setVisibility(View.VISIBLE);
             mConnectionStateTextView.setText(R.string.rc_voip_connecting);
-            // 二人视频通话接通后 mUserInfoContainer 中更换为无头像的布局
+            // videocall mUserInfoContainer AvatarLayout
             mUserInfoContainer.removeAllViews();
             inflater.inflate(R.layout.rc_voip_video_call_user_info, mUserInfoContainer);
 
@@ -250,7 +250,7 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
 
     public void onHandFreeButtonClick(View view) {
         mCallSession.setSpeakerEnable(!view.isSelected());
-//        RongCallClient.getInstance().setEnableSpeakerphone(!view.isSelected());//true:打开免提 false:关闭免提
+//        RongCallClient.getInstance().setEnableSpeakerphone(!view.isSelected());//true: false:
         view.setSelected(!view.isSelected());
 //        handFree = view.isSelected();
     }
@@ -361,7 +361,7 @@ public class SingleCallActivity extends BaseCallActivity implements ICallSession
             mSPreviewContainer.setVisibility(View.VISIBLE);
             mCallSession.setVideoView(JIM.getInstance().getCurrentUserId(), mSPreviewContainer);
 
-            /** 小窗口点击事件 **/
+            /**  **/
             mSPreviewContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

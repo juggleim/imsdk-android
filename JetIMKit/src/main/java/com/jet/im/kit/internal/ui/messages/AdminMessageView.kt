@@ -73,9 +73,9 @@ internal class AdminMessageView @JvmOverloads internal constructor(
                     userName = user.userName
                 }
             }
-            tip = "$userName 撤回了一条消息"
+            tip = "$userName recalled a message"
         } else {
-            tip = "你 撤回了一条消息"
+            tip = "You recalled a message"
         }
         return tip
     }
@@ -84,7 +84,7 @@ internal class AdminMessageView @JvmOverloads internal constructor(
         var tip = ""
         val content = message.content
         if (content is FriendNotifyMessage) {
-            val opName = if (content.type == 0) "添加" else "通过"
+            val opName = if (content.type == 0) "added" else "accepted"
             val userId = message.conversation.conversationId
             var userName = userId
             val user = JIM.getInstance().userInfoManager.getUserInfo(userId)
@@ -92,9 +92,9 @@ internal class AdminMessageView @JvmOverloads internal constructor(
                 userName = user.userName
             }
             if (message.direction == Message.MessageDirection.SEND) {
-                tip = "你" + opName + userName + "为好友"
+                tip = "You " + opName + " " + userName + " as a friend"
             } else {
-                tip = userName + opName + "你为好友"
+                tip = userName + " " + opName + " you as a friend"
             }
         }
         return tip

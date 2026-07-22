@@ -675,7 +675,7 @@ public class SendbirdUIKit {
      * @param handler Callback handler.
      */
     public static void updateUserInfo(@NonNull UserUpdateParams params, @Nullable CompletionHandler handler) {
-        //todo 更新用户信息
+        //todo updateUser
         //JIM.getInstance().
     }
 

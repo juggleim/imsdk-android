@@ -56,7 +56,7 @@ public class SearchComponent extends BaseComponent {
         searchEditText = view.findViewById(R.id.et_search);
         clearButton = view.findViewById(R.id.iv_clear);
 
-        // 读取自定义属性
+        // Read custom attributes
         if (attrs != null) {
             TypedArray a =
                     context.getTheme()
@@ -133,16 +133,16 @@ public class SearchComponent extends BaseComponent {
     }
 
     /**
-     * 设置搜索框点击事件监听器
+     * Set the search box click listener.
      */
     public void setSearchClickListener(@NonNull OnClickListener onSearchClickListener) {
         this.onSearchClickListener = onSearchClickListener;
     }
 
     /**
-     * 设置搜索监听器
+     * Set the search listener.
      *
-     * @param listener 搜索监听器
+     * @param listener the search listener
      */
     public void setSearchQueryListener(OnSearchQueryListener listener) {
         this.onSearchQueryListener = listener;
@@ -150,9 +150,9 @@ public class SearchComponent extends BaseComponent {
 
     public interface OnSearchQueryListener {
         /**
-         * 搜索回调
+         * Search callback.
          *
-         * @param query 搜索关键字
+         * @param query the search keyword
          */
         void onSearch(String query);
 
@@ -161,9 +161,9 @@ public class SearchComponent extends BaseComponent {
     }
 
     /**
-     * 根据是否输入文本或焦点来更新搜索布局的位置
+     * Update the search layout position based on text input or focus state.
      *
-     * @param alignLeft 如果为 true，布局左对齐；否则居中
+     * @param alignLeft true to align left, false to center
      */
     private void updateSearchLayoutPosition(boolean alignLeft) {
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) searchLayout.getLayoutParams();
@@ -172,9 +172,9 @@ public class SearchComponent extends BaseComponent {
     }
 
     /**
-     * 强制显示键盘
+     * Force the keyboard to show.
      *
-     * @param editText 获取焦点的 EditText
+     * @param editText the EditText that should receive focus
      */
     private void showKeyboard(EditText editText) {
         if (editText == null) {

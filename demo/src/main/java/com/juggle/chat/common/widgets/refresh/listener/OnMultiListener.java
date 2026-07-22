@@ -3,18 +3,18 @@ package com.juggle.chat.common.widgets.refresh.listener;
 import com.juggle.chat.common.widgets.refresh.api.RefreshFooter;
 import com.juggle.chat.common.widgets.refresh.api.RefreshHeader;
 
-/** 多功能监听器 Created by scwang on 2017/5/26. */
+/** FeatureListener Created by scwang on 2017/5/26. */
 public interface OnMultiListener extends OnRefreshLoadMoreListener, OnStateChangedListener {
     /**
-     * 手指拖动下拉（会连续多次调用，添加isDragging并取代之前的onPulling、onReleasing）
+     * fingerdragpull-down（，isDraggingonPulling、onReleasing）
      *
-     * @param header 头部
-     * @param isDragging true 手指正在拖动 false 回弹动画
-     * @param percent 下拉的百分比 值 = offset/footerHeight (0 - percent - (footerHeight+maxDragHeight) /
+     * @param header
+     * @param isDragging true fingerdrag false reboundanimation
+     * @param percent pull-down  = offset/footerHeight (0 - percent - (footerHeight+maxDragHeight) /
      *     footerHeight )
-     * @param offset 下拉的像素偏移量 0 - offset - (footerHeight+maxDragHeight)
-     * @param headerHeight 高度 HeaderHeight or FooterHeight
-     * @param maxDragHeight 最大拖动高度
+     * @param offset pull-down 0 - offset - (footerHeight+maxDragHeight)
+     * @param headerHeight height HeaderHeight or FooterHeight
+     * @param maxDragHeight dragheight
      */
     void onHeaderMoving(
             RefreshHeader header,
@@ -31,15 +31,15 @@ public interface OnMultiListener extends OnRefreshLoadMoreListener, OnStateChang
     void onHeaderFinish(RefreshHeader header, boolean success);
 
     /**
-     * 手指拖动上拉（会连续多次调用，添加isDragging并取代之前的onPulling、onReleasing）
+     * fingerdragpull-up（，isDraggingonPulling、onReleasing）
      *
-     * @param footer 尾部
-     * @param isDragging true 手指正在拖动 false 回弹动画
-     * @param percent 下拉的百分比 值 = offset/footerHeight (0 - percent - (footerHeight+maxDragHeight) /
+     * @param footer
+     * @param isDragging true fingerdrag false reboundanimation
+     * @param percent pull-down  = offset/footerHeight (0 - percent - (footerHeight+maxDragHeight) /
      *     footerHeight )
-     * @param offset 下拉的像素偏移量 0 - offset - (footerHeight+maxDragHeight)
-     * @param footerHeight 高度 HeaderHeight or FooterHeight
-     * @param maxDragHeight 最大拖动高度
+     * @param offset pull-down 0 - offset - (footerHeight+maxDragHeight)
+     * @param footerHeight height HeaderHeight or FooterHeight
+     * @param maxDragHeight dragheight
      */
     void onFooterMoving(
             RefreshFooter footer,

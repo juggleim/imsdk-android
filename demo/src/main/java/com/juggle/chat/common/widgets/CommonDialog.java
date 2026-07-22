@@ -22,7 +22,7 @@ import androidx.fragment.app.DialogFragment;
 import com.juggle.chat.R;
 
 
-/** 通用对话框 */
+/**  */
 public class CommonDialog extends DialogFragment {
 
     private static class ControllerParams {
@@ -49,11 +49,11 @@ public class CommonDialog extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        // 透明化背景
+        //
         Dialog dialog = getDialog();
         if (dialog != null) {
             Window window = dialog.getWindow();
-            // 背景色
+            //
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
             int dialogWidth = getDialogWidth();
@@ -156,9 +156,9 @@ public class CommonDialog extends DialogFragment {
         super.onResume();
         Window window = getDialog().getWindow();
         if (window != null) {
-            // 去除系统自带的margin
+            // margin
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            // 设置dialog在界面中的属性
+            // Setdialogattribute
             window.setLayout(
                     WindowManager.LayoutParams.MATCH_PARENT,
                     WindowManager.LayoutParams.WRAP_CONTENT);
@@ -166,7 +166,7 @@ public class CommonDialog extends DialogFragment {
     }
 
     /**
-     * 此方法只提供给布局改变， 但是控件id 不变的自定义 dialog 使用
+     * methodLayout， id Custom dialog
      *
      * @return
      */
@@ -175,7 +175,7 @@ public class CommonDialog extends DialogFragment {
     }
 
     /**
-     * 通过复写此方法， 在子类中，可重新创建设置 新的内容布局
+     * method， ，rebuildCreateSet ContentLayout
      *
      * @return
      */
@@ -184,7 +184,7 @@ public class CommonDialog extends DialogFragment {
     }
 
     /**
-     * 复写此方法， 并可在此方法中设置，回调监听确定按钮所需的数据
+     * method， methodSet，CallbackListenerConfirm
      *
      * @return
      */
@@ -193,7 +193,7 @@ public class CommonDialog extends DialogFragment {
     }
 
     /**
-     * 复写此方法， 并可在此方法中设置，回调监听取消按钮所需的数据
+     * method， methodSet，CallbackListenerCancel
      *
      * @return
      */
@@ -202,16 +202,16 @@ public class CommonDialog extends DialogFragment {
     }
 
     /**
-     * 集成的子类假如想在内部处理 Positive 点击监听， 可复写此方法。 返回 true 则可拦截，不会走外部设置的点击监听
+     * internalHandle Positive Listener， method。 Return true ，externalSetListener
      *
-     * @return true 拦截监听， false 不拦截
+     * @return true Listener， false
      */
     protected boolean onPositiveClick() {
         return false;
     }
 
     /**
-     * 集成的子类假如想在内部处理 Negative 点击监听， 可复写此方法。 返回 true 则可拦截，不会走外部设置的点击监听
+     * internalHandle Negative Listener， method。 Return true ，externalSetListener
      *
      * @return
      */
@@ -220,7 +220,7 @@ public class CommonDialog extends DialogFragment {
     }
 
     /**
-     * 获取对话框宽度,重写此方法来设置对话框的宽度 默认接近占满整个屏幕
+     * Getwidth,methodSetwidth Default
      *
      * @return
      */
@@ -245,7 +245,7 @@ public class CommonDialog extends DialogFragment {
         void onNegativeClick(View v, Bundle bundle);
     }
 
-    /** 集成 CommonDialog 的子类， 需要继承此类， 并要复写 getCurrentDialog 方法，返回子类的dialog 对象 */
+    /**  CommonDialog ， ，  getCurrentDialog method，Returndialog  */
     public static class Builder {
         private ControllerParams params;
 

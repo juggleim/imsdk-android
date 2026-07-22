@@ -22,7 +22,7 @@ public class MultiVideoCallActivity extends BaseCallActivity implements ICallSes
 //    private static final String REMOTE_FURFACEVIEW_TAG = "surfaceview";//
 //    private static final String REMOTE_VIEW_TAG = "remoteview";//rc_voip_viewlet_remote_user tag
 //    private static final String VOIP_USERNAME_TAG = "username";//topContainer.findViewById(R.id.rc_voip_user_name);
-//    private static final String VOIP_PARTICIPANT_PORTAIT_CONTAINER_TAG = "participantPortraitView";//被叫方显示头像容器tag
+//    private static final String VOIP_PARTICIPANT_PORTAIT_CONTAINER_TAG = "participantPortraitView";//ShowAvatartag
 //    SurfaceView localView;
 //    ContainerLayout localViewContainer;
 //    LinearLayout remoteViewContainer;
@@ -33,7 +33,7 @@ public class MultiVideoCallActivity extends BaseCallActivity implements ICallSes
 //    LinearLayout participantPortraitContainer;
 //    LinearLayout portraitContainer1;
 //    LayoutInflater inflater;
-//    //通话中的最小化按钮、呼叫中的最小化按钮
+//    //call、
 //    ImageView minimizeButton, rc_voip_multiVideoCall_minimize;
 //    ImageView moreButton;
 //    ImageView switchCameraButton;
@@ -44,7 +44,7 @@ public class MultiVideoCallActivity extends BaseCallActivity implements ICallSes
 //    private RelativeLayout mRelativeWebView;
 //    private int remoteUserViewWidth;
 //    //    private int  remoteUserViewHeight;
-//    //主叫、通话中 远端View
+//    //、call View
 //    private float remoteUserViewMarginsRight = 10;
 //    private float remoteUserViewMarginsLeft = 20;
 //
@@ -90,7 +90,7 @@ public class MultiVideoCallActivity extends BaseCallActivity implements ICallSes
 //        switchCameraButton = (ImageView) findViewById(R.id.rc_voip_switch_camera);
 //        progressDialog = new ProgressDialog(this);
 //        progressDialog.setCancelable(false);
-//        progressDialog.setMessage("白板加载中...");
+//        progressDialog.setMessage("Loading whiteboard...");
 //        mRelativeWebView = (RelativeLayout) findViewById(R.id.rc_whiteboard);
 //        whiteboardView = new WebView(getApplicationContext());
 //        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

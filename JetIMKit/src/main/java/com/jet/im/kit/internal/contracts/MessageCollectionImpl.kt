@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 internal class MessageCollectionImpl(private val collection: ConversationInfo) : MessageCollectionContract {
-    // 创建一个单一线程的线程池
+    // Createthreadthread
     private val singleThreadExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var mainHandler=Handler(Looper.getMainLooper());
     override fun initialize(handler: MessageHandler?) {

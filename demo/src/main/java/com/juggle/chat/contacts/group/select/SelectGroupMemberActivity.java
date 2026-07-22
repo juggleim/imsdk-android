@@ -15,7 +15,7 @@ import com.juggle.chat.R;
 
 
 /**
- * 创建群组页面
+ * CreateGroupPage
  *
  */
 public class SelectGroupMemberActivity extends BaseActivity {

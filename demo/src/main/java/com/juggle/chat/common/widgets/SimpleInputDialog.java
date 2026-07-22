@@ -32,7 +32,7 @@ public class SimpleInputDialog extends DialogFragment implements View.OnClickLis
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 透明化背景
+        // Transparent background
         //        if (getDialog() != null && getDialog().getWindow() != null) {
         //            Window window = getDialog().getWindow();
         //            WindowManager.LayoutParams attributes = window.getAttributes();
@@ -41,7 +41,7 @@ public class SimpleInputDialog extends DialogFragment implements View.OnClickLis
         //            window.setAttributes(attributes);
         //            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         //        }
-        // 背景色
+        // Background color
 
     }
 
@@ -121,9 +121,9 @@ public class SimpleInputDialog extends DialogFragment implements View.OnClickLis
 
     public interface InputDialogListener {
         /**
-         * 当点击确认时回调输入内容
+         * Callback the input content when confirm is clicked.
          *
-         * @return 返回 false 时，不关闭对话框，返回 true时关闭对话框
+         * @return false to keep the dialog open, true to close it.
          */
         boolean onConfirmClicked(EditText input);
     }

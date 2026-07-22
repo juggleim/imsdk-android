@@ -1,27 +1,27 @@
 package com.juggle.chat.common.widgets.refresh.constant;
 
-/** 尺寸值的定义状态，用于在值覆盖的时候决定优先级 越往下优先级越高 */
+/** state，  */
 @SuppressWarnings("WeakerAccess")
 public class DimensionStatus {
 
     public static final DimensionStatus DefaultUnNotify =
-            new DimensionStatus(0, false); // 默认值，但是还没通知确认
-    public static final DimensionStatus Default = new DimensionStatus(1, true); // 默认值
+            new DimensionStatus(0, false); // Default，Notification
+    public static final DimensionStatus Default = new DimensionStatus(1, true); // Default
     public static final DimensionStatus XmlWrapUnNotify =
-            new DimensionStatus(2, false); // Xml计算，但是还没通知确认
-    public static final DimensionStatus XmlWrap = new DimensionStatus(3, true); // Xml计算
+            new DimensionStatus(2, false); // Xml，Notification
+    public static final DimensionStatus XmlWrap = new DimensionStatus(3, true); // Xml
     public static final DimensionStatus XmlExactUnNotify =
-            new DimensionStatus(4, false); // Xml 的view 指定，但是还没通知确认
-    public static final DimensionStatus XmlExact = new DimensionStatus(5, true); // Xml 的view 指定
+            new DimensionStatus(4, false); // Xml view ，Notification
+    public static final DimensionStatus XmlExact = new DimensionStatus(5, true); // Xml view
     public static final DimensionStatus XmlLayoutUnNotify =
-            new DimensionStatus(6, false); // Xml 的layout 中指定，但是还没通知确认
-    public static final DimensionStatus XmlLayout = new DimensionStatus(7, true); // Xml 的layout 中指定
+            new DimensionStatus(6, false); // Xml layout ，Notification
+    public static final DimensionStatus XmlLayout = new DimensionStatus(7, true); // Xml layout
     public static final DimensionStatus CodeExactUnNotify =
-            new DimensionStatus(8, false); // 代码指定，但是还没通知确认
-    public static final DimensionStatus CodeExact = new DimensionStatus(9, true); // 代码指定
+            new DimensionStatus(8, false); // ，Notification
+    public static final DimensionStatus CodeExact = new DimensionStatus(9, true); //
     public static final DimensionStatus DeadLockUnNotify =
-            new DimensionStatus(10, false); // 锁死，但是还没通知确认
-    public static final DimensionStatus DeadLock = new DimensionStatus(10, true); // 锁死
+            new DimensionStatus(10, false); // ，Notification
+    public static final DimensionStatus DeadLock = new DimensionStatus(10, true); //
 
     public final int ordinal;
     public final boolean notified;
@@ -48,9 +48,9 @@ public class DimensionStatus {
     }
 
     /**
-     * 转换为未通知状态
+     * Notificationstate
      *
-     * @return 未通知状态
+     * @return Notificationstate
      */
     public DimensionStatus unNotify() {
         if (notified) {
@@ -64,9 +64,9 @@ public class DimensionStatus {
     }
 
     /**
-     * 转换为通知状态
+     * Notificationstate
      *
-     * @return 通知状态
+     * @return Notificationstate
      */
     public DimensionStatus notified() {
         if (!notified) {
@@ -76,10 +76,10 @@ public class DimensionStatus {
     }
 
     /**
-     * 是否可以被新的状态替换
+     * state
      *
-     * @param status 新转台
-     * @return 小于等于
+     * @param status
+     * @return
      */
     public boolean canReplaceWith(DimensionStatus status) {
         return ordinal < status.ordinal
@@ -87,9 +87,9 @@ public class DimensionStatus {
     }
 
     //    /**
-    //     * 是否没有达到新的状态
-    //     * @param status 新转台
-    //     * @return 大于等于 gte
+    //     * state
+    //     * @param status
+    //     * @return  gte
     //     */
     //    public boolean gteStatusWith(DimensionStatus status) {
     //        return ordinal() >= status.ordinal();

@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
- * Component 的基类
+ * Base class for components
  *
  */
 public abstract class BaseComponent extends FrameLayout {
@@ -29,11 +29,11 @@ public abstract class BaseComponent extends FrameLayout {
     }
 
     /**
-     * 创建视图
+     * Create the view
      *
-     * @param context 上下文
-     * @param from 布局加载器
-     * @param parent 父布局
+     * @param context the context
+     * @param from the layout inflater
+     * @param parent the parent view
      * @param attrs Bundle
      * @return The created View
      */

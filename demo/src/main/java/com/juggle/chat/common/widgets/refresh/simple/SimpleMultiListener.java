@@ -9,7 +9,7 @@ import com.juggle.chat.common.widgets.refresh.constant.RefreshState;
 import com.juggle.chat.common.widgets.refresh.listener.OnMultiListener;
 
 
-/** 多功能监听器 Created by scwang on 2017/5/26. */
+/** FeatureListener Created by scwang on 2017/5/26. */
 public class SimpleMultiListener implements OnMultiListener {
 
     @Override

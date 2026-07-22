@@ -9,10 +9,10 @@ import androidx.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
 
-/** 解决DialogFragment内存泄漏Bug Created by yanke on 2021/12/8 */
+/** Fix DialogFragment memory leak bug. Created by yanke on 2021/12/8. */
 public class NoLeakDialog extends Dialog {
 
-    /** 主要是防止弱引用指向的 Listener被清除 */
+    /** Prevent the weak-referenced listener from being cleared. */
     private OnDismissListener mOnDismissListener;
 
     private OnCancelListener mOnCancelListener;

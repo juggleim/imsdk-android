@@ -19,12 +19,12 @@ public class GooglePush implements IPush {
         JLogger.i("CON-Push", "google get token");
 
         try {
-            // 检验是否正确配置，如果配置有问题，不再往下执行
+            // Verify the configuration and stop if it is invalid.
             if (FirebaseOptions.fromResource(context) == null) {
                 callback.onError(getType(), -1, "load fcm sdk applicationId failed");
                 return;
             }
-            // 提前触发一次初始化，确保某些情况下FirebaseApp初始化失败，抛出异常
+            // Trigger initialization early so FirebaseApp failures surface immediately.
             FirebaseApp.initializeApp(context);
         } catch (Exception e) {
             callback.onError(getType(), -1, e.getMessage());

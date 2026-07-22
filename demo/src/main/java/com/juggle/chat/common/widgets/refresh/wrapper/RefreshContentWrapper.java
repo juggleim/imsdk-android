@@ -37,14 +37,14 @@ import java.util.List;
 import java.util.Queue;
 
 
-/** 刷新内容包装 Created by scwang on 2017/5/26. */
+/** RefreshContent Created by scwang on 2017/5/26. */
 @SuppressWarnings("WeakerAccess")
 public class RefreshContentWrapper
         implements RefreshContent, CoordinatorLayoutListener, AnimatorUpdateListener {
 
     private static final String TAG = RefreshContentWrapper.class.getSimpleName();
-    protected View mContentView; // 直接内容视图
-    protected View mOriginalContentView; // 被包裹的原真实视图
+    protected View mContentView; // ContentView
+    protected View mOriginalContentView; // View
     protected View mScrollableView;
     protected View mFixedHeader;
     protected View mFixedFooter;
@@ -192,11 +192,11 @@ public class RefreshContentWrapper
         PointF point = new PointF(e.getX(), e.getY());
         point.offset(-mContentView.getLeft(), -mContentView.getTop());
         if (mScrollableView != mContentView) {
-            // 如果内容视图不是 ScrollableView 说明使用了Layout嵌套内容，需要动态搜索 ScrollableView
+            // ContentView ScrollableView LayoutnestedContent，Search ScrollableView
             mScrollableView = findScrollableViewByPoint(mContentView, point, mScrollableView);
         }
         if (mScrollableView == mContentView) {
-            // 如果内容视图就是 ScrollableView 就不需要使用事件来动态搜索 而浪费CPU时间和性能了
+            // ContentView ScrollableView Search CPUtime
             //            mBoundaryAdapter.setActionEvent(null);
             mBoundaryAdapter.mActionEvent = null;
         } else {
@@ -282,7 +282,7 @@ public class RefreshContentWrapper
                 mScrollableView.scrollBy(0, (int) dy);
             }
         } catch (Throwable e) {
-            // 根据用户反馈，此处可能会有BUG
+            // User，BUG
             Log.e(TAG, e.getMessage());
         }
         mLastSpinner = value;

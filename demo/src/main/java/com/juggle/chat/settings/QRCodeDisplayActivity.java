@@ -90,7 +90,7 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
 
     private void initView() {
         qrNoCodeDescribeTv = findViewById(R.id.profile_tv_qr_card_info_no_code_describe);
-        // 二维码描述
+        // QR code description
         qrCodeDescribeTv = findViewById(R.id.profile_tv_qr_card_info_describe);
         if (mConversationType == Conversation.ConversationType.GROUP) {
             mBinding.headerView.getTitleTextView().setText(getString(com.jet.im.kit.R.string.text_group_qrcode));
@@ -99,9 +99,9 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
             mBinding.headerView.getTitleTextView().setText(getString(R.string.text_my_qrcode));
             qrCodeDescribeTv.setText(R.string.text_qrcode_private_tips);
         }
-        // 二维码卡片父容器
+        // QR code card parent container
         qrCodeCardLl = findViewById(R.id.profile_fl_card_capture_area_container);
-        // 二维码信息所属头像
+        // Avatar for the QR code owner
         portraitIv = findViewById(R.id.profile_iv_card_info_portrait);
         if (TextUtils.isNotEmpty(mPortrait)) {
             Glide.with(this)
@@ -114,10 +114,10 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
                     .load(uri)
                     .into(portraitIv);
         }
-        // 二维码信息所属名称
+        // Name for the QR code owner
         mainInfoTv = findViewById(R.id.profile_tv_qr_info_main);
         mainInfoTv.setText(mName);
-        // 二维码信息所属副信息
+        // Secondary info for the QR code owner
         subInfoTv = findViewById(R.id.profile_tv_qr_info_sub);
         if (mConversationType == Conversation.ConversationType.GROUP) {
             subInfoTv.setText(getString(R.string.text_member_count, mCount));
@@ -125,13 +125,13 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
         } else {
             subInfoTv.setVisibility(View.GONE);
         }
-        // 二维码图片
+        // QR code image
         qrCodeIv = findViewById(R.id.profile_iv_qr_code);
-//        // 保存图片
+//        // SaveImage
 //        findViewById(R.id.profile_tv_qr_save_phone).setOnClickListener(v -> {
 //            saveQRCodeToLocal();
 //        });
-//        // 分享
+//        // Share
 //        findViewById(R.id.profile_tv_qr_share_to_juggle).setOnClickListener(v -> {
 //            shareToJuggle();
 //        });
@@ -176,7 +176,7 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
 //    }
 //
 //    private boolean checkHasStoragePermission() {
-//        // 从6.0系统(API 23)开始，访问外置存储需要动态申请权限
+//        // Starting with Android 6.0 (API 23), external storage access requires runtime permission
 //        if (Build.VERSION.SDK_INT >= 23) {
 //            int checkPermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 //            if (checkPermission != PackageManager.PERMISSION_GRANTED) {
@@ -194,7 +194,7 @@ public class QRCodeDisplayActivity extends AppCompatActivity {
 //                Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
 //        Canvas canvas = new Canvas(bitmap);
 //        Drawable bgDrawable = view.getBackground();
-//        canvas.drawColor(Color.WHITE); // 默认为白色背景
+//        canvas.drawColor(Color.WHITE); // Default to a white background
 //        if (bgDrawable != null) {
 //            bgDrawable.draw(canvas);
 //        }

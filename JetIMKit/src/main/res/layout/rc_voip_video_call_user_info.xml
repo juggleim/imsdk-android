@@ -4,7 +4,7 @@
     android:layout_centerHorizontal="true"
     android:layout_height="wrap_content">
 
-    <!--二人视频通话接通后 mUserInfoContainer 中更换为无头像的布局-->
+    <!--videocall mUserInfoContainer AvatarLayout-->
 
     <ImageView
         android:id="@+id/rc_voip_call_minimize"

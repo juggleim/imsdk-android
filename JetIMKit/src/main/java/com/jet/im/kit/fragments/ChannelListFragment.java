@@ -184,7 +184,7 @@ public class ChannelListFragment extends BaseModuleFragment<ChannelListModule, C
     private void showChannelTypeSelectDialog() {
 
 
-        //todo 创建群组忽略
+        //todo CreateGroup
 //        if (getContext() == null) return;
 //        if (Available.isSupportSuper() || Available.isSupportBroadcast()) {
 //            final Context contextThemeWrapper = ContextUtils.extractModuleThemeContext(getContext(), getModule().getParams().getTheme(), R.attr.sb_component_header);

@@ -51,9 +51,9 @@ public class GridGroupMemberAdapter extends BaseAdapter {
         SelectableRoundedImageView avatarView = viewHolder.avatarView;
         TextView usernameTv = viewHolder.usernameTv;
 
-        // 最后一个item
+        // Last item
         if (position == getCount() - 1 && (isAllowDelete || isAllowAdd)) {
-            // 允许减员
+            // Allow removal
             if (isAllowDelete) {
                 usernameTv.setText("");
                 avatarView.setImageDrawable(null);
@@ -90,7 +90,7 @@ public class GridGroupMemberAdapter extends BaseAdapter {
                             onItemClickedListener.onAddOrDeleteMemberClicked(true);
                         }
                     });
-        } else { // 普通成员
+        } else { // Regular member
             final GroupMemberBean groupMember = list.get(position);
             String groupNickName = groupMember.getNickname();
             usernameTv.setText(groupNickName);
@@ -126,8 +126,8 @@ public class GridGroupMemberAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        // 判断是否允许删除成员时
-        // 在允许删除成员时，在最后显示添加和删除按钮；当不运行删除成员时，仅显示添加按钮
+        // When deletion is enabled, show both add and delete buttons at the end.
+        // Otherwise, show only the add button.
         if (isAllowDelete && isAllowAdd) {
             return (list != null ? list.size() : 0) + 2;
         } else if (isAllowDelete || isAllowAdd) {
@@ -148,9 +148,9 @@ public class GridGroupMemberAdapter extends BaseAdapter {
     }
 
     /**
-     * 设置是否允许删除成员
+     * Enable or disable member deletion.
      *
-     * @param isAllowDelete
+     * @param isAllowDelete whether member deletion is allowed
      */
     public void setAllowDeleteMember(boolean isAllowDelete) {
         this.isAllowDelete = isAllowDelete;
@@ -158,7 +158,7 @@ public class GridGroupMemberAdapter extends BaseAdapter {
     }
 
     /**
-     * 设置是否允许添加成员
+     * Enable or disable member addition.
      *
      * @param isAllowAdd
      */
@@ -166,7 +166,7 @@ public class GridGroupMemberAdapter extends BaseAdapter {
         this.isAllowAdd = isAllowAdd;
     }
 
-    /** 传入新的数据 刷新UI的方法 */
+    /** Update the data and refresh the UI. */
     public void updateListView(List<GroupMemberBean> list) {
         if (showMemberLimit > 0) {
             if (list != null && list.size() > showMemberLimit) {
@@ -178,9 +178,9 @@ public class GridGroupMemberAdapter extends BaseAdapter {
     }
 
     /**
-     * 设置网格项点击事件
+     * Set the grid item click listener.
      *
-     * @param onItemClickedListener
+     * @param onItemClickedListener the click listener
      */
     public void setOnItemClickedListener(OnItemClickedListener onItemClickedListener) {
         this.onItemClickedListener = onItemClickedListener;
@@ -188,16 +188,16 @@ public class GridGroupMemberAdapter extends BaseAdapter {
 
     public interface OnItemClickedListener {
         /**
-         * 当点击添加或删除成员时回调
+         * Callback when add or delete is clicked.
          *
-         * @param isAdd true 为添加成员，false 为移除成员
+         * @param isAdd true to add a member, false to remove one
          */
         void onAddOrDeleteMemberClicked(boolean isAdd);
 
         /**
-         * 当成员点击时回调
+         * Callback when a member is clicked.
          *
-         * @param groupMember
+         * @param groupMember the clicked member
          */
         void onMemberClicked(GroupMemberBean groupMember);
     }

@@ -48,7 +48,7 @@ public class ViewHolder extends RecyclerView.ViewHolder {
     }
 
     /**
-     * 通过viewId获取控件
+     * viewIdGet
      *
      * @param viewId
      * @return
@@ -67,10 +67,10 @@ public class ViewHolder extends RecyclerView.ViewHolder {
     }
 
 
-    /****以下为辅助方法*****/
+    /****method*****/
 
     /**
-     * 设置TextView的值
+     * SetTextView
      *
      * @param viewId
      * @param text
@@ -210,7 +210,7 @@ public class ViewHolder extends RecyclerView.ViewHolder {
     }
 
     /**
-     * 关于事件的
+     *
      */
     public ViewHolder setOnClickListener(int viewId,
                                          View.OnClickListener listener) {

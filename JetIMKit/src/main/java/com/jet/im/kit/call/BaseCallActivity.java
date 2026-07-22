@@ -119,7 +119,7 @@ public class BaseCallActivity extends Activity {
 //                mMediaPlayer = null;
 //            }
 
-            // 退出此页面后应设置成正常模式，否则按下音量键无法更改其他音频类型的音量
+            // exitPageSetmode，audio
 //            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 //            if (am != null) {
 //                am.setMode(AudioManager.MODE_NORMAL);

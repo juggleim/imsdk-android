@@ -6,7 +6,7 @@ import android.view.View;
 import com.juggle.chat.common.widgets.refresh.listener.ScrollBoundaryDecider;
 import com.juggle.chat.common.widgets.refresh.util.SmartUtil;
 
-/** 滚动边界 Created by scwang on 2017/7/8. */
+/** Scroll Created by scwang on 2017/7/8. */
 public class SimpleBoundaryDecider implements ScrollBoundaryDecider {
 
     // <editor-fold desc="Internal">
@@ -21,7 +21,7 @@ public class SimpleBoundaryDecider implements ScrollBoundaryDecider {
         if (boundary != null) {
             return boundary.canRefresh(content);
         }
-        // mActionEvent == null 时 canRefresh 不会动态递归搜索
+        // mActionEvent == null  canRefresh Search
         return SmartUtil.canRefresh(content, mActionEvent);
     }
 
@@ -30,7 +30,7 @@ public class SimpleBoundaryDecider implements ScrollBoundaryDecider {
         if (boundary != null) {
             return boundary.canLoadMore(content);
         }
-        // mActionEvent == null 时 canLoadMore 不会动态递归搜索
+        // mActionEvent == null  canLoadMore Search
         return SmartUtil.canLoadMore(content, mActionEvent, mEnableLoadMoreWhenContentNotFull);
     }
     // </editor-fold>

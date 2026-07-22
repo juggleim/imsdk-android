@@ -36,7 +36,7 @@ import com.juggle.im.model.Conversation;
 import java.util.List;
 
 /**
- * 功能描述: 创建群组页面
+ * Description: Create group page
  *
  */
 public class AddFriendListFragment

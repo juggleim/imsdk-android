@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
 
-/** 生成头像使用工具类 */
+/** Avatar */
 public class PortraitGenerator {
     private static final String FILE_SCHEMA = "file://";
 
@@ -103,20 +103,20 @@ public class PortraitGenerator {
 
     private static int getAscii(char cn) {
         byte[] bytes = (String.valueOf(cn)).getBytes();
-        if (bytes.length == 1) { // 单字节字符
+        if (bytes.length == 1) { //
             return bytes[0];
-        } else if (bytes.length == 2) { // 双字节字符
+        } else if (bytes.length == 2) { //
             int hightByte = 256 + bytes[0];
             int lowByte = 256 + bytes[1];
             int ascii = (256 * hightByte + lowByte) - 256 * 256;
             return ascii;
         } else {
-            return 0; // 错误
+            return 0; // error
         }
     }
 
     /**
-     * 生成 view 的截图
+     *  view
      *
      * @param view
      * @return
@@ -137,10 +137,10 @@ public class PortraitGenerator {
     };
 
     /**
-     * 取得给定汉字串的首字母串,即声母串
+     * ,
      *
-     * @param str 给定汉字串
-     * @return 声母串
+     * @param str
+     * @return
      */
     private static String getAllFirstLetter(String str) {
         if (str == null || str.trim().length() == 0) {
@@ -156,10 +156,10 @@ public class PortraitGenerator {
     }
 
     /**
-     * 取得给定汉字的首字母,即声母
+     * ,
      *
-     * @param chinese 给定的汉字
-     * @return 给定汉字的声母
+     * @param chinese
+     * @return
      */
     private static String getFirstLetter(String chinese) {
         if (chinese == null || chinese.trim().length() == 0) {
@@ -167,13 +167,13 @@ public class PortraitGenerator {
         }
         chinese = conversionStr(chinese, "GB2312", "ISO8859-1");
 
-        if (chinese.length() > 1) // 判断是不是汉字
+        if (chinese.length() > 1) //
         {
-            int li_SectorCode = (int) chinese.charAt(0); // 汉字区码
-            int li_PositionCode = (int) chinese.charAt(1); // 汉字位码
+            int li_SectorCode = (int) chinese.charAt(0); //
+            int li_PositionCode = (int) chinese.charAt(1); //
             li_SectorCode = li_SectorCode - 160;
             li_PositionCode = li_PositionCode - 160;
-            int li_SecPosCode = li_SectorCode * 100 + li_PositionCode; // 汉字区位码
+            int li_SecPosCode = li_SectorCode * 100 + li_PositionCode; //
             if (li_SecPosCode > 1600 && li_SecPosCode < 5590) {
                 for (int i = 0; i < 23; i++) {
                     if (li_SecPosCode >= li_SecPosValue[i]
@@ -182,7 +182,7 @@ public class PortraitGenerator {
                         break;
                     }
                 }
-            } else // 非汉字字符,如图形符号或ASCII码
+            } else // ,ASCII
             {
                 chinese = conversionStr(chinese, "ISO8859-1", "GB2312");
                 chinese = chinese.substring(0, 1);
@@ -193,18 +193,18 @@ public class PortraitGenerator {
     }
 
     /**
-     * 字符串编码转换
      *
-     * @param str 要转换编码的字符串
-     * @param charsetName 原来的编码
-     * @param toCharsetName 转换后的编码
-     * @return 经过编码转换后的字符串
+     *
+     * @param str
+     * @param charsetName
+     * @param toCharsetName
+     * @return
      */
     private static String conversionStr(String str, String charsetName, String toCharsetName) {
         try {
             str = new String(str.getBytes(charsetName), toCharsetName);
         } catch (UnsupportedEncodingException ex) {
-            System.out.println("字符串编码转换异常：" + ex.getMessage());
+            System.out.println("String encoding conversion exception: " + ex.getMessage());
         }
         return str;
     }

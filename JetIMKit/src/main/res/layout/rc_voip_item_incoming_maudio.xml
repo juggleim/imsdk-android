@@ -8,7 +8,7 @@
     android:layout_alignParentBottom="true"
     android:orientation="vertical">
 
-<!--多人视频inComing-->
+<!--videoinComing-->
 
     <LinearLayout
         android:layout_alignParentTop="true"

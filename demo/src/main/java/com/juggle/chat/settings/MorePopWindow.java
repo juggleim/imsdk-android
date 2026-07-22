@@ -35,25 +35,25 @@ public class MorePopWindow extends PopupWindow implements PopupWindow.OnDismissL
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         contentView = inflater.inflate(R.layout.main_popup_title_more, null);
 
-        // 设置SelectPicPopupWindow的View
+        // Popup window view
         this.setContentView(contentView);
-        // 设置SelectPicPopupWindow弹出窗体的宽
+        // Popup window width
         this.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-        // 设置SelectPicPopupWindow弹出窗体的高
+        // Popup window height
         this.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-        // 设置SelectPicPopupWindow弹出窗体可点击
+        // Popup window is clickable
         this.setFocusable(true);
         this.setOutsideTouchable(true);
-        // 刷新状态
+        // Refresh state
         this.update();
-        // 实例化一个ColorDrawable颜色为半透明
+        // Create a semi-transparent ColorDrawable.
         ColorDrawable dw = new ColorDrawable(0000000000);
-        // 点back键和其他地方使其消失,设置了这个才能触发OnDismisslistener ，设置其他控件变化等操作
+        // Dismiss when back is pressed or the user taps outside; this also enables the dismiss listener.
         this.setBackgroundDrawable(dw);
 
         setOnDismissListener(this);
 
-        // 设置SelectPicPopupWindow弹出窗体动画效果
+        // Popup window animation
         this.setAnimationStyle(R.style.AnimationMainTitleMore);
         contentView
                 .findViewById(R.id.btn_create_group)
@@ -94,13 +94,13 @@ public class MorePopWindow extends PopupWindow implements PopupWindow.OnDismissL
     }
 
     /**
-     * 显示popupWindow
+     * Show the popup window.
      *
-     * @param parent
+     * @param parent the anchor view
      */
     public void showPopupWindow(View parent) {
         if (!this.isShowing()) {
-            // 以下拉方式显示popupwindow
+            // Show the popup window as a drop-down.
             this.showAsDropDown(parent, 0, 0);
         } else {
             this.dismiss();
@@ -108,12 +108,12 @@ public class MorePopWindow extends PopupWindow implements PopupWindow.OnDismissL
     }
 
     /**
-     * @param parent
-     * @param alpha
+     * @param parent the anchor view
+     * @param alpha the background alpha
      */
     public void showPopupWindow(View parent, float alpha, int xoff, int yoff) {
         if (!this.isShowing()) {
-            // 以下拉方式显示popupwindow
+            // Show the popup window as a drop-down.
             this.showAsDropDown(parent, xoff, yoff);
             setAlpha(alpha);
         } else {
@@ -131,8 +131,8 @@ public class MorePopWindow extends PopupWindow implements PopupWindow.OnDismissL
         // 0.0-1.0
         lp.alpha = bgAlpha;
         window.setAttributes(lp);
-        // everything behind this window will be dimmed.
-        // 此方法用来设置浮动层，防止部分手机变暗无效
+        // Everything behind this window will be dimmed.
+        // This method sets the dimmed overlay so it works on devices where the default dimming fails.
         window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
     }
 

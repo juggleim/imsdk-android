@@ -94,7 +94,7 @@ class GroupChannelMainActivity : BaseActivity(), IConversationListener, OnPopWin
             }.attach()
             tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab) {
-                    // 去掉切换动画
+                    // Disable tab switch animation
                     viewPager.setCurrentItem(tab.position, false)
                 }
                 override fun onTabUnselected(tab: TabLayout.Tab) {}

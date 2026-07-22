@@ -121,7 +121,7 @@ public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSes
             LinearLayout linear_scrollviewTag = outgoingLayout.findViewById(R.id.linear_scrollviewTag);
 
 
-            //多人语音主叫方顶部布局
+            //VoiceTopLayout
             RelativeLayout relativeLayout = outgoingLayout.findViewById(R.id.reltive_voip_outgoing_audio_title);
             relativeLayout.setVisibility(View.VISIBLE);
 
@@ -168,7 +168,7 @@ public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSes
             FrameLayout controller = (FrameLayout) outgoingLayout.findViewById(R.id.rc_voip_control_layout);
             controller.addView(outgoingController);
             audioContainer.addView(outgoingLayout);
-            //多人语音通话中竖向滑动
+            //Voicecall
             memberContainer = (CallVerticalScrollView) outgoingLayout.findViewById(R.id.rc_voip_members_container);
             memberContainer.enableShowState(true);
             LinearLayout linear_scrollviewTag = (LinearLayout) outgoingLayout.findViewById(R.id.linear_scrollviewTag);
@@ -191,7 +191,7 @@ public class MultiVoiceCallActivity extends BaseCallActivity implements ICallSes
         ImageView button = outgoingController.findViewById(R.id.rc_voip_call_mute_btn);
         button.setEnabled(true);
         outgoingLayout.findViewById(R.id.rc_voip_call_mute).setVisibility(View.VISIBLE);
-        //多人语音主叫方顶部布局
+        //VoiceTopLayout
         RelativeLayout relativeLayout = (RelativeLayout) outgoingLayout.findViewById(R.id.reltive_voip_outgoing_audio_title);
         relativeLayout.setVisibility(View.GONE);
 

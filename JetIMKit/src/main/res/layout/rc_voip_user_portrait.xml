@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center">
-    <!--多人视频被叫-->
+    <!--video-->
     <ImageView
         android:id="@+id/rc_user_portrait"
         android:layout_width="55dp"

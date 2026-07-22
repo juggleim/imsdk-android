@@ -59,7 +59,7 @@
         <EditText
             android:id="@+id/edit_search"
             android:layout_width="match_parent"
-            android:hint="搜索"
+            android:hint="Search"
             android:layout_margin="9dp"
             android:gravity="center"
             android:layout_centerInParent="true"

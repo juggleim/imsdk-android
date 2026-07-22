@@ -179,16 +179,16 @@ public class ViewUtils {
             CallFinishNotifyMessage callMessage = ((CallFinishNotifyMessage) message.getContent());
             switch (callMessage.getFinishNotifyType()) {
                 case CANCEL:
-                    displayedMessage = "已取消  ";
+                    displayedMessage = "Cancelled  ";
                     break;
                 case REJECT:
-                    displayedMessage = "已拒绝  ";
+                    displayedMessage = "Rejected  ";
                     break;
                 case NO_RESPONSE:
-                    displayedMessage = "未接听  ";
+                    displayedMessage = "No answer  ";
                     break;
                 case COMPLETE:
-                    displayedMessage = "通话时长 " + getStringForTime(callMessage.getDuration()) + "  ";
+                    displayedMessage = "Call duration " + getStringForTime(callMessage.getDuration()) + "  ";
                     break;
             }
         } else if (message.getContent() instanceof  TextMessage) {

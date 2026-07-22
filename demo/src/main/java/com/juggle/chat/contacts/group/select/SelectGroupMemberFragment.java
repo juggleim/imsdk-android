@@ -39,7 +39,7 @@ import java.util.List;
 import okhttp3.RequestBody;
 
 /**
- * 功能描述: 创建群组页面
+ * Feature: CreateGroupPage
  *
  */
 public class SelectGroupMemberFragment

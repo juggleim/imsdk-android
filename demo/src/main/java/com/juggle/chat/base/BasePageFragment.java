@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel;
 import com.jet.im.kit.fragments.BaseFragment;
 
 /**
- * Fragment 页面基类
+ * Fragment base class
  *
  */
 public abstract class BasePageFragment<VM extends ViewModel>
@@ -39,9 +39,9 @@ public abstract class BasePageFragment<VM extends ViewModel>
 
 
     /**
-     * 创建 ViewModel
+     * Create the ViewModel.
      *
-     * @return 返回 ViewModel
+     * @return the ViewModel
      */
     @NonNull
     protected abstract VM onCreateViewModel(@NonNull Bundle bundle);
@@ -51,7 +51,7 @@ public abstract class BasePageFragment<VM extends ViewModel>
                                        @Nullable Bundle savedInstanceState);
 
     /**
-     * View 创建之后
+     * Called after the view is created.
      *
      * @param viewModel VM
      */

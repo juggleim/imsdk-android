@@ -188,7 +188,7 @@ abstract public class BaseMessageListFragment<
         rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                // 键盘可见性判断（排除状态栏等系统UI）
+                // （stateUI）
                 Handler mainHandler = new Handler(Looper.getMainLooper());
                 mainHandler.postDelayed(new Runnable() {
                     @Override

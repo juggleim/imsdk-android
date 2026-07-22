@@ -53,7 +53,7 @@ public class FriendNotifyMessage extends MessageContent {
 
     @Override
     public String conversationDigest() {
-        return "[好友通知]";
+        return "[Friend Notification]";
     }
 
     public int getType() {

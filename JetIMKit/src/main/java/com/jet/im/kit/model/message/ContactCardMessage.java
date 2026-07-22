@@ -53,7 +53,7 @@ public class ContactCardMessage extends MessageContent {
 
     @Override
     public String conversationDigest() {
-        return "[个人名片]";
+        return "[Contact Card]";
     }
 
     public String getUserId() {

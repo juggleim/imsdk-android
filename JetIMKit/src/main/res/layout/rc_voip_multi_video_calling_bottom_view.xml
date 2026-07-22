@@ -78,7 +78,7 @@
             style="@style/rc_voip_text_style_style" />
     </RelativeLayout>
 
-    <!--多人视频——主叫方显示-->
+    <!--video——Show-->
     <RelativeLayout
         android:id="@+id/rc_voip_handfree"
         android:layout_width="wrap_content"

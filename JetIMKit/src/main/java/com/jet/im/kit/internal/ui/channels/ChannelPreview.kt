@@ -122,7 +122,7 @@ internal class ChannelPreview @JvmOverloads constructor(
         if (unreadMessageCount == 0 && channel.hasUnread()) {
             unreadMessageCount = 1
         }
-        //todo @未读数
+        //todo @
         val unreadMentionCount = 0
         ivPushEnabled.visibility = if (channel.isMute) VISIBLE else GONE
         val pushEnabledTint = SendbirdUIKit.getDefaultThemeMode().monoTintResId
@@ -179,7 +179,7 @@ internal class ChannelPreview @JvmOverloads constructor(
 //            )
 //        }
         ChannelUtils.loadChannelCover(coverView, channel)
-        //todo 群成员人数 channel.memberCount
+        //todo Group channel.memberCount
         val memberCount = 0
         tvMemberCount.visibility = if (memberCount > 2) VISIBLE else GONE
 //        tvMemberCount.text = ChannelUtils.makeMemberCountText(channel.memberCount)
@@ -260,7 +260,7 @@ internal class ChannelPreview @JvmOverloads constructor(
         ) {
             var message: CharSequence = ""
             if (useTypingIndicator) {
-                //todo 用户名称
+                //todo User
 //                val typingUsers = channel.conversation.conversationId
 //                if (typingUsers.isNotEmpty()) {
 //                  //todo  message = ChannelUtils.makeTypingText(textView.context, typingUsers)
@@ -269,11 +269,11 @@ internal class ChannelPreview @JvmOverloads constructor(
 //                    return
 //                }
             }
-            // todo 最后一条消息内容
+            // todo MessageContent
             val spannableString: SpannableString
             val draft = channel.draft
             if (!draft.isNullOrEmpty()) {
-                spannableString = SpannableString("[草稿] $draft")
+                spannableString = SpannableString("[Draft] $draft")
                 spannableString.setSpan(
                     ForegroundColorSpan(Color.RED),
                     0,
@@ -298,9 +298,9 @@ internal class ChannelPreview @JvmOverloads constructor(
                                         userName = user.userName
                                     }
                                 }
-                                tip = "$userName 撤回了一条消息"
+                                tip = "$userName recalled a message"
                             } else {
-                                tip = "你 撤回了一条消息"
+                                tip = "You recalled a message"
                             }
                             message = tip
                         }
@@ -314,17 +314,17 @@ internal class ChannelPreview @JvmOverloads constructor(
                         is VoiceMessage -> {
                             textView.maxLines = 1
                             textView.ellipsize = TextUtils.TruncateAt.MIDDLE
-//                        message = "[语音]"
+//                        message = "[Voice]"
                         }
 
                         is ImageMessage -> {
                             textView.maxLines = 1
                             textView.ellipsize = TextUtils.TruncateAt.MIDDLE
-//                        message = "[图片]"
+//                        message = "[Image]"
                         }
 
                         else -> {
-//                        message="暂不支持此消息"
+//                        message="This message type is not supported yet"
                         }
 
                     }
