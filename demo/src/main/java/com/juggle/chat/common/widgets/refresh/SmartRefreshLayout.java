@@ -512,7 +512,7 @@ public class SmartRefreshLayout extends ViewGroup
                 errorView.setTextColor(0xffff6600);
                 errorView.setGravity(Gravity.CENTER);
                 errorView.setTextSize(20);
-                errorView.setText("The content view in SmartRefreshLayout is empty. Do you forget to add it in xml layout file?");
+                errorView.setText(R.string.text_smart_refresh_empty);
                 super.addView(errorView, 0, new LayoutParams(MATCH_PARENT, MATCH_PARENT));
                 mRefreshContent = new RefreshContentWrapper(errorView);
                 mRefreshContent.getView().setPadding(padding, padding, padding, padding);

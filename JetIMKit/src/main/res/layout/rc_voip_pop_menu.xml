@@ -52,7 +52,7 @@
             android:layout_gravity="center"
             android:maxLines="1"
             android:textColor="@color/rc_voip_white"
-            android:text="white board"
+            android:text="@string/rc_voip_whiteboard"
             android:textSize="14sp" />
 
     </LinearLayout>
@@ -77,7 +77,7 @@
             android:layout_gravity="center_vertical"
             android:maxLines="1"
             android:textColor="@color/rc_voip_white"
-            android:text="hand up"
+            android:text="@string/rc_voip_hand_up"
             android:textSize="14sp" />
     </LinearLayout>
 

@@ -7,7 +7,7 @@
     <string name="text_title_ai_chat_bot_sample">Token3</string>
     <string name="text_title_customization_sample">Token2</string>
     <string name="text_title_notification_sample">Token4</string>
-    <string name="text_title_uikit_sample_app">UIKit sample app</string>
+    <string name="text_title_uikit_sample_app">UIKit 示例应用</string>
 
     <string name="text_version_info">UIKit v%1$s &#160;&#160;&#160;&#160; SDK v%2$s</string>
     <string name="text_hint_code">验证码(000000)</string>
@@ -16,16 +16,16 @@
     <string name="text_sign_in">登录</string>
     <string name="text_sign_out">退出登录</string>
     <string name="text_sign_out_lower">退出登录</string>
-    <string name="text_select_sample">Select sample apps</string>
+    <string name="text_select_sample">选择示例应用</string>
 
     <string name="text_settings_header_title">我</string>
-    <string name="text_settings_header_edit_button">Edit</string>
-    <string name="text_settings_user_id_badge">User ID</string>
-    <string name="text_settings_theme_title">Dark theme</string>
-    <string name="text_settings_disturb_title">Do not disturb</string>
+    <string name="text_settings_header_edit_button">编辑</string>
+    <string name="text_settings_user_id_badge">用户ID</string>
+    <string name="text_settings_theme_title">深色模式</string>
+    <string name="text_settings_disturb_title">免打扰</string>
     <string name="text_settings_home_title">退出登录</string>
-    <string name="text_settings_change_user_nickname">Change nickname</string>
-    <string name="text_settings_change_user_profile_image">Change profile image</string>
+    <string name="text_settings_change_user_nickname">修改昵称</string>
+    <string name="text_settings_change_user_profile_image">更换头像</string>
 
     <string name="text_tab_conversations">消息</string>
     <string name="text_tab_settings">我</string>
@@ -33,100 +33,100 @@
     <string name="text_tab_groups">群组</string>
     <string name="text_tab_chatroom">聊天室</string>
     <string name="text_tab_badge_max_count">99+</string>
-    <string name="text_tab_notifications">Notifications</string>
+    <string name="text_tab_notifications">通知</string>
 
-    <string name="text_use_feed_channel_only">Use feed channel only</string>
-    <string name="text_home">Home</string>
+    <string name="text_use_feed_channel_only">仅使用动态频道</string>
+    <string name="text_home">首页</string>
     <string name="text_send">发送</string>
-    <string name="text_group_channel">Group channel</string>
-    <string name="text_open_channel">Open channel</string>
-    <string name="text_ai_chatbot">Talk to an AI Chatbot</string>
-    <string name="text_custom_sample">Custom sample</string>
-    <string name="text_group_channel_description">1 on 1, Group chat with members</string>
-    <string name="text_open_channel_description">Live streams, Open community chat</string>
-    <string name="text_ai_chatbot_description">1 on 1, Group chat with bots</string>
-    <string name="text_create_community">Create community</string>
-    <string name="text_live_streams">Live streams</string>
-    <string name="text_community">Community</string>
-    <string name="text_live_streaming_description">Preset channels developed by UIKit</string>
+    <string name="text_group_channel">群聊频道</string>
+    <string name="text_open_channel">公开频道</string>
+    <string name="text_ai_chatbot">与 AI 聊天机器人对话</string>
+    <string name="text_custom_sample">自定义示例</string>
+    <string name="text_group_channel_description">1 对 1、群组聊天</string>
+    <string name="text_open_channel_description">直播流、公开社区聊天</string>
+    <string name="text_ai_chatbot_description">1 对 1、与机器人群聊</string>
+    <string name="text_create_community">创建社区</string>
+    <string name="text_live_streams">直播</string>
+    <string name="text_community">社区</string>
+    <string name="text_live_streaming_description">UIKit 预置频道</string>
     <string name="text_header_create_button">创建</string>
-    <string name="text_input_channel_name_hint">Enter channel name</string>
+    <string name="text_input_channel_name_hint">请输入频道名称</string>
     <string name="text_live">LIVE</string>
     <string name="text_participants">%s participants</string>
-    <string name="text_error_update_user_information">Couldn\&#39;t update user information.</string>
-    <string name="text_error_update_do_not_disturb">Couldn\&#39;t update disturb setting.</string>
+    <string name="text_error_update_user_information">无法更新用户信息。</string>
+    <string name="text_error_update_do_not_disturb">无法更新免打扰设置。</string>
     <string name="sb_text_need_to_allow_permission_notification">%s\nneeds permission to receive push notification. Go to Settings to allow access</string>
-    <string name="sb_text_dialog_not_supported_title">Enable this feature</string>
-    <string name="text_not_supported">This feature is disabled by default. To enable it, follow instructions in README.md in the sample repository.</string>
-    <string name="sb_text_go_to_readme">Go to README</string>
+    <string name="sb_text_dialog_not_supported_title">启用此功能</string>
+    <string name="text_not_supported">该功能默认关闭。若要启用，请查看示例仓库中的 README.md。</string>
+    <string name="sb_text_go_to_readme">查看 README</string>
 
     <!-- Notifications -->
-    <string name="text_notification_home">Notification Home</string>
-    <string name="text_notification_chat_and_feed_type">Chat and Feed channels</string>
-    <string name="text_notification_feed_type_only">Feed channel only</string>
+    <string name="text_notification_home">通知首页</string>
+    <string name="text_notification_chat_and_feed_type">聊天和动态频道</string>
+    <string name="text_notification_feed_type_only">仅动态频道</string>
 
 
     <!-- Customizations -->
     <!--  Global Customization  -->
-    <string name="text_list_title_global">Global Customization</string>
-    <string name="text_title_fragment_providers_sample">Fragment Providers</string>
-    <string name="text_desc_fragment_providers_sample">Using Builder and FragmentProviders, implement channel fragment that does not use the header component.</string>
-    <string name="text_title_module_providers_sample">Module Providers</string>
-    <string name="text_desc_module_providers_sample">Using ModuleProviders, implement channel module that has custom header component.</string>
-    <string name="text_title_viewmodel_providers_sample">ViewModel Providers</string>
-    <string name="text_desc_viewmodel_providers_sample">Using ViewModelProviders, create a channel to sends text messages with prefixes.</string>
-    <string name="text_title_adapter_providers_sample">Adapter Providers</string>
-    <string name="text_desc_adapter_providers_sample">Using AdapterProviders, create a message list that does not use message grouping.</string>
+    <string name="text_list_title_global">全局自定义</string>
+    <string name="text_title_fragment_providers_sample">Fragment 提供者</string>
+    <string name="text_desc_fragment_providers_sample">使用 Builder 和 FragmentProviders 创建一个不带头部组件的频道页面。</string>
+    <string name="text_title_module_providers_sample">模块提供者</string>
+    <string name="text_desc_module_providers_sample">使用 ModuleProviders 创建一个带自定义头部的频道模块。</string>
+    <string name="text_title_viewmodel_providers_sample">ViewModel 提供者</string>
+    <string name="text_desc_viewmodel_providers_sample">使用 ViewModelProviders 创建一个会发送带前缀文本消息的频道。</string>
+    <string name="text_title_adapter_providers_sample">Adapter 提供者</string>
+    <string name="text_desc_adapter_providers_sample">使用 AdapterProviders 创建一个不分组的消息列表。</string>
 
     <!--  Channel Customization  -->
-    <string name="text_list_title_channel">Channel Customization</string>
-    <string name="text_title_message_ui_sample">Message UI</string>
-    <string name="text_desc_message_ui_sample">Customize the existing message UI.</string>
-    <string name="text_title_new_message_type_sample">New Message Type</string>
-    <string name="text_desc_new_message_type_sample">Declare a new custom message type and implement the sending and rendering of it.</string>
-    <string name="text_title_message_click_sample">Message Click</string>
-    <string name="text_desc_message_click_sample">Implement a toast notification on message click.</string>
-    <string name="text_title_message_menu_sample">Message Menu</string>
-    <string name="text_desc_message_menu_sample">Implement adding and removing menu items in the long-click menu for messages.</string>
-    <string name="text_title_message_data_sample">Message Data</string>
-    <string name="text_desc_message_data_sample">Customize message data using message parameters before sending.</string>
-    <string name="text_title_message_filtering_sample">Message Filtering</string>
-    <string name="text_desc_message_filtering_sample">Implement message filtering using the filter options provided in MessageListParams.</string>
-    <string name="text_title_channel_layout_sample">Channel Layout</string>
-    <string name="text_desc_channel_layout_sample">Add additional views to the existing channel view from within a module.</string>
-    <string name="text_title_input_menu_sample">Input Menu</string>
-    <string name="text_desc_input_menu_sample">Reconfigure the input menu.</string>
-    <string name="text_title_channel_header_sample">Channel Header</string>
-    <string name="text_desc_channel_header_sample">Implement a new header by inheriting the ChannelHeaderComponent.</string>
+    <string name="text_list_title_channel">频道自定义</string>
+    <string name="text_title_message_ui_sample">消息 UI</string>
+    <string name="text_desc_message_ui_sample">自定义已有的消息界面。</string>
+    <string name="text_title_new_message_type_sample">新消息类型</string>
+    <string name="text_desc_new_message_type_sample">声明新的自定义消息类型，并实现发送和渲染。</string>
+    <string name="text_title_message_click_sample">消息点击</string>
+    <string name="text_desc_message_click_sample">在消息点击时弹出提示。</string>
+    <string name="text_title_message_menu_sample">消息菜单</string>
+    <string name="text_desc_message_menu_sample">为消息长按菜单添加或移除菜单项。</string>
+    <string name="text_title_message_data_sample">消息数据</string>
+    <string name="text_desc_message_data_sample">发送前使用消息参数定制消息数据。</string>
+    <string name="text_title_message_filtering_sample">消息过滤</string>
+    <string name="text_desc_message_filtering_sample">使用 MessageListParams 中提供的过滤选项实现消息过滤。</string>
+    <string name="text_title_channel_layout_sample">频道布局</string>
+    <string name="text_desc_channel_layout_sample">在模块中为现有频道视图增加额外内容。</string>
+    <string name="text_title_input_menu_sample">输入菜单</string>
+    <string name="text_desc_input_menu_sample">重新配置输入菜单。</string>
+    <string name="text_title_channel_header_sample">频道头部</string>
+    <string name="text_desc_channel_header_sample">继承 ChannelHeaderComponent 创建新的头部。</string>
 
     <!--  Channel List Customization  -->
-    <string name="text_list_title_channel_list">Channel List Customization</string>
-    <string name="text_title_channel_item_ui_sample">Channel Item UI</string>
-    <string name="text_desc_channel_item_ui_sample">Customize the channel item UI.</string>
-    <string name="text_title_new_channel_item_type_sample">New Channel Item Type</string>
-    <string name="text_desc_new_channel_item_type_sample">Display a new type of channel item.</string>
-    <string name="text_title_channel_item_filtering">Channel Item Filtering</string>
-    <string name="text_desc_channel_item_filtering">Filter channels using GroupChannelListQueryParams.</string>
+    <string name="text_list_title_channel_list">频道列表自定义</string>
+    <string name="text_title_channel_item_ui_sample">频道条目 UI</string>
+    <string name="text_desc_channel_item_ui_sample">自定义频道条目界面。</string>
+    <string name="text_title_new_channel_item_type_sample">新频道条目类型</string>
+    <string name="text_desc_new_channel_item_type_sample">展示一种新的频道条目类型。</string>
+    <string name="text_title_channel_item_filtering">频道条目过滤</string>
+    <string name="text_desc_channel_item_filtering">使用 GroupChannelListQueryParams 过滤频道。</string>
     <string name="text_channel_typing_indicator_single">%s is typing&#8230;</string>
-    <string name="text_channel_typing_indicator_double">%s and %s are typing&#8230;</string>
-    <string name="text_channel_typing_indicator_multiple">Several people are typing&#8230;</string>
+    <string name="text_channel_typing_indicator_double">%1$s 和 %2$s 正在输入&#8230;</string>
+    <string name="text_channel_typing_indicator_multiple">多人正在输入&#8230;</string>
 
     <!--  User List Customization  -->
-    <string name="text_list_title_user_list">User List Customization</string>
-    <string name="text_title_user_item_ui_sample">User Item UI</string>
-    <string name="text_desc_user_item_ui_sample">Customize the user item view for the user selection screen.</string>
-    <string name="text_title_user_item_select_sample">User Item Select</string>
-    <string name="text_desc_user_item_select_sample">Limit the number of users that can be selected on the user selection screen.</string>
-    <string name="text_title_user_item_filtering">User Item Filtering</string>
-    <string name="text_desc_user_item_filtering">Implement filtering for users based on a specific criteria for display.</string>
-    <string name="text_title_user_item_custom_datasource">User Item Custom Data Source</string>
-    <string name="text_desc_user_item_custom_datasource">Retrieve user data from external sources.</string>
+    <string name="text_list_title_user_list">用户列表自定义</string>
+    <string name="text_title_user_item_ui_sample">用户条目 UI</string>
+    <string name="text_desc_user_item_ui_sample">自定义用户选择页的条目视图。</string>
+    <string name="text_title_user_item_select_sample">用户条目选择</string>
+    <string name="text_desc_user_item_select_sample">限制用户选择页可选中的数量。</string>
+    <string name="text_title_user_item_filtering">用户条目过滤</string>
+    <string name="text_desc_user_item_filtering">按特定条件过滤要展示的用户。</string>
+    <string name="text_title_user_item_custom_datasource">用户条目自定义数据源</string>
+    <string name="text_desc_user_item_custom_datasource">从外部来源获取用户数据。</string>
 
-    <string name="text_list_item_nickname_format">#%d. %s</string>
+    <string name="text_list_item_nickname_format">#%1$d. %2$s</string>
 
-    <string name="text_resend">Resend</string>
-    <string name="text_delete">Delete</string>
-    <string name="text_custom_header">Custom Header</string>
+    <string name="text_resend">重发</string>
+    <string name="text_delete">删除</string>
+    <string name="text_custom_header">自定义头部</string>
 
     <string name="text_my_qrcode">我的二维码</string>
     <string name="text_push_setting">推送设置</string>
@@ -181,6 +181,38 @@
     <string name="text_join_group">加入该群</string>
     <string name="text_group_has_members">群内已有&#160;%1$d&#160;人</string>
     <string name="text_select_conversation">选择一个聊天</string>
+    <string name="text_allow_notifications">允许通知</string>
+    <string name="text_do_not_disturb_time_8_12">免打扰时段 08:00 ~ 12:00</string>
+    <string name="text_do_not_disturb_time_19_20">免打扰时段 19:00 ~ 20:00</string>
+    <string name="text_do_not_disturb_time_23_06">免打扰时段 23:00 ~ 06:00</string>
+    <string name="text_do_not_disturb_all_day">全天免打扰</string>
+    <string name="text_language_chinese">中文</string>
+    <string name="text_language_english">English</string>
+    <string name="text_user_not_found">该用户不存在</string>
+    <string name="text_add_friend_success">添加好友成功</string>
+    <string name="text_group_name_empty">群名称不能为空</string>
+    <string name="text_group_member_empty">群成员不能为空</string>
+    <string name="text_create_group_success">创建成功</string>
+    <string name="text_invite_member_success">邀请成功</string>
+    <string name="text_select_member_empty">请选择成员</string>
+    <string name="text_remove_member_success">移除成功</string>
+    <string name="text_clear_error">清空聊天记录失败</string>
+    <string name="text_success">成功</string>
+    <string name="text_friend_application_pending">申请中</string>
+    <string name="text_friend_application_accepted_by_other">对方已接受</string>
+    <string name="text_friend_application_no_response">无应答</string>
+    <string name="text_friend_application_agree">同意</string>
+    <string name="text_friend_application_accepted">已接受</string>
+    <string name="text_friend_application_timeout">已超时</string>
+    <string name="text_group_announcement_time_preview">发布时间：2025-02-20 18:34:21</string>
+    <string name="text_dialog_title_preview">加为好友</string>
+    <string name="text_dialog_content_preview">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</string>
+    <string name="text_subtitle_placeholder">小标题</string>
+    <string name="text_contact_name_placeholder">姓名</string>
+    <string name="text_smart_refresh_empty">SmartRefreshLayout 的内容视图为空。是否忘记在 xml 布局文件中添加它？</string>
+    <string name="text_main_info_preview">主信息</string>
+    <string name="text_sub_info_preview">子信息</string>
+    <string name="text_live_stream_participant_count_placeholder">123</string>
 
 
 </resources>

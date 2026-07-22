@@ -108,7 +108,7 @@
     <string name="text_title_channel_item_filtering">Channel Item Filtering</string>
     <string name="text_desc_channel_item_filtering">Filter channels using GroupChannelListQueryParams.</string>
     <string name="text_channel_typing_indicator_single">%s is typing&#8230;</string>
-    <string name="text_channel_typing_indicator_double">%s and %s are typing&#8230;</string>
+    <string name="text_channel_typing_indicator_double">%1$s and %2$s are typing&#8230;</string>
     <string name="text_channel_typing_indicator_multiple">Several people are typing&#8230;</string>
 
     <!--  User List Customization  -->
@@ -122,7 +122,7 @@
     <string name="text_title_user_item_custom_datasource">User Item Custom Data Source</string>
     <string name="text_desc_user_item_custom_datasource">Retrieve user data from external sources.</string>
 
-    <string name="text_list_item_nickname_format">#%d. %s</string>
+    <string name="text_list_item_nickname_format">#%1$d. %2$s</string>
 
     <string name="text_resend">Resend</string>
     <string name="text_delete">Delete</string>
@@ -181,5 +181,37 @@
     <string name="text_join_group">Join the group</string>
     <string name="text_group_has_members">%1$d&#160;member(s) in group</string>
     <string name="text_select_conversation">Select a conversation</string>
+    <string name="text_allow_notifications">Allow notifications</string>
+    <string name="text_do_not_disturb_time_8_12">Do not disturb 08:00 - 12:00</string>
+    <string name="text_do_not_disturb_time_19_20">Do not disturb 19:00 - 20:00</string>
+    <string name="text_do_not_disturb_time_23_06">Do not disturb 23:00 - 06:00</string>
+    <string name="text_do_not_disturb_all_day">Do not disturb all day</string>
+    <string name="text_language_chinese">Chinese</string>
+    <string name="text_language_english">English</string>
+    <string name="text_user_not_found">User not found</string>
+    <string name="text_add_friend_success">Friend added successfully</string>
+    <string name="text_group_name_empty">Group name is empty</string>
+    <string name="text_group_member_empty">Group members are empty</string>
+    <string name="text_create_group_success">Group created successfully</string>
+    <string name="text_invite_member_success">Invitation sent successfully</string>
+    <string name="text_select_member_empty">Please select at least one member</string>
+    <string name="text_remove_member_success">Member removed successfully</string>
+    <string name="text_clear_error">Couldn’t clear chat history.</string>
+    <string name="text_success">Success</string>
+    <string name="text_friend_application_pending">Pending</string>
+    <string name="text_friend_application_accepted_by_other">Accepted</string>
+    <string name="text_friend_application_no_response">No response</string>
+    <string name="text_friend_application_agree">Agree</string>
+    <string name="text_friend_application_accepted">Accepted</string>
+    <string name="text_friend_application_timeout">Timed out</string>
+    <string name="text_group_announcement_time_preview">Published: 2025-02-20 18:34:21</string>
+    <string name="text_dialog_title_preview">Add friend</string>
+    <string name="text_dialog_content_preview">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</string>
+    <string name="text_subtitle_placeholder">Subtitle</string>
+    <string name="text_contact_name_placeholder">Name</string>
+    <string name="text_smart_refresh_empty">The content view in SmartRefreshLayout is empty. Do you forget to add it in xml layout file?</string>
+    <string name="text_main_info_preview">Main info</string>
+    <string name="text_sub_info_preview">Sub info</string>
+    <string name="text_live_stream_participant_count_placeholder">123</string>
 
 </resources>

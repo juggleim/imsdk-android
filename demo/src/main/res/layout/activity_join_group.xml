@@ -42,7 +42,7 @@
             android:layout_below="@id/profile_iv_join_group_portrait"
             android:textColor="#262626"
             android:layout_marginTop="8dp"
-            tools:text="群名称"
+            tools:text="@string/text_group_name"
             />
 
         <TextView
@@ -54,7 +54,7 @@
             android:layout_below="@id/profile_tv_join_group_name"
             android:textColor="#939393"
             android:layout_marginTop="2dp"
-            tools:text="群内已有多少人"
+            tools:text="@string/text_group_has_members"
             />
     </RelativeLayout>
 

@@ -78,11 +78,11 @@ open class LoginActivity : BaseActivity(), IConnectionStatusListener {
     }
 
     open fun onSendCode(phone: String) {
-        Toast.makeText(this@LoginActivity, "success", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@LoginActivity, R.string.text_success, Toast.LENGTH_SHORT).show()
         val verificationCode = ServiceManager.loginService().getVerificationCode(CodeRequest(phone))
         verificationCode.enqueue(object : CustomCallback<HttpResult<Void>, Void>() {
             override fun onSuccess(k: Void?) {
-                Toast.makeText(this@LoginActivity, "success", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, R.string.text_success, Toast.LENGTH_SHORT).show()
             }
         })
     }

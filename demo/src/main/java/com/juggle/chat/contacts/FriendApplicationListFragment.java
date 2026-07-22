@@ -77,24 +77,24 @@ public class FriendApplicationListFragment extends Fragment {
                 holder.setText(R.id.tvNickname, friendApplicationBean.getUserInfo().getNickname());
                 if (friendApplicationBean.isSponsor()) {
                     if (friendApplicationBean.getStatus() == 0) {
-                        holder.setText(R.id.tv_add_btn, "申请中");
+                        holder.setText(R.id.tv_add_btn, getString(R.string.text_friend_application_pending));
                         holder.setTextColor(R.id.tv_add_btn, getResources().getColor(com.jet.im.kit.R.color.background_400));
                     } else if (friendApplicationBean.getStatus() == 1) {
-                        holder.setText(R.id.tv_add_btn, "对方已接受");
+                        holder.setText(R.id.tv_add_btn, getString(R.string.text_friend_application_accepted_by_other));
                         holder.setTextColor(R.id.tv_add_btn, getResources().getColor(com.jet.im.kit.R.color.background_400));
                     } else if (friendApplicationBean.getStatus() == 3) {
-                        holder.setText(R.id.tv_add_btn, "无应答");
+                        holder.setText(R.id.tv_add_btn, getString(R.string.text_friend_application_no_response));
                         holder.setTextColor(R.id.tv_add_btn, getResources().getColor(com.jet.im.kit.R.color.background_400));
                     }
                 } else {
                     if (friendApplicationBean.getStatus() == 0) {
-                        holder.setText(R.id.tv_add_btn, "同意");
+                        holder.setText(R.id.tv_add_btn, getString(R.string.text_friend_application_agree));
                         holder.setTextColor(R.id.tv_add_btn, getResources().getColor(com.jet.im.kit.R.color.primary_300));
                     } else if (friendApplicationBean.getStatus() == 1) {
-                        holder.setText(R.id.tv_add_btn, "已接受");
+                        holder.setText(R.id.tv_add_btn, getString(R.string.text_friend_application_accepted));
                         holder.setTextColor(R.id.tv_add_btn, getResources().getColor(com.jet.im.kit.R.color.background_400));
                     } else if (friendApplicationBean.getStatus() == 3) {
-                        holder.setText(R.id.tv_add_btn, "已超时");
+                        holder.setText(R.id.tv_add_btn, getString(R.string.text_friend_application_timeout));
                         holder.setTextColor(R.id.tv_add_btn, getResources().getColor(com.jet.im.kit.R.color.background_400));
                     }
                 }
@@ -114,7 +114,7 @@ public class FriendApplicationListFragment extends Fragment {
                         public void onSuccess(Object o) {
                             if (holder instanceof ViewHolder) {
                                 ViewHolder h = (ViewHolder) holder;
-                                h.setText(R.id.tv_add_btn, "已接受");
+                                h.setText(R.id.tv_add_btn, getString(R.string.text_friend_application_accepted));
                                 h.setTextColor(R.id.tv_add_btn, getResources().getColor(com.jet.im.kit.R.color.background_400));
                             }
                         }

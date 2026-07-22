@@ -26,7 +26,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="允许通知"
+                android:text="@string/text_allow_notifications"
                 android:textAppearance="@style/SendbirdSubtitle2OnLight01"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -56,7 +56,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="免打扰时段 08:00 ~ 12:00"
+                android:text="@string/text_do_not_disturb_time_8_12"
                 android:textAppearance="@style/SendbirdSubtitle2OnLight01"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -86,7 +86,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="免打扰时段 19:00 ~ 20:00"
+                android:text="@string/text_do_not_disturb_time_19_20"
                 android:textAppearance="@style/SendbirdSubtitle2OnLight01"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -116,7 +116,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="免打扰时段 23:00 ~ 06:00"
+                android:text="@string/text_do_not_disturb_time_23_06"
                 android:textAppearance="@style/SendbirdSubtitle2OnLight01"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -146,7 +146,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="全天免打扰"
+                android:text="@string/text_do_not_disturb_all_day"
                 android:textAppearance="@style/SendbirdSubtitle2OnLight01"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

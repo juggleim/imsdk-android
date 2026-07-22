@@ -45,7 +45,7 @@
     <string name="sb_text_channel_input_voice_call">Voice call</string>
     <string name="sb_text_channel_input_video_call">Video call</string>
     <string name="sb_text_channel_typing_indicator_single">%s is typing&#8230;</string>
-    <string name="sb_text_channel_typing_indicator_double">%s and %s are typing&#8230;</string>
+    <string name="sb_text_channel_typing_indicator_double">%1$s and %2$s are typing&#8230;</string>
     <string name="sb_text_channel_typing_indicator_multiple">Several people are typing&#8230;</string>
     <string name="sb_text_channel_unknown_type_text">(Unknown message type)\nCannot read this message.</string>
     <string name="sb_text_channel_reaction_count_max">99</string>
@@ -211,7 +211,7 @@
     <!-- Message Reply -->
     <string name="sb_text_you">You</string>
     <string name="sb_text_reply_to">Reply to %s</string>
-    <string name="sb_text_replied_to">%s replied to %s</string>
+    <string name="sb_text_replied_to">%1$s replied to %2$s</string>
     <string name="sb_text_error_original_message_not_found">Couldn\'t find the original message for this reply.</string>
     <string name="sb_text_exceed_mention_limit_count">You can have up to %d mentions per message.</string>
     <string name="sb_text_number_of_reply">%d reply</string>
@@ -298,6 +298,13 @@
     <string name="rc_voip_connecting">Connecting...</string>
     <string name="rc_voip_unstable_call_connection">Unstable call connection</string>
     <string name="rc_voip_add_member">Select Members</string>
+    <string name="rc_voip_whiteboard">White board</string>
+    <string name="rc_voip_hand_up">Hand up</string>
+    <string name="sb_text_voice_message_duration_default">00:00</string>
+    <string name="sb_text_voice_message_duration_recording">00:15</string>
+    <string name="sb_text_contact_name_placeholder">User</string>
+    <string name="sb_text_error_clear_message">Couldn\'t clear chat history.</string>
+    <string name="rc_voip_observer_hint_message">observer hint</string>
 
     <string name="rc_select_contact">Select contacts</string>
     <string name="rc_search">Search</string>

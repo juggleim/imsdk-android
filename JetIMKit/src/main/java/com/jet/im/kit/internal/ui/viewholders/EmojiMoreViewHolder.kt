@@ -29,7 +29,7 @@ internal class EmojiMoreViewHolder(emojiView: EmojiView) : BaseViewHolder<String
             val moreResTint = a.getColorStateList(R.styleable.Emoji_sb_emoji_more_button_src_tint)
             emojiView.setBackgroundResource(backgroundRes)
             moreResTint?.let {
-                emojiView.setText("...")
+                emojiView.setText(emojiView.context.getString(R.string.sb_text_ellipsis))
             }
 //                emojiView.setImageDrawable(DrawableUtils.setTintList(emojiView.context, moreRes, it)) }
 //                ?: emojiView.setImageDrawable(AppCompatResources.getDrawable(emojiView.context, moreRes))

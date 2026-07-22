@@ -265,7 +265,7 @@ public class GroupInfoActivity extends BaseActivity {
                         @Override
                         public void onError(int errorCode) {
                             mStatusFrameView.setStatus(StatusFrameView.Status.NONE);
-                            Toast.makeText(GroupInfoActivity.this, "Clear error", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(GroupInfoActivity.this, com.jet.im.kit.R.string.sb_text_error_clear_message, Toast.LENGTH_SHORT).show();
                         }
                     });
                 },
@@ -305,7 +305,7 @@ public class GroupInfoActivity extends BaseActivity {
                                         @Override
                                         public void onError(int errorCode) {
                                             mStatusFrameView.setStatus(StatusFrameView.Status.NONE);
-                                            Toast.makeText(GroupInfoActivity.this, "操作失败", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(GroupInfoActivity.this, com.juggle.chat.R.string.text_operation_fail, Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                 }

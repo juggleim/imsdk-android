@@ -42,7 +42,7 @@
         android:id="@+id/tvParticipantCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="123"
+        android:text="@string/text_live_stream_participant_count_placeholder"
         android:layout_marginStart="@dimen/sb_size_4"
         android:layout_marginLeft="@dimen/sb_size_4"
         android:textSize="@dimen/sb_text_size_12"

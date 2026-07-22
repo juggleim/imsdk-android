@@ -45,7 +45,7 @@
             android:textColor="@color/callkit_color_normal_text"
             android:textSize="10sp"
             android:visibility="gone"
-            tools:text="小标题" />
+            tools:text="@string/sb_text_contact_name_placeholder" />
     </LinearLayout>
 
     <TextView

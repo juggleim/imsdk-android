@@ -97,7 +97,7 @@
                     android:textColor="#111F2C"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    tools:text="Frank"/>
+                    tools:text="@string/sb_text_contact_name_placeholder"/>
             </LinearLayout>
 
             <View

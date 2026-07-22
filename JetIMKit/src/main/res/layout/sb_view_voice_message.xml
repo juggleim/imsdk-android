@@ -53,7 +53,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/ondark_01"
-        android:text="00:00"
+        android:text="@string/sb_text_voice_message_duration_default"
         android:layout_marginEnd="@dimen/sb_size_12"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

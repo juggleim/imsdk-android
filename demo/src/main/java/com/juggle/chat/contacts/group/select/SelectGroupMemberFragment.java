@@ -180,7 +180,7 @@ public class SelectGroupMemberFragment
                         String inviteMsg = input.getText().toString();
 
                         if (TextUtils.isEmpty(inviteMsg)) {
-                            Toast.makeText(getContext(), "group name is empty", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), R.string.text_group_name_empty, Toast.LENGTH_SHORT).show();
                             return true;
                         }
                         List<String> users = new ArrayList<>();
@@ -190,7 +190,7 @@ public class SelectGroupMemberFragment
                             }
                         }
                         if (users.isEmpty()) {
-                            Toast.makeText(getContext(), "group member is empty", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), R.string.text_group_member_empty, Toast.LENGTH_SHORT).show();
                             return true;
                         }
                         createGroup(inviteMsg, users);
@@ -218,7 +218,7 @@ public class SelectGroupMemberFragment
         ServiceManager.getGroupsService().createGroup(body).enqueue(new CustomCallback<HttpResult<CreateGroupResult>, CreateGroupResult>() {
             @Override
             public void onSuccess(CreateGroupResult o) {
-                Toast.makeText(getContext(), "create success", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.text_create_group_success, Toast.LENGTH_SHORT).show();
                 if (getActivity() != null) {
                     getActivity().finish();
                 }
@@ -234,7 +234,7 @@ public class SelectGroupMemberFragment
             }
         }
         if (userIdList.isEmpty()) {
-            Toast.makeText(getContext(), "group member is empty", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.text_group_member_empty, Toast.LENGTH_SHORT).show();
             return;
         }
         JsonArray array = new JsonArray();
@@ -248,7 +248,7 @@ public class SelectGroupMemberFragment
         ServiceManager.getGroupsService().addMember(body).enqueue(new CustomCallback<HttpResult<Object>, Object>() {
             @Override
             public void onSuccess(Object o) {
-                Toast.makeText(getContext(), "invite success", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.text_invite_member_success, Toast.LENGTH_SHORT).show();
                 if (getActivity() != null) {
                     getActivity().finish();
                 }
@@ -264,7 +264,7 @@ public class SelectGroupMemberFragment
             }
         }
         if (userIdList.isEmpty()) {
-            Toast.makeText(getContext(), "select member empty", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.text_select_member_empty, Toast.LENGTH_SHORT).show();
             return;
         }
         JsonArray array = new JsonArray();
@@ -279,7 +279,7 @@ public class SelectGroupMemberFragment
         ServiceManager.getGroupsService().removeMember(body).enqueue(new CustomCallback<HttpResult<Object>, Object>() {
             @Override
             public void onSuccess(Object o) {
-                Toast.makeText(getContext(), "remove success", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.text_remove_member_success, Toast.LENGTH_SHORT).show();
                 if (getActivity() != null) {
                     getActivity().finish();
                 }
@@ -298,7 +298,7 @@ public class SelectGroupMemberFragment
             }
         }
         if (userIdList.isEmpty()) {
-            Toast.makeText(getContext(), "select member empty", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.text_select_member_empty, Toast.LENGTH_SHORT).show();
             return;
         }
         Intent intent = new Intent();

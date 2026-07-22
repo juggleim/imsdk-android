@@ -15,7 +15,7 @@
         android:layout_marginBottom="10dp"
         android:layout_width="match_parent"
         android:textSize="17dp"
-        tools:text="加为好友"
+        tools:text="@string/text_dialog_title_preview"
         android:gravity="center"
         android:textColor="#111F2C"
         android:layout_height="wrap_content"/>

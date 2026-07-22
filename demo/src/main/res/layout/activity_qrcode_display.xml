@@ -63,7 +63,7 @@
                         android:singleLine="true"
                         android:textColor="#262626"
                         android:textSize="20sp"
-                        tools:text="主信息" />
+                        tools:text="@string/text_main_info_preview" />
 
                     <TextView
                         android:id="@+id/profile_tv_qr_info_sub"
@@ -73,7 +73,7 @@
                         android:layout_marginTop="4dp"
                         android:textColor="#A0A5AB"
                         android:textSize="14sp"
-                        tools:text="子信息" />
+                        tools:text="@string/text_sub_info_preview" />
                 </LinearLayout>
 
 

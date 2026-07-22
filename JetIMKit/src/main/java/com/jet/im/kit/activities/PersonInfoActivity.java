@@ -142,7 +142,7 @@ public class PersonInfoActivity extends BaseActivity {
                                 @Override
                                 public void onError(int errorCode) {
                                     mStatusFrameView.setStatus(StatusFrameView.Status.NONE);
-                                    Toast.makeText(PersonInfoActivity.this, "Clear error", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(PersonInfoActivity.this, R.string.sb_text_error_clear_message, Toast.LENGTH_SHORT).show();
                                 }
                             });
                         },

@@ -33,7 +33,7 @@
         android:layout_marginTop="5dp"
         android:textSize="13sp"
         android:textColor="#A0A5AB"
-        tools:text="发布时间：2025-02-20 18:34:21" />
+        tools:text="@string/text_group_announcement_time_preview" />
 
     <EditText
         android:id="@+id/profile_et_group_notice"

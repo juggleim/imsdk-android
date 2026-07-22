@@ -182,7 +182,7 @@ public class AddFriendListFragment
                                         getViewModel().addFriend(friendId, new Action<Object>() {
                                             @Override
                                             public void call(Object o) {
-                                                Toast.makeText(getContext(), "add Friend Success", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(getContext(), R.string.text_add_friend_success, Toast.LENGTH_SHORT).show();
                                                 if (getActivity() != null) {
                                                     getActivity().finish();
                                                 }

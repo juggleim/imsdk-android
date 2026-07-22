@@ -26,7 +26,7 @@
             android:layout_gravity="center"
             android:background="#75000000"
             android:gravity="center"
-            android:text="连接中..."
+            android:text="@string/rc_voip_connecting"
             android:textColor="#ffffff" />
     </FrameLayout>
 
@@ -40,6 +40,6 @@
         android:layout_marginTop="12dp"
         android:gravity="center"
         android:textSize="12sp"
-        android:text="Susan"
+        android:text="@string/sb_text_contact_name_placeholder"
         android:textColor="@color/rc_voip_white" />
 </LinearLayout>

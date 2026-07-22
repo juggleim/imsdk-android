@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">JetIMDemo</string>
+    <string name="action_settings">设置</string>
+    <string name="first_fragment_label">第一个页面</string>
+    <string name="second_fragment_label">第二个页面</string>
+    <string name="next">下一步</string>
+    <string name="previous">上一步</string>
+    <string name="lorem_ipsum">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
+        volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
+        dui nec risus.
+    </string>
+</resources>

@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="106dp"
-        android:text="该用户不存在"
+        android:text="@string/text_user_not_found"
         android:textColor="#a0a5ab"
         android:textSize="18dp"
         android:visibility="gone" />
