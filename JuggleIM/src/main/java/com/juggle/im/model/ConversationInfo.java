@@ -92,7 +92,8 @@ public class ConversationInfo {
             if (groupInfo != null) {
                 displayName = groupInfo.getGroupName();
             }
-        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE) {
+        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE
+        || mConversation.getConversationType() == Conversation.ConversationType.PRIVATE_E2EE) {
             FriendInfo friendInfo = JIM.getInstance().getUserInfoManager().getFriendInfo(mConversation.getConversationId());
             if (friendInfo != null) {
                 displayName = friendInfo.getAlias();
@@ -118,7 +119,8 @@ public class ConversationInfo {
             if (groupInfo != null) {
                 alias = groupInfo.getGroupName();
             }
-        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE) {
+        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE
+        || mConversation.getConversationType() == Conversation.ConversationType.PRIVATE_E2EE) {
             FriendInfo friendInfo = JIM.getInstance().getUserInfoManager().getFriendInfo(mConversation.getConversationId());
             if (friendInfo != null) {
                 alias = friendInfo.getAlias();
@@ -138,7 +140,8 @@ public class ConversationInfo {
             if (groupInfo != null) {
                 name = groupInfo.getGroupName();
             }
-        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE) {
+        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE
+        || mConversation.getConversationType() == Conversation.ConversationType.PRIVATE_E2EE) {
             UserInfo userInfo = getUserInfo();
             if (userInfo != null) {
                 name = userInfo.getUserName();
@@ -158,7 +161,8 @@ public class ConversationInfo {
             if (groupInfo != null) {
                 portrait = groupInfo.getPortrait();
             }
-        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE) {
+        } else if (mConversation.getConversationType() == Conversation.ConversationType.PRIVATE
+        || mConversation.getConversationType() == Conversation.ConversationType.PRIVATE_E2EE) {
             UserInfo userInfo = getUserInfo();
             if (userInfo != null) {
                 portrait = userInfo.getPortrait();
