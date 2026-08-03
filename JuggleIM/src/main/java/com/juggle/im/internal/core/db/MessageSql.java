@@ -34,7 +34,11 @@ class MessageSql {
         message.setContentType(CursorHelper.readString(cursor, COL_CONTENT_TYPE));
         message.setClientMsgNo(CursorHelper.readLong(cursor, COL_MESSAGE_ID));
         message.setMessageId(CursorHelper.readString(cursor, COL_MESSAGE_UID));
-        message.setClientUid(CursorHelper.readString(cursor, COL_MESSAGE_CLIENT_UID));
+        String clientUid = CursorHelper.readString(cursor, COL_MESSAGE_CLIENT_UID);
+        if (clientUid == null) {
+            clientUid = "";
+        }
+        message.setClientUid(clientUid);
         Message.MessageDirection direction = Message.MessageDirection.setValue(CursorHelper.readInt(cursor, COL_DIRECTION));
         message.setDirection(direction);
         Message.MessageState state = Message.MessageState.setValue(CursorHelper.readInt(cursor, COL_STATE));
@@ -97,7 +101,7 @@ class MessageSql {
             seqNo = c.getSeqNo();
             msgIndex = c.getMsgIndex();
             if (!TextUtils.isEmpty(c.getClientUid())) {
-//                clientUid = c.getClientUid();
+                clientUid = c.getClientUid();
             }
             flags = c.getFlags();
             lifeTime = c.getLifeTime();
