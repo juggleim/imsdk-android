@@ -3533,6 +3533,12 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
     }
 
     public void checkAndUploadPubKey(ConversationManager.ICompleteCallback callback) {
+        if (!mCore.isEnableE2EE()) {
+            if (callback != null) {
+                callback.onComplete();
+            }
+            return;
+        }
         if (mPubKey != null && mPubKey.length > 0
                 && mPriKey != null && mPriKey.length > 0) {
             if (callback != null) {

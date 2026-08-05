@@ -25,6 +25,7 @@ class PBRcvObj {
         String userId;
         String session;
         String extra;
+        boolean enableE2EE;
     }
 
     static class PublishMsgAck {

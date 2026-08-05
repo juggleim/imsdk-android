@@ -1547,6 +1547,7 @@ class PBData {
                     ack.code = connectAckMsgBody.getCode();
                     ack.userId = connectAckMsgBody.getUserId();
                     ack.session = connectAckMsgBody.getSession();
+                    ack.enableE2EE = connectAckMsgBody.getOpenE2EE();
                     ack.extra = connectAckMsgBody.getExt();
                     obj.mConnectAck = ack;
                     obj.timestamp = connectAckMsgBody.getTimestamp();

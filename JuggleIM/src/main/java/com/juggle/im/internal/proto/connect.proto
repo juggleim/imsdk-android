@@ -6,30 +6,31 @@ import "appmessages.proto";
 
 message ConnectMsgBody{
     string protoId = 1;
-    string sdkVersion = 2; // SDK version
+    string sdkVersion = 2; //SDK version
     string appkey = 3;
     string token = 4;
 
-    // Device information
+    //Device information
     string deviceId = 5;
     string platform = 6;//iOS/Android/iPad
-    string deviceCompany = 7;// Device vendor, e.g. huawei/apple
-    string deviceModel = 8;// Device model, e.g. iPhone8
-    string deviceOsVersion = 9;// Mobile operating system version
-    string pushToken = 10;// Vendor push token
-    // Network
-    string networkId = 11;// Network type; 4G/wifi
-    string isp_num = 12;// Network operator ID
+    string deviceCompany = 7;//Device manufacturer, huawei/apple
+    string deviceModel = 8;//Device model, for example: iPhone8
+    string deviceOsVersion = 9;//Mobile operating system version
+    string pushToken = 10;//Vendor push token
+    //Network
+    string networkId = 11;//Network type: 4G/wifi
+    string isp_num = 12;//Network carrier number
     string clientIp = 13;
     
     string packageName = 14;
     string pushChannel = 15;
     string ext = 16;
-    string instanceId = 17;// Client instance identifier, used to distinguish different instances when multiple instances are running, clientSession
-    string language = 18;// Language setting
-    bool isBackend = 19;// Whether the app is in the background
-
-    bytes secretNegotiate = 101; // Secret negotiation
+    string instanceId = 17;//Client instance identifier, used to distinguish different instances when multiple instances are open, clientSession
+    string language = 18;//Language setting
+    bool isBackend = 19;//Whether the app is in the background
+    string voipToken = 20;// voip token of iOS
+    
+    bytes secretNegotiate = 101; //Secret negotiation
 }
 
 message ConnectAckMsgBody{
@@ -38,8 +39,9 @@ message ConnectAckMsgBody{
     string session = 3;
     int64 timestamp = 4;
     string ext = 5;
-
-    bytes secretNegotiateAck = 101; // Secret negotiation response
+    bool openE2EE = 7;
+    
+    bytes secretNegotiateAck = 101; //Secret negotiation response
 }
 
 message DisconnectMsgBody{
@@ -64,7 +66,7 @@ message PublishAckMsgBody{
     int64 msgSeqNo = 5;
     int32 memberCount = 6;
     string clientMsgId = 7;
-    DownMsg modifiedMsg = 8;
+    DownMsg modifiedMsg =8;
 }
 
 message QueryMsgBody{

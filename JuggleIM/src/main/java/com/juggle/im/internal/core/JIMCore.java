@@ -8,7 +8,6 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
-import com.juggle.im.internal.ConstInternal;
 import com.juggle.im.internal.core.db.DBManager;
 import com.juggle.im.internal.core.network.JWebSocket;
 import com.juggle.im.internal.util.JUtility;
@@ -146,6 +145,14 @@ public class JIMCore {
         mSession = session;
     }
 
+    public boolean isEnableE2EE() {
+        return mEnableE2EE;
+    }
+
+    public void setEnableE2EE(boolean enableE2EE) {
+        mEnableE2EE = enableE2EE;
+    }
+
     public Context getContext() {
         return mContext;
     }
@@ -247,6 +254,7 @@ public class JIMCore {
     private String mToken;
     private String mUserId;
     private String mSession;
+    private boolean mEnableE2EE;
     private Context mContext;
     private int mConnectionStatus;
     private final DBManager mDbManager = new DBManager();
