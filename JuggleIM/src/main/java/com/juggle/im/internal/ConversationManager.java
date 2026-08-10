@@ -1206,6 +1206,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (!isBroadcast || message.getDirection() != Message.MessageDirection.SEND) {
             info.setSortTime(message.getTimestamp());
         }
+        info.setMute(message.isMute());
         //Update the latest message
         info.setLastMessage(message);
     }
