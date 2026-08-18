@@ -5,7 +5,10 @@ import com.juggle.im.model.GroupMember;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.Message;
 import com.juggle.im.model.PushData;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.UserInfo;
+
+import java.util.List;
 
 public class ConcreteMessage extends Message {
     public ConcreteMessage() {
@@ -26,6 +29,10 @@ public class ConcreteMessage extends Message {
         mPushData = other.getPushData();
         mLifeTime = other.getLifeTime();
         mReadTime = other.getReadTime();
+        mConversationTagInfoList = other.getConversationTagInfoList();
+        mSenderUserInfo = other.getSenderUserInfo();
+        mIsMute = other.isMute();
+        mHashCount = other.mHashCount;
     }
 
     public long getSeqNo() {
@@ -152,6 +159,14 @@ public class ConcreteMessage extends Message {
         return mHashCount++;
     }
 
+    public List<ConversationTagInfo> getConversationTagInfoList() {
+        return mConversationTagInfoList;
+    }
+
+    public void setConversationTagInfoList(List<ConversationTagInfo> conversationTagInfoList) {
+        mConversationTagInfoList = conversationTagInfoList;
+    }
+
     private long mSeqNo;
     private long mMsgIndex;
     private String mClientUid;
@@ -169,4 +184,5 @@ public class ConcreteMessage extends Message {
     private boolean mIsMute;
     // Encrypted message hash retry count
     private int mHashCount;
+    private List<ConversationTagInfo> mConversationTagInfoList;
 }

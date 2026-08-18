@@ -469,18 +469,20 @@ public class DBManager {
         List<String> argList = new ArrayList<>();
         performTransaction(() -> {
             for (ConcreteConversationInfo info : conversationInfos) {
-                if (info.getTagIdList() != null && !info.getTagIdList().isEmpty()) {
-                    String subChannel = info.getConversation().getSubChannel();
-                    if (subChannel == null) {
-                        subChannel = "";
-                    }
-                    execSQL(ConversationSql.SQL_CLEAR_TAG_BY_CONVERSATION, new String[]{String.valueOf(info.getConversation().getConversationType().getValue()), info.getConversation().getConversationId(), subChannel});
-                    for (String tagId : info.getTagIdList()) {
+                String subChannel = info.getConversation().getSubChannel();
+                if (subChannel == null) {
+                    subChannel = "";
+                }
+                execSQL(ConversationSql.SQL_CLEAR_TAG_BY_CONVERSATION, new String[]{String.valueOf(info.getConversation().getConversationType().getValue()), info.getConversation().getConversationId(), subChannel});
+                if (info.getTagInfoList() != null && !info.getTagInfoList().isEmpty()) {
+                    for (ConversationTagInfo tagInfo : info.getTagInfoList()) {
+                        String tagId = tagInfo.getTagId();
                         sql.append(CursorHelper.getQuestionMarkPlaceholder(4)).append(", ");
                         argList.add(tagId);
                         argList.add(String.valueOf(info.getConversation().getConversationType().getValue()));
                         argList.add(info.getConversation().getConversationId());
                         argList.add(subChannel);
+                        execSQL(ConversationSql.SQL_INSERT_CONVERSATION_TAG_INFO, new String[]{tagId == null ? "" : tagId, tagInfo.getName() == null ? "" : tagInfo.getName(), String.valueOf(tagInfo.getType() == null ? ConversationTagInfo.TagType.USER.getValue() : tagInfo.getType().getValue())});
                     }
                 }
             }

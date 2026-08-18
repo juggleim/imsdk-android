@@ -33,9 +33,11 @@ import com.juggle.im.model.UserInfo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1123,12 +1125,16 @@ public class ConversationManager implements IConversationManager, MessageManager
     private void addOrUpdateConversationIfNeed(List<ConcreteMessage> messages) {
         //Process messages one by one
         Map<Conversation, ConcreteConversationInfo> conversationInfoMap = new HashMap<>();
+        Map<Conversation, List<ConversationTagInfo>> newTagInfoListMap = new HashMap<>();
         for (ConcreteMessage message : messages) {
             if (message.getTimestamp() <= mCore.getConversationSyncTime()) {
                 continue;
             }
             processSingleMessage(message, conversationInfoMap);
+            newTagInfoListMap.put(message.getConversation(), message.getConversationTagInfoList() == null ? new ArrayList<>() : message.getConversationTagInfoList());
         }
+        //Update conversation tags if needed
+        updateConversationTagsIfNeed(newTagInfoListMap);
         if (conversationInfoMap.isEmpty()) return;
         //Update the database in one batch
         mCore.getDbManager().insertConversations(new ArrayList<>(conversationInfoMap.values()), (insertList, updateList) -> {
@@ -1148,6 +1154,75 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
         });
+    }
+
+    //Update conversation tags when receiving messages carrying tag information
+    private void updateConversationTagsIfNeed(Map<Conversation, List<ConversationTagInfo>> newTagInfoListMap) {
+        List<ConcreteConversationInfo> tagUpdateConversations = new ArrayList<>();
+        Map<String, List<Conversation>> addedTagConversationMap = new HashMap<>();
+        Map<String, List<Conversation>> removedTagConversationMap = new HashMap<>();
+        for (Map.Entry<Conversation, List<ConversationTagInfo>> entry : newTagInfoListMap.entrySet()) {
+            Conversation conversation = entry.getKey();
+            List<ConversationTagInfo> newTagInfoList = entry.getValue();
+            List<ConversationTagInfo> localTagInfoList = getTagsForConversation(conversation);
+            Set<String> localTagIdSet = new HashSet<>();
+            for (ConversationTagInfo tagInfo : localTagInfoList) {
+                if (!TextUtils.isEmpty(tagInfo.getTagId())) {
+                    localTagIdSet.add(tagInfo.getTagId());
+                }
+            }
+            Set<String> newTagIdSet = new HashSet<>();
+            for (ConversationTagInfo tagInfo : newTagInfoList) {
+                if (!TextUtils.isEmpty(tagInfo.getTagId())) {
+                    newTagIdSet.add(tagInfo.getTagId());
+                }
+            }
+            if (localTagIdSet.equals(newTagIdSet)) {
+                continue;
+            }
+            Set<String> addedTagIdSet = new HashSet<>(newTagIdSet);
+            addedTagIdSet.removeAll(localTagIdSet);
+            Set<String> removedTagIdSet = new HashSet<>(localTagIdSet);
+            removedTagIdSet.removeAll(newTagIdSet);
+
+            ConcreteConversationInfo tagConversationInfo = new ConcreteConversationInfo();
+            tagConversationInfo.setConversation(conversation);
+            tagConversationInfo.setTagInfoList(newTagInfoList);
+            tagUpdateConversations.add(tagConversationInfo);
+
+            for (ConversationTagInfo tagInfo : newTagInfoList) {
+                if (addedTagIdSet.contains(tagInfo.getTagId())) {
+                    List<Conversation> conversationList = addedTagConversationMap.get(tagInfo.getTagId());
+                    if (conversationList == null) {
+                        conversationList = new ArrayList<>();
+                        addedTagConversationMap.put(tagInfo.getTagId(), conversationList);
+                    }
+                    conversationList.add(conversation);
+                }
+            }
+            for (ConversationTagInfo tagInfo : localTagInfoList) {
+                if (removedTagIdSet.contains(tagInfo.getTagId())) {
+                    List<Conversation> conversationList = removedTagConversationMap.get(tagInfo.getTagId());
+                    if (conversationList == null) {
+                        conversationList = new ArrayList<>();
+                        removedTagConversationMap.put(tagInfo.getTagId(), conversationList);
+                    }
+                    conversationList.add(conversation);
+                }
+            }
+        }
+        if (tagUpdateConversations.isEmpty()) return;
+        mCore.getDbManager().updateConversationTag(tagUpdateConversations);
+        if (mTagListenerMap != null) {
+            for (Map.Entry<String, IConversationTagListener> listenerEntry : mTagListenerMap.entrySet()) {
+                for (Map.Entry<String, List<Conversation>> addEntry : addedTagConversationMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> listenerEntry.getValue().onConversationsAddToTag(addEntry.getKey(), addEntry.getValue()));
+                }
+                for (Map.Entry<String, List<Conversation>> removeEntry : removedTagConversationMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> listenerEntry.getValue().onConversationsRemoveFromTag(removeEntry.getKey(), removeEntry.getValue()));
+                }
+            }
+        }
     }
 
     //Common method for handling a single message

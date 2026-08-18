@@ -2389,6 +2389,13 @@ class PBData {
         message.setLifeTimeAfterRead(downMsg.getLifeTimeAfterRead());
         message.setReadTime(downMsg.getReadTime());
         message.setMute(downMsg.getUndisturbType() != 0);
+        if (downMsg.getConverTagsCount() > 0) {
+            List<ConversationTagInfo> tagInfoList = new ArrayList<>();
+            for (Appmessages.ConverTag converTag : downMsg.getConverTagsList()) {
+                tagInfoList.add(conversationTagInfoWithConverTag(converTag));
+            }
+            message.setConversationTagInfoList(tagInfoList);
+        }
         return message;
     }
 
@@ -2494,11 +2501,11 @@ class PBData {
         }
         info.setUnread(conversation.getUnreadTag()==1);
         if (conversation.getConverTagsCount() > 0) {
-            List<String> tagIdList = new ArrayList<>();
+            List<ConversationTagInfo> tagInfoList = new ArrayList<>();
             for (Appmessages.ConverTag pbTag : conversation.getConverTagsList()) {
-                tagIdList.add(pbTag.getTag());
+                tagInfoList.add(conversationTagInfoWithConverTag(pbTag));
             }
-            info.setTagIdList(tagIdList);
+            info.setTagInfoList(tagInfoList);
         }
         return info;
     }
