@@ -1131,7 +1131,9 @@ public class ConversationManager implements IConversationManager, MessageManager
                 continue;
             }
             processSingleMessage(message, conversationInfoMap);
-            newTagInfoListMap.put(message.getConversation(), message.getConversationTagInfoList() == null ? new ArrayList<>() : message.getConversationTagInfoList());
+            if (message.getDirection() == Message.MessageDirection.RECEIVE) {
+                newTagInfoListMap.put(message.getConversation(), message.getConversationTagInfoList() == null ? new ArrayList<>() : message.getConversationTagInfoList());
+            }
         }
         //Update conversation tags if needed
         updateConversationTagsIfNeed(newTagInfoListMap);
