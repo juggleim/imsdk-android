@@ -40,6 +40,7 @@ message ConnectAckMsgBody{
     int64 timestamp = 4;
     string ext = 5;
     bool openE2EE = 7;
+    int32 mentionClearType = 8;
     
     bytes secretNegotiateAck = 101; //Secret negotiation response
 }

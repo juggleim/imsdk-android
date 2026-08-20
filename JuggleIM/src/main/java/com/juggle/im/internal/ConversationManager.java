@@ -315,20 +315,18 @@ public class ConversationManager implements IConversationManager, MessageManager
                 JLogger.i("CONV-ClearUnread", "success");
                 mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
-                mCore.getDbManager().setMentionInfo(conversation, "");
+                if (mCore.getMentionClearType() == 0) {
+                    mCore.getDbManager().setMentionInfo(conversation, "");
+                }
                 mCore.getDbManager().setUnread(conversation, false);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
                 }
                 noticeTotalUnreadCountChange();
-                if (mListenerMap != null) {
-                    info.setLastReadMessageIndex(info.getLastMessageIndex());
-                    info.setUnreadCount(0);
-                    info.setMentionInfo(null);
-                    info.setUnread(false);
-
+                ConversationInfo currentInfo = mCore.getDbManager().getConversationInfo(conversation);
+                if (currentInfo != null && mListenerMap != null) {
                     List<ConversationInfo> list = new ArrayList<>();
-                    list.add(info);
+                    list.add(currentInfo);
                     for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
                         mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(list));
                     }
@@ -362,7 +360,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 JLogger.i("CONV-ClearTotal", "success");
                 mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().clearTotalUnreadCount();
-                mCore.getDbManager().clearMentionInfo();
+                clearMentionInfo();
                 mCore.getDbManager().clearUnreadTag();
                 noticeTotalUnreadCountChange();
                 if (callback != null) {
@@ -800,21 +798,56 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (messageIds == null || messageIds.isEmpty()) return;
         //Query the conversation
         ConversationInfo conversationInfo = getConversationInfo(conversation);
-        if (conversationInfo == null || conversationInfo.getLastMessage() == null || TextUtils.isEmpty(conversationInfo.getLastMessage().getMessageId()))
-            return;
-        //Update the conversation if the read message list contains the conversation latest message
-        if (messageIds.contains(conversationInfo.getLastMessage().getMessageId())) {
-            //Update conversationInfo
-            conversationInfo.getLastMessage().setHasRead(true);
-            // Update the database
-            mCore.getDbManager().updateConversationLastMessageHasRead(conversation, conversationInfo.getLastMessage().getMessageId(), true);
-            //Run the callback
-            if (mListenerMap != null) {
-                List<ConversationInfo> result = new ArrayList<>();
-                result.add(conversationInfo);
-                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(result));
+        if (conversationInfo == null) return;
+
+        boolean hasUpdate = false;
+        if (conversation.getConversationType() == Conversation.ConversationType.GROUP
+                && conversationInfo.getMentionInfo() != null
+                && conversationInfo.getMentionInfo().getMentionMsgList() != null) {
+            List<ConversationMentionInfo.MentionMsg> mentionMessages =
+                    conversationInfo.getMentionInfo().getMentionMsgList();
+            boolean mentionUpdated = false;
+            for (String messageId : messageIds) {
+                if (messageId == null || messageId.isEmpty()) {
+                    continue;
                 }
+                for (int i = mentionMessages.size() - 1; i >= 0; i--) {
+                    ConversationMentionInfo.MentionMsg mentionMessage = mentionMessages.get(i);
+                    if (mentionMessage != null && messageId.equals(mentionMessage.getMsgId())) {
+                        mentionMessages.remove(i);
+                        mentionUpdated = true;
+                    }
+                }
+            }
+            if (mentionUpdated) {
+                if (mentionMessages.isEmpty()) {
+                    conversationInfo.setMentionInfo(null);
+                    mCore.getDbManager().setMentionInfo(conversation, "");
+                } else {
+                    mCore.getDbManager().setMentionInfo(
+                            conversation, conversationInfo.getMentionInfo().encodeToJson());
+                }
+                hasUpdate = true;
+            }
+        }
+
+        Message lastMessage = conversationInfo.getLastMessage();
+        String lastMessageId = lastMessage == null ? null : lastMessage.getMessageId();
+        if (lastMessage != null
+                && !lastMessage.isHasRead()
+                && lastMessageId != null
+                && !lastMessageId.isEmpty()
+                && messageIds.contains(lastMessageId)) {
+            lastMessage.setHasRead(true);
+            mCore.getDbManager().updateConversationLastMessageHasRead(
+                    conversation, lastMessageId, true);
+            hasUpdate = true;
+        }
+        if (hasUpdate && mListenerMap != null) {
+            List<ConversationInfo> result = new ArrayList<>();
+            result.add(conversationInfo);
+            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(result));
             }
         }
     }
@@ -896,7 +929,9 @@ public class ConversationManager implements IConversationManager, MessageManager
                 case ClearUnreadMessage.CONTENT_TYPE:
                     if (!totalUnreadCountHasChanged) totalUnreadCountHasChanged = true;
                     mCore.getDbManager().clearUnreadCount(conversation.getConversation(), conversation.getLastReadMessageIndex());
-                    mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
+                    if (mCore.getMentionClearType() == 0) {
+                        mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
+                    }
                     mCore.getDbManager().setUnread(conversation.getConversation(), false);
                     break;
                 case TopConvMessage.CONTENT_TYPE:
@@ -930,9 +965,15 @@ public class ConversationManager implements IConversationManager, MessageManager
     @Override
     public void onConversationsClearTotalUnread(long clearTime) {
         mCore.getDbManager().clearTotalUnreadCount();
-        mCore.getDbManager().clearMentionInfo();
+        clearMentionInfo();
         mCore.getDbManager().clearUnreadTag();
         noticeTotalUnreadCountChange();
+    }
+
+    private void clearMentionInfo() {
+        if (mCore.getMentionClearType() == 0) {
+            mCore.getDbManager().clearMentionInfo();
+        }
     }
 
     @Override

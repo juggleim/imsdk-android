@@ -210,12 +210,13 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     }
 
     @Override
-    public void onConnectComplete(int errorCode, String userId, String session, boolean enableE2EE, String extra) {
+    public void onConnectComplete(int errorCode, String userId, String session, boolean enableE2EE, int mentionClearType, String extra) {
         if (errorCode == ConstInternal.ErrorCode.NONE) {
             mIntervalGenerator.reset();
             mCore.setUserId(userId);
             mCore.setSession(session);
             mCore.setEnableE2EE(enableE2EE);
+            mCore.setMentionClearType(mentionClearType);
             openDB();
             mMessageManager.connectSuccess();
             mConversationManager.connectSuccess();

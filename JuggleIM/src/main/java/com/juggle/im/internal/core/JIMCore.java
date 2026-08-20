@@ -153,6 +153,14 @@ public class JIMCore {
         mEnableE2EE = enableE2EE;
     }
 
+    public int getMentionClearType() {
+        return mMentionClearType;
+    }
+
+    public void setMentionClearType(int mentionClearType) {
+        mMentionClearType = mentionClearType;
+    }
+
     public Context getContext() {
         return mContext;
     }
@@ -255,6 +263,7 @@ public class JIMCore {
     private String mUserId;
     private String mSession;
     private boolean mEnableE2EE;
+    private int mMentionClearType;
     private Context mContext;
     private int mConnectionStatus;
     private final DBManager mDbManager = new DBManager();

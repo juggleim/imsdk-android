@@ -1862,6 +1862,15 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void getMentionMessageList(Conversation conversation, int count, long time, JIMConst.PullDirection direction, IGetMessagesWithFinishCallback callback) {
+        getMentionMessageList(conversation, count, time, direction, false, callback);
+    }
+
+    @Override
+    public void getUnreadMentionMessageList(Conversation conversation, int count, long time, JIMConst.PullDirection direction, IGetMessagesWithFinishCallback callback) {
+        getMentionMessageList(conversation, count, time, direction, true, callback);
+    }
+
+    private void getMentionMessageList(Conversation conversation, int count, long time, JIMConst.PullDirection direction, boolean onlyUnread, IGetMessagesWithFinishCallback callback) {
         if (mCore.getWebSocket() == null) {
             int errorCode = JErrorCode.CONNECTION_UNAVAILABLE;
             JLogger.e("MSG-GetMention", "fail, code is " + errorCode);
@@ -1871,7 +1880,11 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             return;
         }
         ConcreteConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
-        mCore.getWebSocket().getMentionMessageList(conversation, time, count, direction, conversationInfo.getLastReadMessageIndex(), new QryHisMsgCallback() {
+        long lastReadIndex = 0;
+        if (mCore.getMentionClearType() == 0) {
+            lastReadIndex = conversationInfo.getLastReadMessageIndex();
+        }
+        mCore.getWebSocket().getMentionMessageList(conversation, time, count, direction, lastReadIndex, onlyUnread, new QryHisMsgCallback() {
             @Override
             public void onSuccess(List<ConcreteMessage> messages, boolean isFinished) {
                 JLogger.i("MSG-GetMention", "success");

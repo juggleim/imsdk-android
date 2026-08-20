@@ -453,10 +453,11 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                                       int count,
                                       JIMConst.PullDirection direction,
                                       long lastReadIndex,
+                                      boolean onlyUnread,
                                       QryHisMsgCallback callback) {
         mSendHandler.post(() -> {
             Integer key = mCmdIndex;
-            byte[] bytes = mPbData.getMentionMessages(conversation, time, count, direction, lastReadIndex, mCmdIndex++);
+            byte[] bytes = mPbData.getMentionMessages(conversation, time, count, direction, lastReadIndex, onlyUnread, mCmdIndex++);
             mWebSocketCommandManager.putCommand(key, callback);
             JLogger.i("WS-Send", "getMentionMessageList, conversation is " + conversation + ", time is " + time + ", count is " + count + ", direction is " + direction);
             sendWhenOpenInternal(bytes);
@@ -967,7 +968,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     }
 
     public interface IWebSocketConnectListener {
-        void onConnectComplete(int errorCode, String userId, String session, boolean enableE2EE, String extra);
+        void onConnectComplete(int errorCode, String userId, String session, boolean enableE2EE, int mentionClearType, String extra);
 
         void onDisconnect(int errorCode, String extra);
 
@@ -1184,7 +1185,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                 if (reason.contains("403")) {
                     JLogger.e("WS-Connect", "webSocket 403");
                     if (mConnectListener != null) {
-                        mConnectListener.onConnectComplete(ConstInternal.ErrorCode.CONNECT_FORBIDDEN, "", "", false, "");
+                        mConnectListener.onConnectComplete(ConstInternal.ErrorCode.CONNECT_FORBIDDEN, "", "", false, -1, "");
                     }
                 } else {
                     if (remote && mConnectListener != null) {
@@ -1212,7 +1213,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
                     if (reason.contains("403")) {
                         JLogger.e("WS-Connect", "webSocket 403");
                         if (mConnectListener != null) {
-                            mConnectListener.onConnectComplete(ConstInternal.ErrorCode.CONNECT_FORBIDDEN, "", "", false, "");
+                            mConnectListener.onConnectComplete(ConstInternal.ErrorCode.CONNECT_FORBIDDEN, "", "", false, -1, "");
                         }
                     } else {
                         if (mConnectListener != null) {
@@ -1285,7 +1286,7 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
     private void handleConnectAckMsg(@NonNull PBRcvObj.ConnectAck ack) {
         JLogger.i("WS-Receive", "handleConnectAckMsg, connect userId is " + ack.userId);
         if (mConnectListener != null) {
-            mConnectListener.onConnectComplete(ack.code, ack.userId, ack.session, ack.enableE2EE, ack.extra);
+            mConnectListener.onConnectComplete(ack.code, ack.userId, ack.session, ack.enableE2EE, ack.mentionClearType, ack.extra);
         }
     }
 

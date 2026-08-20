@@ -792,17 +792,10 @@ class PBData {
                               int count,
                               JIMConst.PullDirection direction,
                               long lastReadIndex,
+                              boolean onlyUnread,
                               int index) {
-        int order = direction == JIMConst.PullDirection.OLDER ? 0 : 1;
-        Appmessages.QryMentionMsgsReq req = Appmessages.QryMentionMsgsReq.newBuilder()
-                .setTargetId(conversation.getConversationId())
-                .setChannelTypeValue(conversation.getConversationType().getValue())
-                .setSubChannel(conversation.getSubChannel())
-                .setStartTime(timestamp)
-                .setCount(count)
-                .setOrder(order)
-                .setLatestReadIndex(lastReadIndex)
-                .build();
+        Appmessages.QryMentionMsgsReq req = mentionMessagesRequest(conversation, timestamp, count,
+                direction, lastReadIndex, onlyUnread);
         Connect.QueryMsgBody body = Connect.QueryMsgBody.newBuilder()
                 .setIndex(index)
                 .setTopic(QRY_MENTION_MSGS)
@@ -812,6 +805,32 @@ class PBData {
         mMsgCmdMap.put(index, body.getTopic());
         Connect.ImWebsocketMsg m = createImWebsocketMsgWithQueryMsg(body);
         return m.toByteArray();
+    }
+
+    static Appmessages.QryMentionMsgsReq mentionMessagesRequest(
+            Conversation conversation, long timestamp, int count,
+            JIMConst.PullDirection direction, long lastReadIndex, boolean onlyUnread) {
+        return Appmessages.QryMentionMsgsReq.newBuilder()
+                .setTargetId(conversation.getConversationId())
+                .setChannelTypeValue(conversation.getConversationType().getValue())
+                .setSubChannel(conversation.getSubChannel())
+                .setStartTime(timestamp)
+                .setCount(count)
+                .setOrder(direction == JIMConst.PullDirection.OLDER ? 0 : 1)
+                .setLatestReadIndex(lastReadIndex)
+                .setOnlyUnread(onlyUnread)
+                .build();
+    }
+
+    static PBRcvObj.ConnectAck connectAckFromBody(Connect.ConnectAckMsgBody body) {
+        PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
+        ack.code = body.getCode();
+        ack.userId = body.getUserId();
+        ack.session = body.getSession();
+        ack.enableE2EE = body.getOpenE2EE();
+        ack.mentionClearType = body.getMentionClearType();
+        ack.extra = body.getExt();
+        return ack;
     }
 
     byte[] clearHistoryMessage(Conversation conversation, long time, int scope, int index) {
@@ -1539,17 +1558,11 @@ class PBData {
                 case CmdType.connectAck:
                     decodeData = mConverter.decode(msg.getPayload().toByteArray());
                     obj.setRcvType(PBRcvObj.PBRcvType.connectAck);
-                    PBRcvObj.ConnectAck ack = new PBRcvObj.ConnectAck();
                     Connect.ConnectAckMsgBody connectAckMsgBody = Connect.ConnectAckMsgBody.parseFrom(decodeData);
                     if (mConverter2 != null) {
                         mConverter2.storeSharedKey(connectAckMsgBody.getSecretNegotiateAck().toByteArray());
                     }
-                    ack.code = connectAckMsgBody.getCode();
-                    ack.userId = connectAckMsgBody.getUserId();
-                    ack.session = connectAckMsgBody.getSession();
-                    ack.enableE2EE = connectAckMsgBody.getOpenE2EE();
-                    ack.extra = connectAckMsgBody.getExt();
-                    obj.mConnectAck = ack;
+                    obj.mConnectAck = connectAckFromBody(connectAckMsgBody);
                     obj.timestamp = connectAckMsgBody.getTimestamp();
                     break;
 
