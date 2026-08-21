@@ -53,6 +53,7 @@ public class DBManager {
         closeDB();
         if (!TextUtils.isEmpty(path)) {
             mDBHelper = new DBHelper(context, path);
+            mDBHelper.setWriteAheadLoggingEnabled(true);
             mDb = mDBHelper.getWritableDatabase();
         }
         mSortTimeCounter = new JSortTimeCounter(context, appKey, userId);
