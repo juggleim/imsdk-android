@@ -1862,11 +1862,6 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
 
     @Override
     public void getMentionMessageList(Conversation conversation, int count, long time, JIMConst.PullDirection direction, IGetMessagesWithFinishCallback callback) {
-        getMentionMessageList(conversation, count, time, direction, false, callback);
-    }
-
-    @Override
-    public void getUnreadMentionMessageList(Conversation conversation, int count, long time, JIMConst.PullDirection direction, IGetMessagesWithFinishCallback callback) {
         getMentionMessageList(conversation, count, time, direction, true, callback);
     }
 
@@ -1881,7 +1876,7 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
         }
         ConcreteConversationInfo conversationInfo = mCore.getDbManager().getConversationInfo(conversation);
         long lastReadIndex = 0;
-        if (mCore.getMentionClearType() == 0) {
+        if (mCore.getMentionClearType() == 0 && onlyUnread) {
             lastReadIndex = conversationInfo.getLastReadMessageIndex();
         }
         mCore.getWebSocket().getMentionMessageList(conversation, time, count, direction, lastReadIndex, onlyUnread, new QryHisMsgCallback() {

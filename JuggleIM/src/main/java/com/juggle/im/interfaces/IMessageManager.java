@@ -402,12 +402,6 @@ public interface IMessageManager {
                                JIMConst.PullDirection direction,
                                IGetMessagesWithFinishCallback callback);
 
-    void getUnreadMentionMessageList(Conversation conversation,
-                                     int count,
-                                     long time,
-                                     JIMConst.PullDirection direction,
-                                     IGetMessagesWithFinishCallback callback);
-
     void setLocalAttribute(String messageId, String attribute);
 
     String getLocalAttribute(String messageId);
