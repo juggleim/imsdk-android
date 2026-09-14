@@ -167,6 +167,14 @@ Demo initialization examples:
 | [im-ios-sdk](https://github.com/Juggleim/im-ios-sdk)         | iOS SDK                     |
 | [web-im-demo](https://github.com/Juggleim/web-im-demo)       | React/Vue integration demo  |
 
+## Need a Complete Messaging App?
+
+JuggleIM SDK is designed for developers who want to add messaging capabilities to their own applications.
+
+If you're building a standalone messenger, **JuggleChat** provides production-ready commercial source code for Android, iOS, Web, and Desktop, helping you avoid building common messaging product features from scratch.
+
+👉 [Explore JuggleChat Commercial Source Code](https://juggle.im/#/jugglechat)
+
 ## 🤝 Contributing
 
 We love contributions! Whether it's:
