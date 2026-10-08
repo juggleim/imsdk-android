@@ -441,6 +441,7 @@ public class ConnectionManager extends StateMachine implements IConnectionManage
     public void leaveConnected() {
         mCore.getWebSocket().stopHeartbeat();
         mCore.getWebSocket().pushRemainCmdAndCallbackError();
+        mCore.getWebSocket().reset();
     }
 
     public void disconnectExist(boolean receivePush) {

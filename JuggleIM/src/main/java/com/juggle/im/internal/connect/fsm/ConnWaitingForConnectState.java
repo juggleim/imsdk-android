@@ -52,6 +52,12 @@ public class ConnWaitingForConnectState extends ConnBaseState {
                 }
                 break;
 
+            case ConnEvent.CONNECT_DONE:
+                String extra = (String) msg.obj;
+                manager.transitionToConnectedState();
+                manager.notifyConnected(extra);
+                break;
+
             case ConnEvent.USER_DISCONNECT:
                 manager.disconnectWithoutWS();
                 manager.notifyDisconnected(JErrorCode.NONE, "");

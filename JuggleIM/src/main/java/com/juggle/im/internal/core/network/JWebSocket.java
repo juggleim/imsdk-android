@@ -897,6 +897,10 @@ public class JWebSocket implements WebSocketCommandManager.CommandTimeoutListene
         }
     }
 
+    public void reset() {
+        mSendHandler.post(this::resetWebSocketClient);
+    }
+
     public void ping() {
         mSendHandler.post(() -> {
             JLogger.v("WS-Send", "ping");

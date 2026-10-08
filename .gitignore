@@ -31,3 +31,7 @@ JAgoraCall/upload-maven.gradle
 JGPlugin/upload-maven.gradle
 JLiveKitCall/upload-maven.gradle
 JZegoCall/upload-maven.gradle
+
+docs/plans
+docs/superpowers
+.opencode
