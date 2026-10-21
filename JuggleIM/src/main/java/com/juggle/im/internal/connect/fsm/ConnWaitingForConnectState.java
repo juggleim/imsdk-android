@@ -65,13 +65,7 @@ public class ConnWaitingForConnectState extends ConnBaseState {
                 break;
 
             case ConnEvent.RECONNECT_TIMER_FIRE:
-                manager.transitionToConnectingState();
-                break;
-
             case ConnEvent.ENTER_FOREGROUND:
-                manager.transitionToConnectingState();
-                break;
-
             case ConnEvent.NETWORK_AVAILABLE:
                 manager.transitionToConnectingState();
                 break;
