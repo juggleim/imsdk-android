@@ -17,7 +17,7 @@ public class Conversation {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mConversationId, mConversationType);
+        return Objects.hash(mConversationId, mConversationType, mSubChannel);
     }
 
     @NonNull

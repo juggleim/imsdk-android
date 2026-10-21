@@ -26,6 +26,7 @@ class PBRcvObj {
         String session;
         String extra;
         boolean enableE2EE;
+        int mentionClearType;
     }
 
     static class PublishMsgAck {
@@ -353,5 +354,4 @@ class PBRcvObj {
 
     private int mRcvType;
 }
-
 

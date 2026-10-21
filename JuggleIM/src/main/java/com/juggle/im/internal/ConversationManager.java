@@ -33,9 +33,11 @@ import com.juggle.im.model.UserInfo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -313,20 +315,18 @@ public class ConversationManager implements IConversationManager, MessageManager
                 JLogger.i("CONV-ClearUnread", "success");
                 mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().clearUnreadCount(conversation, info.getLastMessageIndex());
-                mCore.getDbManager().setMentionInfo(conversation, "");
+                if (mCore.getMentionClearType() == 0) {
+                    mCore.getDbManager().setMentionInfo(conversation, "");
+                }
                 mCore.getDbManager().setUnread(conversation, false);
                 if (callback != null) {
                     mCore.getCallbackHandler().post(callback::onSuccess);
                 }
                 noticeTotalUnreadCountChange();
-                if (mListenerMap != null) {
-                    info.setLastReadMessageIndex(info.getLastMessageIndex());
-                    info.setUnreadCount(0);
-                    info.setMentionInfo(null);
-                    info.setUnread(false);
-
+                ConversationInfo currentInfo = mCore.getDbManager().getConversationInfo(conversation);
+                if (currentInfo != null && mListenerMap != null) {
                     List<ConversationInfo> list = new ArrayList<>();
-                    list.add(info);
+                    list.add(currentInfo);
                     for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
                         mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(list));
                     }
@@ -360,7 +360,7 @@ public class ConversationManager implements IConversationManager, MessageManager
                 JLogger.i("CONV-ClearTotal", "success");
                 mMessageManager.updateMessageSendSyncTime(timestamp);
                 mCore.getDbManager().clearTotalUnreadCount();
-                mCore.getDbManager().clearMentionInfo();
+                clearMentionInfo();
                 mCore.getDbManager().clearUnreadTag();
                 noticeTotalUnreadCountChange();
                 if (callback != null) {
@@ -798,21 +798,56 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (messageIds == null || messageIds.isEmpty()) return;
         //Query the conversation
         ConversationInfo conversationInfo = getConversationInfo(conversation);
-        if (conversationInfo == null || conversationInfo.getLastMessage() == null || TextUtils.isEmpty(conversationInfo.getLastMessage().getMessageId()))
-            return;
-        //Update the conversation if the read message list contains the conversation latest message
-        if (messageIds.contains(conversationInfo.getLastMessage().getMessageId())) {
-            //Update conversationInfo
-            conversationInfo.getLastMessage().setHasRead(true);
-            // Update the database
-            mCore.getDbManager().updateConversationLastMessageHasRead(conversation, conversationInfo.getLastMessage().getMessageId(), true);
-            //Run the callback
-            if (mListenerMap != null) {
-                List<ConversationInfo> result = new ArrayList<>();
-                result.add(conversationInfo);
-                for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
-                    mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(result));
+        if (conversationInfo == null) return;
+
+        boolean hasUpdate = false;
+        if (conversation.getConversationType() == Conversation.ConversationType.GROUP
+                && conversationInfo.getMentionInfo() != null
+                && conversationInfo.getMentionInfo().getMentionMsgList() != null) {
+            List<ConversationMentionInfo.MentionMsg> mentionMessages =
+                    conversationInfo.getMentionInfo().getMentionMsgList();
+            boolean mentionUpdated = false;
+            for (String messageId : messageIds) {
+                if (messageId == null || messageId.isEmpty()) {
+                    continue;
                 }
+                for (int i = mentionMessages.size() - 1; i >= 0; i--) {
+                    ConversationMentionInfo.MentionMsg mentionMessage = mentionMessages.get(i);
+                    if (mentionMessage != null && messageId.equals(mentionMessage.getMsgId())) {
+                        mentionMessages.remove(i);
+                        mentionUpdated = true;
+                    }
+                }
+            }
+            if (mentionUpdated) {
+                if (mentionMessages.isEmpty()) {
+                    conversationInfo.setMentionInfo(null);
+                    mCore.getDbManager().setMentionInfo(conversation, "");
+                } else {
+                    mCore.getDbManager().setMentionInfo(
+                            conversation, conversationInfo.getMentionInfo().encodeToJson());
+                }
+                hasUpdate = true;
+            }
+        }
+
+        Message lastMessage = conversationInfo.getLastMessage();
+        String lastMessageId = lastMessage == null ? null : lastMessage.getMessageId();
+        if (lastMessage != null
+                && !lastMessage.isHasRead()
+                && lastMessageId != null
+                && !lastMessageId.isEmpty()
+                && messageIds.contains(lastMessageId)) {
+            lastMessage.setHasRead(true);
+            mCore.getDbManager().updateConversationLastMessageHasRead(
+                    conversation, lastMessageId, true);
+            hasUpdate = true;
+        }
+        if (hasUpdate && mListenerMap != null) {
+            List<ConversationInfo> result = new ArrayList<>();
+            result.add(conversationInfo);
+            for (Map.Entry<String, IConversationListener> entry : mListenerMap.entrySet()) {
+                mCore.getCallbackHandler().post(() -> entry.getValue().onConversationInfoUpdate(result));
             }
         }
     }
@@ -894,7 +929,9 @@ public class ConversationManager implements IConversationManager, MessageManager
                 case ClearUnreadMessage.CONTENT_TYPE:
                     if (!totalUnreadCountHasChanged) totalUnreadCountHasChanged = true;
                     mCore.getDbManager().clearUnreadCount(conversation.getConversation(), conversation.getLastReadMessageIndex());
-                    mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
+                    if (mCore.getMentionClearType() == 0) {
+                        mCore.getDbManager().setMentionInfo(conversation.getConversation(), "");
+                    }
                     mCore.getDbManager().setUnread(conversation.getConversation(), false);
                     break;
                 case TopConvMessage.CONTENT_TYPE:
@@ -928,9 +965,15 @@ public class ConversationManager implements IConversationManager, MessageManager
     @Override
     public void onConversationsClearTotalUnread(long clearTime) {
         mCore.getDbManager().clearTotalUnreadCount();
-        mCore.getDbManager().clearMentionInfo();
+        clearMentionInfo();
         mCore.getDbManager().clearUnreadTag();
         noticeTotalUnreadCountChange();
+    }
+
+    private void clearMentionInfo() {
+        if (mCore.getMentionClearType() == 0) {
+            mCore.getDbManager().clearMentionInfo();
+        }
     }
 
     @Override
@@ -1123,12 +1166,18 @@ public class ConversationManager implements IConversationManager, MessageManager
     private void addOrUpdateConversationIfNeed(List<ConcreteMessage> messages) {
         //Process messages one by one
         Map<Conversation, ConcreteConversationInfo> conversationInfoMap = new HashMap<>();
+        Map<Conversation, List<ConversationTagInfo>> newTagInfoListMap = new HashMap<>();
         for (ConcreteMessage message : messages) {
             if (message.getTimestamp() <= mCore.getConversationSyncTime()) {
                 continue;
             }
             processSingleMessage(message, conversationInfoMap);
+            if (message.getDirection() == Message.MessageDirection.RECEIVE) {
+                newTagInfoListMap.put(message.getConversation(), message.getConversationTagInfoList() == null ? new ArrayList<>() : message.getConversationTagInfoList());
+            }
         }
+        //Update conversation tags if needed
+        updateConversationTagsIfNeed(newTagInfoListMap);
         if (conversationInfoMap.isEmpty()) return;
         //Update the database in one batch
         mCore.getDbManager().insertConversations(new ArrayList<>(conversationInfoMap.values()), (insertList, updateList) -> {
@@ -1148,6 +1197,75 @@ public class ConversationManager implements IConversationManager, MessageManager
                 }
             }
         });
+    }
+
+    //Update conversation tags when receiving messages carrying tag information
+    private void updateConversationTagsIfNeed(Map<Conversation, List<ConversationTagInfo>> newTagInfoListMap) {
+        List<ConcreteConversationInfo> tagUpdateConversations = new ArrayList<>();
+        Map<String, List<Conversation>> addedTagConversationMap = new HashMap<>();
+        Map<String, List<Conversation>> removedTagConversationMap = new HashMap<>();
+        for (Map.Entry<Conversation, List<ConversationTagInfo>> entry : newTagInfoListMap.entrySet()) {
+            Conversation conversation = entry.getKey();
+            List<ConversationTagInfo> newTagInfoList = entry.getValue();
+            List<ConversationTagInfo> localTagInfoList = getTagsForConversation(conversation);
+            Set<String> localTagIdSet = new HashSet<>();
+            for (ConversationTagInfo tagInfo : localTagInfoList) {
+                if (!TextUtils.isEmpty(tagInfo.getTagId())) {
+                    localTagIdSet.add(tagInfo.getTagId());
+                }
+            }
+            Set<String> newTagIdSet = new HashSet<>();
+            for (ConversationTagInfo tagInfo : newTagInfoList) {
+                if (!TextUtils.isEmpty(tagInfo.getTagId())) {
+                    newTagIdSet.add(tagInfo.getTagId());
+                }
+            }
+            if (localTagIdSet.equals(newTagIdSet)) {
+                continue;
+            }
+            Set<String> addedTagIdSet = new HashSet<>(newTagIdSet);
+            addedTagIdSet.removeAll(localTagIdSet);
+            Set<String> removedTagIdSet = new HashSet<>(localTagIdSet);
+            removedTagIdSet.removeAll(newTagIdSet);
+
+            ConcreteConversationInfo tagConversationInfo = new ConcreteConversationInfo();
+            tagConversationInfo.setConversation(conversation);
+            tagConversationInfo.setTagInfoList(newTagInfoList);
+            tagUpdateConversations.add(tagConversationInfo);
+
+            for (ConversationTagInfo tagInfo : newTagInfoList) {
+                if (addedTagIdSet.contains(tagInfo.getTagId())) {
+                    List<Conversation> conversationList = addedTagConversationMap.get(tagInfo.getTagId());
+                    if (conversationList == null) {
+                        conversationList = new ArrayList<>();
+                        addedTagConversationMap.put(tagInfo.getTagId(), conversationList);
+                    }
+                    conversationList.add(conversation);
+                }
+            }
+            for (ConversationTagInfo tagInfo : localTagInfoList) {
+                if (removedTagIdSet.contains(tagInfo.getTagId())) {
+                    List<Conversation> conversationList = removedTagConversationMap.get(tagInfo.getTagId());
+                    if (conversationList == null) {
+                        conversationList = new ArrayList<>();
+                        removedTagConversationMap.put(tagInfo.getTagId(), conversationList);
+                    }
+                    conversationList.add(conversation);
+                }
+            }
+        }
+        if (tagUpdateConversations.isEmpty()) return;
+        mCore.getDbManager().updateConversationTag(tagUpdateConversations);
+        if (mTagListenerMap != null) {
+            for (Map.Entry<String, IConversationTagListener> listenerEntry : mTagListenerMap.entrySet()) {
+                for (Map.Entry<String, List<Conversation>> addEntry : addedTagConversationMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> listenerEntry.getValue().onConversationsAddToTag(addEntry.getKey(), addEntry.getValue()));
+                }
+                for (Map.Entry<String, List<Conversation>> removeEntry : removedTagConversationMap.entrySet()) {
+                    mCore.getCallbackHandler().post(() -> listenerEntry.getValue().onConversationsRemoveFromTag(removeEntry.getKey(), removeEntry.getValue()));
+                }
+            }
+        }
     }
 
     //Common method for handling a single message
@@ -1206,6 +1324,7 @@ public class ConversationManager implements IConversationManager, MessageManager
         if (!isBroadcast || message.getDirection() != Message.MessageDirection.SEND) {
             info.setSortTime(message.getTimestamp());
         }
+        info.setMute(message.isMute());
         //Update the latest message
         info.setLastMessage(message);
     }

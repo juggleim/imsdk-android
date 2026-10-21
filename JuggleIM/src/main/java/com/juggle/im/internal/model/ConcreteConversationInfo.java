@@ -1,6 +1,7 @@
 package com.juggle.im.internal.model;
 
 import com.juggle.im.model.ConversationInfo;
+import com.juggle.im.model.ConversationTagInfo;
 import com.juggle.im.model.FriendInfo;
 import com.juggle.im.model.GroupInfo;
 import com.juggle.im.model.UserInfo;
@@ -64,12 +65,12 @@ public class ConcreteConversationInfo extends ConversationInfo {
         this.mMentionUserList = mentionUserList;
     }
 
-    public List<String> getTagIdList() {
-        return mTagIdList;
+    public List<ConversationTagInfo> getTagInfoList() {
+        return mTagInfoList;
     }
 
-    public void setTagIdList(List<String> tagIdList) {
-        mTagIdList = tagIdList;
+    public void setTagInfoList(List<ConversationTagInfo> tagInfoList) {
+        mTagInfoList = tagInfoList;
     }
 
     private long mLastReadMessageIndex;
@@ -79,5 +80,5 @@ public class ConcreteConversationInfo extends ConversationInfo {
     private UserInfo mTargetUserInfo;
     private FriendInfo mFriendInfo;
     private List<UserInfo> mMentionUserList;
-    private List<String> mTagIdList;
+    private List<ConversationTagInfo> mTagInfoList;
 }

@@ -7,7 +7,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class MessageMentionInfo {
     public enum MentionType {
@@ -43,13 +46,16 @@ public class MessageMentionInfo {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.putOpt(MENTION_TYPE, mType.getValue());
-            if (mTargetUsers != null && mTargetUsers.size() > 0) {
+            if (mTargetUsers != null && !mTargetUsers.isEmpty()) {
                 JSONArray jsonUsers = new JSONArray();
                 for (UserInfo user : mTargetUsers) {
                     JSONObject jsonUser = new JSONObject();
                     jsonUser.putOpt(USER_ID, user.getUserId());
                     jsonUser.putOpt(NAME, user.getUserName());
                     jsonUser.putOpt(PORTRAIT, user.getPortrait());
+                    if (user.getExtra() != null && !user.getExtra().isEmpty()) {
+                        jsonUser.putOpt(USER_EXTRA, new JSONObject(user.getExtra()));
+                    }
                     jsonUsers.put(jsonUser);
                 }
                 jsonObject.putOpt(TARGET_USERS, jsonUsers);
@@ -76,6 +82,16 @@ public class MessageMentionInfo {
                     user.setUserId(jsonUser.optString(USER_ID));
                     user.setUserName(jsonUser.optString(NAME));
                     user.setPortrait(jsonUser.optString(PORTRAIT));
+                    JSONObject extraObject = jsonUser.optJSONObject(USER_EXTRA);
+                    if (extraObject != null) {
+                        Map<String, String> extraMap = new HashMap<>();
+                        for (Iterator<String> it = extraObject.keys(); it.hasNext(); ) {
+                            String key = it.next();
+                            String value = extraObject.optString(key);
+                            extraMap.put(key, value);
+                        }
+                        user.setExtra(extraMap);
+                    }
                     users.add(user);
                 }
                 mTargetUsers = users;
@@ -112,4 +128,5 @@ public class MessageMentionInfo {
     private static final String USER_ID = "id";
     private static final String NAME = "name";
     private static final String PORTRAIT = "portrait";
+    private static final String USER_EXTRA = "extra";
 }
