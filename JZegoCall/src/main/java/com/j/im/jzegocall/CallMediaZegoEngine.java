@@ -86,7 +86,7 @@ public class CallMediaZegoEngine extends IZegoEventHandler implements ICallMedia
 
     @Override
     public void leaveRoom(String roomId) {
-        sEngine.logoutRoom();
+        sEngine.logoutRoom(roomId);
     }
 
     @Override
