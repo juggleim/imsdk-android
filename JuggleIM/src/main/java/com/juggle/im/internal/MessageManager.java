@@ -3205,7 +3205,8 @@ public class MessageManager implements IMessageManager, JWebSocket.IWebSocketMes
             }
 
             //Do not callback for cmd messages
-            if ((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0) {
+            if (((message.getFlags() & MessageContent.MessageFlag.IS_CMD.getValue()) != 0)
+            && ((message.getFlags() & MessageContent.MessageFlag.IS_USER_CMD.getValue()) == 0)) {
                 continue;
             }
 

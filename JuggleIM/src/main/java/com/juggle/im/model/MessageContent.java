@@ -16,7 +16,8 @@ public abstract class MessageContent {
         IS_MUTE(64),
         IS_BROADCAST(128),
         // Whether this is an encrypted message.
-        IS_E2EE(2048);
+        IS_E2EE(2048),
+        IS_USER_CMD(4096);
 
         public int getValue() {
             return mValue;
